@@ -53,7 +53,7 @@ Status: documentation-only; runtime probes, visual QA and deployment for this it
 
 ## Iteration 004 — pinned-source parity checklist (2026-11-08)
 - [x] Register this bounded, documentation-only task before modifying municipal skills.
-- [ ] Audit private-to-public city pin mapping using exact blob comparisons; record missing/unreadable files as blockers rather than assuming parity.
+- [x] Audit six private-to-public city pin mappings: all six Git blob SHAs matched at audit time (urban-plan, road-surface, town-districts, town, world, city-growth).
 - [ ] Execute geometry and scene probes in a runnable checkout before any runtime change; this iteration changes no runtime assets.
 - [ ] Record fresh Pages status separately from prior successful deployment.
 
@@ -61,4 +61,4 @@ Status: documentation-only; runtime probes, visual QA and deployment for this it
 1. **Pin drift sentinel**: compare a declared allowlist of private city source blobs with public pinned assets at each publication and block any mismatched runtime release.
 2. **Civic access evidence cards**: generate per-building school/police/studio entrance cards with coordinates, clearance, ground height and screenshot reference, without storing citizen routes.
 
-Iteration 004 status: documentation-only; no runtime publication authorized.
+Iteration 004 evidence: six source/pin blobs matched via GitHub fetch_file (2026-11-08). Node geometry/scene probes NOT RUN; screenshots NOT INSPECTED; new Pages deployment NOT VERIFIED. Documentation-only; no runtime publication authorized.
