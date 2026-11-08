@@ -62,6 +62,12 @@ for(const id of views){
 assert.ok(html.includes('id="observer-theme"'));
 for(const option of ["auto","light","dark"])assert.ok(html.includes('value="'+option+'"'));
 assert.ok(html.includes('id="observer-watch"'));
+assert.ok(ui.includes('buttons.setAttribute("role","tablist")'),
+  "Grouped observer menu must expose semantic tablists");
+assert.ok(ui.includes('pane.setAttribute("role","tabpanel")'),
+  "Every corresponding panel needs an accessible tabpanel role");
+assert.ok(ui.includes('event.key==="ArrowRight"')&&ui.includes('event.key==="ArrowLeft"'),
+  "RTL tab groups need arrow-key access");
 assert.ok(html.includes('id="scene-data-link"'));
 assert.ok(html.includes('id="panel-scene-link"'));
 assert.ok(css.includes("body.app.side-collapsed .side{display:none;}"));
@@ -86,7 +92,7 @@ assert.ok(html.includes('href="./read/"')||html.includes('href="/read"'),
   "Public/privately mounted book link must have a complete quoted href");
 assert.ok(!html.includes('href="./read/>'),
   "Reject accidentally truncated read href caused by URL rewrite");
-assert.ok(html.includes("city-world-20261108-v2"),
+assert.ok(html.includes("city-world-20261108-v3"),
   "New world module URL should invalidate old public UI cache");
 assert.ok(world.includes("solarDate(String(e.at).slice(0, 10))"));
 assert.ok(world.includes("observerUI=initObserverUI("));
