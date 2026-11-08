@@ -1279,3 +1279,14 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
   }
   .book-overlay .reader-vote-status {min-width:145px;flex:0 0 auto;}
 }
+
+/* Reader v7: accessible, responsive page-side margins.
+   The hidden measuring page inherits the same computed padding as visible leaves. */
+.book-overlay[data-reader-margins="narrow"] .page,
+.book-overlay[data-reader-margins="narrow"] .leaf-face {
+  padding-inline:clamp(10px,2vw,26px);
+}
+.book-overlay[data-reader-margins="wide"] .page,
+.book-overlay[data-reader-margins="wide"] .leaf-face {
+  padding-inline:clamp(18px,4vw,64px);
+}
