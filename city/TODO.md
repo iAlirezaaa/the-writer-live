@@ -95,7 +95,7 @@ Release: documentation-only. Previous public deploy success is historical and do
 - [x] Add 4 junction signals, pedestrian-demand signal poles clear of citizen sidewalks, headlights for Tehran night, braking and turn indicators.
 - [x] Add public/private matching route geometry, reload-continuity and night-headlight regression tests.
 - [x] Public CI `CITY-TRAFFIC-OK` passed: [run 42534337743](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42534337743).
-- [ ] Full Pages release blocked by unrelated pre-existing `web/world.js` syntax error in writer forearm animation; no out-of-city code modified.
+- [x] Pages release successful after an independent repository correction of the unrelated world.js syntax error: [run 42534627200](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42534627200). City work did not alter writer logic.
 - [ ] Browser-level nighttime render, GPU/light budget and long-run real intersection collision observation require visual verification.
 
 ### Two proposed backlog ideas (MAYOR-016)
