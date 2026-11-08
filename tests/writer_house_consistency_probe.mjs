@@ -33,6 +33,18 @@ for(const contract of [
  assert.ok(world.includes(contract),"Missing matched home contract: "+contract);
 }
 assert.ok(world.includes('let view = "town"'),"City should open on exteriors");
+assert.ok(world.includes('writerInteriorWorldRoot.position.y = STREET_Y'),
+  "Writer interior does not use city street elevation");
+assert.ok(world.includes('writerInteriorWorldRoot.add(baseWriterRoomShell);'),
+  "Base writer walls were NOT attached to the grounded room root");
+assert.ok(world.includes('writerInteriorWorldRoot.add(expandedWriterRoomShell);'),
+  "Upgrade-stage walls were NOT attached to the grounded room root");
+assert.ok(world.includes('writerInteriorWorldRoot.visible=!outdoors;'),
+  "Writer wall visibility is not tied to the grounded room root");
+assert.ok(world.includes('const baseWriterRoomShell = new THREE.Group()') &&
+  world.includes('const expandedWriterRoomShell = new THREE.Group()'),
+  "Actual wall assemblies must exist as explicit architecture objects");
+
 const district=read("web/town-districts.js");
 for(const contract of ["publisher-street-door","bookstore-street-door",
  "B(pw,base-.12,pd,towerWall","B(5.75,bookstoreBase-.09,5.8,bookstoreWall"]){
