@@ -147,7 +147,7 @@ body.app .stage-tools button{
   background:rgba(255,255,255,.055);color:#edf2ed;
   border-color:rgba(255,255,255,.10);
   font-size:.72rem;padding:4px 9px;border-radius:8px;
-  font-weight:500;min-height:30px;
+  font-weight:500;min-height:36px;
 }
 body.app .stage-tools button:hover{background:rgba(255,255,255,.2);}
 body.app .stage-tools button[aria-pressed="true"]{
@@ -162,7 +162,7 @@ body.app .scene-settings{
   font-size:.72rem;
 }
 body.app .scene-settings summary{font-weight:600;min-height:22px;}
-body.app .scene-settings select{font-family:inherit;background:#23302e;border-radius:7px;min-height:27px;padding:2px 5px;}
+body.app .scene-settings select{font-family:inherit;background:#23302e;border-radius:7px;min-height:36px;padding:2px 5px;}
 body.app .stage-caption{
   position:absolute;z-index:3;bottom:clamp(10px,1.7vw,22px);
   right:clamp(10px,1.5vw,23px);left:clamp(10px,1.5vw,23px);
