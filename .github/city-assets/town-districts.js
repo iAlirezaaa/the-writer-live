@@ -13,12 +13,12 @@ export const CITY_BLOCKS=Object.freeze([
   {id:"urban-flats",x:4,z:-18,w:5.2,d:5.4,floors:5,style:"modern",title:"خانه‌های باغ",district:"محلهٔ مسکونی"},
   {id:"teal-tower",x:12,z:-18,w:5.4,d:5.5,floors:7,style:"glass",title:"برج سپیدار",district:"مرکز نو"},
   {id:"north-hotel",x:20,z:-18,w:5.4,d:5.6,floors:5,style:"terrace",title:"مهمانسرای سپهر",district:"مرکز نو"},
-  {id:"old-post",x:-20,z:-28,w:5.3,d:5.4,floors:4,style:"civic",title:"ادارهٔ پست",district:"محلهٔ قدیمی"},
-  {id:"stone-row",x:-12,z:-28,w:5.6,d:5.6,floors:4,style:"mansard",title:"عمارت ساعت",district:"محلهٔ قدیمی"},
-  {id:"atelier",x:-4,z:-28,w:5.3,d:5.3,floors:5,style:"brick",title:"کارگاه هنرمندان",district:"محلهٔ هنر"},
-  {id:"community-house",x:4,z:-28,w:5.5,d:5.4,floors:4,style:"terrace",title:"باشگاه محله",district:"محلهٔ مسکونی"},
-  {id:"glass-office",x:12,z:-28,w:5.4,d:5.5,floors:6,style:"glass",title:"مرکز نوآوری",district:"مرکز نو"},
-  {id:"sky-residences",x:20,z:-28,w:5.3,d:5.3,floors:6,style:"modern",title:"خانه‌های آسمان",district:"مرکز نو"}
+  {id:"old-post",x:-20,z:-30,w:5.3,d:5.4,floors:4,style:"civic",title:"ادارهٔ پست",district:"محلهٔ قدیمی"},
+  {id:"stone-row",x:-12,z:-30,w:5.6,d:5.6,floors:4,style:"mansard",title:"عمارت ساعت",district:"محلهٔ قدیمی"},
+  {id:"atelier",x:-4,z:-30,w:5.3,d:5.3,floors:5,style:"brick",title:"کارگاه هنرمندان",district:"محلهٔ هنر"},
+  {id:"community-house",x:4,z:-30,w:5.5,d:5.4,floors:4,style:"terrace",title:"باشگاه محله",district:"محلهٔ مسکونی"},
+  {id:"glass-office",x:12,z:-30,w:5.4,d:5.5,floors:6,style:"glass",title:"مرکز نوآوری",district:"مرکز نو"},
+  {id:"sky-residences",x:20,z:-30,w:5.3,d:5.3,floors:6,style:"modern",title:"خانه‌های آسمان",district:"مرکز نو"}
 ]);
 export const CITY_PLACE_CATALOG=Object.freeze([
   {id:"publishing-tower",name:"برج نشر آفتاب",zone:"مرکز فرهنگی",kind:"اداری · نشر",x:-10,z:0,y:11,
@@ -324,8 +324,28 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   // Both outer streets now connect to the existing east/west network.
   newStreet(0,-8.5,63,4);
   // Street between the two southern rows of blocks: no disconnected facades.
-  newStreet(0,-23,63,4.15);
+  newStreet(0,-24.5,63,4);
   newStreet(0,-40,63,4.4);
+  // Continuous accessible pavements on BOTH sides of the southern connector.
+  B(63,.10,1.05,sidewalk,0,H(.03),-21.95);
+  B(63,.10,1.05,sidewalk,0,H(.03),-26.72);
+  // Entrances must reach paved circulation, never terminate in grass.
+  for(const b of CITY_BLOCKS){
+    if(b.z===-18){
+      B(1.35,.09,4.35,paving,b.x,H(.045),-13.02);
+    }else if(b.z===-30){
+      B(1.35,.09,1.1,paving,b.x,H(.045),-26.75);
+    }
+  }
+  // Shared parking for dense residential/civic blocks, accessed from perimeter roads.
+  for(const side of [-1,1]){
+    const px=side*35, z=-32;
+    B(4.8,.09,8,road,px,H(-.01),z);
+    B(2.8,.07,2.25,road,side*31.9,H(-.018),z);
+    for(const dz of [-3.2,-.9,1.4,3.6])
+      B(3.65,.015,.08,roadStripe,px,H(.046),z+dz);
+    B(.55,.18,7.4,grassDeep,side*38.0,H(.08),z);
+  }
   // Keep the original operating cars on their current two tested traffic lanes.
   // Decorative side-street access and curb zones are explicitly not sim lanes.
   for(const x of [-29,29]){
