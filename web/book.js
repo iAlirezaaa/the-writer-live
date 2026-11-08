@@ -20,6 +20,8 @@ const MARGIN_STATE_FA = {
   suspect: "مردود: با متن نمی‌خواند",
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
+import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v5";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -45,58 +47,151 @@ function build() {
   const title = el("span", "book-bar-title");
   const tools = el("div", "book-tools");
   const marginBtn = el("button", "", "حاشیه‌ها");
+  const voteUp = el("button","reader-vote","پسندیدم");voteUp.type="button";
+  voteUp.setAttribute("aria-label","پسندیدن این داستان");
+  const voteDown = el("button","reader-vote","نپسندیدم");voteDown.type="button";
+  voteDown.setAttribute("aria-label","نپسندیدن این داستان");
+  const voteStatus = el("span","reader-vote-status","");
+  voteStatus.setAttribute("role","status");
   const smallerBtn = el("button", "reader-font", "A−"); smallerBtn.title = "کوچک‌تر کردن نوشته"; smallerBtn.setAttribute("aria-label", smallerBtn.title);
   const largerBtn = el("button", "reader-font", "A+"); largerBtn.title = "بزرگ‌تر کردن نوشته"; largerBtn.setAttribute("aria-label", largerBtn.title);
   const find = el("input", "reader-find"); find.type = "search"; find.placeholder = "جست‌وجو در کتاب"; find.setAttribute("aria-label", find.placeholder);
-  const closeBtn = el("button", "", "بستن");
-  tools.append(marginBtn, smallerBtn, largerBtn, find, closeBtn);
+  const themeSelect = el("select", "reader-theme");
+  themeSelect.setAttribute("aria-label", "رنگ و نور صفحهٔ مطالعه");
+  for(const [value,label] of [["paper","کاغذ روشن"],["night","مطالعه در شب"],["ink","جوهر و سنگ"]]){
+    const opt=el("option","",label);opt.value=value;themeSelect.appendChild(opt);
+  }
+  let preferredTheme="paper";
+  try{preferredTheme=localStorage.getItem("the-writer-reader-theme")||"paper";}catch{}
+  if(!["paper","night","ink"].includes(preferredTheme))preferredTheme="paper";
+  themeSelect.value=preferredTheme;
+  overlay.dataset.readerTheme=preferredTheme;
+  const focusBtn=el("button", "reader-focus", "حالت تمرکز");
+  focusBtn.type="button";focusBtn.setAttribute("aria-pressed","false");
+  // Keep the toolbar compact: advanced type controls live in an accessible
+  // native details menu instead of occupying the whole reading-room header.
+  const settings = el("details", "reader-settings");
+  const summary = el("summary", "", "تنظیمات مطالعه");
+  const settingsPanel = el("div", "reader-settings-panel");
+  function picker(name, choices) {
+    const label=el("label", "reader-setting");
+    label.append(el("span","",name));
+    const select=el("select","");
+    for(const [value,text] of choices){const option=el("option","",text);option.value=value;select.append(option);}
+    label.append(select);
+    settingsPanel.append(label);
+    return select;
+  }
+  const fontSelect=picker("قلم فارسی",[
+    ["vazir-classic","وزیر · Vazir"],["vazir","وزیرمتن · Vazirmatn"],
+    ["naskh","نسخ · Noto Naskh"],["amiri","امیری · Amiri"]
+  ]);
+  const leadingSelect=picker("فاصلهٔ خطوط",[
+    ["compact","فشرده"],["normal","معمولی"],["airy","باز"]
+  ]);
+  const alignSelect=picker("چینش متن",[
+    ["justify","دوطرفه"],["right","راست‌چین"]
+  ]);
+  const modeSelect=picker("نمای کتاب",[
+    ["auto","خودکار"],["single","تک‌صفحه‌ای"],["spread","دوصفحه‌ای روی نمایشگر بزرگ"]
+  ]);
+  const themeLabel=el("label","reader-setting");
+  themeLabel.append(el("span","","رنگ صفحه"),themeSelect);
+  settingsPanel.append(themeLabel);
+  const typeButtons=el("div","reader-type-size");
+  typeButtons.append(el("span","","اندازهٔ نوشته"),smallerBtn,largerBtn);
+  settingsPanel.append(typeButtons);
+  const syncBtn=el("button","reader-sync-button","اتصال مالک و همگام‌سازی");
+  syncBtn.type="button";
+  syncBtn.hidden=isGitHubPages();
+  settingsPanel.append(syncBtn);
+  settings.append(summary,settingsPanel);
+  const closeBtn = el("button", "reader-close", "بستن");
+  tools.append(marginBtn, voteUp, voteDown, voteStatus, find, settings, focusBtn, closeBtn);
   bar.append(title, tools);
   const shelf = el("div", "book-shelf");
   const bookEl = el("div", "book");
   const pageR = el("div", "page page-right");
   const pageL = el("div", "page page-left");
   bookEl.append(pageR, pageL);           // RTL: the first page of a spread is on the right
-  const prev = el("button", "turn turn-prev", "›"); prev.setAttribute("aria-label", "صفحه‌ی قبل");
-  const next = el("button", "turn turn-next", "‹"); next.setAttribute("aria-label", "صفحه‌ی بعد");
+  // Persian RTL book: right-hand arrow returns to the previous page;
+  // left-hand arrow moves forward. Grid explicitly anchors their sides.
+  const prev = el("button", "turn turn-prev", "→");
+  prev.setAttribute("aria-label", "صفحهٔ قبل، سمت راست");
+  prev.title="صفحهٔ قبل · کلید پیکان راست";
+  const next = el("button", "turn turn-next", "←");
+  next.setAttribute("aria-label", "صفحهٔ بعد، سمت چپ");
+  next.title="صفحهٔ بعد · کلید پیکان چپ";
   shelf.append(prev, bookEl, next);
   const footer = el("div", "book-footer");
   const counter = el("span", "book-counter");
   const progress = el("input", "book-progress"); progress.type = "range"; progress.min = "0"; progress.max = "100"; progress.value = "0"; progress.setAttribute("aria-label", "رفتن به بخش دیگری از کتاب");
   const bookmark = el("button", "book-bookmark", "نشانک");
-  footer.append(progress, counter, bookmark);
+  const jump=el("select","book-jump");
+  jump.setAttribute("aria-label","رفتن به بخش کتاب");
+  const syncStatus=el("span","reader-sync-status","ذخیره روی این دستگاه");
+  syncStatus.setAttribute("role","status");
+  footer.append(progress, counter, jump, bookmark, syncStatus);
   const margin = el("aside", "book-margin"); margin.hidden = true;
   const selBtn = el("button", "sel-note", "نظر روی این بخش"); selBtn.hidden = true;
   const pop = el("form", "note-pop"); pop.hidden = true;
   const popQuote = el("blockquote", "note-quote");
   const popName = el("input"); popName.placeholder = "نام (اختیاری)"; popName.maxLength = 40;
-  const popText = el("textarea"); popText.placeholder = "نظرتان درباره‌ی همین بخش"; popText.maxLength = 500; popText.rows = 3;
+  const popText = el("textarea"); popText.placeholder = "نظرتان درباره‌ی همین بخش"; popText.maxLength = 2500; popText.minLength = 10; popText.required = true; popText.rows = 3;
+  const popCategory = el("select", "note-category"); popCategory.setAttribute("aria-label","موضوع نظر");
+  for(const [value,label] of [["general","نظر کلی"],["plot","پیرنگ"],["character","شخصیت‌پردازی"],["language","نثر و دیالوگ"],["continuity","پیوستگی جهان"]]) { const opt=el("option","",label); opt.value=value;popCategory.append(opt); }
+  const popRating = el("select", "note-rating"); popRating.setAttribute("aria-label","امتیاز به داستان");
+  for(const [value,label] of [["","بدون امتیاز"],["1","۱ از ۵"],["2","۲ از ۵"],["3","۳ از ۵"],["4","۴ از ۵"],["5","۵ از ۵"]]) {const opt=el("option","",label);opt.value=value;popRating.append(opt);}
   const popRow = el("div", "note-row");
   const popSend = el("button", "", "ثبت نظر"); popSend.type = "submit";
   const popCancel = el("button", "", "انصراف"); popCancel.type = "button";
   const popStatus = el("span", "time");
   popRow.append(popSend, popCancel, popStatus);
-  pop.append(popQuote, popName, popText, popRow);
+  pop.append(popQuote, popName, popCategory, popRating, popText, popRow);
   // a hidden page used to measure how much text fits
   const measure = el("div", "page page-measure");
   overlay.append(bar, shelf, footer, margin, selBtn, pop, measure);
   document.body.appendChild(overlay);
 
-  ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark, find, margin, marginBtn, closeBtn, selBtn, pop, popQuote, popName, popText, popStatus, popCancel, measure };
+  ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark,
+    jump, syncStatus, syncBtn, settings, fontSelect, leadingSelect, alignSelect, modeSelect,
+    find, margin, marginBtn, voteUp, voteDown, voteStatus, closeBtn, themeSelect, focusBtn,
+    selBtn, pop, popQuote, popName, popCategory, popRating, popText, popStatus, popCancel, measure };
 
+  themeSelect.addEventListener("change",()=>setReaderOption("theme",themeSelect.value));
+  fontSelect.addEventListener("change",()=>setReaderOption("fontFamily",fontSelect.value,true));
+  leadingSelect.addEventListener("change",()=>setReaderOption("leading",leadingSelect.value,true));
+  alignSelect.addEventListener("change",()=>setReaderOption("align",alignSelect.value,true));
+  modeSelect.addEventListener("change",()=>setReaderOption("mode",modeSelect.value,true));
+  syncBtn.addEventListener("click",connectReaderOwner);
+  focusBtn.addEventListener("click",()=>{
+    if(!book)return;
+    setReaderOption("focus",!book.focus,true);
+    if(book.focus){margin.hidden=true;marginBtn.setAttribute("aria-pressed","false");}
+  });
   closeBtn.addEventListener("click", close);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
   prev.addEventListener("click", () => turn(-1));
   next.addEventListener("click", () => turn(1));
   marginBtn.addEventListener("click", () => { margin.hidden = !margin.hidden; marginBtn.setAttribute("aria-pressed", String(!margin.hidden)); });
+  voteUp.addEventListener("click",()=>sendReaderVote(1));
+  voteDown.addEventListener("click",()=>sendReaderVote(-1));
   smallerBtn.addEventListener("click", () => adjustFont(-0.08));
   largerBtn.addEventListener("click", () => adjustFont(0.08));
   progress.addEventListener("change", () => { if(!book)return;const per=spread(),fraction=Number(progress.value)/100;book.index=Math.min(Math.floor(fraction*Math.max(0,book.pages.length-1)/per)*per,Math.max(0,book.pages.length-per));show(); });
   bookmark.addEventListener("click", toggleBookmark);
+  jump.addEventListener("change",()=>{
+    if(!book)return;
+    const index=Math.max(0,Math.min(book.pages.length-1,Number(jump.value)||0));
+    const per=spread();
+    book.index=Math.floor(index/per)*per;
+    show();
+  });
   find.addEventListener("keydown", e => { if(e.key==="Enter"){e.preventDefault();findText(find.value);} });
   document.addEventListener("keydown", (e) => {
     if (overlay.hidden) return;
     if ((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();ui.find.focus();ui.find.select();return;}
-    if (e.target.closest?.("input, textarea")) return;
+    if (e.target.closest?.("input, textarea, select, summary, details")) return;
     if (e.key === "Escape") close();
     if (e.key === "ArrowLeft") turn(1);
     if (e.key === "ArrowRight") turn(-1);
@@ -119,40 +214,274 @@ function build() {
   // the reader keeps its own preferred flip speed; the room's polish loop can set it
   const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
   rm.addEventListener?.("change", () => { if (book && !overlay.hidden) show(); });
+  // Reflow after webfonts load: first layout may use fallback metrics.
+  if(document.fonts?.ready){
+    document.fonts.ready.then(()=>{
+      if(book && !overlay.hidden) repaginate();
+    }).catch(()=>{});
+  }
+  overlay.addEventListener("click",e=>{
+    if(settings.open && !settings.contains(e.target))settings.open=false;
+  });
 }
 
-export async function openBook(storyId) {
-  if (!ui) build();
-  const [story, notes] = await Promise.all([
-    getJSON(`/api/stories/${encodeURIComponent(storyId)}`),
-    getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(() => []),
-  ]);
-  const saved=readProgress(storyId);
-  const resumeProgress=saved?.progress||0;
-  book = { story, comments: notes, pages: [], index: 0, turning: null, repaginateLater: false, fontSize:saved?.fontSize||1.06, bookmark:saved?.bookmark??null, progress:0 };
-  ui.title.textContent = story.title;
-  ui.overlay.hidden = false;
-  document.body.classList.add("book-open");
-  ui.overlay.style.setProperty("--reader-font", `${book.fontSize}rem`);
-  renderMargin();
-  repaginate();
-  if(resumeProgress>0){const per=spread();book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,Math.max(0,book.pages.length-per));show();}
+const READER_DEFAULTS=Object.freeze({
+  fontSize:1.06,fontFamily:"vazir-classic",theme:"paper",leading:"normal",
+  align:"justify",mode:"auto",focus:false
+});
+const READER_FONTS={
+  naskh:'"Noto Naskh Arabic"',vazir:'"Vazirmatn"',
+  "vazir-classic":'"Vazir"',amiri:'"Amiri"'
+};
+let syncTimer=null;
+let syncQueue=Promise.resolve();
+const opt=(value,accepted,fallback)=>accepted.includes(value)?value:fallback;
+function readGlobalReadingOptions(){
+  try{
+    const value=JSON.parse(localStorage.getItem("the-writer-reader-options")||"{}");
+    const legacy=localStorage.getItem("the-writer-reader-theme");
+    return {...READER_DEFAULTS,...value,...(!value.theme&&legacy?{theme:legacy}:{})};
+  }catch{return {...READER_DEFAULTS}}
 }
-
+function storeGlobalReadingOptions(){
+  if(!book)return;
+  const next=Object.fromEntries(Object.keys(READER_DEFAULTS).map(k=>[k,book[k]]));
+  try{localStorage.setItem("the-writer-reader-options",JSON.stringify(next));}catch{}
+}
+function updateSyncState(note){
+  if(!ui||!book)return;
+  ui.syncStatus.textContent=note||(book.syncConnected?"همگام‌سازی سرور فعال":"پیشرفت روی این دستگاه ذخیره می‌شود");
+  if(ui.syncBtn&&!isGitHubPages())ui.syncBtn.textContent=book.syncConnected?"بازخوانی از سرور":"اتصال مالک و همگام‌سازی";
+}
+function applyReaderAppearance(){
+  if(!ui||!book)return;
+  const v=book;
+  v.fontSize=Math.max(.85,Math.min(1.65,Number(v.fontSize)||1.06));
+  v.fontFamily=opt(v.fontFamily,["naskh","vazir","vazir-classic","amiri"],"vazir-classic");
+  v.theme=opt(v.theme,["paper","night","ink"],"paper");
+  v.leading=opt(v.leading,["compact","normal","airy"],"normal");
+  v.align=opt(v.align,["justify","right"],"justify");
+  v.mode=opt(v.mode,["auto","single","spread"],"auto");
+  ui.overlay.style.setProperty("--reader-font",`${v.fontSize}rem`);
+  ui.overlay.dataset.readerFont=v.fontFamily;
+  ui.overlay.dataset.readerTheme=v.theme;
+  ui.overlay.dataset.readerLeading=v.leading;
+  ui.overlay.dataset.readerAlign=v.align;
+  ui.themeSelect.value=v.theme;
+  ui.fontSelect.value=v.fontFamily;
+  ui.leadingSelect.value=v.leading;
+  ui.alignSelect.value=v.align;
+  ui.modeSelect.value=v.mode;
+  ui.overlay.classList.toggle("reader-focus-mode",Boolean(v.focus));
+  ui.focusBtn.setAttribute("aria-pressed",String(Boolean(v.focus)));
+}
+function ensureReaderFont(){
+  if(!book||!document.fonts?.load)return;
+  const sid=book.story.id,family=book.fontFamily;
+  document.fonts.load(`16px ${READER_FONTS[family]||READER_FONTS.naskh}`,"متن فارسی کتاب")
+    .then(()=>{
+      if(book?.story.id===sid&&book.fontFamily===family&&!ui.overlay.hidden)repaginate();
+    }).catch(()=>{});
+}
+function setReaderOption(name,value,repaginateText=false){
+  if(!book)return;
+  if(name==="focus")value=Boolean(value);
+  book[name]=value;
+  applyReaderAppearance();
+  storeGlobalReadingOptions();
+  if(repaginateText){repaginate();if(name==="fontFamily")ensureReaderFont();}
+  else writeProgress();
+}
+async function fetchServerReading(storyId){
+  const token=ownerToken();
+  if(!token||isGitHubPages())return null;
+  const response=await fetch(`/api/reader/state?story_id=${encodeURIComponent(storyId)}`,{
+    headers:{"X-Admin-Token":token},cache:"no-store"
+  });
+  if(!response.ok)throw new Error(`reader state GET: ${response.status}`);
+  return await response.json();
+}
+async function sendServerReading(storyId,state){
+  const token=ownerToken();
+  if(!token||isGitHubPages())return;
+  const response=await fetch("/api/reader/state",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","X-Admin-Token":token},
+    body:JSON.stringify({story_id:storyId,state}),keepalive:true
+  });
+  if(!response.ok)throw new Error(`reader state POST: ${response.status}`);
+  return response.json();
+}
+function scheduleServerReading(storyId,state,immediate=false){
+  if(!book?.syncConnected||isGitHubPages())return;
+  if(syncTimer)clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>{
+    syncTimer=null;
+    // Serialize writes so slow network responses cannot put older pages after
+    // later ones. Local progress remains usable when server sync fails.
+    syncQueue=syncQueue.catch(()=>{}).then(()=>sendServerReading(storyId,state))
+      .then(()=>{if(book?.story.id===storyId)updateSyncState();})
+      .catch(()=>{if(book?.story.id===storyId){book.syncConnected=false;
+        updateSyncState("سرور در دسترس نیست؛ پیشرفت محلی حفظ شد");}});
+  },immediate?0:1100);
+}
 function readProgress(id=book?.story?.id){
   if(!id)return null;
-  try{return JSON.parse(localStorage.getItem(`the-writer-reading:${id}`)||"null");}catch{return null;}
+  try{return JSON.parse(localStorage.getItem(`the-writer-reading:${id}`)||"null");}
+  catch{return null}
+}
+function readerState(){
+  const progress=book.pages.length<=1?0:book.index/(book.pages.length-1);
+  book.progress=progress;
+  return {
+    progress,bookmark:book.bookmark,fontSize:book.fontSize,fontFamily:book.fontFamily,
+    theme:book.theme,leading:book.leading,align:book.align,mode:book.mode,focus:book.focus,
+    updated:new Date().toISOString()
+  };
 }
 function writeProgress(){
   if(!book)return;
-  const progress=book.pages.length<=1?0:book.index/(book.pages.length-1);
-  book.progress=progress;
-  try{localStorage.setItem(`the-writer-reading:${book.story.id}`,JSON.stringify({progress,bookmark:book.bookmark,fontSize:book.fontSize,updated:new Date().toISOString()}));}catch{}
+  const state=readerState();
+  try{localStorage.setItem(`the-writer-reading:${book.story.id}`,JSON.stringify(state));}catch{}
+  scheduleServerReading(book.story.id,state);
 }
+function adoptStoredState(data){
+  if(!book||!data||typeof data!=="object")return;
+  for(const field of Object.keys(READER_DEFAULTS)){
+    if(data[field]!==undefined)book[field]=data[field];
+  }
+  book.bookmark=data.bookmark??null;
+  const resumeProgress=Math.max(0,Math.min(1,Number(data.progress)||0));
+  book.progress=resumeProgress;
+  applyReaderAppearance();
+  storeGlobalReadingOptions();
+  renderMargin();
+  repaginate();
+  if(resumeProgress>0){
+    const per=spread();
+    book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,
+      Math.max(0,book.pages.length-per));
+    show();
+  }
+}
+async function connectReaderOwner(){
+  if(!book||isGitHubPages())return;
+  let token=ownerToken();
+  if(!token){
+    const entered=window.prompt("توکن مالک برای ذخیرهٔ پیشرفت در سرور خصوصی:");
+    if(!entered?.trim())return;
+    token=entered.trim();
+    try{sessionStorage.setItem("the-writer-owner-token",token);}catch{
+      updateSyncState("امکان ذخیرهٔ توکن در این نشست وجود ندارد");return;
+    }
+  }
+  updateSyncState("در حال بررسی اتصال…");
+  try{
+    const remote=await fetchServerReading(book.story.id);
+    book.syncConnected=true;
+    if(remote?.state){
+      const local=readProgress(book.story.id);
+      if(Date.parse(remote.state.updated||0)>Date.parse(local?.updated||0))
+        adoptStoredState(remote.state);
+    }
+    const state=readerState();
+    scheduleServerReading(book.story.id,state,true);
+    updateSyncState();
+  }catch{
+    book.syncConnected=false;
+    updateSyncState("توکن یا ارتباط سرور معتبر نیست؛ پیشرفت محلی محفوظ است");
+  }
+}
+export async function openBook(storyId) {
+  if(!ui)build();
+  if(syncTimer){clearTimeout(syncTimer);syncTimer=null;}
+  const [story,notes,publicNotes]=await Promise.all([
+    getJSON(`/api/stories/${encodeURIComponent(storyId)}`),
+    getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(()=>[]),
+    isGitHubPages()?loadPublicStoryNotes(storyId).catch(()=>[]):Promise.resolve([])
+  ]);
+  const stored=readProgress(storyId)||{};
+  const prefs=readGlobalReadingOptions();
+  let remoteState=null,connected=false;
+  if(!isGitHubPages()&&ownerToken()){
+    try{const result=await fetchServerReading(storyId);
+      remoteState=result?.state||null;connected=true;
+    }catch{}
+  }
+  const hasNewerServer=remoteState&&Date.parse(remoteState.updated||0)>Date.parse(stored.updated||0);
+  const saved=hasNewerServer?{...prefs,...stored,...remoteState}:{...prefs,...stored};
+  const resumeProgress=Math.max(0,Math.min(1,Number(saved.progress)||0));
+  book={
+    story,comments:[...(Array.isArray(notes)?notes:[]),...publicNotes],pages:[],index:0,turning:null,
+    repaginateLater:false,bookmark:saved.bookmark??null,progress:0,
+    ...READER_DEFAULTS,...saved,syncConnected:connected
+  };
+  ui.title.textContent=story.title;
+  ui.voteStatus.textContent=isGitHubPages()?"رأی با تأیید نهایی در GitHub ثبت می‌شود":"";
+  ui.voteUp.textContent="پسندیدم";ui.voteDown.textContent="نپسندیدم";
+  ui.overlay.hidden=false;
+  if(!isGitHubPages())refreshReaderVotes(storyId);
+  document.body.classList.add("book-open");
+  applyReaderAppearance();
+  storeGlobalReadingOptions();
+  updateSyncState();
+  renderMargin();
+  repaginate();
+  if(resumeProgress>0){
+    const per=spread();
+    book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,
+      Math.max(0,book.pages.length-per));
+    show();
+  }
+  ensureReaderFont();
+}
+
+async function refreshReaderVotes(storyId){
+  if(isGitHubPages())return;
+  try{
+    const response=await fetch("/api/stories/"+encodeURIComponent(storyId)+"/votes",{cache:"no-store"});
+    if(!response.ok)return;
+    const counts=await response.json();
+    if(book?.story.id!==storyId)return;
+    ui.voteUp.textContent="پسندیدم ("+Number(counts.likes||0)+")";
+    ui.voteDown.textContent="نپسندیدم ("+Number(counts.dislikes||0)+")";
+  }catch{/* static/offline readers still work */}
+}
+async function sendReaderVote(value){
+  if(!book)return;
+  const sid=book.story.id;
+  ui.voteStatus.textContent="";
+  if(isGitHubPages()){
+    try{
+      const result=openPublicVote({story:book.story,value});
+      if(result.opened){
+        ui.voteStatus.textContent="برای ثبت نهایی، فرم GitHub را ارسال کنید.";
+      }else{
+        const link=el("a","","باز کردن فرم رأی در GitHub");
+        link.href=result.url;link.target="_blank";link.rel="noopener noreferrer";
+        ui.voteStatus.replaceChildren(link);
+      }
+    }catch(error){ui.voteStatus.textContent=String(error.message||error);}
+    return;
+  }
+  try{
+    const response=await fetch("/api/stories/"+encodeURIComponent(sid)+"/votes",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({value})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(String(data.error||"ثبت رأی ممکن نشد"));
+    if(book?.story.id!==sid)return;
+    ui.voteStatus.textContent=data.updated?"رأی شما ثبت شد.":"رأی شما از قبل ثبت شده بود.";
+    await refreshReaderVotes(sid);
+  }catch(error){ui.voteStatus.textContent=String(error.message||error);}
+}
+
 function adjustFont(delta){
   if(!book)return;
-  const anchor=anchorOf(book.pages[book.index]);book.fontSize=Math.max(.9,Math.min(1.42,Math.round((book.fontSize+delta)*100)/100));
-  ui.overlay.style.setProperty("--reader-font",`${book.fontSize}rem`);repaginate();
+  const anchor=anchorOf(book.pages[book.index]);
+  book.fontSize=Math.max(.85,Math.min(1.65,Math.round((book.fontSize+delta)*100)/100));
+  applyReaderAppearance();storeGlobalReadingOptions();repaginate();
   if(anchor){book.index=locate(anchor,spread());show();}
 }
 function toggleBookmark(){
@@ -166,16 +495,29 @@ function toggleBookmark(){
 }
 
 function close() {
+  if(!ui||ui.overlay.hidden)return;
   endTurn();
+  if(syncTimer){clearTimeout(syncTimer);syncTimer=null;
+    if(book?.syncConnected){
+      const sid=book.story.id,state=readerState();
+      syncQueue=syncQueue.catch(()=>{}).then(()=>sendServerReading(sid,state)).catch(()=>{});
+    }
+  }
+  ui.settings.open=false;
   ui.overlay.hidden = true; ui.selBtn.hidden = true; ui.pop.hidden = true;
   document.body.classList.remove("book-open");
+  window.dispatchEvent(new Event("writer:reading-closed"));
 }
 
 export function setTurnSpeed(ms) {
   if (Number.isFinite(ms) && ms >= 120 && ms <= 1400) flipMs = ms;
 }
 
-function spread() { return window.innerWidth >= 860 ? 2 : 1; }
+function spread() {
+  if(window.innerWidth<860||book?.mode==="single")return 1;
+  if(book?.mode==="spread")return 2;
+  return window.innerWidth>=1060?2:1;
+}
 function reducedMotion() { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
 
 // ---------- content ----------
@@ -216,7 +558,10 @@ function bindMarks(root) {
 function titlePage() {
   const s = book.story;
   const page = el("div", "page-content title-page");
-  page.append(el("div", "tp-kicker", "داستان"), el("h1", "tp-title", s.title));
+  const edition=applyCoverVisual(page,s);
+  const ornament=createCoverArt();ornament.classList.add("tp-art");
+  page.append(el("div", "tp-kicker", `THE WRITER · ${edition.edition}`), ornament,
+    el("h1", "tp-title", s.title));
   const ribbon = el("div", `tp-status ${s.status}`, STATUS_FA[s.status] || s.status);
   const meta = el("div", "tp-meta");
   meta.append(
@@ -305,6 +650,19 @@ function lastPageOf(kind) {
   return 0;
 }
 
+function refreshReaderSections(){
+  if(!ui?.jump||!book)return;
+  const sections=[{at:0,label:"آغاز کتاب"}];
+  const main=book.pages.findIndex(page=>page.kind==="body");
+  const critique=book.pages.findIndex(page=>page.kind==="report");
+  if(main>=0)sections.push({at:main,label:"متن داستان"});
+  if(critique>=0)sections.push({at:critique,label:"گزارش منتقد"});
+  ui.jump.replaceChildren(...sections.map(section=>{
+    const option=el("option","",section.label);option.value=String(section.at);
+    return option;
+  }));
+}
+
 function repaginate() {
   if (book.turning) { book.repaginateLater = true; return; }
   const anchor = anchorOf(book.pages[book.index]);
@@ -314,6 +672,10 @@ function repaginate() {
   const r = ui.pageR.getBoundingClientRect();
   ui.measure.style.width = `${r.width}px`;
   ui.measure.style.height = `${r.height}px`;
+  // Match the *actual* responsive page padding before measuring paragraphs.
+  // Otherwise the hidden measuring page overestimates capacity and silently
+  // clips several lines at the bottom of a real page.
+  ui.measure.style.padding = getComputedStyle(ui.pageR).padding;
   const text = storyParagraphs().map((t, i) => ({ text: t, index: i }));
   book.pages = [titlePage(), ...paginate(text, "body")];
   const report = checkLines();
@@ -326,6 +688,7 @@ function repaginate() {
     book.pages.push({ node: el("div", "page-content blank"), kind: "blank", firstPara: null });
   }
   book.index = locate(anchor, per);
+  refreshReaderSections();
   show();
   if (book.repaginateLater) { book.repaginateLater = false; repaginate(); }
 }
@@ -346,7 +709,14 @@ function show() {
   ui.prev.disabled = book.index === 0;
   ui.next.disabled = book.index + per >= book.pages.length;
   const last = Math.min(book.pages.length, book.index + per);
-  ui.counter.textContent = `صفحه‌ی ${book.index + 1}${per === 2 && last > book.index + 1 ? `–${last}` : ""} از ${book.pages.length}`;
+  const remain=Math.max(0,Math.ceil((Number(book.story.words)||0)*
+    (1-Math.min(1,book.index/Math.max(1,book.pages.length-1)))/210));
+  ui.counter.textContent = `صفحهٔ ${book.index + 1}${per===2&&last>book.index+1?`–${last}`:""} از ${book.pages.length}`;
+  ui.counter.title=remain?`حدود ${remain} دقیقه مطالعه باقی مانده`:"پایان مطالعه";
+  if(ui.jump?.options?.length){
+    const available=[...ui.jump.options].map(o=>Number(o.value)).filter(i=>i<=book.index);
+    ui.jump.value=String(available[available.length-1]??0);
+  }
   ui.progress.value=String(Math.round(book.pages.length<=1?0:book.index/(book.pages.length-1)*100));
   ui.progress.title=`پیشرفت مطالعه: ${ui.progress.value}٪`;
   ui.bookmark.textContent=book.bookmark==null?"ثبت نشانک":book.bookmark===book.index?"نشانک اینجاست":"بازگشت به نشانک";
@@ -438,14 +808,21 @@ function openNoteForm(quote) {
   ui.pop.hidden = false;
   ui.popQuote.textContent = q ? `«${q}»` : "نظر کلی درباره‌ی این داستان";
   ui.pop.dataset.quote = q || "";
-  ui.popStatus.textContent = "";
+  ui.popRating.hidden = !!q;
+  ui.popCategory.value = q ? "continuity" : "general";
+  ui.popStatus.textContent = isGitHubPages() ? "ثبت نهایی در GitHub انجام می‌شود و نیاز به حساب GitHub دارد." : "";
   ui.popText.value = "";
   ui.popText.focus();
 }
 async function sendNote(e) {
   e.preventDefault();
   if (isGitHubPages()) {
-    ui.popStatus.textContent = "نسخهٔ آنلاین فقط‌خواندنی است؛ نظرها را در نسخهٔ محلی ثبت کنید.";
+    try {
+      const result=openPublicFeedback({story:book.story,quote:ui.pop.dataset.quote,name:ui.popName.value,
+        text:ui.popText.value,rating:ui.popRating.value,category:ui.popCategory.value});
+      ui.popStatus.replaceChildren(document.createTextNode("پیش‌نویس آماده شد؛ برای ثبت نهایی روی Submit در GitHub بزنید. "));
+      if(!result.opened){const a=el("a","","باز کردن فرم GitHub");a.href=result.url;a.target="_blank";a.rel="noopener noreferrer";ui.popStatus.append(a);}
+    }catch(error){ui.popStatus.textContent=String(error.message||error);}
     return;
   }
   const r = await fetch(`/api/stories/${encodeURIComponent(book.story.id)}/comments`, {
@@ -478,6 +855,7 @@ function renderMargin() {
     if (c.state === "suspect") card.classList.add("suspect");
     if (c.quote) card.append(el("blockquote", "note-quote", `«${c.quote}»`));
     card.append(el("div", "", c.text), el("div", "time", `${c.name} · ${(c.time || "").replace("T", " ").slice(0, 16)}`));
+    if(c.source_url){const link=el("a","","مشاهدهٔ نظر در GitHub");link.href=c.source_url;link.target="_blank";link.rel="noopener noreferrer";card.append(link);}
     card.append(noteState(c));
     if (c.quote) card.addEventListener("click", () => goToQuote(c.quote));
     m.append(card);
@@ -493,7 +871,7 @@ function noteState(c) {
   if (chk.why) row.append(el("span", "state-why", chk.why));
   if (chk.via) row.append(el("span", "state-via", chk.via === "model" ? "سنجیده با ماشین نوشتن" : "سنجشِ مکانیکی (آفلاین)"));
   if (chk.evidence) row.append(el("span", "state-ev", chk.evidence));
-  if (ownerToken()) {
+  if (ownerToken() && !c.source_url) {
     const actions = el("div", "note-actions");
     const check = el("button", "", "بسنج");
     check.title = "گذاره را دوباره در متنِ امروزِ نوشته پیدا کنید و حرفِ این حاشیه را با آن بسنجید";

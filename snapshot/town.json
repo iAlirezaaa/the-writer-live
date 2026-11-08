@@ -8,6 +8,50 @@
         "tools": []
       },
       "color": "#777e87",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d3ac83",
+          "accessory": "ledger",
+          "coat": "#475c70",
+          "hair_variant": 0,
+          "outfit_variant": 0,
+          "silhouette": "tall",
+          "stature": 0.92
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "ثبت منصفانهٔ همهٔ داستان‌ها",
+          "flaw": "انعطاف‌ناپذیری",
+          "goals": [
+            "ثبت منصفانهٔ همهٔ داستان‌ها"
+          ],
+          "habit": "یادداشت‌برداری",
+          "temperament": "دقیق و کم‌حرف",
+          "value": "نظم"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "مهران رستگار",
+          "role": "clerk"
+        },
+        "schema": 1
+      },
       "home": "home-west",
       "id": "citizen-01",
       "label": "مهران رستگار",
@@ -64,6 +108,50 @@
         "tools": []
       },
       "color": "#858279",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d7c7aa",
+          "accessory": "folder",
+          "coat": "#786476",
+          "hair_variant": 1,
+          "outfit_variant": 1,
+          "silhouette": "short",
+          "stature": 0.965
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "حفظ نسخه‌های گمشده",
+          "flaw": "وسواس",
+          "goals": [
+            "حفظ نسخه‌های گمشده"
+          ],
+          "habit": "مرتب‌کردن",
+          "temperament": "محتاط و آرام",
+          "value": "وفاداری"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "ناهید فرهمند",
+          "role": "clerk"
+        },
+        "schema": 1
+      },
       "home": "home-east",
       "id": "citizen-02",
       "label": "ناهید فرهمند",
@@ -120,6 +208,50 @@
         "tools": []
       },
       "color": "#8d7b69",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d3ac83",
+          "accessory": "stack",
+          "coat": "#797b55",
+          "hair_variant": 2,
+          "outfit_variant": 2,
+          "silhouette": "lean",
+          "stature": 1.01
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "پیداکردن کتاب نایاب",
+          "flaw": "بی‌قراری",
+          "goals": [
+            "پیداکردن کتاب نایاب"
+          ],
+          "habit": "ورق‌زدن",
+          "temperament": "پرانرژی",
+          "value": "کنجکاوی"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "آرمان کیانی",
+          "role": "bookseller"
+        },
+        "schema": 1
+      },
       "home": "home-east",
       "id": "citizen-03",
       "label": "آرمان کیانی",
@@ -176,6 +308,50 @@
         "tools": []
       },
       "color": "#807464",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d7c7aa",
+          "accessory": "book",
+          "coat": "#8d674e",
+          "hair_variant": 3,
+          "outfit_variant": 3,
+          "silhouette": "round",
+          "stature": 1.055
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "بازسازی جلدهای قدیمی",
+          "flaw": "نوستالژی",
+          "goals": [
+            "بازسازی جلدهای قدیمی"
+          ],
+          "habit": "صحافی",
+          "temperament": "صبور",
+          "value": "مراقبت"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "لیلا شریفی",
+          "role": "bookseller"
+        },
+        "schema": 1
+      },
       "home": "home-west",
       "id": "citizen-04",
       "label": "لیلا شریفی",
@@ -232,6 +408,50 @@
         "tools": []
       },
       "color": "#8c8980",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d3ac83",
+          "accessory": "book",
+          "coat": "#637b89",
+          "hair_variant": 4,
+          "outfit_variant": 0,
+          "silhouette": "short",
+          "stature": 1.1
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "یافتن پایان درست",
+          "flaw": "بدبینی",
+          "goals": [
+            "یافتن پایان درست"
+          ],
+          "habit": "حاشیه‌نویسی",
+          "temperament": "منتقد و سنجیده",
+          "value": "دانش"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "پروین دادخواه",
+          "role": "reader"
+        },
+        "schema": 1
+      },
       "home": "home-west",
       "id": "citizen-05",
       "label": "پروین دادخواه",
@@ -288,6 +508,50 @@
         "tools": []
       },
       "color": "#7f8580",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d7c7aa",
+          "accessory": "sketch",
+          "coat": "#625e82",
+          "hair_variant": 0,
+          "outfit_variant": 1,
+          "silhouette": "tall",
+          "stature": 0.92
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "ساختن نقشهٔ شهر",
+          "flaw": "حواس‌پرتی",
+          "goals": [
+            "ساختن نقشهٔ شهر"
+          ],
+          "habit": "اسکچ‌زدن",
+          "temperament": "خیال‌پرداز",
+          "value": "تخیل"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "سامان بهرامی",
+          "role": "reader"
+        },
+        "schema": 1
+      },
       "home": "home-east",
       "id": "citizen-06",
       "label": "سامان بهرامی",
@@ -344,6 +608,50 @@
         "tools": []
       },
       "color": "#92846e",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d3ac83",
+          "accessory": "satchel",
+          "coat": "#aa7454",
+          "hair_variant": 1,
+          "outfit_variant": 2,
+          "silhouette": "lean",
+          "stature": 0.965
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "تحویل به‌موقع کتاب",
+          "flaw": "عجله",
+          "goals": [
+            "تحویل به‌موقع کتاب"
+          ],
+          "habit": "کنترل بسته‌ها",
+          "temperament": "مصمم",
+          "value": "مسئولیت"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "یونس نادری",
+          "role": "courier"
+        },
+        "schema": 1
+      },
       "home": "home-west",
       "id": "citizen-07",
       "label": "یونس نادری",
@@ -410,6 +718,50 @@
         "tools": []
       },
       "color": "#827d70",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d7c7aa",
+          "accessory": "satchel",
+          "coat": "#648c82",
+          "hair_variant": 2,
+          "outfit_variant": 3,
+          "silhouette": "short",
+          "stature": 1.01
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "حفظ اعتبار پیک‌ها",
+          "flaw": "لجبازی",
+          "goals": [
+            "حفظ اعتبار پیک‌ها"
+          ],
+          "habit": "بستن بند کیف",
+          "temperament": "صریح",
+          "value": "اعتماد"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "سحر موسوی",
+          "role": "courier"
+        },
+        "schema": 1
+      },
       "home": "home-east",
       "id": "citizen-08",
       "label": "سحر موسوی",
@@ -476,6 +828,50 @@
         "tools": []
       },
       "color": "#75806a",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d3ac83",
+          "accessory": "watering",
+          "coat": "#5c8766",
+          "hair_variant": 3,
+          "outfit_variant": 0,
+          "silhouette": "round",
+          "stature": 1.055
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "گسترش باغچهٔ محله",
+          "flaw": "محافظه‌کاری",
+          "goals": [
+            "گسترش باغچهٔ محله"
+          ],
+          "habit": "رسیدگی به برگ‌ها",
+          "temperament": "مهربان",
+          "value": "صبر"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "مریم رفیعی",
+          "role": "gardener"
+        },
+        "schema": 1
+      },
       "home": "home-east",
       "id": "citizen-09",
       "label": "مریم رفیعی",
@@ -537,6 +933,50 @@
         "tools": []
       },
       "color": "#9a8b78",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d7c7aa",
+          "accessory": "cup",
+          "coat": "#9c7658",
+          "hair_variant": 4,
+          "outfit_variant": 1,
+          "silhouette": "round",
+          "stature": 1.1
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "ساختن پاتوق نویسندگان",
+          "flaw": "کمال‌گرایی",
+          "goals": [
+            "ساختن پاتوق نویسندگان"
+          ],
+          "habit": "شست‌وشوی فنجان",
+          "temperament": "خوش‌صحبت",
+          "value": "مهمان‌نوازی"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "کامران وثوق",
+          "role": "cafe"
+        },
+        "schema": 1
+      },
       "home": "home-west",
       "id": "citizen-10",
       "label": "کامران وثوق",
@@ -598,6 +1038,50 @@
         "tools": []
       },
       "color": "#626c78",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d3ac83",
+          "accessory": "lantern",
+          "coat": "#5c6878",
+          "hair_variant": 0,
+          "outfit_variant": 2,
+          "silhouette": "tall",
+          "stature": 0.92
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "حفظ آرامش خیابان",
+          "flaw": "بی‌اعتمادی",
+          "goals": [
+            "حفظ آرامش خیابان"
+          ],
+          "habit": "بازبینی چراغ‌ها",
+          "temperament": "ساکت و هوشیار",
+          "value": "احتیاط"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "داوود نیک‌پی",
+          "role": "night-watch"
+        },
+        "schema": 1
+      },
       "home": "home-east",
       "id": "citizen-11",
       "label": "داوود نیک‌پی",
@@ -664,6 +1148,50 @@
         "tools": []
       },
       "color": "#7a8587",
+      "core": {
+        "animation_library": "city-citizens-v1",
+        "appearance": {
+          "accent": "#d7c7aa",
+          "accessory": "broom",
+          "coat": "#818279",
+          "hair_variant": 1,
+          "outfit_variant": 3,
+          "silhouette": "lean",
+          "stature": 0.965
+        },
+        "capabilities": {
+          "autonomy": {
+            "enabled": false,
+            "tools": []
+          },
+          "conversation": {
+            "enabled": false,
+            "mode": "dormant",
+            "provider": null
+          },
+          "memory": {
+            "enabled": false,
+            "mode": "dormant",
+            "store": null
+          }
+        },
+        "core": {
+          "desire": "پاکیزه نگه‌داشتن محله",
+          "flaw": "سرسختی",
+          "goals": [
+            "پاکیزه نگه‌داشتن محله"
+          ],
+          "habit": "جاروکردن",
+          "temperament": "واقع‌گرا",
+          "value": "پشتکار"
+        },
+        "identity": {
+          "kind": "fictional_resident",
+          "name": "رویا آذری",
+          "role": "cleaner"
+        },
+        "schema": 1
+      },
       "home": "home-west",
       "id": "citizen-12",
       "label": "رویا آذری",
@@ -718,8 +1246,9 @@
       "story": "رفتگر محله است و پیاده‌روها و جلوی مغازه‌ها را تمیز نگه می‌دارد؛ بعدازظهرها به خانه برمی‌گردد."
     }
   ],
-  "clock": "2026-11-08T22:20:47+03:30",
-  "description": "Authored anonymous background simulation; not a real population. All future agents are dormant.",
+  "clock": "2026-11-08T22:25:48+03:30",
+  "core_version": "city-citizens-v1",
+  "description": "Authored fictional town citizens with unique dormant cores; no autonomous social agents are active.",
   "places": {
     "bookstore": {
       "indoor": false,
@@ -769,6 +1298,71 @@
       "x": 0,
       "z": 11.3
     }
+  },
+  "publisher": {
+    "name": "مدیر انتشارات محله",
+    "public_proxy": true,
+    "publisher_core": {
+      "animation_library": "city-citizens-v1",
+      "appearance": {
+        "accent": "#ddbc85",
+        "accessory": "editorial-ledger",
+        "coat": "#423d50",
+        "hair_variant": 4,
+        "outfit_variant": 2,
+        "silhouette": "tall",
+        "stature": 1.08
+      },
+      "core": {
+        "desire": "پرورش نویسنده‌ای که با بازنویسی رشد کند",
+        "flaw": "وسواس در پذیرش",
+        "goals": [
+          "حفظ کیفیت نشر",
+          "ثبت تغییرات واقعی آثار",
+          "حفظ رابطهٔ حرفه‌ای"
+        ],
+        "habit": "مرور یادداشت‌ها و بازنویسی‌ها",
+        "inner_conflict": "سختگیری حرفه‌ای در برابر میل به کشف استعداد",
+        "temperament": "حرفه‌ای و سنجیده",
+        "value": "استقلال رأی ادبی"
+      },
+      "editorial_learning": {
+        "episodes": 0,
+        "evidence": "recorded critiques and changed submission decisions",
+        "no_invented_revision_history": true,
+        "recent": [],
+        "skills": {
+          "تشخیص رشد متن": 0.55,
+          "حافظهٔ بازنویسی": 0.5,
+          "سنجش بازار": 0.42,
+          "گفت‌وگوی سازنده": 0.4
+        }
+      },
+      "identity": {
+        "house": "دفتر نشر محله",
+        "kind": "fictional_publisher",
+        "name": "مدیر انتشارات محله",
+        "since": null
+      },
+      "social": {
+        "autonomy": {
+          "enabled": false,
+          "scope": "no_general_citizen_agent"
+        },
+        "conversation": {
+          "enabled": true,
+          "records": "evidence_backed",
+          "scope": "publisher_meetings_only",
+          "unattended": false
+        },
+        "memory": {
+          "enabled": true,
+          "episodes": 0,
+          "scope": "publisher_ledger_and_meetings"
+        }
+      }
+    },
+    "role": "publisher"
   },
   "simulated": true
 }

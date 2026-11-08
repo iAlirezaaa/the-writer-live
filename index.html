@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>اتاق هادس</title>
   <link rel="stylesheet" href="./web/style.css">
-  <link rel="stylesheet" href="./web/book.css">
+  <link rel="stylesheet" href="./web/book.css?v=reader-20261108-v4">
+  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261108-v4">
   <script type="importmap">
   {
     "imports": {
@@ -20,16 +21,26 @@
     <div class="brand">
       <span class="mark" aria-hidden="true"></span>
       <div>
+        <span class="brand-caption">رصدِ زندگی در جهان داستانی</span>
         <h1 id="name">هادس</h1>
       </div>
       <div class="presence" id="presence"><span class="dot"></span><span id="presence-text">—</span></div>
     </div>
     <div class="appbar-mid">
       <span class="clock" id="clock">—</span>
+      <span class="observer-date" id="observer-date" aria-label="تاریخ هجری شمسی">—</span>
       <span class="ellipsis" id="activity">در حال بارگذاری</span>
     </div>
-    <nav class="appbar-end">
-      <a href="./read/">خواندن داستان‌ها</a>
+    <nav class="appbar-end" aria-label="ابزار مشاهده و مسیرهای اصلی">
+      <label class="observer-theme-control" for="observer-theme">ظاهر
+        <select id="observer-theme" aria-label="حالت روز و شب رابط">
+          <option value="auto">خودکار</option>
+          <option value="light">روز</option>
+          <option value="dark">شب</option>
+        </select>
+      </label>
+      <button id="observer-watch" type="button" title="تغییر حالت تماشا و دفتر مشاهده">نمای تماشا</button>
+      <a class="appbar-reader-link" href="./read/">خواندن داستان‌ها</a>
       <button id="toggle-side" aria-controls="side" aria-expanded="true">بستن منو</button>
     </nav>
   </header>
@@ -37,9 +48,20 @@
   <main class="layout">
     <section class="stage-wrap" aria-label="محله و خانهٔ نویسنده">
       <div id="stage"></div>
+      <div class="stage-atmosphere" aria-hidden="true"></div>
+      <div class="observer-stage-intro" aria-live="polite">
+        <span class="observer-eyebrow"><i aria-hidden="true"></i> جهان نویسنده</span>
+        <strong id="observer-mode-label">داستان زندگی در جریان است</strong>
+        <span id="observer-theme-status">هماهنگ با ساعت صحنه</span>
+        <span id="observer-scene-date" class="observer-scene-date" aria-label="تاریخ شمسی صحنه">—</span>
+      </div>
       <div class="stage-controls">
-        <div class="location-line"><span class="location-dot" aria-hidden="true"></span><strong id="location-label">اتاق نویسنده</strong><span>جهان در حال زندگی</span></div>
-        <div class="stage-tools" role="toolbar" aria-label="نما">
+        <div class="location-line"><span class="location-dot" aria-hidden="true"></span><strong id="location-label">اتاق نویسنده</strong><span id="observer-scene-context">اتاق نویسنده</span>
+          <button id="scene-data-link" type="button" title="باز کردن پروندهٔ همین مکان">مشاهدهٔ پروندهٔ «اتاق نویسنده»</button>
+        </div>
+        <details class="observer-camera-drawer">
+          <summary>انتخاب نمای دوربین <span aria-hidden="true">⌄</span></summary>
+          <div class="stage-tools" role="toolbar" aria-label="نما">
           <button data-view="town">شهر</button>
           <button data-view="cars">ماشین‌ها</button>
           <button data-view="publisher">دفتر ناشر</button>
@@ -51,6 +73,7 @@
           <button data-view="window">پنجره</button>
           <button data-view="library">کتابخانه</button>
         </div>
+        </details>
         <details class="scene-settings">
           <summary>نور و ساعت نمایش</summary>
           <label>ساعت <select id="scene-time"><option value="live">زنده</option><option value="9">صبح</option><option value="17">غروب</option><option value="23">شب</option></select></label>
@@ -61,11 +84,25 @@
       <div class="tooltip" id="tooltip" hidden></div>
       <div class="stage-caption">
         <div class="thought" id="thought"><span id="thought-text">—</span> <span class="time" id="thought-time"></span></div>
-        <span class="hint">برای دیدن هر چیز روی آن کلیک کنید. با کشیدن بچرخانید.</span>
+        <div class="observer-caption-aside">
+          <span class="observer-live-marker">لحظهٔ جاری</span>
+          <span id="observer-live-action" aria-live="polite">در حال مشاهدهٔ زندگی نویسنده</span>
+          <span class="hint">برای شناخت هر چیز روی آن کلیک کنید؛ برای حرکت دوربین، صحنه را بکشید.</span>
+        </div>
       </div>
     </section>
 
-    <aside class="side" id="side">
+    <aside class="side" id="side" aria-label="دفتر مشاهدهٔ نویسنده">
+      <div class="observer-journal-header">
+        <div class="observer-journal-kicker">دفتر مشاهده / زندگی در جریان</div>
+        <div class="observer-journal-title"><h2>پشت صحنهٔ زندگی</h2><span>رویدادهای ثبت‌شده، نه داستان‌سازی تازه</span></div>
+        <div class="observer-quick-links" aria-label="دسترسی سریع">
+          <button type="button" data-observe-panel="p-status">حال نویسنده</button>
+          <button type="button" data-observe-panel="p-town">مردم شهر</button>
+          <button type="button" data-observe-panel="p-stories">داستان‌ها</button>
+          <button type="button" data-observe-panel="p-publish">ناشر</button>
+        </div>
+      </div>
       <div class="kpis">
         <div class="kpi"><div class="label">داستان‌ها</div><div class="value" id="k-stories">—</div><div class="sub" id="k-stories-sub"></div></div>
         <div class="kpi"><div class="label">حد امتیاز منتقد</div><div class="value" id="k-threshold">—</div><div class="sub" id="k-threshold-sub"></div></div>
@@ -88,7 +125,14 @@
       </section>
 
       <section class="card">
-        <div class="tabbar" role="tablist">
+        <div class="observer-section-heading">
+          <div><span class="observer-journal-kicker">پرونده‌ها و پیوندها</span><h2 id="observer-panel-title">داستان‌ها</h2>
+            <p id="observer-panel-path" class="observer-panel-path">نوشته‌ها و انتشار / داستان‌ها</p>
+          </div>
+          <button id="panel-scene-link" type="button">دیدن «میز کار» در صحنه</button>
+        </div>
+        <p id="observer-panel-description" class="observer-panel-description">داستان‌ها و دست‌نوشته‌های واقعی</p>
+        <div class="tabbar" role="tablist" aria-label="همهٔ بخش‌های دفتر مشاهده">
           <button role="tab" data-panel="p-stories" aria-selected="true">داستان‌ها</button>
           <button role="tab" data-panel="p-planner">برنامهٔ روز</button>
           <button role="tab" data-panel="p-self">رشد نویسنده</button>
@@ -115,6 +159,19 @@
             <button data-inspect="life">زندگی نویسنده</button>
           </div>
           <p id="town-summary" class="small" role="status">در حال بارگذاری محله</p>
+          <section class="observer-city-directory" aria-labelledby="city-places-title">
+            <div class="observer-city-directory-head">
+              <div><span class="observer-journal-kicker">راهنمای محله‌ها</span>
+                <h3 id="city-places-title">گردش در شهر</h3></div>
+              <span id="city-places-count" class="small">—</span>
+            </div>
+            <p class="muted small">محله‌های متنوع، برج نشر، پارک‌ها و مکان‌های فرهنگی. «تماشا» دوربین را به مکان می‌برد؛ «شناخت» جزئیات آن را نشان می‌دهد.</p>
+            <div class="observer-city-grid" id="town-places" role="list"></div>
+          </section>
+          <label class="observer-resident-search" for="town-search">پیدا کردن یک شهروند
+            <input id="town-search" type="search" placeholder="نام، شغل یا هدف شخصیت…" autocomplete="off">
+          </label>
+          <p class="observer-resident-help">روی نام هر شهروند بزنید تا برنامه و هستهٔ شخصیتش باز شود. از «دیدن در صحنه» برای رفتن مستقیم به همان کاراکتر استفاده کنید.</p>
           <div id="town-residents"></div>
         </section>
 
@@ -257,6 +314,6 @@
 
   <div class="toast" id="toast" hidden></div>
   <div class="drop-overlay" id="drop-overlay" hidden><div>فایل را رها کنید تا به جهان داستانی اضافه شود</div></div>
-  <script type="module" src="./web/world.js?v=fleet-20261108-c"></script>
+  <script type="module" src="./web/world.js?v=city-world-20261108-v6"></script>
 </body>
 </html>

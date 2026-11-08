@@ -1,5 +1,28 @@
+// Each resident owns a stable core and references the same shared animation
+// archive. A missing core from an older public snapshot is filled locally.
+export const CITIZEN_CORE_VERSION="city-citizens-v1";
+const SHAPES=["tall","short","lean","round","short","tall","lean","short","round","round","tall","lean"];
+const PROPS=["ledger","folder","stack","book","book","sketch","satchel","satchel","watering","cup","lantern","broom"];
+const COATS=["#475c70","#786476","#797b55","#8d674e","#637b89","#625e82","#aa7454","#648c82","#5c8766","#9c7658","#5c6878","#818279"];
+const VALUES=["نظم","وفاداری","کنجکاوی","مراقبت","دانش","تخیل","مسئولیت","اعتماد","صبر","مهمان‌نوازی","احتیاط","پشتکار"];
+const FLAWS=["انعطاف‌ناپذیری","وسواس","بی‌قراری","نوستالژی","بدبینی","حواس‌پرتی","عجله","لجبازی","محافظه‌کاری","کمال‌گرایی","بی‌اعتمادی","سرسختی"];
+const AIMS=["ثبت منصفانهٔ همهٔ داستان‌ها","حفظ نسخه‌های گمشده","پیداکردن کتاب نایاب","مرمت جلدهای قدیمی","یافتن پایان درست","ساختن نقشهٔ شهر","تحویل به‌موقع کتاب","حفظ اعتبار پیک‌ها","گسترش باغچهٔ محله","ساختن پاتوق نویسندگان","حفظ آرامش خیابان","پاکیزگی محله"];
+function fallbackCore(id,role,label){
+  const n=Math.max(0,Math.min(11,Number(String(id).match(/\d+$/)?.[0]||1)-1));
+  return {
+    identity:{name:label,role,kind:"fictional_resident"},
+    core:{value:VALUES[n],flaw:FLAWS[n],desire:AIMS[n],habit:"رفتار روزمرهٔ مرتبط با پیشه",
+      temperament:["آرام","دقیق","پرانرژی","سنجیده"][n%4],goals:[AIMS[n]]},
+    appearance:{silhouette:SHAPES[n],accessory:PROPS[n],coat:COATS[n],
+      accent:n%2?"#d7c7aa":"#d3ac83",hair_variant:n%5,outfit_variant:n%4,
+      stature:.92+(n%5)*.045},
+    capabilities:{conversation:{enabled:false,mode:"dormant",provider:null},
+      memory:{enabled:false,mode:"dormant",store:null},autonomy:{enabled:false,tools:[]}},
+    animation_library:CITIZEN_CORE_VERSION
+  };
+}
 export const FEET_Y = -2.94;
-export const ROLE_LABELS = { clerk: "کارمند ناشر", bookseller: "کتاب‌فروش", reader: "کتاب‌خوان", courier: "پیک", gardener: "باغبان", cafe: "کافه‌دار", "night-watch": "نگهبان شب", cleaner: "رفتگر" };
+export const ROLE_LABELS = { publisher:"مدیر انتشارات",clerk: "کارمند ناشر", bookseller: "کتاب‌فروش", reader: "کتاب‌خوان", courier: "پیک", gardener: "باغبان", cafe: "کافه‌دار", "night-watch": "نگهبان شب", cleaner: "رفتگر" };
 export const ACTIVITY_LABELS = { sleep: "خواب", work: "کار", read: "مطالعه", carry: "جابجایی بسته", sweep: "نظافت", idle: "استراحت", walk: "در راه" };
 export const PLACE_LABELS = { "home-west": "خانه‌های غربی", "home-east": "خانه‌های شرقی", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", cafe: "کافه", garden: "باغچه", depot: "ایستگاه پیک", square: "میدان محله" };
 const PERSONAS = [
@@ -18,6 +41,19 @@ const PERSONAS = [
 ];
 const MAIN = 5.7, OPPOSITE = 11.3, EPS = 1e-7;
 const ACTIVITIES = new Set(["sleep", "work", "read", "carry", "sweep", "idle"]);
+
+// Deterministic crowd slots computed from overlapping authored daily routines.
+ // Each simultaneous visitor has a different slot; no random offsets and no
+ // spillover into the adjacent café/garden/square's reserved corridor.
+export const STATION_SLOTS=Object.freeze({
+  bookstore:Object.freeze({"citizen-03":0,"citizen-04":1,"citizen-08":2,"citizen-05":3,"citizen-07":4,"citizen-12":5,"citizen-02":3,"citizen-06":2}),
+  cafe:Object.freeze({"citizen-10":0,"citizen-06":1,"citizen-02":2,"citizen-03":1,"citizen-05":2,"citizen-07":2,"citizen-09":3,"citizen-11":1,"citizen-01":2,"citizen-08":2,"citizen-12":0,"citizen-04":1}),
+  depot:Object.freeze({"citizen-07":0,"citizen-08":1,"citizen-12":2,"citizen-10":1,"citizen-09":0,"citizen-11":0}),
+  garden:Object.freeze({"citizen-09":0,"citizen-05":1,"citizen-10":2,"citizen-12":3,"citizen-01":2,"citizen-04":1,"citizen-06":2,"citizen-03":1,"citizen-11":0}),
+  publisher:Object.freeze({"citizen-01":0,"citizen-02":1,"citizen-07":2,"citizen-12":3,"citizen-08":2}),
+  square:Object.freeze({"citizen-03":0,"citizen-11":1,"citizen-06":2,"citizen-04":2,"citizen-08":0,"citizen-09":1,"citizen-01":1,"citizen-05":1,"citizen-12":0,"citizen-02":0,"citizen-10":0}),
+});
+const STATION_SIZES=Object.freeze({bookstore:6,publisher:4,cafe:4,garden:4,depot:3,square:3});
 
 export const DEFAULT_PLACES = Object.freeze(Object.fromEntries([
   ["home-west", -19, 2, true], ["home-east", 19, 2, true],
@@ -71,9 +107,15 @@ export function stationPoint(place, id, places = DEFAULT_PLACES) {
   const point = places[place];
   if (!point) throw new RangeError(`Unknown town place: ${place}`);
   const { station } = seededVariation(id);
-  return point.z < MAIN
-    ? { x: point.x, z: point.z + station * (point.indoor ? 0.25 : 0.7) }
-    : { x: point.x + (station - 0.5) * 1.4, z: point.z };
+  // Placement is indexed by each place's authored daily visitor conflicts.
+  // Stations never overlap adjacent venues and remain on valid network lines.
+  const n=Math.max(0,Number(String(id).match(/\d+$/)?.[0]||1)-1);
+  if(point.indoor)return {x:point.x,z:point.z+station*.25};
+  const slotMap=STATION_SLOTS[place]||{};
+  const max=STATION_SIZES[place]||4;
+  const slot=Number.isInteger(slotMap[id])?slotMap[id]:((n*7)%max);
+  if(point.z<MAIN)return {x:point.x,z:2.12+slot*.68};
+  return {x:point.x+(slot-(max-1)/2)*.76,z:point.z};
 }
 
 export function buildRoute(from, to, places = DEFAULT_PLACES) {
@@ -162,8 +204,19 @@ function normalizeRoster(payload) {
       previous = entry.start;
       return { start: entry.start, place: entry.place, activity: entry.activity };
     });
-    return { id: row.id, label: persona?.[0] || row.label, story: row.story || persona?.[1] || "ساکن محله با برنامهٔ روزانهٔ ثابت و پیشهٔ پایدار.", role: row.role, home: row.home, routine,
-      color: /^#[0-9a-f]{6}$/i.test(row.color) ? row.color : "#82827b" };
+    const label=persona?.[0]||row.label;
+    const fallback=fallbackCore(row.id,row.role,label);
+    const supplied=row.core&&typeof row.core==="object"?row.core:{};
+    const core={
+      identity:fallback.identity,
+      core:{...fallback.core,...(supplied.core||{})},
+      appearance:{...fallback.appearance,...(supplied.appearance||{})},
+      // Ignore remote capability flags: all ordinary-citizen social systems
+      // are OFF by design until a separate human-approved implementation.
+      capabilities:fallback.capabilities,animation_library:CITIZEN_CORE_VERSION
+    };
+    return { id: row.id, label,story:row.story||persona?.[1]||"ساکن محله با برنامهٔ روزانهٔ ثابت.",role:row.role,home:row.home,routine,
+      core,color:/^#[0-9a-f]{6}$/i.test(row.color)?row.color:"#82827b" };
   });
   return { ...clock, places, citizens };
 }
@@ -171,9 +224,14 @@ function normalizeRoster(payload) {
 function buildFigure(THREE, row, agent, clickable) {
   const root = new THREE.Group(), rig = new THREE.Group();
   root.name = row.id;
-  root.userData = { citizenId: row.id, label: row.label, story: row.story, role: row.role, view: "town", agent };
+  root.userData = { citizenId: row.id, label: row.label, story: row.story, role: row.role, view: "town", agent,
+    core:row.core };
   root.add(rig);
-  const cloth = new THREE.MeshStandardMaterial({ color: row.color, roughness: 0.96 });
+  const look=row.core?.appearance||fallbackCore(row.id,row.role,row.label).appearance;
+  const silhouette=look.silhouette||"tall";
+  const stature=Number.isFinite(Number(look.stature))?Math.min(1.16,Math.max(.85,Number(look.stature))):1;
+  rig.scale.setScalar(stature);
+  const cloth = new THREE.MeshStandardMaterial({ color:look.coat||row.color, roughness: 0.88 });
   const material = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.95 });
   const skin = material("#ba9c83"), trousers = material("#555b5d"), shoes = material("#454542");
   const paper = material("#ded8c9"), cover = material("#687568"), wood = material("#95816a");
@@ -182,13 +240,21 @@ function buildFigure(THREE, row, agent, clickable) {
     mesh.name = name; mesh.position.set(x, y, z); mesh.castShadow = true;
     parent.add(mesh); return mesh;
   };
-  const torso = box(rig, "shirt", [0.43, 0.5, 0.29], cloth, 0, 1.0, 0);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.17, 8, 6), skin);
+  const chestWidth=silhouette==="round"?.56:silhouette==="lean"?.36:silhouette==="tall"?.42:.47;
+  const torso = box(rig, "shirt", [chestWidth, silhouette==="tall"?.64:.52, .30], cloth, 0, 1.0, 0);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(
+    silhouette==="short"?.19:.17,12,9), skin);
   head.name = "head"; head.position.set(0, 1.48, 0); head.castShadow = true; rig.add(head);
   const hairColor = ({ clerk: "#51453d", bookseller: "#493a34", reader: "#665447", courier: "#403c39",
     gardener: "#514a39", cafe: "#493b32", "night-watch": "#353b42", cleaner: "#51473e" })[row.role] || "#51453d";
   const hair = new THREE.Mesh(new THREE.SphereGeometry(0.177, 10, 7, 0, Math.PI * 2, 0, Math.PI * 0.48), material(hairColor));
-  hair.name = "hair"; hair.position.set(0, 1.52, -0.018); rig.add(hair);
+  hair.name = "hair";hair.position.set(0,1.52,-0.018);rig.add(hair);
+  // Strong individual silhouettes: height, haircut, collars, coats and hats.
+  const hairType=Number(look.hair_variant)||0;
+  if(hairType===1)box(rig,"hair-bob",[.39,.17,.30],hair.material,0,1.50,-.075);
+  else if(hairType===2)box(rig,"side-fringe",[.30,.08,.26],hair.material,.075,1.60,.025);
+  else if(hairType===3)box(rig,"hair-knot",[.16,.15,.16],hair.material,0,1.69,-.13);
+  else if(hairType===4)box(rig,"wide-hair",[.45,.08,.30],hair.material,0,1.59,-.01);
   for (const x of [-0.065, 0.065]) {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 6), material("#302c28"));
     eye.position.set(x, 1.49, 0.155); rig.add(eye);
@@ -221,6 +287,42 @@ function buildFigure(THREE, row, agent, clickable) {
   const broom = new THREE.Group(); broom.name = "broom"; broom.position.set(0.34, 0, 0.3); rig.add(broom);
   box(broom, "broom-handle", [0.035, 1.1, 0.035], wood, 0, 0.62, 0);
   box(broom, "broom-bristles", [0.34, 0.12, 0.12], wood, 0, 0.06, 0);
+  // Distinctive occupational outfit and prop; all pieces remain children of
+  // the resident's rig, never world-parented and never flipped at random.
+  const accent=material(look.accent||"#d3ac83");
+  if(["clerk","bookseller","reader"].includes(row.role)){
+    box(rig,"lapel-left",[.07,.34,.035],accent,-.115,1.13,.167);
+    box(rig,"lapel-right",[.07,.34,.035],accent,.115,1.13,.167);
+  }
+  if(row.role==="publisher"){
+    box(rig,"formal-tie",[.09,.40,.036],accent,0,1.07,.184);
+    box(rig,"publisher-vest",[.39,.36,.036],wood,0,.94,.173);
+    box(rig,"editorial-folder",[.31,.045,.35],paper,-.28,.86,.24);
+    box(rig,"gold-pin",[.055,.055,.025],accent,.18,1.22,.19);
+  }
+  if(row.role==="courier"){
+    box(rig,"cross-body-strap",[.07,.62,.033],accent,-.08,1.02,.17).rotation.z=-.42;
+    box(rig,"shoulder-bag",[.34,.28,.15],wood,.28,.76,-.09);
+  }
+  if(row.role==="night-watch"){
+    box(rig,"reflective-band",[.48,.055,.30],accent,0,1.10,.01);
+    box(rig,"radio",[.10,.20,.10],shoes,.26,1.21,.04);
+  }
+  if(row.role==="gardener"){
+    box(rig,"gardener-pocket",[.24,.17,.04],wood,.07,.88,.185);
+    box(rig,"watering-can",[.26,.20,.26],wood,-.27,.65,.18);
+  }
+  if(row.role==="cafe"){
+    box(rig,"cafe-collar",[.37,.08,.36],accent,0,1.29,.03);
+    const mug=box(rig,"cup",[.19,.15,.16],paper,.34,.77,.29);
+    mug.name="coffee-cup";
+  }
+  if(row.role==="cleaner"){
+    box(rig,"safety-vest",[.48,.10,.33],accent,0,1.06,.02);
+  }
+  const identitySign=new THREE.Group();
+  identitySign.name="identity-sign";identitySign.visible=false;
+  identitySign.position.set(0,1.86,0);rig.add(identitySign);
   const pickables = [torso, head];
   for (const mesh of pickables) {
     mesh.userData = { citizenId: row.id, label: row.label, view: "town" };
@@ -231,12 +333,16 @@ function buildFigure(THREE, row, agent, clickable) {
     if (typeof clickable === "function") clickable(mesh, "p-world", row.label);
     else if (Array.isArray(clickable)) clickable.push(mesh);
   }
-  return { root, rig, head, cloth, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom, pickables };
+  return { root, rig, head, cloth, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom, pickables,
+    identitySign, stature };
 }
 
-function animateFigure(figure, activity, role, t, phase) {
+function animateFigure(figure, activity, role, t, phase, motionArchive) {
   const { rig, head, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom } = figure;
-  const wave = Math.sin(t * 2.2 + phase), stride = Math.sin(t * 7 + phase);
+  const pose=motionArchive?.evaluateClip?.(activity,t,phase,
+    figure.pose||(figure.pose={}));
+  const wave=pose?pose.sway:Math.sin(t*2.2+phase);
+  const stride=pose?pose.step:Math.sin(t*7+phase);
   rig.position.y = 0; rig.rotation.set(0, 0, 0);
   head.rotation.set(0, 0, 0);
   for (const limb of [leftArm, rightArm, leftLeg, rightLeg]) limb.rotation.set(0, 0, 0);
@@ -269,46 +375,176 @@ function animateFigure(figure, activity, role, t, phase) {
   }
 }
 
-function createResident(THREE, scene, clickable, row, places, minute) {
-  const agent = Object.freeze({ id: row.id, enabled: false, mode: "dormant", tools: Object.freeze([]) });
+function createResident(THREE, scene, clickable, row, places, minute, motionArchive) {
+  const isPublisher=row.role==="publisher";
+  const agent=Object.freeze({id:row.id,enabled:isPublisher,mode:isPublisher?"publisher-only":"dormant",tools:Object.freeze([])});
   const figure = buildFigure(THREE, row, agent, clickable), traits = seededVariation(row.id);
   const goal = routineAt(row.routine, minute), point = stationPoint(goal.place, row.id, places);
   figure.root.position.set(point.x, FEET_Y, point.z);
   figure.root.rotation.y = point.z < MAIN ? Math.PI : traits.phase * 0.2 - 0.6;
-  figure.root.visible = goal.activity !== "sleep";
-  animateFigure(figure, goal.activity, row.role, 0, traits.phase);
+  figure.root.visible = goal.activity !== "sleep" && goal.place !== row.home;
+  animateFigure(figure, goal.activity, row.role, 0, traits.phase, motionArchive);
+  // Route geometry is attached to its own citizen (no extra scene roots).
+  // It is built from planned sidewalk waypoints and never participates in raycasts.
+  const routeGuide=new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),
+    new THREE.LineBasicMaterial({color:row.core.appearance.accent,transparent:true,opacity:.42,depthWrite:false})
+  );
+  routeGuide.name="shared-sidewalk-route";
+  routeGuide.visible=false;figure.root.add(routeGuide);
+  const destination=new THREE.Mesh(new THREE.RingGeometry(.14,.23,18),
+    new THREE.MeshBasicMaterial({color:row.core.appearance.accent,transparent:true,opacity:.75,side:THREE.DoubleSide,depthWrite:false}));
+  destination.name="route-destination";destination.rotation.x=-Math.PI/2;
+  destination.visible=false;figure.root.add(destination);
   scene.add(figure.root);
-  return { row, agent, figure, traits, goal, place: goal.place, route: [], present: true };
+  return { row, agent, figure, traits, goal, place: goal.place, route: [], present: true,
+    routeGuide,destination,core:row.core, trail:[],
+    memory:{enabled:false,events:[]},conversation:{enabled:false,transcript:[]} };
 }
 
-export function createCitizens({ THREE, scene, clickable }) {
+export function createCitizens({ THREE, scene, clickable, motionArchive=null }) {
   const residents = new Map();
-  let places = DEFAULT_PLACES, offset = 0, lastDate = null, animationTime = 0;
+  let places=DEFAULT_PLACES,offset=0,lastDate=null,animationTime=0;
+  let selectedId=null, crossingOwner=null;
+  const CROSS_EPS=.015, CROWD_RADIUS=.61;
+  const roadInterior=(p)=>Math.abs(p.x)<.12 && p.z>MAIN+CROSS_EPS && p.z<OPPOSITE-CROSS_EPS;
+  const onCrossing=(a,b)=>Math.abs(a.x)<.12 && Math.abs(b.x)<.12
+    && a.z>=MAIN-CROSS_EPS && a.z<=OPPOSITE+CROSS_EPS
+    && b.z>=MAIN-CROSS_EPS && b.z<=OPPOSITE+CROSS_EPS
+    && Math.abs(a.z-b.z)>.05;
+  function wantsCrossing(resident){
+    if(!resident.present || resident.row.role==="publisher" || !resident.route.length)return false;
+    const p=resident.figure.root.position;
+    const needs=resident.route.some((w,i)=>onCrossing(i?resident.route[i-1]:p,w));
+    if(!needs)return false;
+    // Reserve the crossing when near either mouth, not from blocks away.
+    return roadInterior(p)||(Math.abs(p.x)<1.2 &&
+      (Math.abs(p.z-MAIN)<.2 || Math.abs(p.z-OPPOSITE)<.2));
+  }
+  function crossingDemand(){
+    if(crossingOwner)return true;
+    return [...residents.values()].some(wantsCrossing);
+  }
+  function crossingIsClear(traffic){
+    if(!Array.isArray(traffic))return true; // old offline scene tests
+    return traffic.every(car=>!(
+      Number(car.z)>6 && Number(car.z)<11 &&
+      Math.abs(Number(car.x)) < // The stop line is at halfLength+2.1. A car that passed it must
+      // leave the entire crossing before a pedestrian is released.
+      Math.max(0,Number(car.halfLength)||0)+2.099
+    ));
+  }
+  function select(id){
+    selectedId=typeof id==="string"&&residents.has(id)?id:null;
+    for(const resident of residents.values()){
+      if(resident.routeGuide?.material)resident.routeGuide.material.opacity=resident.row.id===selectedId?.96:.30;
+    }
+    return selectedId;
+  }
+  function paintRoute(resident){
+    const {figure,route,routeGuide,destination}=resident;
+    const visible=figure.root.visible&&resident.present&&route.length>0;
+    routeGuide.visible=visible;
+    destination.visible=visible&&(resident.row.id===selectedId);
+    if(!visible)return;
+    const pos=figure.root.position;
+    // Dynamic, absolute route geometry transformed into local coordinates.
+    // The current point and the remaining waypoints are always valid network
+    // locations; no invented straight-line shortcut over a road.
+    // routeGuide is parented to a ROTATING actor. Express world-space
+    // waypoints in inverse-yaw local coordinates; otherwise the highlighted
+    // path spins off the sidewalk whenever the citizen turns a corner.
+    const yaw=figure.root.rotation.y,cos=Math.cos(yaw),sin=Math.sin(yaw);
+    const localPoint=(pt,height)=> {
+      const dx=pt.x-pos.x,dz=pt.z-pos.z;
+      return new THREE.Vector3(cos*dx-sin*dz,height,sin*dx+cos*dz);
+    };
+    const points=[new THREE.Vector3(0,.045,0),
+      ...route.map(pt=>localPoint(pt,.045))];
+    const geometry=routeGuide.geometry;
+    const attr=geometry.getAttribute("position");
+    if(attr?.count===points.length){
+      points.forEach((p,i)=>attr.setXYZ(i,p.x,p.y,p.z));
+      attr.needsUpdate=true;
+      geometry.computeBoundingSphere();
+    }else{
+      geometry.setFromPoints(points);
+    }
+    const last=route[route.length-1];
+    const end=localPoint(last,.065);
+    destination.position.set(end.x,end.y,end.z);
+  }
 
   function setRoster(payload) {
     const normalized = normalizeRoster(payload);
     places = normalized.places; offset = normalized.offset;
     if (!lastDate) lastDate = normalized.date;
     const ids = new Set(normalized.citizens.map((row) => row.id));
+    if(crossingOwner && !ids.has(crossingOwner))crossingOwner=null;
     for (const resident of residents.values()) {
-      resident.present = ids.has(resident.row.id);
-      if (!resident.present) resident.figure.root.visible = false;
+      resident.present=resident.row.role==="publisher"||ids.has(resident.row.id);
+      if(!resident.present)resident.figure.root.visible=false;
     }
     for (const row of normalized.citizens) {
       const resident = residents.get(row.id);
       if (resident) {
         resident.row = row;
-        resident.figure.cloth.color.set(row.color);
+        resident.figure.cloth.color.set(row.core?.appearance?.coat||row.color);
         resident.figure.root.userData.label = row.label;
         resident.figure.root.userData.story = row.story;
+        resident.core=row.core;
+        resident.figure.root.userData.core=row.core;
         for (const mesh of resident.figure.pickables) mesh.userData.label = row.label;
       } else {
-        residents.set(row.id, createResident(THREE, scene, clickable, row, places, minuteOfDay(normalized.date, offset)));
+        residents.set(row.id, createResident(THREE, scene, clickable, row, places, minuteOfDay(normalized.date, offset),motionArchive));
       }
     }
   }
 
-  function update(dt, elapsed, nowDate) {
+  function setPublisherProfile(profile) {
+    if(!profile||typeof profile!=="object")return null;
+    const name=String(profile.name||profile.publisher_core?.identity?.name||"مدیر انتشارات محله").slice(0,90);
+    const identity=profile.publisher_core&&typeof profile.publisher_core==="object"
+      ?profile.publisher_core:{};
+    const base=fallbackCore("citizen-01","publisher",name);
+    const core={
+      identity:{...base.identity,...(identity.identity||{}),name},
+      core:{...base.core,...(identity.core||{})},
+      appearance:{...base.appearance,...(identity.appearance||{}),
+        coat:"#423d50",accessory:"editorial-ledger",silhouette:"tall"},
+      capabilities:{conversation:{enabled:true,mode:"publisher_meetings_only",provider:null},
+        memory:{enabled:true,mode:"publisher_ledger_only",store:null},
+        autonomy:{enabled:false,tools:[]}},
+      animation_library:CITIZEN_CORE_VERSION
+    };
+    const row={
+      id:"publisher-character",label:name,story:"ناشرِ واقعیِ درون داستان؛ سابقهٔ جلسه و تصمیم چاپ دارد و از بازنویسی‌های مستند می‌آموزد.",
+      role:"publisher",home:"home-west",color:"#423d50",core,
+      routine:[{start:0,place:"publisher",activity:"work"}]
+    };
+    let resident=residents.get(row.id);
+    if(!resident){
+      resident=createResident(THREE,scene,clickable,row,places,
+        lastDate?minuteOfDay(lastDate,offset):600,motionArchive);
+      resident.figure.root.position.set(-10,FEET_Y,1.18);
+      resident.figure.root.visible=true;
+      residents.set(row.id,resident);
+    }else{
+      resident.row=row;resident.core=core;resident.present=true;
+      resident.figure.root.visible=true;
+      resident.figure.root.userData.label=name;
+      resident.figure.root.userData.core=core;
+      for(const m of resident.figure.pickables)m.userData.label=name;
+    }
+    resident.publisher={
+      public_proxy:profile.public_proxy===true,
+      house:String(profile.house||identity.identity?.house||"دفتر نشر محله"),
+      learning:identity.editorial_learning||null,
+    };
+    return row;
+  }
+
+  function update(dt, elapsed, nowDate, traffic=null) {
     // A suspended tab must resume walking, not jump across the town in one frame.
     const step = Number.isFinite(dt) ? Math.max(0, Math.min(dt, 1)) : 0;
     if (nowDate !== undefined) {
@@ -326,27 +562,87 @@ export function createCitizens({ THREE, scene, clickable }) {
         resident.goal = next;
         resident.route = buildRoute(figure.root.position, stationPoint(next.place, row.id, places), places);
       }
-      let remaining = step * traits.speed;
+      let remaining=step*traits.speed;
+      resident.waitingForCrossing=false;
+      // Even a large delta must not tunnel a body through another capsule.
+      // The check is the whole swept segment, not just the final position.
+      // Deterministic ID ordering prevents update-order randomness.
+      const blockers=[...residents.values()].filter(other=>
+        other!==resident&&other.present&&other.figure.root.visible)
+        .sort((a,b)=>a.row.id.localeCompare(b.row.id));
+      const clearTo=(candidate,start)=>{
+        for(const other of blockers){
+          const p=other.figure.root.position,dx=candidate.x-start.x,dz=candidate.z-start.z;
+          const lenSq=dx*dx+dz*dz;
+          const t=lenSq>1e-10?Math.max(0,Math.min(1,((p.x-start.x)*dx+(p.z-start.z)*dz)/lenSq)):0;
+          const closest={x:start.x+dx*t,z:start.z+dz*t};
+          if(distance(closest,p)<CROWD_RADIUS-1e-4)return false;
+        }
+        return true;
+      };
       while (resident.route.length && remaining > 0) {
         const waypoint = resident.route[0], position = figure.root.position;
         const length = distance(position, waypoint);
         if (length > EPS) figure.root.rotation.y = Math.atan2(waypoint.x - position.x, waypoint.z - position.z);
-        if (length <= remaining) {
-          position.x = waypoint.x; position.z = waypoint.z;
-          remaining -= length; resident.route.shift();
-        } else {
-          position.x += (waypoint.x - position.x) * remaining / length;
-          position.z += (waypoint.z - position.z) * remaining / length;
-          remaining = 0;
+        const move=Math.min(length,remaining);
+        const candidate=length<=EPS?{x:waypoint.x,z:waypoint.z}:{
+          x:position.x+(waypoint.x-position.x)*move/length,
+          z:position.z+(waypoint.z-position.z)*move/length
+        };
+        const entersRoad=!roadInterior(position)&&roadInterior(candidate)
+          && onCrossing(position,waypoint);
+        if(entersRoad && (crossingOwner!==null && crossingOwner!==row.id ||
+                          !crossingIsClear(traffic))){
+          resident.waitingForCrossing=true;
+          remaining=0;
+          break;
         }
+        if(!clearTo(candidate,position)){
+          // Clip the movement to the largest collision-free prefix. This also
+          // prevents a suspended tab's larger step from tunneling past peers.
+          let low=0,high=1;
+          const start={x:position.x,z:position.z};
+          for(let k=0;k<14;k++){
+            const mid=(low+high)*.5;
+            const probe={x:start.x+(candidate.x-start.x)*mid,
+              z:start.z+(candidate.z-start.z)*mid};
+            if(clearTo(probe,start))low=mid;
+            else high=mid;
+          }
+          if(low>1e-5){
+            position.x=start.x+(candidate.x-start.x)*low;
+            position.z=start.z+(candidate.z-start.z)*low;
+            // Partial entry into the carriageway still owns its crossing.
+            if(entersRoad && roadInterior(position))crossingOwner=row.id;
+          }
+          remaining=0;
+          break;
+        }
+        if(entersRoad)crossingOwner=row.id;
+        position.x=candidate.x;position.z=candidate.z;
+        remaining-=move;
+        if(length<=move+EPS)resident.route.shift();
+        if(crossingOwner===row.id&&!roadInterior(position)
+            && (Math.abs(position.z-MAIN)<CROSS_EPS
+                || Math.abs(position.z-OPPOSITE)<CROSS_EPS))
+          crossingOwner=null;
       }
       const walking = resident.route.length > 0;
+      // A scheduled change can release a crossing owner after it has
+      // safely reached the sidewalk; avoid holding a ghost reservation.
+      if(crossingOwner===row.id&&!roadInterior(figure.root.position)
+          && !wantsCrossing(resident))crossingOwner=null;
       if (!walking) {
         resident.place = resident.goal.place;
         figure.root.rotation.y = places[resident.place].z < MAIN ? Math.PI : traits.phase * 0.2 - 0.6;
       }
-      figure.root.visible = walking || resident.goal.activity !== "sleep";
-      animateFigure(figure, walking ? "walk" : resident.goal.activity, row.role, animationTime, traits.phase);
+      // Home interiors are not modelled yet. Keep residents who are resting
+      // indoors hidden rather than stacking multiple identical bodies in one
+      // door opening; their schedule and identity remain inspectable.
+      const indoors=!walking&&resident.goal.place===row.home;
+      figure.root.visible=walking||(!indoors&&resident.goal.activity!=="sleep");
+      animateFigure(figure, walking ? "walk" : resident.goal.activity, row.role, animationTime, traits.phase, motionArchive);
+      paintRoute(resident);
     }
   }
 
@@ -356,8 +652,23 @@ export function createCitizens({ THREE, scene, clickable }) {
       place: resident.place, activity: resident.route.length ? "walk" : resident.goal.activity,
       destination: resident.goal.place, visible: resident.figure.root.visible,
       agent: { ...resident.agent, tools: [...resident.agent.tools] },
+      // Never leak mutable references into a UI or test status snapshot.
+      core:JSON.parse(JSON.stringify(resident.core)),
+      route:resident.route.map(p=>({x:p.x,z:p.z})),
+      position:{x:resident.figure.root.position.x,z:resident.figure.root.position.z},
+      conversation:resident.row.role==="publisher"
+        ?{enabled:true,mode:"publisher_meetings_only",messages:0}
+        :{enabled:false,mode:"dormant",messages:0},
+      memory:resident.row.role==="publisher"
+        ?{enabled:true,mode:"publisher_ledger_only",records:resident.publisher?.learning?.episodes||0}
+        :{enabled:false,mode:"dormant",records:0},
+      animation_archive:motionArchive?.MOTION_LIBRARY_VERSION||CITIZEN_CORE_VERSION,
+      publisher:resident.publisher?JSON.parse(JSON.stringify(resident.publisher)):null,
+      waitingForCrossing:resident.waitingForCrossing===true,
+      crossingOwner:crossingOwner===resident.row.id,
     }));
   }
 
-  return { setRoster, update, status };
+  return { setRoster, setPublisherProfile, update, status, select, crossingDemand,
+    animationLibrary:motionArchive?.MOTION_ARCHIVE||null };
 }

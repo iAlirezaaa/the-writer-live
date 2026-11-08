@@ -147,6 +147,22 @@ export function buildTownCars({ THREE, city, streetY }) {
   }
   for(const car of vehicles)sync(car);
   let lastTime=null;
+  let pedestrianCrossingRequested=false;
+  // A single crosswalk crosses the two upper-road lanes at x=0.
+  // Cars approaching from either side stop BEFORE their nose reaches x=-/+2.0.
+  // Cars already past the stop line must leave the crossing instead of
+  // freezing on top of a pedestrian.
+  const CROSSWALK_GAP=2.1;
+  function setCrossingDemand(value){pedestrianCrossingRequested=value===true;}
+  function trafficState(){
+    return vehicles.map(car=>({
+      x:car.model.root.position.x,
+      z:car.model.root.position.z,
+      halfLength:car.model.profile.len*.5,
+      speed:car.speed,
+      lane:car.lane.id,
+    }));
+  }
   function tick(elapsed){
     if(!Number.isFinite(elapsed))return;
     if(lastTime===null){lastTime=elapsed;return;}
@@ -162,6 +178,12 @@ export function buildTownCars({ THREE, city, streetY }) {
           const safeGap=(car.model.profile.len+ahead.model.profile.len)/2+.70;
           step=Math.min(step,Math.max(0,gap-safeGap));
         }
+        if(pedestrianCrossingRequested && car.lane.z>0){
+          // Both directions use progress 0..SPAN towards the crossing.
+          const stopAt=-BEGIN-(car.model.profile.len*.5+CROSSWALK_GAP);
+          if(car.progress<=stopAt && car.progress+step>stopAt)
+            step=Math.max(0,stopAt-car.progress);
+        }
         car.progress=(car.progress+step)%SPAN;
         car.distance+=step;sync(car);
       }
@@ -174,5 +196,5 @@ export function buildTownCars({ THREE, city, streetY }) {
     tailLight.emissiveIntensity=.12+(1-light)*.36;
     tick(elapsed);
   }
-  return {update,vehicles};
+  return {update,vehicles,setCrossingDemand,trafficState};
 }
