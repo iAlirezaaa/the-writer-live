@@ -223,7 +223,27 @@ const buildHome=()=>{
  solid(root,12.4,.19,.50,0,6.43,-2.74,materials.shadow);
  solid(root,.25,6.45,6.0,-5.72,3.12,-.1,materials.cream);
  solid(root,.2,6.30,6.0,5.72,3.12,-.1,materials.cream);
+ // Exposed timber frame and a slate gable roof make the cutaway read as a cottage.
+ // Keep the front roof plane open so the upper rooms remain visible from the default camera.
+ for(const x of [-5.95,-2.02,2.02,5.95]){
+  solid(root,.20,6.42,.20,x,3.18,2.88,materials.darkWood);
+  solid(root,.20,6.42,.20,x,3.18,-2.86,materials.darkWood);
+ }
+ for(const y of [3.26,6.42]){
+  solid(root,12.35,.19,.20,0,y,2.86,materials.darkWood);
+  solid(root,12.35,.19,.20,0,y,-2.84,materials.darkWood);
+ }
+ const slate=boxMat(0x59636a,{roughness:.92});
+ const rearRoof=solid(root,12.9,.16,3.82,0,7.30,-1.61,slate);
+ rearRoof.rotation.x=.42;
+ solid(root,13.12,.20,.24,0,8.06,-.02,materials.darkWood);
+ for(const x of [-6.30,6.30]){
+  solid(root,.66,1.52,.68,x,7.05,-2.35,boxMat(0xb57860));
+  solid(root,.78,.18,.80,x,7.85,-2.35,boxMat(0x684f46));
+  solid(root,.28,.34,.30,x-.12,8.09,-2.35,boxMat(0x9c654f));
+ }
  // Overhang and tiny planted balcony
+ solid(root,12.8,.14,.55,0,6.63,2.88,materials.lightWood);
  solid(root,12.8,.14,.55,0,6.63,-2.85,materials.lightWood);
  for(const x of [-5.25,5.35])plant(root,x,2.2,.7);
  // Minimal ground around the house.
@@ -411,7 +431,7 @@ function refreshDetail(){
   const last=stories.slice().sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")))[0];extra.push("آخرین داستان ثبت‌شده: "+last.title);
   extra.push("وضعیت: "+(last.status==="accepted"?"پذیرفته":last.status==="rejected"?"رد شده":"در جریان"));
  }
- if(r.id==="bedroom"&&latestStatus)extra.push(latestStatus.asleep?"نویسنده اکنون در خواب است.":"نویسنده اکنون بیدار است.");
+ if(r.id==="bedroom"&&latestStatus)extra.push(latestStatus.napping?"نویسنده خسته است و تا پایان چرت استراحت می‌کند.":latestStatus.asleep?"نویسنده اکنون در خواب شبانه است.":"نویسنده اکنون بیدار است.");
  showInfo("اتاق‌های خانه",r.name,r.description,extra,
    r.id==="study"?"خواندن آثار":"بازدید از شهر",r.id==="study"?appHref("read/"):"#home");
 }
@@ -444,7 +464,7 @@ function setMode(mode){
  $("timeline-tools").hidden=mode!=="timeline";
  $("events-heading").textContent=mode==="timeline"?"خط زمان زندگی":"لحظه‌های زندگی";
  if(mode==="city"&&cityLife)$("writer-status").textContent=`شهر زنده · ${faNum(cityLife.pedestrianCount)} شهروند · ${faNum(cityLife.vehicleCount)} خودرو`;
- else if(latestStatus)$("writer-status").textContent=latestStatus.asleep?"در خواب":latestStatus.activity||"بیدار";
+ else if(latestStatus)$("writer-status").textContent=latestStatus.napping?(latestStatus.activity||"چرت می‌زند"):latestStatus.asleep?"در خواب شبانه":latestStatus.activity||"بیدار";
  document.querySelectorAll("[data-mode]").forEach(b=>{
   const pressed=b.dataset.mode===mode;b.classList.toggle("active",pressed);b.setAttribute("aria-pressed",String(pressed));
  });
@@ -487,7 +507,7 @@ async function loadData(){
  if(results[0].status==="fulfilled"){
   latestStatus=results[0].value;const st=latestStatus;
   $("writer-name").textContent=st.name||"نویسنده";
-  $("writer-status").textContent=currentMode==="city"&&cityLife?`شهر زنده · ${faNum(cityLife.pedestrianCount)} شهروند · ${faNum(cityLife.vehicleCount)} خودرو`:st.asleep?"در خواب":st.activity||"بیدار";
+  $("writer-status").textContent=currentMode==="city"&&cityLife?`شهر زنده · ${faNum(cityLife.pedestrianCount)} شهروند · ${faNum(cityLife.vehicleCount)} خودرو`:st.napping?(st.activity||"چرت می‌زند"):st.asleep?"در خواب شبانه":st.activity||"بیدار";
   $("writer-activity").textContent=st.activity||"هنوز فعالیتی گزارش نشده است.";
   if(Number.isFinite(Number(st.energy)))$("energy-value").textContent=faNum(Math.round(Number(st.energy)*100))+"٪";
   $("accepted-count").textContent=faNum(st.accepted_count??0);
