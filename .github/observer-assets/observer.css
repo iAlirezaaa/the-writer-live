@@ -368,3 +368,62 @@ body.app .tooltip{z-index:12;}
   body.app button,body.app a,body.app select{transition:none;}
   body.app .stage-atmosphere{animation:none;}
 }
+
+
+/* City residents: a living directory that leads back into the 3D scene. */
+body.app .observer-resident-search{
+  display:grid;gap:6px;margin:11px 0 5px;
+  color:var(--muted);font-weight:600;font-size:.76rem;
+}
+body.app .observer-resident-search input{
+  border:1px solid var(--line);background:var(--surface-2);
+  padding:9px 12px;border-radius:10px;color:var(--ink);
+  width:100%;min-height:42px;margin:0;
+}
+body.app .observer-resident-help{
+  font-size:.69rem;line-height:1.9;color:var(--muted);margin:6px 0 12px;
+  border-inline-start:3px solid var(--lamp);padding-inline-start:10px;
+}
+body.app .resident-row{
+  border:1px solid var(--line);border-radius:11px;
+  margin-bottom:8px;padding:9px 11px;
+  background:var(--surface);
+}
+body.app .resident-row>summary{
+  cursor:pointer;font-size:.8rem;
+  padding:4px 2px;font-weight:700;line-height:1.8;
+}
+body.app .resident-row>summary:hover{color:var(--lamp);}
+body.app .resident-row[open]{
+  background:color-mix(in srgb,var(--lamp) 4%,var(--surface));
+  border-color:color-mix(in srgb,var(--lamp) 42%,var(--line));
+}
+body.app .resident-row p{margin:8px 0;font-size:.74rem;line-height:1.95;}
+body.app .resident-row ol{
+  display:grid;gap:6px;
+  margin:10px 0;padding-inline-start:19px;
+  color:var(--muted);font-size:.72rem;
+}
+body.app .resident-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+body.app .resident-go-to{
+  background:var(--lamp-soft);border:1px solid var(--lamp);
+  font-size:.73rem;border-radius:9px;padding:7px 11px;
+  min-height:36px;
+}
+body.app .resident-go-to:hover{background:var(--surface-2);}
+body.app .observer-public-notice{
+  padding:16px;
+  border:1px dashed color-mix(in srgb,var(--lamp) 40%,var(--line));
+  border-radius:12px;
+  background:var(--surface-2);
+  display:grid;gap:9px;
+}
+body.app .observer-public-notice strong{font-size:.83rem;color:var(--ink);}
+body.app .observer-public-notice p{font-size:.76rem;line-height:2;color:var(--muted);margin:0;}
+body.app .observer-public-notice a{
+  font-size:.75rem;border-radius:8px;
+  padding:7px 12px;width:fit-content;
+  color:var(--lamp);background:var(--lamp-soft);border:1px solid var(--lamp);
+  text-decoration:none;
+}
+body.app .observer-public-notice a:hover{background:var(--surface);}
