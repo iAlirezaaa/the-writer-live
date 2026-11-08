@@ -207,7 +207,7 @@
       "label": "تحقیق",
       "next_retry_at": null,
       "start": "2026-11-08T21:33",
-      "status": "planned",
+      "status": "done",
       "task": "research"
     },
     {
@@ -217,7 +217,7 @@
       "label": "چرت",
       "next_retry_at": null,
       "start": "2026-11-08T22:18",
-      "status": "planned",
+      "status": "skipped",
       "task": "nap"
     },
     {
@@ -231,25 +231,16 @@
       "task": "rest"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-08T22:18",
-    "id": "202611082133",
-    "label": "تحقیق",
-    "next_retry_at": null,
-    "start": "2026-11-08T21:33",
-    "status": "planned",
-    "task": "research"
-  },
+  "current": null,
   "day": "2026-11-08",
   "next": {
     "attempts": null,
-    "end": "2026-11-08T23:03",
-    "id": "202611082218",
-    "label": "چرت",
+    "end": "2026-11-08T23:48",
+    "id": "202611082303",
+    "label": "استراحت",
     "next_retry_at": null,
-    "start": "2026-11-08T22:18",
+    "start": "2026-11-08T23:03",
     "status": "planned",
-    "task": "nap"
+    "task": "rest"
   }
 }
