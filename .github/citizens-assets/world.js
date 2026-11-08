@@ -1238,10 +1238,25 @@ function rebuildWriterExterior(level=0){
   const [w,d]=writerHouseDimensions(level),h=3.05+(level>=2?.35:0);
   exteriorPart(new THREE.BoxGeometry(w+.38,.18,d+.38),exteriorPath,0,STREET_Y+.04,0);
   exteriorPart(new THREE.BoxGeometry(w,h,d),exteriorWall,0,STREET_Y+h/2,0);
-  exteriorPart(new THREE.BoxGeometry(w+.36,.32,d+.55),exteriorRoof,0,STREET_Y+h+.13,0);
+  // Two genuinely pitched, matte roof planes — not an oversized flat slab.
+  for(const side of [-1,1]){
+    const roof=exteriorPart(new THREE.BoxGeometry(w/2+.45,.16,d+.65),exteriorRoof,
+      side*w/4,STREET_Y+h+.43,0);
+    roof.rotation.z=-side*.38;
+  }
+  const gableShape=new THREE.Shape();
+  gableShape.moveTo(-w/2,0);gableShape.lineTo(w/2,0);
+  gableShape.lineTo(0,.96);gableShape.closePath();
+  exteriorPart(new THREE.ShapeGeometry(gableShape),exteriorWall,0,STREET_Y+h,d/2+.01);
+  exteriorPart(new THREE.BoxGeometry(.4,.9,.45),exteriorWood,-w*.27,STREET_Y+h+.62,-d*.22);
   const portal=exteriorPart(new THREE.BoxGeometry(.96,2.06,.12),exteriorWood,-.65,STREET_Y+1.03,d/2+.07);
   const window=exteriorPart(new THREE.BoxGeometry(1.18,1.05,.09),exteriorGlass,w*.24,STREET_Y+1.72,d/2+.07);
   exteriorPart(new THREE.BoxGeometry(1.32,.07,.18),exteriorWood,w*.24,STREET_Y+2.3,d/2+.12);
+  exteriorPart(new THREE.BoxGeometry(1.2,.12,.27),exteriorWood,-.65,STREET_Y+2.19,d/2+.25);
+  exteriorPart(new THREE.SphereGeometry(.055,10,8),new THREE.MeshStandardMaterial({color:0xd2ae73,metalness:.55,roughness:.35}),-.30,STREET_Y+1.05,d/2+.17);
+  exteriorPart(new THREE.BoxGeometry(.13,.26,.1),new THREE.MeshStandardMaterial({
+    color:0xe2c58d,emissive:0xa96b32,emissiveIntensity:.65
+  }),-1.58,STREET_Y+2.25,d/2+.12);
   exteriorPart(new THREE.BoxGeometry(1.25,.13,.72),exteriorPath,-.65,STREET_Y+.08,d/2+.39);
   // A pedestrian approach and planted front setbacks, no private parking at level zero.
   exteriorPart(new THREE.BoxGeometry(1.25,.075,6.55-d/2),exteriorPath,-.65,STREET_Y+.035,(6.55+d/2)/2);
