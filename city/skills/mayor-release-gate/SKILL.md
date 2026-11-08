@@ -41,3 +41,9 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - Required test cases: successful fetch; 15-minute no-repeat; simultaneous-call deduplication; failure retry; 44/45-minute cache boundary; 99/100-minute observation boundary; network offline; missing fields; malformed time; midnight; browser in non-Tehran timezone; daylight/night transition. Record test command, exit code and captured output.
 - A Git blob SHA parity check covers private `web/tehran-environment.js` and public `web/tehran-environment.js` plus `.github/city-assets/tehran-environment.js`; it does not prove real-time data, network access, visual QA or deployment. Never substitute an older successful Pages run.
 - Keep weather source attribution visible; verify provider commercial licensing separately before monetized release. No private credentials or city geometry are needed for this audit.
+
+## CI evidence and probe parity (MAYOR-014)
+- Read `tests/tehran_environment_probe.mjs` from private and public and compare Git blob SHA; identical SHA is a **test-source parity** check, not a passing execution.
+- Inspect both workflow job conclusions independently. A successful public Pages `deploy` job does not override a failed private `tehran` job.
+- For failed runs, fetch the job logs and identify the exact failing assertion before editing runtime code; if logs are unavailable, record the failure as undiagnosed and do not release weather-runtime changes.
+- Require separate evidence for Node probe exit code, browser Open-Meteo fetch, Tehran midnight transition, visual sky, and the Pages deploy for the **specific new revision**. Older deployments cannot certify newer changes.
