@@ -156,6 +156,16 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
         box(1.22, 0.08, 0.06, metal, x, y - 0.50, b.z + 3.08);
       }
     }
+    // Private lots: side parking is off the continuous pavement, and each front door
+    // has a walkable approach rather than opening straight onto a road.
+    box(1.85,0.08,2.7,stone,b.x+2.0,STREET_Y+0.04,-4.15);
+    box(1.85,0.055,1.8,asphalt,b.x+2.0,STREET_Y-0.04,-6.2);
+    for(const dx of [-0.86,0.86])
+      box(0.065,0.015,2.5,paper,b.x+2.0+dx,STREET_Y+0.09,-4.15);
+    for(const dx of [-2.1,2.1]){
+      box(0.6,0.16,1.6,grass,b.x+dx,STREET_Y+0.10,3.75);
+      box(0.7,0.1,1.7,curb,b.x+dx,STREET_Y+0.015,3.75);
+    }
     sign(b.label, b.x, STREET_Y + 4.3, b.z + 2.75, 3);
   }
   bench(-3, 13); bench(3, 13); bench(9, 13);
