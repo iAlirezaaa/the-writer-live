@@ -5,7 +5,7 @@ import { openExplorer } from "./explorer.js";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting } from "./town.js";
+import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-c";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
@@ -1400,6 +1400,7 @@ async function loadWardrobe() {
 }
 const VIEWS = {
   town:     { pos: [26, 30, 53], target: [0, -1, 2] },
+  cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-6, 4.6, 11.5], target: [-10, -1.3, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
   overview: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
@@ -1421,7 +1422,7 @@ function setView(name) {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
   }
-  const names = { town: "محلهٔ نویسنده", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
+  const names = { cars: "ماشین‌های شهر", town: "محلهٔ نویسنده", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
   $("location-label").textContent = names[name] || "اتاق نویسنده";
   camMoving = true;
 }

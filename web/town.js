@@ -1,3 +1,5 @@
+import { buildTownCars } from "./town-cars.js?v=fleet-20261108-c";
+
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
   { key: "publisher", label: "دفتر ناشر", x: -10, z: 0, w: 6, d: 6 },
@@ -175,6 +177,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   }
   const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
+<<<<<<< HEAD
   const cars = [];
   function car(x, z, direction, color) {
     const root = new THREE.Group(); root.position.set(x, STREET_Y - 0.03, z); group.add(root);
@@ -195,6 +198,9 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
     cars.push({ root, direction, startX: x, speed: 2.0 + cars.length * 0.35 });
   }
   car(-18, 8.5, 1, 0x7b5146); car(14, -8.5, -1, 0x58726e); car(2, 8.5, 1, 0xb18a4f);
+=======
+  const carLayer=buildTownCars({THREE,city:group,streetY:STREET_Y});
+>>>>>>> origin/main
   return {
     group,
     update(day, elapsed) {
@@ -203,11 +209,15 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       glass.emissiveIntensity = 0.05 + (1 - day) * 0.8;
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
+<<<<<<< HEAD
       for (const vehicle of cars) {
         const span = 58;
         const progress = ((vehicle.startX + elapsed * vehicle.speed * vehicle.direction + span / 2) % span + span) % span;
         vehicle.root.position.x = progress - span / 2;
       }
+=======
+      carLayer.update(day,elapsed);
+>>>>>>> origin/main
     },
   };
 }
