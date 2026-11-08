@@ -7,7 +7,7 @@ publisher meetings, authored citizen routines or car trajectories are changed.
 from pathlib import Path
 import sys
 
-VERSION="city-districts-20261108-v1"
+VERSION="city-districts-20261108-v2"
 ROOT=Path(".github/city-assets")
 
 
@@ -17,7 +17,11 @@ def inspect(site: Path) -> None:
     world=(site/"web/world.js").read_text(encoding="utf-8")
     objects=(site/"web/objects.js").read_text(encoding="utf-8")
     index=(site/"index.html").read_text(encoding="utf-8")
+    urban=(site/"web/urban-plan.js").read_text(encoding="utf-8")
     expected=[
+        ("urban master plan shipped", "export function auditUrbanPlan" in urban),
+        ("writer home exterior", "writer-home-exterior-v2" in world),
+        ("outdoor facade first", 'let view = "town"' in world),
         ("pinned district kit",city==(ROOT/"town-districts.js").read_text(encoding="utf-8")),
         ("twelve authored blocks",city.count('{id:"')>=21),
         ("publisher office interior",'"editorial-office-desk"' in city),
