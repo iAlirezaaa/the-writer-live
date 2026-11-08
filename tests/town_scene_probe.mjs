@@ -287,7 +287,7 @@ try {
     const elements = new Map();
     context.document = { createElement: element, querySelectorAll: () => [], addEventListener() {},
       getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); } };
-    context.location = { href:"https://example.invalid/the-writer-live/",pathname:"/the-writer-live/" };
+    context.location = { href:"https://example.invalid/the-writer-live/",pathname:"/the-writer-live/",hostname:"example.invalid",origin:"https://example.invalid" };
     context.URL = URL;
     context.window = { innerWidth: 1280, devicePixelRatio: 1, addEventListener() {},
       location:context.location };
