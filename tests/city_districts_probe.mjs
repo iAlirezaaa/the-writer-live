@@ -86,6 +86,21 @@ assert.ok(instanceCount>200,"Expected instanced multi-floor windows");
 const publisher=district.getObjectByName("publisher-tower");
 assert.ok(publisher);
 const publisherBox=bounds(publisher);
+function assertGrounded(name,group,doorName) {
+ const solids=group.children.filter(mesh=>mesh.isMesh&&mesh.geometry?.type==="BoxGeometry")
+   .map(bounds);
+ const grounded=solids.some(box=>{
+   const sz=box.getSize(new THREE.Vector3());
+   return box.min.y<=STREET_Y+.2 && box.max.y>=STREET_Y+2.9
+     && sz.x>5 && sz.z>5;
+ });
+ assert.ok(grounded,name+" has no physical street-level ground storey");
+ const door=group.getObjectByName(doorName);
+ assert.ok(door,name+" street entrance missing");
+ const doorBounds=bounds(door);
+ assert.ok(doorBounds.min.y<=STREET_Y+.15,name+" entrance floats above pavement");
+}
+assertGrounded("publisher",publisher,"publisher-street-door");
 assert.ok(publisherBox.max.y>15,"Publisher needs a genuinely tall tower");
 const desk=publisher.getObjectByName("editorial-office-desk");
 assert.ok(desk,"Editorial office must exist, not just a sign");
@@ -93,6 +108,13 @@ const deskPos=desk.getWorldPosition(new THREE.Vector3());
 assert.ok(deskPos.y>7.0,"Editorial desk is not on an upper floor");
 const bookstore=district.getObjectByName("bookstore-lofts");
 assert.ok(bookstore&&bounds(bookstore).max.y>5.8);
+assertGrounded("bookstore",bookstore,"bookstore-street-door");
+const westNeighbour=TOWN_BUILDINGS.find(b=>b.key==="home-west");
+const eastNeighbour=TOWN_BUILDINGS.find(b=>b.key==="home-east");
+assert.ok(publisherBox.min.x-(westNeighbour.x+westNeighbour.w/2)>=3,
+  "Western homes intrude into publisher tower's minimum free setback");
+assert.ok((eastNeighbour.x-eastNeighbour.w/2)-bounds(bookstore).max.x>=3,
+  "Eastern homes intrude into bookstore's minimum free setback");
 for(const name of ["art-gallery","central-square"]){
   assert.ok(district.getObjectByName(name),"Public scene missing: "+name);
 }
