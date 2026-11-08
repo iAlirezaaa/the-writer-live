@@ -33,7 +33,7 @@ jobs:
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
           mkdir -p _site/read _site/web
-          for name in book.css book.js read.js book-cover.js; do
+          for name in book.css book.js read.js book-cover.js feedback.js; do
             cp ".github/reader-assets/$name" "_site/web/$name"
           done
           cp .github/reader-assets/read.html _site/read/index.html
@@ -54,6 +54,8 @@ jobs:
             cp "_site/web/$name.js" "/tmp/the-writer-observer-$name.mjs"
             node --check "/tmp/the-writer-observer-$name.mjs"
           done
+          test -s _site/web/feedback.js
+          grep -q 'id="reader-feedback"' _site/read/index.html
           node tests/observatory_probe.mjs _site
           for name in citizens citizen-motion-library objects; do
             cp "_site/web/$name.js" "/tmp/the-writer-city-$name.mjs"
