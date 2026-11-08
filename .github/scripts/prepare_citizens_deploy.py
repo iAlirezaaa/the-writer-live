@@ -34,7 +34,9 @@ def patch_site(root: Path) -> None:
         'socialClipsDormant:true' in sources["citizen-motion-library.js"],
         f'./citizens.js?v={VERSION}' in sources["world.js"],
         f'./citizen-motion-library.js?v={VERSION}' in sources["world.js"],
-        f'./objects.js?v={VERSION}' in sources["world.js"],
+        './objects.js?v=city-districts-20261108-v1' in sources["world.js"],
+        'mesh.userData.placeDetails' in sources["objects.js"],
+        'buildCityDistricts(' in sources["town.js"],
     )):
         raise RuntimeError("Missing pinned citizen identity / motion / inspection integration")
     index_file=root/"index.html"
