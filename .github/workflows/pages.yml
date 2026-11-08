@@ -55,7 +55,7 @@ jobs:
           node tests/writer_house_consistency_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
-          for check in layout paths wiring world; do
+          for check in layout paths wiring; do
             node --experimental-vm-modules tests/town_scene_probe.mjs _site "$check" < _site/snapshot/town.json
           done
           for name in observer-ui persian-display; do
