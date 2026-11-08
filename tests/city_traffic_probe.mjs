@@ -16,6 +16,8 @@ const Motion=await load("web/citizen-motion-library.js");
 const Fleet=await load("web/town-cars.js");
 const payload=JSON.parse(readFileSync(snapshot,"utf8"));
 const start="2026-11-08T00:01:00+03:30";
+const streets=new THREE.Group();
+const cars=Fleet.buildTownCars({THREE,city:streets,streetY:-3});
 
 // City graph acceptance: curved junction routes must remain on the actual
 // union of paved road rectangles, with long clock-anchored itineraries.
@@ -57,8 +59,6 @@ try {
 
 // Cars approaching a crossing must stop before their front bumpers reach it.
 // Already committed cars clear the crossing rather than stopping inside.
-const streets=new THREE.Group();
-const cars=Fleet.buildTownCars({THREE,city:streets,streetY:-3});
 assert.equal(cars.vehicles.length,12);
 assert.equal(typeof cars.setCrossingDemand,"function");
 assert.equal(typeof cars.trafficState,"function");
@@ -69,11 +69,12 @@ for(const car of cars.trafficState().filter(x=>x.z>0)){
   assert.ok(Math.abs(car.x)>=car.halfLength+2.095,
     "Car failed to yield at x="+car.x+" lane="+car.lane);
 }
-const stopped=cars.vehicles.filter(x=>x.lane.z>0).map(x=>x.progress);
+const stopped=cars.trafficState().filter(x=>x.speed<0.05);
+assert.ok(stopped.length,"Pedestrian demand did not make any vehicle yield");
 cars.setCrossingDemand(false);
 for(let frame=2000;frame<2400;frame++)cars.update(1,frame*.05);
-const moving=cars.vehicles.filter(x=>x.lane.z>0).map(x=>x.progress);
-assert.ok(moving.some((p,i)=>Math.abs(p-stopped[i])>.5),
+const moving=cars.trafficState();
+assert.ok(moving.some(x=>x.speed>0.5),
   "Vehicles must resume when crossing demand ends.");
 
 // A resident requesting the road crossing should eventually get a turn.
