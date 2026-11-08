@@ -2,13 +2,14 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { openBook, setTurnSpeed } from "./book.js?v=reader-20261108-v4";
 import { openExplorer } from "./explorer.js";
-import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=citizens-20261108-v3";
+import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-e";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v1";
+import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v1";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
-import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v2";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v3";
 import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
@@ -1279,6 +1280,59 @@ function updateTownSummary() {
     if (summary) summary.textContent = `${row.label} · ${ROLE_LABELS[row.role]||row.role} · ${ACTIVITY_LABELS[row.activity]||row.activity} · ${PLACE_LABELS[row.destination]||row.destination}`;
   }
 }
+// Pure environment metadata. A venue existing in the 3D city is not proof
+// the writer visited it, and no fictional event is inserted into the API.
+function renderCityPlaces(){
+  const host=$("town-places");if(!host)return;
+  const byZone=new Map();
+  for(const place of CITY_PLACE_CATALOG){
+    if(!byZone.has(place.zone))byZone.set(place.zone,[]);
+    byZone.get(place.zone).push(place);
+  }
+  const rendered=[];
+  for(const [zone,places] of byZone){
+    const heading=document.createElement("h4");
+    heading.className="observer-city-zone";heading.textContent=zone;
+    heading.setAttribute("role","listitem");
+    rendered.push(heading);
+    for(const place of places){
+      const article=document.createElement("article");
+      article.className="observer-city-place";article.dataset.placeId=place.id;
+      article.setAttribute("role","listitem");
+      const top=document.createElement("div");
+      const title=document.createElement("strong");title.textContent=place.name;
+      const label=document.createElement("span");label.textContent=place.kind;
+      top.className="observer-city-place-head";top.append(title,label);
+      const summary=document.createElement("p");
+      summary.textContent=place.description;
+      const actions=document.createElement("div");actions.className="observer-city-place-actions";
+      const watch=document.createElement("button");
+      watch.type="button";watch.textContent="تماشای مکان";
+      watch.addEventListener("click",()=>{
+        setSide(false);
+        setView("town");
+        const point=new THREE.Vector3(place.x,place.y+STREET_Y,place.z);
+        const tall=place.id==="publishing-tower";
+        const offset=tall?new THREE.Vector3(11,12,20):new THREE.Vector3(11,9,19);
+        camGoal={target:point,pos:point.clone().add(offset)};
+        camMoving=true;
+        $("location-label").textContent=place.name;
+        $("observer-scene-context").textContent=place.zone;
+      });
+      const detail=document.createElement("button");
+      detail.type="button";detail.textContent="شناخت مکان";
+      detail.addEventListener("click",()=>{
+        const mesh=clickables.find(m=>m.userData.placeId===place.id);
+        if(mesh)inspect(mesh);
+        else toast("مدل این مکان هنوز در صحنه بارگذاری نشده است.");
+      });
+      actions.append(watch,detail);
+      article.append(top,summary,actions);rendered.push(article);
+    }
+  }
+  host.replaceChildren(...rendered);
+  $("city-places-count").textContent=String(CITY_PLACE_CATALOG.length)+" مکان";
+}
 async function loadTown() {
   try {
     const payload = await getJSON("/api/town");
@@ -1436,9 +1490,9 @@ async function loadWardrobe() {
   applyWardrobe(w);
 }
 const VIEWS = {
-  town:     { pos: [26, 30, 53], target: [0, -1, 2] },
+  town:     { pos: [41, 53, 91], target: [0, 2.0, -7] },
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
-  publisher:{ pos: [-6, 4.6, 11.5], target: [-10, -1.3, 0] },
+  publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
   overview: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
   building: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
@@ -2325,6 +2379,7 @@ $("town-search")?.addEventListener("input",()=>{
   for(const entry of $("town-residents").querySelectorAll(".resident-row"))
     entry.hidden=Boolean(needle)&&!entry.dataset.search.includes(needle);
 });
+renderCityPlaces();
 observerUI=initObserverUI({
   selectTab,setView,
   onShowPanel:(id)=>{
