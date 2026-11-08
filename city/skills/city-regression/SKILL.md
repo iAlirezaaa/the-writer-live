@@ -5,6 +5,7 @@ description: Enforce physical 3D tests, project-safe deployment and visual QA fo
 # City acceptance skill
 
 - Run `node tests/urban_plan_probe.mjs .` (layout and progression).
+- Run `node tests/road_topology_probe.mjs .` (single continuous asphalt, road centerline coverage and no overlap).
 - Run `node tests/city_districts_probe.mjs .` (real Three.js ground levels, access, venues, lighting).
 - Run `node tests/writer_house_consistency_probe.mjs .` (unified stage and window/entry coordinates).
 - On live artifact, run `node --experimental-vm-modules tests/town_scene_probe.mjs _site layout < _site/snapshot/town.json`, then `paths` and `wiring` tests.
