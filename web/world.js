@@ -2,12 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { openBook, setTurnSpeed } from "./book.js?v=reader-20261108-v4";
 import { openExplorer } from "./explorer.js";
-import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=citizens-20261108-v1";
+import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=citizens-20261108-v2";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-c";
-import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v1";
-import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v1";
+import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-e";
+import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v2";
+import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
    also lives in the room. Click an object: the camera moves into it and its contents open inside it.
@@ -1484,7 +1484,7 @@ function animate() {
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
   const now = worldNow();
-  citizens.update(dt, t, now);
+  citizens.update(dt, t, now, town.trafficState());
 
   // the notebook turns its own pages; the core drawer slides when it is opened
   nb.update(dt);
@@ -1636,7 +1636,7 @@ function animate() {
   viewFill.intensity = lighting.fill;
   viewFill.position.copy(camera.position);
   viewFill.target.position.copy(controls.target);
-  town.update(day, t);
+  town.update(day, t, citizens.crossingDemand());
   clouds.forEach((c, i) => { c.position.x += dt * (0.4 + i * 0.05); if (c.position.x > 70) c.position.x = -70; c.material.opacity = 0.15 + day * 0.45; });
 
   // --- room lights: the whole home is lit while the writer is awake, dark when it sleeps
