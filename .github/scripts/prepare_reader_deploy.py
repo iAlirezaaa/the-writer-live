@@ -32,8 +32,8 @@ def patch_site(root: Path) -> None:
         "grid-template-rows:max-content minmax(0,1fr) max-content" in css,
         'font-family: "Vazir"' in css,
         '"vazir-classic"' in book,
-        '"turn-prev", "→"' in book,
-        '"turn-next", "←"' in book,
+        '"turn turn-prev", "→"' in book,
+        '"turn turn-next", "←"' in book,
         f"read.js?v={VERSION}" in html,
         "overlay.dataset.readerTheme" in book,
     ]):
