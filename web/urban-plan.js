@@ -2,6 +2,25 @@
  * Keep actual circulation and building footprints separate from decoration.
  */
 export const CITY_LAYOUT_VERSION="urban-plan-20261108-v3";
+// Georeferencing only: existing street meshes remain a fictional/procedural layout.
+// WGS84 writer-home anchor. Local X points east; local Z points south (north=-Z).
+export const TEHRAN_GEO_ORIGIN=Object.freeze({
+  latitude:35.715361987616696,longitude:51.3642455031707,
+  localX:0,localZ:0,timezone:"Asia/Tehran",datum:"WGS84"
+});
+const METERS_PER_DEG_LAT=111132.92-559.82*Math.cos(2*TEHRAN_GEO_ORIGIN.latitude*Math.PI/180)+1.175*Math.cos(4*TEHRAN_GEO_ORIGIN.latitude*Math.PI/180);
+const METERS_PER_DEG_LON=111412.84*Math.cos(TEHRAN_GEO_ORIGIN.latitude*Math.PI/180)-93.5*Math.cos(3*TEHRAN_GEO_ORIGIN.latitude*Math.PI/180);
+export function cityLocalToGeo(x,z){
+  if(!Number.isFinite(x)||!Number.isFinite(z))throw new TypeError("Invalid local coordinates");
+  return {latitude:TEHRAN_GEO_ORIGIN.latitude-z/METERS_PER_DEG_LAT,
+    longitude:TEHRAN_GEO_ORIGIN.longitude+x/METERS_PER_DEG_LON};
+}
+export function geoToCityLocal(latitude,longitude){
+  if(!Number.isFinite(latitude)||!Number.isFinite(longitude))throw new TypeError("Invalid geographic coordinates");
+  return {x:(longitude-TEHRAN_GEO_ORIGIN.longitude)*METERS_PER_DEG_LON,
+    z:(TEHRAN_GEO_ORIGIN.latitude-latitude)*METERS_PER_DEG_LAT};
+}
+
 export const WRITER_HOME_BLUEPRINT=Object.freeze({
   // Shared spatial contract for both rendered modes. Local interior floor is Y=0;
   // street exterior uses STREET_Y as its identical plan origin.
