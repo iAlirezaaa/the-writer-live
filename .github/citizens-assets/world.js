@@ -6,7 +6,7 @@ import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=cit
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
 import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v2";
-import { writerHouseLevel, writerHouseDimensions } from "./urban-plan.js?v=urban-plan-20261108-v2";
+import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v2";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
@@ -214,7 +214,17 @@ const M = {
 };
 
 const clickables = [];
-function mesh(geo, mat, x, y, z, { cast = true, receive = true, parent = scene } = {}) {
+// Keep the original author's lived-in room. Obsolete four-wing architecture is archived
+// in a disabled scene group, not allowed to masquerade as the one-room interior.
+const legacyWriterArchitecture = new THREE.Group();
+legacyWriterArchitecture.name="legacy-writer-mansion-disabled";
+legacyWriterArchitecture.visible=false;scene.add(legacyWriterArchitecture);
+const baseWriterRoomShell = new THREE.Group();
+baseWriterRoomShell.name="writer-room-shell";scene.add(baseWriterRoomShell);
+const expandedWriterRoomShell = new THREE.Group();
+expandedWriterRoomShell.name="writer-room-shell-expanded";scene.add(expandedWriterRoomShell);
+let writerMeshParent=scene;
+function mesh(geo, mat, x, y, z, { cast = true, receive = true, parent = writerMeshParent } = {}) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, z);
   m.castShadow = cast; m.receiveShadow = receive;
@@ -247,19 +257,19 @@ function wallTime(now) {
 }
 
 // ============ the house shell (open front, window in the back wall) ============
+writerMeshParent=baseWriterRoomShell;
 const floor = mesh(new THREE.PlaneGeometry(6, 6), M.floor, 0, 0, 0, { cast: false });
 floor.rotation.x = -Math.PI / 2;
 box(6.2, 0.12, 6.2, M.darkWood, 0, -0.07, 0, { cast: false });
-const WIN = { x0: -1.6, x1: 0.4, y0: 1.0, y1: 2.5 };
+const WIN = WRITER_HOME_BLUEPRINT.facade.rearWindow;
 box(WIN.x0 + 3, 3.2, 0.12, M.wall, (-3 + WIN.x0) / 2, 1.6, -3);
 box(3 - WIN.x1, 3.2, 0.12, M.wall, (WIN.x1 + 3) / 2, 1.6, -3);
 box(WIN.x1 - WIN.x0, WIN.y0, 0.12, M.wall, (WIN.x0 + WIN.x1) / 2, WIN.y0 / 2, -3);
 box(WIN.x1 - WIN.x0, 3.2 - WIN.y1, 0.12, M.wall, (WIN.x0 + WIN.x1) / 2, (3.2 + WIN.y1) / 2, -3);
 for (const side of [-1, 1]) {
-  // Leave a real opening through each partition instead of letting the new rooms overlap the house.
-  box(0.12, 3.2, 3.35, M.wall, side * 3, 1.6, -1.325);
-  box(0.12, 3.2, 1.55, M.wall, side * 3, 1.6, 2.225);
-  box(0.12, 0.96, 1.10, M.wall, side * 3, 2.72, 0.70);
+  // Stage zero is a real SINGLE room: no open doors into non-existent side wings.
+  box(0.12, WRITER_HOME_BLUEPRINT.room.height, WRITER_HOME_BLUEPRINT.room.depth,
+    M.wall, side*3, WRITER_HOME_BLUEPRINT.room.height/2, 0);
 }
 // window frame, mullions, sill, glass
 const frameMat = new THREE.MeshStandardMaterial({ color: 0xe8e1d3, roughness: 0.6 });
@@ -293,7 +303,8 @@ box(6, 0.03, 0.03, M.darkWood, 0, 2.98, -2.92, { cast: false });
 box(0.03, 0.03, 6, M.darkWood, -2.92, 2.98, 0, { cast: false });
 box(0.03, 0.03, 6, M.darkWood, 2.92, 2.98, 0, { cast: false });
 
-// ============ the rest of the building: ground floor, street facade, roofline ============
+// ============ retired four-wing house — preserved solely for backwards compatibility ============
+writerMeshParent=legacyWriterArchitecture;
 // the room is the upper floor; below live the stairwell, the hallway and the street door
 box(6.4, 0.12, 6.4, M.darkWood, 0, -3.06, 0, { cast: false });
 for (const side of [-1, 1]) {
@@ -320,7 +331,7 @@ function addRoomDoor(side, floorY, z, panel, label) {
   const x = side * 2.96, width = 1.0, height = 2.18;
   for (const dz of [-width / 2 - 0.07, width / 2 + 0.07]) box(0.14, height + 0.16, 0.12, M.darkWood, x, floorY + height / 2, z + dz);
   box(0.14, 0.14, width + 0.26, M.darkWood, x, floorY + height + 0.03, z);
-  const hinge = new THREE.Group(); hinge.position.set(x, floorY, z - width / 2); hinge.rotation.y = side * 0.58; scene.add(hinge);
+  const hinge = new THREE.Group(); hinge.position.set(x, floorY, z - width / 2); hinge.rotation.y = side * 0.58; legacyWriterArchitecture.add(hinge);
   const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.075, height, width), M.wood);
   leaf.position.set(0, height / 2, width / 2); leaf.castShadow = true; hinge.add(leaf);
   const inset = new THREE.Mesh(new THREE.BoxGeometry(0.025, 1.53, 0.62), M.darkWood);
@@ -338,7 +349,7 @@ box(0.4, 0.4, 0.4, M.wood, 2.4, -2.8, -2.4);
 box(0.34, 0.34, 0.34, M.wood, 2.4, -2.43, -2.44);
 const groundLight = new THREE.PointLight(0xffd6a0, 0.55, 6, 1.8);
 groundLight.position.set(-0.5, -1.5, 1.2);
-scene.add(groundLight);
+legacyWriterArchitecture.add(groundLight);
 // The main dashboard's house: an open-front, two-storey cottage. The existing
 // writer room stays live in the centre; real-time home scenes flank it.
 const cottagePlaster = new THREE.MeshStandardMaterial({ color: 0xd8c8b0, roughness: 0.96 });
@@ -407,7 +418,7 @@ function buildCottageWing(cx, floorY, side, room) {
     const fireMat = new THREE.MeshStandardMaterial({ color: 0xf17b31, emissive: 0xff5b20, emissiveIntensity: 1.6, roughness: 0.4 });
     mesh(new THREE.ConeGeometry(0.30, 0.85, 7), fireMat, cx - 0.22, floorY + 0.75, -2.13, { cast: false });
     mesh(new THREE.ConeGeometry(0.28, 0.70, 7), new THREE.MeshStandardMaterial({ color: 0xf6c05f, emissive: 0xff942e, emissiveIntensity: 1.1 }), cx + 0.22, floorY + 0.66, -2.12, { cast: false });
-    const fireLight = new THREE.PointLight(0xff9b4a, 1.9, 6, 1.7); fireLight.position.set(cx, floorY + 1.15, -1.65); scene.add(fireLight);
+    const fireLight = new THREE.PointLight(0xff9b4a, 1.9, 6, 1.7); fireLight.position.set(cx, floorY + 1.15, -1.65); legacyWriterArchitecture.add(fireLight);
     box(2.88, 0.58, 0.96, M.sofa, cx, floorY + 0.53, 0.26);
     box(2.92, 0.56, 0.16, M.sofa, cx, floorY + 0.91, -0.24);
     for (const x of [cx - 1.25, cx + 1.25]) box(0.36, 0.70, 0.96, M.sofa, x, floorY + 0.63, 0.26);
@@ -461,7 +472,7 @@ gableGeo.setAttribute("position", new THREE.Float32BufferAttribute([
   -9.45,3.28,3.13, 9.45,3.28,3.13, 0,5.28,3.13,
 ],3));
 gableGeo.setIndex([0,1,2]); gableGeo.computeVertexNormals();
-scene.add(new THREE.Mesh(gableGeo, new THREE.MeshStandardMaterial({ color: 0xc9b89f, roughness: 0.96, side: THREE.DoubleSide })));
+legacyWriterArchitecture.add(new THREE.Mesh(gableGeo, new THREE.MeshStandardMaterial({ color: 0xc9b89f, roughness: 0.96, side: THREE.DoubleSide })));
 const backRoof = box(19.35, 0.18, 4.00, slateMats[1], 0, 4.33, -1.64);
 backRoof.rotation.x = -0.48;
 box(19.60, 0.20, 0.24, cottageBeam, 0, 5.22, 0.02);
@@ -511,6 +522,8 @@ for(const x of [-10.2,10.2]){
 const facade = clickable(box(19.0, 6.4, 0.24, new THREE.MeshBasicMaterial({ visible: false }), 0, 0.10, 3.12, { cast: false }), "p-care", "خانهٔ نویسنده");
 facade.userData.view = "building";
 
+// The old 2-storey shell and four wings remain disabled. The working room starts here.
+writerMeshParent=scene;
 // rug
 const rugTex = canvasTex(256, 200, (g, w, h) => {
   g.fillStyle = "#6a2f2a"; g.fillRect(0, 0, w, h);
