@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""Final build gate for versioned living-city architecture.
+
+Checks only the Pages artifact. No user memories, writer-room data,
+publisher meetings, authored citizen routines or car trajectories are changed.
+"""
+from pathlib import Path
+import sys
+
+VERSION="city-districts-20261108-v1"
+ROOT=Path(".github/city-assets")
+
+
+def inspect(site: Path) -> None:
+    city=(site/"web/town-districts.js").read_text(encoding="utf-8")
+    town=(site/"web/town.js").read_text(encoding="utf-8")
+    world=(site/"web/world.js").read_text(encoding="utf-8")
+    objects=(site/"web/objects.js").read_text(encoding="utf-8")
+    index=(site/"index.html").read_text(encoding="utf-8")
+    expected=[
+        ("pinned district kit",city==(ROOT/"town-districts.js").read_text(encoding="utf-8")),
+        ("twelve authored blocks",city.count('{id:"')>=21),
+        ("publisher office interior",'"editorial-office-desk"' in city),
+        ("writer room explicitly protected",'"writerRoomUntouched:true"' in city or 'writerRoomUntouched:true' in city),
+        ("city module connected",f'./town-districts.js?v={VERSION}' in town),
+        ("world town cache fresh",f'./town.js?v={VERSION}' in world),
+        ("city catalog connected",f'./town-districts.js?v={VERSION}' in world),
+        ("city information panel",'"place:"+civic.id' in objects),
+        ("city venues navigable",'"town-places"' in world and 'renderCityPlaces()' in world),
+        ("new world entrypoint",'src="./web/world.js?v=city-world-20261108-v1"' in index),
+        ("original camera menu kept",index.count("data-view=")==10),
+        ("original notebook panels kept",index.count("data-panel=")==15),
+        ("unchanged car source", 'buildTownCars' in town),
+    ]
+    failed=[name for name,good in expected if not good]
+    if failed:
+        raise RuntimeError("City district build gate: "+", ".join(failed))
+    print("CITY-DISTRICT-BUILD-OK",len(expected),"invariants")
+
+
+if __name__=="__main__":
+    inspect(Path(sys.argv[1]) if len(sys.argv)>1 else Path("_site"))
