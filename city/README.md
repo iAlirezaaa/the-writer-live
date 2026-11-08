@@ -3,8 +3,8 @@
 This directory is **separate from the writer's narrative, memory, and agent personality**. It contains urban design rules, scene constraints, acceptance tests, and persistent skills.
 
 ## Source of truth
-- Authoring repo `iAlirezaaa/the-writer`: `web/urban-plan.js`, `web/town.js`, `web/town-districts.js`, `web/world.js`.
-- Published repo `iAlirezaaa/the-writer-live`: pinned sources `.github/city-assets/urban-plan.js`, `.github/city-assets/town-districts.js`, `.github/citizens-assets/town.js`, `.github/citizens-assets/world.js`.
+- Authoring repo `iAlirezaaa/the-writer`: `web/urban-plan.js`, `web/road-surface.js`, `web/town.js`, `web/town-districts.js`, `web/world.js`.
+- Published repo `iAlirezaaa/the-writer-live`: pinned sources `.github/city-assets/urban-plan.js`, `.github/city-assets/road-surface.js`, `.github/city-assets/town-districts.js`, `.github/citizens-assets/town.js`, `.github/citizens-assets/world.js`.
 - The shared `WRITER_HOME_BLUEPRINT` in urban-plan.js owns room dimensions, door/window anchors, exterior material palette and growth stages. **Do not duplicate these values in separate view files.**
 - `docs/CITY_LAYOUT_V2.md` is the existing long-form handoff.
 
@@ -19,7 +19,7 @@ This directory is **separate from the writer's narrative, memory, and agent pers
 1. Read the relevant skill and the source modules before editing.
 2. Make a minimal geometry-safe change, preserve stable IDs and saved memories.
 3. Synchronize affected modules to both repos; the public deployment uses pinned source files rather than raw `web/` copies.
-4. Run `tests/urban_plan_probe.mjs`, `tests/city_districts_probe.mjs`, and available `town_scene_probe.mjs` checks.
+4. Run `tests/urban_plan_probe.mjs`, `tests/road_topology_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/writer_house_consistency_probe.mjs`, and available `town_scene_probe.mjs` checks.
 5. Verify the latest live GitHub Pages workflow is green.
 6. Perform visual inspection from street level and both day/night conditions before claiming visual perfection.
 
