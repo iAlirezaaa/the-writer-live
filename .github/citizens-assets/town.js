@@ -17,6 +17,8 @@ export function nightLighting(day) {
 
 export function buildTown({ THREE, scene, clickable, canvasTex }) {
   const group = new THREE.Group(); group.name = "town"; scene.add(group);
+  const legacyShopLayer = new THREE.Group(); legacyShopLayer.name = "legacy-shopfront-interiors"; group.add(legacyShopLayer);
+  let meshParent = group;
   const materials = {};
   const material = (name, color, extra = {}) => materials[name] ||= new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
   const stone = material("stone", 0xa5a292), curb = material("curb", 0xd0c5ae);
@@ -29,7 +31,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   const bookMats = [0x9d584e, 0x5a747f, 0xd4ad67, 0x7d8464].map((c, i) => material(`book${i}`, c));
   function mesh(geometry, mat, x, y, z) {
     const m = new THREE.Mesh(geometry, mat); m.position.set(x, y, z);
-    m.castShadow = false; m.receiveShadow = true; group.add(m); return m;
+    m.castShadow = false; m.receiveShadow = true; meshParent.add(m); return m;
   }
   const box = (w, h, d, mat, x, y, z) => mesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z);
   function sign(text, x, y, z, width, background = "#30494b") {
@@ -92,6 +94,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   }
 
   const office = TOWN_BUILDINGS[0], store = TOWN_BUILDINGS[1];
+  meshParent = legacyShopLayer;
   for (const b of [office, store]) {
     const wall = b.key === "publisher" ? brick : teal;
     box(b.w, 0.16, b.d, curb, b.x, STREET_Y - 0.02, b.z);
@@ -119,7 +122,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
     clickable(hit, b.key === "publisher" ? "p-publish" : "p-books", b.label).userData.view = b.key;
     sign("نمای برش‌خورده", b.x, STREET_Y + 0.1, 3.2, 1.9);
     const glow = new THREE.PointLight(0xffe2b7, 4, 7, 1.3);
-    glow.position.set(b.x, STREET_Y + 2.8, 0.5); group.add(glow);
+    glow.position.set(b.x, STREET_Y + 2.8, 0.5); legacyShopLayer.add(glow);
   }
   table(-10, -0.5, 2.1);
   box(0.7, 0.12, 0.5, paper, -10.35, STREET_Y + 0.93, -0.5);
@@ -131,6 +134,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   for (let j = 0; j < 6; j++) box(0.25, 0.07, 0.35, bookMats[j % 4], 9.15 + j * 0.33, STREET_Y + 0.91, -0.3);
   table(12, 1.3, 1.2);
   sign("کتاب · تجربه · ایده", 10, STREET_Y + 2.4, -2.85, 3.2);
+  meshParent = group;
 
   for (const b of TOWN_BUILDINGS.slice(2)) {
     const wall = b.x < 0 ? material("home1", 0xb79b7c) : material("home2", 0x8b9b91);
