@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap");
 
 /* ---------- collapsible side panel ---------- */
 body.side-collapsed .layout { grid-template-columns: minmax(0, 1fr) 0; }
@@ -726,4 +726,264 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
 @media(prefers-reduced-motion:reduce) {
   .reader-page .cover,.reading-home,.book-overlay .book-tools button {transition:none!important;}
   .reader-page .cover:hover {transform:none;}
+}
+
+
+/* === Reading room v3: viewport-safe layout and type settings ================ */
+/* Book content must shrink with the *available middle pane*, not viewport height.
+   The earlier fixed 750px book overflowed its shorter flex shelf; centering that
+   oversized child pushed its top offscreen (the clipped screenshot issue). */
+.book-overlay{
+  height:100dvh;
+  max-height:100dvh;
+  min-height:0;
+  overflow:hidden;
+  overscroll-behavior:contain;
+  display:flex;
+  flex-direction:column;
+}
+.book-overlay .book-bar{
+  flex:0 0 auto;
+  position:relative;
+  z-index:35;
+  min-height:62px;
+  width:100%;
+  padding-block:10px;
+  overflow:visible;
+}
+.book-overlay .book-shelf{
+  width:100%;
+  flex:1 1 0;
+  min-height:0;
+  height:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(8px,1.25vw,18px);
+  padding:8px 12px 4px;
+  overflow:hidden;
+  position:relative;
+  z-index:1;
+}
+.book-overlay .book{
+  height:100%;
+  max-height:100%;
+  min-height:0;
+  width:min(1050px,calc(100vw - 146px));
+  flex:0 1 auto;
+  display:grid;
+  grid-template-rows:minmax(0,1fr);
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-self:center;
+}
+.book-overlay .book.single{
+  width:min(650px,calc(100vw - 128px));
+  grid-template-columns:minmax(0,1fr);
+}
+.book-overlay .page{
+  height:100%;
+  min-height:0;
+  min-width:0;
+  overflow:hidden;
+}
+.book-overlay .leaf-face{min-height:0;}
+.book-overlay .book-footer{
+  width:min(1050px,calc(100vw - 32px));
+  min-height:55px;
+  flex:0 0 auto;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:8px 13px;
+  padding:8px 8px 12px;
+  position:relative;
+  z-index:12;
+}
+.book-overlay .book-progress{
+  flex:1 1 250px;
+  min-width:110px;
+  width:auto;
+  margin:0;
+}
+.book-overlay .book-counter{white-space:nowrap;font-size:.8rem;color:#efebe0;}
+.book-overlay .book-jump{
+  max-width:176px;
+  width:auto;
+  min-width:110px;
+  color:#eee9db;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:9px;
+  margin:0;
+  min-height:35px;
+  padding:5px 9px;
+  font:500 .75rem "Vazirmatn",Tahoma,sans-serif;
+  color-scheme:dark;
+}
+.book-overlay .reader-sync-status{
+  flex:0 0 auto;
+  white-space:nowrap;
+  color:#b0c5b9;
+  font:500 .69rem "Vazirmatn",sans-serif;
+}
+.book-overlay .reader-sync-status::before{
+  content:"";display:inline-block;vertical-align:middle;
+  width:6px;height:6px;margin-inline-end:7px;
+  border-radius:50%;background:#83ab9c;
+}
+.book-overlay .book-tools{position:relative;overflow:visible;}
+.book-overlay .reader-settings{position:relative;isolation:isolate;flex:none;z-index:40;}
+.book-overlay .reader-settings > summary{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+  min-height:37px;
+  border:1px solid rgba(238,237,222,.2);
+  border-radius:9px;
+  background:rgba(255,255,255,.055);
+  color:#f5efe5;
+  cursor:pointer;
+  user-select:none;
+  white-space:nowrap;
+  list-style:none;
+  font:500 .77rem "Vazirmatn",sans-serif;
+}
+.book-overlay .reader-settings > summary::-webkit-details-marker{display:none;}
+.book-overlay .reader-settings > summary::after{content:"⌄";opacity:.7;font-size:.95rem;}
+.book-overlay .reader-settings[open] > summary{border-color:#d4bb8e;background:rgba(255,255,255,.12);}
+.book-overlay .reader-settings > summary:focus-visible{outline:2px solid #efcc8b;outline-offset:2px;}
+.book-overlay .reader-settings-panel{
+  position:absolute;
+  top:calc(100% + 9px);
+  inset-inline-end:0;
+  width:min(305px,calc(100vw - 28px));
+  max-height:min(66dvh,550px);
+  overflow:auto;
+  padding:17px 16px;
+  display:grid;
+  gap:13px;
+  background:#fcfaf3;
+  color:#293630;
+  border-radius:15px;
+  border:1px solid #e5e2d9;
+  box-shadow:0 25px 60px rgba(0,0,0,.32);
+  z-index:90;
+  color-scheme:light;
+}
+.book-overlay .reader-setting{display:grid;gap:6px;color:#516058;font:600 .75rem "Vazirmatn",Tahoma,sans-serif;}
+.book-overlay .reader-settings-panel select{
+  display:block;
+  width:100%;
+  margin:0;
+  min-height:39px;
+  background:#f3f5f0;
+  color:#25342e;
+  border:1px solid #dfe5de;
+  border-radius:8px;
+  padding:6px 12px;
+  font:500 .83rem "Vazirmatn",Tahoma,sans-serif;
+  color-scheme:light;
+}
+.book-overlay .reader-settings-panel .reader-type-size{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  color:#516058;font:600 .76rem "Vazirmatn",Tahoma,sans-serif;
+}
+.book-overlay .reader-type-size > span{margin-inline-end:auto;}
+.book-overlay .reader-settings-panel .reader-type-size button,
+.book-overlay .reader-settings-panel .reader-sync-button{
+  background:#eef3ed;color:#2f5247;
+  border:1px solid #d5e2d8;border-radius:9px;
+  min-width:39px;min-height:37px;
+  padding:6px 10px;
+  font:600 .79rem "Vazirmatn",Tahoma,sans-serif;
+}
+.book-overlay .reader-settings-panel .reader-sync-button{
+  width:100%;margin-top:4px;
+}
+.book-overlay .reader-settings-panel .reader-sync-button[hidden]{display:none!important;}
+.book-overlay .reader-settings-panel button:hover{border-color:#87ad99;background:#e4efe5;}
+.book-overlay .reader-setting select:focus-visible{outline:2px solid #64987b;outline-offset:2px;}
+
+/* Type controls affect the measured page and both faces of the animated leaf. */
+.book-overlay{--reader-leading:2.05;--reader-typeface:"Noto Naskh Arabic",serif;--reader-align:justify;}
+.book-overlay[data-reader-font="naskh"]{--reader-typeface:"Noto Naskh Arabic","Amiri",serif;}
+.book-overlay[data-reader-font="vazir"]{--reader-typeface:"Vazirmatn",Tahoma,sans-serif;}
+.book-overlay[data-reader-font="amiri"]{--reader-typeface:"Amiri","Noto Naskh Arabic",serif;}
+.book-overlay[data-reader-leading="compact"]{--reader-leading:1.7;}
+.book-overlay[data-reader-leading="normal"]{--reader-leading:2.05;}
+.book-overlay[data-reader-leading="airy"]{--reader-leading:2.42;}
+.book-overlay[data-reader-align="justify"]{--reader-align:justify;}
+.book-overlay[data-reader-align="right"]{--reader-align:right;}
+.book-overlay .page,
+.book-overlay .leaf-face,
+.book-overlay .page-measure{
+  font-family:var(--reader-typeface);
+  line-height:var(--reader-leading);
+}
+.book-overlay .page-content p{
+  font-family:var(--reader-typeface);
+  line-height:var(--reader-leading);
+  text-align:var(--reader-align);
+}
+.book-overlay .page-content.report p{
+  font-family:"Vazirmatn",Tahoma,sans-serif;
+  line-height:1.9;
+}
+.book-overlay .page-content p:first-child{text-indent:0;}
+.book-overlay .page-content.title-page .tp-title{
+  font-family:var(--reader-typeface);
+  text-align:center;
+}
+.book-overlay.reader-focus-mode .book-tools > :not(.reader-focus):not(.reader-close){display:none;}
+.book-overlay.reader-focus-mode .book-bar-title{opacity:.55;}
+.book-overlay.reader-focus-mode .book-shelf{padding-block:4px;}
+.book-overlay .book-progress:focus-visible,.book-overlay .book-jump:focus-visible{
+  outline:2px solid #e6c58f;outline-offset:3px;
+}
+@media(max-height:740px){
+  .book-overlay .book-bar{min-height:51px;padding-block:6px;}
+  .book-overlay .book-shelf{padding-block:4px 2px;}
+  .book-overlay .page,.book-overlay .leaf-face{padding:24px 30px 34px;}
+  .book-overlay .book-footer{min-height:42px;padding-block:4px 6px;}
+  .book-overlay .title-page .tp-art{width:78px;height:78px;}
+  .book-overlay .title-page{gap:7px;}
+  .book-overlay .title-page .tp-hint{margin-top:4px;}
+}
+@media(max-width:860px){
+  .book-overlay .book-bar{padding-inline:12px;flex-wrap:wrap;}
+  .book-overlay .book-bar-title{max-width:100%;white-space:nowrap;}
+  .book-overlay .book-tools{flex-wrap:wrap;overflow:visible;justify-content:flex-start;gap:5px;}
+  .book-overlay .book-tools button{min-height:34px;padding-inline:8px;}
+  .book-overlay .reader-settings > summary{min-height:34px;padding:6px 9px;}
+  .book-overlay .book.single,.book-overlay .book{width:calc(100vw - 86px);height:100%;}
+  .book-overlay .book-shelf{gap:7px;padding-inline:8px;}
+  .book-overlay .turn{width:30px;height:44px;font-size:1.22rem;}
+  .book-overlay .page,.book-overlay .leaf-face{padding:22px 22px 33px;}
+  .book-overlay .reader-find{min-width:100px;width:130px;}
+  .book-overlay .book-footer{width:100%;gap:4px 10px;padding-inline:12px;}
+  .book-overlay .reader-sync-status{font-size:.65rem;}
+}
+@media(max-width:430px){
+  .book-overlay .book-bar{gap:5px;padding:7px 8px;}
+  .book-overlay .book-bar-title::before{font-size:.47rem;}
+  .book-overlay .book-tools{gap:4px;}
+  .book-overlay .reader-find{width:90px;min-width:90px;}
+  .book-overlay .reader-settings > summary{font-size:.68rem;padding-inline:7px;}
+  .book-overlay .book-tools button{font-size:.68rem;padding-inline:6px;}
+  .book-overlay .book.single,.book-overlay .book{width:calc(100vw - 76px);}
+  .book-overlay .page,.book-overlay .leaf-face{padding:20px 15px 30px;}
+  .book-overlay .book-footer{gap:5px 9px;min-height:62px;}
+  .book-overlay .book-progress{flex-basis:100%;order:-1;}
+  .book-overlay .book-counter{font-size:.71rem;}
+  .book-overlay .book-jump{min-width:98px;max-width:118px;font-size:.69rem;}
+  .book-overlay .book-bookmark{font-size:.68rem;min-height:31px;}
+}
+@media(max-height:520px){
+  .book-overlay .title-page .tp-art{display:none;}
+  .book-overlay .title-page .tp-hint{display:none;}
+  .book-overlay .book-shelf{padding-block:2px;}
+  .book-overlay .page,.book-overlay .leaf-face{padding-top:14px;padding-bottom:23px;}
+  .book-overlay .book-footer{min-height:32px;padding-block:2px;}
 }
