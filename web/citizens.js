@@ -2,6 +2,20 @@ export const FEET_Y = -2.94;
 export const ROLE_LABELS = { clerk: "کارمند ناشر", bookseller: "کتاب‌فروش", reader: "کتاب‌خوان", courier: "پیک", gardener: "باغبان", cafe: "کافه‌دار", "night-watch": "نگهبان شب", cleaner: "رفتگر" };
 export const ACTIVITY_LABELS = { sleep: "خواب", work: "کار", read: "مطالعه", carry: "جابجایی بسته", sweep: "نظافت", idle: "استراحت", walk: "در راه" };
 export const PLACE_LABELS = { "home-west": "خانه‌های غربی", "home-east": "خانه‌های شرقی", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", cafe: "کافه", garden: "باغچه", depot: "ایستگاه پیک", square: "میدان محله" };
+const PERSONAS = [
+  ["مهران رستگار", "کارمند دفتر ناشر است و نامه‌ها و قراردادها را بررسی می‌کند؛ عصرها به گل‌های باغچه رسیدگی می‌کند."],
+  ["ناهید فرهمند", "کارمند بایگانی ناشر است و نسخه‌های تازه را مرتب می‌کند؛ برای استراحت به میدان می‌رود."],
+  ["آرمان کیانی", "کتاب‌فروش محله است و قفسه‌هایش را از بر می‌شناسد؛ گاهی در باغچه رمان می‌خواند."],
+  ["لیلا شریفی", "کتاب‌فروش باتجربه‌ای است که کتاب‌های دست‌دوم را مرمت می‌کند؛ صبح‌ها در محله قدم می‌زند."],
+  ["پروین دادخواه", "بازنشستهٔ مدرسه و خوانندهٔ همیشگی محله است؛ داستان‌ها را در کافه و باغچه می‌خواند."],
+  ["سامان بهرامی", "نقشه‌کش آرامی است که برای الهام گرفتن به میدان و باغچه می‌رود؛ همیشه دفترچه‌ای همراه دارد."],
+  ["یونس نادری", "پیک محله است و بسته‌های کتاب را میان انبار و مغازه‌ها می‌رساند؛ مسیرهای خلوت را بلد است."],
+  ["سحر موسوی", "پیک دقیق کتاب‌فروشی است؛ سفارش‌ها را با یادداشت کوتاه و بسته‌بندی محکم تحویل می‌دهد."],
+  ["مریم رفیعی", "باغبان محله است و باغچهٔ عمومی را نگه‌داری می‌کند؛ ابزارهایش را در انبار می‌گذارد."],
+  ["کامران وثوق", "کافه‌دار محله است و قهوهٔ صبحگاهی را خودش آماده می‌کند؛ پس از کار مطالعه می‌کند."],
+  ["داوود نیک‌پی", "نگهبان شب محله است؛ چراغ‌ها و مسیرهای اطراف میدان را در گشت‌هایش بررسی می‌کند."],
+  ["رویا آذری", "رفتگر محله است و پیاده‌روها و جلوی مغازه‌ها را تمیز نگه می‌دارد؛ عصرها به خانه برمی‌گردد."],
+];
 const MAIN = 5.7, OPPOSITE = 11.3, EPS = 1e-7;
 const ACTIVITIES = new Set(["sleep", "work", "read", "carry", "sweep", "idle"]);
 
@@ -125,15 +139,16 @@ function normalizeRoster(payload) {
   const clock = serverClock(payload.clock);
   const places = Object.fromEntries(Object.entries(DEFAULT_PLACES).map(([key, point]) => {
     const supplied = payload.places?.[key] || point;
-    if (supplied.x !== point.x || supplied.z !== point.z || !!supplied.indoor !== point.indoor) {
+    if (supplied.x !== point.x || !!supplied.indoor !== point.indoor) {
       throw new RangeError(`Place does not match the town walkways: ${key}`);
     }
     return [key, { ...point }];
   }));
   const seen = new Set();
   const citizens = payload.citizens.map((row) => {
+    const persona = PERSONAS[Number(String(row.id).match(/\d+$/)?.[0]) - 1];
     if (!/^citizen-\d{2,}$/.test(row.id) || seen.has(row.id) || !places[row.home]?.indoor
-        || typeof row.label !== "string" || typeof row.story !== "string" || typeof row.role !== "string" || !row.routine?.length) {
+        || typeof row.label !== "string" || typeof row.role !== "string" || !row.routine?.length) {
       throw new TypeError("Invalid or duplicate citizen");
     }
     seen.add(row.id);
@@ -147,7 +162,7 @@ function normalizeRoster(payload) {
       previous = entry.start;
       return { start: entry.start, place: entry.place, activity: entry.activity };
     });
-    return { id: row.id, label: row.label, story: row.story, role: row.role, home: row.home, routine,
+    return { id: row.id, label: persona?.[0] || row.label, story: row.story || persona?.[1] || "ساکن محله با برنامهٔ روزانهٔ ثابت و پیشهٔ پایدار.", role: row.role, home: row.home, routine,
       color: /^#[0-9a-f]{6}$/i.test(row.color) ? row.color : "#82827b" };
   });
   return { ...clock, places, citizens };
