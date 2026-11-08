@@ -23,6 +23,11 @@ jobs:
           mkdir -p _site
           cp -a index.html web read snapshot _site/
           touch _site/.nojekyll
+          # Keep the reviewed city UI even if a local snapshot producer has an
+          # outdated worktree. The next two scripts patch these exact assets.
+          for name in citizens.js citizen-motion-library.js objects.js world.js; do
+            cp ".github/citizens-assets/$name" "_site/web/$name"
+          done
           python3 .github/scripts/prepare_car_deploy.py _site
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
@@ -32,6 +37,12 @@ jobs:
           done
           cp .github/reader-assets/read.html _site/read/index.html
           python3 .github/scripts/prepare_reader_deploy.py _site
+          python3 .github/scripts/prepare_citizens_deploy.py _site
+          for name in citizens citizen-motion-library objects; do
+            cp "_site/web/$name.js" "/tmp/the-writer-city-$name.mjs"
+            node --check "/tmp/the-writer-city-$name.mjs"
+          done
+          node tests/citizens_v2_probe.mjs _site _site/snapshot/town.json
           for name in book read book-cover; do
             cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
             node --check "/tmp/the-writer-reader-$name.mjs"
