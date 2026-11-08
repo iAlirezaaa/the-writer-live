@@ -116,7 +116,7 @@ def patch_site(root: Path) -> None:
     plain = 'src="./web/world.js"'
     versioned = f'src="./web/world.js?v={version}"'
     html, count = re.subn(
-        r'src="\./web/world\.js(?:\?v=[^"]+)?",',
+        r'src="\./web/world\.js(?:\?v=[^"]+)?"',
         lambda _m: versioned, html, count=1
     )
     if count != 1:
