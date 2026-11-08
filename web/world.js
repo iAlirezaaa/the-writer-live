@@ -1307,29 +1307,6 @@ async function loadTown() {
     $("town-summary").textContent = "برنامهٔ شهروندان دریافت نشد؛ در به‌روزرسانی بعد دوباره تلاش می‌شود.";
   }
 }
-async function loadPublicLink() {
-  const input = $("public-link"), open = $("open-public-link"), copy = $("copy-public-link");
-  try {
-    const link = await getJSON("/api/public-link");
-    const url = link.url ? new URL(link.url) : null;
-    if (!url || url.protocol !== "https:" || url.username || url.password || !["fixed", "temporary"].includes(link.kind)) throw new Error("No public link");
-    input.value = url.href; copy.disabled = false; open.href = url.href; open.hidden = false;
-    $("public-link-kind").textContent = link.kind === "fixed" ? "آدرس ثابت" : "تونل موقت";
-    $("public-link-note").textContent = link.kind === "fixed"
-      ? "آدرس تنظیم‌شدهٔ سایت؛ دسترس‌پذیری آن در این نما بررسی نشده است."
-      : "آخرین آدرس ثبت‌شدهٔ تونل؛ ممکن است منقضی یا عوض شود. آدرس ثابت هنوز آماده نیست.";
-  } catch {
-    input.value = ""; input.placeholder = "هنوز آدرس عمومی آماده نیست"; copy.disabled = true;
-    open.hidden = true; open.removeAttribute("href");
-    $("public-link-kind").textContent = "آدرس عمومی";
-    $("public-link-note").textContent = "آدرس ثابت پیکربندی نشده یا سرویس آدرس در دسترس نیست.";
-  }
-}
-$("copy-public-link").addEventListener("click", async () => {
-  if (!$("public-link").value) return;
-  try { await navigator.clipboard.writeText($("public-link").value); toast("آدرس کپی شد."); }
-  catch { $("public-link").focus(); $("public-link").select(); toast("کپی خودکار در دسترس نیست؛ آدرس را انتخاب کردم تا دستی کپی کنید."); }
-});
 async function loadLife() {
   const t = await getJSON("/api/timeline").catch(() => null);
   if (t) paintTimeline(t.spine, (t.chapters || []).length);
@@ -2244,14 +2221,14 @@ async function refreshAll() {
       panel.hidden = !["p-stories", "p-town", "p-planner"].includes(panel.id);
     });
     const comments = $("comment-form"); if (comments) comments.hidden = true;
-    await Promise.allSettled([loadStories(), loadTown(), loadPublicLink(), loadPublicRoutine()]);
+    await Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]);
     return;
   }
   await loadStatus();
   await Promise.allSettled([
     loadStories(), loadDiary(), loadResearchAndLessons(), loadWorld(), loadComments(),
     loadSkills(), loadGraph(), loadFlaws(), loadPlanner(), loadNotebook(), loadBooks(), loadExperiments(),
-    panels.loadAll(), pollRoom(), loadAchievements(), loadLife(), loadWardrobe(), loadTown(), loadPublicLink(),
+    panels.loadAll(), pollRoom(), loadAchievements(), loadLife(), loadWardrobe(), loadTown(),
   ]);
   await loadNotebookPages();
 }
