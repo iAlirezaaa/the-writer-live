@@ -12,13 +12,13 @@ Use whenever modifying the city, homes, writer exterior/interior, building footp
 1. `docs/CITY_LAYOUT_V2.md`
 2. `web/urban-plan.js` (canonical schema) or the pinned live `.github/city-assets/urban-plan.js`
 3. `web/town.js`, `web/town-districts.js`, `web/world.js`
-4. `tests/urban_plan_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/town_scene_probe.mjs`
+4. `tests/urban_plan_probe.mjs`, `tests/road_topology_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/writer_house_consistency_probe.mjs`, `tests/town_scene_probe.mjs`
 
 ## Procedure
 1. Record which parcel/road/entry ID is changing. Do **not** move established citizen homes or publish fictional trips as actual observations.
 2. Alter the road graph **first**; all road endpoints must intersect a real other segment, except an explicitly designed pedestrian cul-de-sac.
 3. Update parcel boundaries/clearance, entry anchors, sidewalks, parking, planted buffers, and rendered 3D geometry together. Run validation before changing any decorative asset.
-4. Keep writer's **stage-zero house one room, 4.8×4.8**, and no parking. Only expand based on accepted stories. Protect the future maximum parcel and do not expose locked rooms.
+4. Keep writer's **stage-zero house one room, 6×6 (as specified by WRITER_HOME_BLUEPRINT)**, and no parking. Only expand based on accepted stories. Protect the future maximum parcel and do not expose locked rooms.
 5. The opening view must be town exteriors. Clicking writer's exterior switches to preserved interior; do not display the old wide dollhouse outdoors. Keep back/return to city navigation clear.
 6. Check every real `THREE.Box3` bounding volume at road and doorway elevations. Ensure all entries are reachable from pedestrian or driving networks. No props or signs cover navigation.
 7. Treat shared palettes and geometry resources as cached. Keep day/night coherent without introducing excessive light sources.
