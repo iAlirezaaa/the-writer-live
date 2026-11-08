@@ -47,3 +47,20 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - Inspect both workflow job conclusions independently. A successful public Pages `deploy` job does not override a failed private `tehran` job.
 - For failed runs, fetch the job logs and identify the exact failing assertion before editing runtime code; if logs are unavailable, record the failure as undiagnosed and do not release weather-runtime changes.
 - Require separate evidence for Node probe exit code, browser Open-Meteo fetch, Tehran midnight transition, visual sky, and the Pages deploy for the **specific new revision**. Older deployments cannot certify newer changes.
+
+
+## Vehicle motion safety (MAYOR-015)
+- Preserve the four paved lane centerlines and existing pedestrian-crossing reservation before introducing graph turns.
+- Enforce minimum bumper clearance during spawn, wrap and all intersection transitions; validate against the actual road surface, not just a visual spline.
+- Reload continuity based on wall-clock phase is approximate, not a persistent traffic simulation; do not describe it as saved state.
+- Run `tests/city_traffic_probe.mjs`, lane-bound checks, collision/headway tests, and night visual checks before copying vehicle runtime to the public pinned site.
+- If CI or local execution is unavailable, keep runtime changes private and explicitly report release blocked.
+
+## Clock-anchored vehicle route acceptance (MAYOR-016, 2026-11-09)
+- Replace short straight-line modulo loops with directed road-network itineraries. Anchor initial vehicle phase to absolute epoch time; never reset all cars to three identical spawn slots when the page reloads. Record that a deterministic, finite itinerary still eventually repeats.
+- Generate turning arcs only within the intersection of physical ROAD_SEGMENTS strips; verify every sampled wheel-center path against the *real* `web/urban-plan.js` geometry. Keep a stable per-vehicle pseudorandom seed for changing turns.
+- Never place new pedestrian crossing signal posts on the authored public sidewalk `z=11.3`. The town-scene paths probe catches these as wall/furniture conflicts.
+- Avoid radial all-vehicle collision checks: they can cause all-way deadlock when turning cars pass near one another. Follow same-direction lane leaders with directional headway, and arbitrate crossing conflicts with signal phases.
+- Emissive materials alone are not proof of night lighting. Keep visible bright headlamp lenses, a small pool of no-shadow SpotLights (bounded to six for twelve vehicles) and the night factor derived from the `Asia/Tehran` clock, falling back to scene day/night factor.
+- The deployed fleet comes from pinned `.github/citizens-assets/town-cars.js` and `town.js`; the public `prepare_car_deploy.py` must recognize road-graph signatures rather than insist on `laneCars`. The car import, town import and root world entrypoint all require aligned cache bust tokens; align `prepare_city_deploy.py`, `prepare_citizens_deploy.py`, `prepare_observer_deploy.py` and the test assertion.
+- Require executable regressions for path samples inside asphalt, vehicle clock snapshot across reload, night headlamps, no dangerous crosswalk overlap, town-scene layout/paths/wiring, and public deploy conclusion. Successful mocked-Three geometry checks do not substitute for live browser visual inspection.
