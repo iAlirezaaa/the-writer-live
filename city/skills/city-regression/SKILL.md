@@ -35,3 +35,17 @@ Record each municipal change with the following fields, even if no runtime code 
 | Deployment | Pages workflow URL and conclusion for the **new** public revision, or `NOT VERIFIED` |
 
 Release rule: documentation-only edits may be mirrored without claiming runtime verification. Any runtime geometry or behavior edit must remain unpublished if probe execution, pinned-file equivalence, access/collision checks, or deployment prerequisites cannot be confirmed. Never infer success from a previous green workflow.
+
+## Iteration 004: immutable pin parity audit
+Before a city runtime release, compare Git blob SHA (not filename, timestamp, or previous workflow status) for each declared mapping:
+
+| Private source | Public pin |
+| --- | --- |
+| `web/urban-plan.js` | `.github/city-assets/urban-plan.js` |
+| `web/road-surface.js` | `.github/city-assets/road-surface.js` |
+| `web/town-districts.js` | `.github/city-assets/town-districts.js` |
+| `web/city-growth.js` | `.github/city-assets/city-growth.js` |
+| `web/town.js` | `.github/citizens-assets/town.js` |
+| `web/world.js` | `.github/citizens-assets/world.js` |
+
+Only compare `town.js` and `world.js`; do not modify citizen logic. A matched blob proves source parity only, **not** runtime tests, scene correctness, browser visual QA, or successful Pages deployment. Record all six SHAs and both revisions, and re-check after any new source commit. For geometry edits require the Node probes, foundation/collision/clearance checks, day/night screenshots, and a new green deployment before claiming release acceptance. Missing tests or missing files are blockers, never implicit passes.
