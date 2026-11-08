@@ -29,3 +29,16 @@ Scope: **city only**. No writer, publisher, citizen route, memory, or story chan
 - Existing north mountain cones are already present in `web/town.js`; do not duplicate them before a visual survey.
 - Existing pedestrian/vehicle paths and author/publisher assets are protected.
 - Status: **documentation gate recorded; no runtime geometry released and no automated test execution claimed in this entry**.
+
+## Iteration MAYOR-009 — housing access continuity (2026-11-08)
+- [ ] Replace the 12 eastern residential approach paths that terminate about 1.06 scene units short of asphalt, without relocating homes, roads, residents, writer or publisher.
+- [ ] Add a real Three.js geometry probe that measures each named housing walk vs the existing east-housing-link road edge, door face, ground elevation and minimum width.
+- [ ] Execute a dedicated city-only private CI gate and existing urban/road/district tests before publishing any geometry.
+- [ ] Mirror only approved scene, probe, skill and TODO changes to the public pinned assets; confirm the new Pages workflow.
+- [ ] Record exact commit links, remaining visual QA, and performance impact (no extra draw calls expected: same twelve path meshes).
+
+## Two ideas proposed for after MAYOR-009
+- [ ] IDEA-003: curb-ramp and tactile paving library at the school/police crosswalks, backed by continuous accessible-route probes.
+- [ ] IDEA-004: studio-to-forest educational trail with small reusable film-set clue markers and a resident-free Easter egg index.
+
+Status: TODO registered BEFORE runtime modification; private tests and public sync PENDING.
