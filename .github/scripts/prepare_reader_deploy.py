@@ -34,8 +34,8 @@ def patch_site(root: Path) -> None:
         '"vazir-classic"' in book,
         '"turn turn-prev", "→"' in book,
         '"turn turn-next", "←"' in book,
-        "read.js?v=observatory-20261108-v1" in html,
-        "persian-display.js?v=observatory-20261108-v1" in reader,
+        "read.js?v=observatory-20261108-v2" in html,
+        "persian-display.js?v=observatory-20261108-v2" in reader,
         "overlay.dataset.readerTheme" in book,
     ]):
         raise RuntimeError("Reader deployment assets are incomplete or stale")
