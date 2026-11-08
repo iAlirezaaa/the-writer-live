@@ -352,7 +352,7 @@ export function createCitizens({ THREE, scene, clickable }) {
 
   function status() {
     return [...residents.values()].filter((resident) => resident.present).map((resident) => ({
-      id: resident.row.id, label: resident.row.label, role: resident.row.role,
+      id: resident.row.id, label: resident.row.label, story: resident.row.story, role: resident.row.role,
       place: resident.place, activity: resident.route.length ? "walk" : resident.goal.activity,
       destination: resident.goal.place, visible: resident.figure.root.visible,
       agent: { ...resident.agent, tools: [...resident.agent.tools] },

@@ -1278,6 +1278,7 @@ async function loadTown() {
   try {
     const payload = await getJSON("/api/town");
     citizens.setRoster(payload);
+    const identities = new Map(citizens.status().map((resident) => [resident.id, resident]));
     serverClockOffset = Date.parse(payload.clock) - Date.now();
     const zone = payload.clock.match(/([+-])(\d{2}):(\d{2})$/);
     serverUtcOffset = zone ? (zone[1] === "-" ? -1 : 1) * (Number(zone[2]) * 60 + Number(zone[3])) : 0;
@@ -1290,7 +1291,7 @@ async function loadTown() {
       residentSummaries.set(resident.id, summary);
       const agent = document.createElement("p");
       agent.className = "time"; agent.textContent = `ایجنت ${resident.agent.id} · غیرفعال · بدون ابزار`;
-      const biography = document.createElement("p"); biography.className = "small"; biography.textContent = resident.story;
+      const biography = document.createElement("p"); biography.className = "small"; biography.textContent = identities.get(resident.id)?.story || resident.story || "";
       const occupation = document.createElement("p"); occupation.className = "time"; occupation.textContent = `پیشهٔ ثابت: ${ROLE_LABELS[resident.role]} · خانه: ${PLACE_LABELS[resident.home]}`;
       const schedule = document.createElement("ol");
       for (const entry of resident.routine) {
