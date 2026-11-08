@@ -2,12 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { openBook, setTurnSpeed } from "./book.js?v=reader-20261108-v4";
 import { openExplorer } from "./explorer.js";
-import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=citizens-20261108-v2";
+import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=citizens-20261108-v3";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
 import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-e";
-import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v2";
-import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v2";
+import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
+import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
    also lives in the room. Click an object: the camera moves into it and its contents open inside it.
