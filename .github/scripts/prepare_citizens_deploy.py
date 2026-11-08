@@ -9,17 +9,24 @@ from pathlib import Path
 import re
 import sys
 
-VERSION = "citizens-20261108-v1"
+VERSION = "citizens-20261108-v2"
 
 
 def patch_site(root: Path) -> None:
     web=root/"web"
     sources={key:(web/key).read_text(encoding="utf-8") for key in (
-        "citizens.js","citizen-motion-library.js","objects.js","world.js")}
+        "citizens.js","citizen-motion-library.js","objects.js","world.js",
+        "town.js","town-cars.js")}
     if not all((
         'export function createCitizens' in sources["citizens.js"],
         'setPublisherProfile' in sources["citizens.js"],
         'function paintRoute' in sources["citizens.js"],
+        'function crossingDemand' in sources["citizens.js"],
+        'crossingOwner' in sources["citizens.js"],
+        'citizens.crossingDemand()' in sources["world.js"],
+        'town.trafficState()' in sources["world.js"],
+        'carLayer.setCrossingDemand(' in sources["town.js"],
+        'function trafficState()' in sources["town-cars.js"],
         'citizenSelect' in sources["objects.js"],
         'MOTION_ARCHIVE' in sources["citizen-motion-library.js"],
         'socialClipsDormant:true' in sources["citizen-motion-library.js"],
@@ -40,7 +47,7 @@ def patch_site(root: Path) -> None:
     if count!=1:
         raise RuntimeError("Cannot version public 3D-world entrypoint")
     index_file.write_text(index,encoding="utf-8")
-    print("Citizen deployment: 12 unique cores, shared motion, click panels and safe publisher proxy OK")
+    print("Citizen deployment: 12 unique cores, shared motion, protected crosswalk, click panels and publisher proxy OK")
 
 
 if __name__=="__main__":
