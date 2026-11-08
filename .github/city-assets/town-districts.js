@@ -1,10 +1,11 @@
+import { auditUrbanPlan } from "./urban-plan.js?v=urban-plan-20261108-v2";
 /* THE WRITER — CITY DISTRICT KIT / v1
  * Architectural layer only. The author's house, room props, current pedestrian
  * graph, and moving traffic lanes are NEVER modified by this module.
  * Uses cached geometries/materials and instanced window facades to keep draw
  * calls affordable. These are designed fictional venues, not proof of visits.
  */
-export const DISTRICT_KIT_VERSION="district-kit-20261108-v1";
+export const DISTRICT_KIT_VERSION="district-kit-20261108-v2";
 export const CITY_BLOCKS=Object.freeze([
   {id:"west-arcade",x:-20,z:-18,w:5.4,d:5.6,floors:4,style:"brick",title:"رواق غربی",district:"محلهٔ قدیمی"},
   {id:"media-loft",x:-12,z:-18,w:5.2,d:5.4,floors:5,style:"loft",title:"استودیوهای شهر",district:"محلهٔ هنر"},
@@ -67,7 +68,7 @@ export function auditCityPlan(){
       intersections.push([a.id,b.id]);
   }
   return {blocks:CITY_BLOCKS.length,venues:CITY_PLACE_CATALOG.length,
-    styles:PALETTE_STYLES.length,intersections,writerRoomUntouched:true,
+    styles:PALETTE_STYLES.length,intersections,urban:auditUrbanPlan(),writerRoomUntouched:true,
     routesUnchanged:true,animatedVenueVisits:false};
 }
 export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3}){
@@ -320,6 +321,10 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
       B(.08,.018,1.4,roadStripe,x,H(-.027),t);
   };
   newStreet(-29,-20,4.3,43);newStreet(29,-20,4.3,43);
+  // Both outer streets now connect to the existing east/west network.
+  newStreet(0,-8.5,63,4);
+  // Street between the two southern rows of blocks: no disconnected facades.
+  newStreet(0,-23,63,4.15);
   newStreet(0,-40,63,4.4);
   // Keep the original operating cars on their current two tested traffic lanes.
   // Decorative side-street access and curb zones are explicitly not sim lanes.
