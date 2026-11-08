@@ -167,7 +167,7 @@
       "label": "چرت",
       "next_retry_at": null,
       "start": "2026-11-08T18:48",
-      "status": "planned",
+      "status": "done",
       "task": "nap"
     },
     {
@@ -177,7 +177,7 @@
       "label": "استراحت",
       "next_retry_at": null,
       "start": "2026-11-08T19:33",
-      "status": "planned",
+      "status": "skipped",
       "task": "rest"
     },
     {
@@ -235,12 +235,12 @@
   "day": "2026-11-08",
   "next": {
     "attempts": null,
-    "end": "2026-11-08T19:33",
-    "id": "202611081848",
-    "label": "چرت",
+    "end": "2026-11-08T21:03",
+    "id": "202611082018",
+    "label": "کار با کامپیوتر خودم",
     "next_retry_at": null,
-    "start": "2026-11-08T18:48",
+    "start": "2026-11-08T20:18",
     "status": "planned",
-    "task": "nap"
+    "task": "computer"
   }
 }
