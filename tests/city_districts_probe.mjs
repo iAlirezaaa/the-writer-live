@@ -47,6 +47,25 @@ assert.equal(city.districts.stats.venues,9);
 assert.ok(city.districts.stats.dynamicLights>=3);
 const THREE_BOX=new THREE.Box3();
 function bounds(object){object.updateWorldMatrix(true,true);return THREE_BOX.clone().setFromObject(object);}
+const surfaceAt=(x,z,minWidth,minDepth)=>{
+ return district.children.some(obj=>{
+   if(!obj.isMesh||!obj.geometry?.isBoxGeometry)return false;
+   const box=bounds(obj),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+   return Math.abs(center.x-x)<.12&&Math.abs(center.z-z)<.12
+     &&size.x>=minWidth&&size.z>=minDepth
+     &&box.min.y>=STREET_Y-.20&&box.max.y<=STREET_Y+.3;
+ });
+};
+assert.ok(surfaceAt(0,-24.5,62,3.9),"Central connector road has no real asphalt mesh");
+for(const x of [-35,35]){
+ assert.ok(surfaceAt(x,-32,4.7,7.9),"Missing shared parking asphalt at "+x);
+}
+for(const block of districts.CITY_BLOCKS){
+ const z=block.z===-18?-13.02:-26.75;
+ assert.ok(surfaceAt(block.x,z,1.30,1.05),
+   "District entrance is missing a continuous paved walk: "+block.id);
+}
+
 let facades=0,instanceCount=0;
 for(const b of districts.CITY_BLOCKS){
   const group=district.getObjectByName("building-"+b.id);
