@@ -29,7 +29,7 @@ def patch_site(root: Path) -> None:
         f'./book.js?v={VERSION}' in reader,
         "Reading experience v2" in css,
         f"read.js?v={VERSION}" in html,
-        "data-reader-theme" in book,
+        "overlay.dataset.readerTheme" in book,
     ]):
         raise RuntimeError("Reader deployment assets are incomplete or stale")
 
