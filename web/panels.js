@@ -141,6 +141,17 @@ async function loadPublish() {
     const out = [H.item(`${d.persona?.name || "ناشناس"} — ${d.persona?.house || ""}`, "دفترِ ناشر بیرون از اتاقِ نویسنده است؛ منتقد تنها نمره می‌دهد، ناشر تصمیم می‌گیرد چاپ شود یا نه.")];
     for (const k of ["trust", "curiosity", "fatigue"]) if (rel[k] != null) out.push(meter(k === "trust" ? "اعتماد" : k === "curiosity" ? "کنجکاوی" : "خستگی", typeof rel[k] === "number" ? rel[k] : rel[k].value));
     out.push(para(rel.reading || rel.note || ""));
+    const std = d.publisher_standard || {};
+    if (std.score_floor != null)
+      out.push(heading("معیار سخت‌گیرانهٔ ناشر"),
+        rows([["سطح سخت‌گیری", String(std.tier)],
+              ["کف امتیاز ادبی", `${std.score_floor} از ۱۰۰`],
+              ["آستانهٔ تصمیم ناشر", String(std.signal_bar)],
+              ["آثار پذیرفته‌شده", String(std.publications)]]));
+    if ((d.rewards || []).length)
+      out.push(heading("دستاوردهای تأیید ناشر"),
+        rows(d.rewards.slice(0, 8).map((r) =>
+          [`اثر شمارهٔ ${r.publication_number}`, "دستاورد باز شده · پرداخت واقعی غیرفعال"])));
     out.push(heading("گفت‌وگوهای اخیر"), rows((d.meetings || []).slice(0, 5).map((m) => [m.topic || m.outcome || "گفت‌وگو", `${m.line_count ?? (m.lines || []).length} حرف · ${String(m.started || "").slice(0, 16)}`])));
     out.push(heading("آنچه برای چاپ پذیرفته"), rows((d.catalog || []).map((c) => [c.title || c.story_id, `تیراژ ${c.print_run ?? "—"} · ${c.decision || ""}`]), "هنوز چیزی را برای چاپ نپذیرفته."));
     out.push(heading("خواسته‌هایش از نویسنده"), rows((d.agenda || []).map((a) => [a.request || a.what, a.due || a.why || ""])));

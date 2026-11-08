@@ -320,6 +320,18 @@ const SOURCES = {
         ["اعتماد", pc(rel.trust)], ["کنجکاوی", pc(rel.curiosity)], ["خستگی", pc(rel.fatigue)],
         ["از", (pub.since || "").slice(0, 10)],
       ]), cell("p", "body", rel.reading || "")];
+      const std = pub.publisher_standard || {};
+      if (std.score_floor != null) {
+        out.push(cell("h4", "grp", "معیارهای سخت‌گیرانهٔ نشر"),
+          kv([["سطح سخت‌گیری", std.tier], ["حداقل کیفیت", `${std.score_floor} از ۱۰۰`],
+              ["حداقل سیگنال ناشر", std.signal_bar],
+              ["تعداد آثار تأییدشده", std.publications]]));
+      }
+      if ((pub.rewards || []).length)
+        out.push(cell("h4", "grp", "دستاوردهای تأیید ناشر"),
+          list(pub.rewards.slice(0, 8).map((r) =>
+            row(`اثر شمارهٔ ${r.publication_number} · ${r.title || "پذیرش اثر"}`,
+              `دستاورد باز شد · ${(r.unlocked_at || "").slice(0, 10)} · پرداخت واقعی غیرفعال`))));
       if (pub.last_line) out.push(cell("p", "quote", "ناشر: " + pub.last_line));
       out.push(cell("h4", "grp", "گفت‌وگوها"),
         list((pub.meetings || []).slice(0, 5).map((m) => row(m.topic || "گفت‌وگو", `${String(m.started || m.at || "").replace("T", " ").slice(0, 16)} · ${(m.last || "").slice(0, 90)}`))));
