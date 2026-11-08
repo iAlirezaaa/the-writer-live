@@ -12,3 +12,7 @@ description: Plan connected roads, legible parcels, real entrances, parking and 
 6. Validate the plan and the real street geometry with `urban_plan_probe.mjs` and `city_districts_probe.mjs`.
 
 **Stop** on any disconnected road, impossible entry, occupied crosswalk, or unsafe parking access.
+
+## Seamless asphalt contract
+
+Keep `web/road-surface.js` and its pinned live counterpart as the single geometry source for asphalt. `calculateRoadUnion(ROAD_SEGMENTS)` cuts street rectangles into non-overlapping tiles in ONE buffer geometry with ONE material and ONE world elevation. Do not render intersecting road plates on top of each other as the final surface. Old road strips remain below only for compatibility with citizen route probes. Test triangle winding (upward normal), consistent height, eight segment coverage, and non-duplicated geometry in `tests/city_districts_probe.mjs`.
