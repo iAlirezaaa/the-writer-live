@@ -40,7 +40,6 @@ async function getJSON(url, opts) {
     if (pathname === "/api/planner") return fetch(`${base}planner.json`, { cache: "no-store" }).then((r) => r.json());
     const story = pathname.match(/^\/api\/stories\/([^/]+)$/);
     if (story) return fetch(`${base}stories/${encodeURIComponent(decodeURIComponent(story[1]))}.json`, { cache: "no-store" }).then((r) => r.json());
-    if (pathname === "/api/public-link") return { url: "https://ialirezaaa.github.io/the-writer-live/", kind: "fixed" };
     throw new Error("این بخش در نسخهٔ عمومی در دسترس نیست.");
   }
   const r = await fetch(url, opts);

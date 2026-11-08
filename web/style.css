@@ -130,12 +130,6 @@ body.app { height: 100vh; overflow: hidden; }
 #stage canvas { display: block; width: 100%; height: 100%; }
 .stage-controls { position: absolute; top: var(--s3); right: var(--s3); left: var(--s3); pointer-events: none; color: #ece6da; }
 .stage-controls > * { pointer-events: auto; }
-.public-address { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(18, 22, 27, 0.9); border: 1px solid #ffffff24; border-radius: 8px; font-size: 0.74rem; }
-.public-address input { flex: 1; min-width: 40px; margin: 0; padding: 2px 6px; color: #f1e6cd; background: transparent; border: 0; font-family: monospace; font-size: 0.8rem; }
-.public-address button { color: #ece6da; border-color: #ffffff30; }
-.public-address a { color: #ebbf7c; white-space: nowrap; }
-.public-address button:disabled { opacity: 0.4; cursor: default; }
-.address-note { margin: 3px 4px; font-size: 0.68rem; color: #eee0c8; text-shadow: 0 1px 3px #000; }
 .location-line { display: flex; gap: 8px; align-items: center; width: fit-content; margin: 10px 0 8px; padding: 4px 10px; background: #111820ce; border-radius: 6px; font-size: 0.8rem; }
 .location-line > span:last-child { color: #b8c2c6; font-size: 0.68rem; }
 .location-dot { width: 6px; height: 6px; background: #e3b46f; border-radius: 50%; }
@@ -152,8 +146,6 @@ body.app { height: 100vh; overflow: hidden; }
 .resident-row summary { cursor: pointer; }
 .resident-row ol { padding-inline-start: 20px; color: var(--muted); font-size: 0.75rem; }
 @media (max-width: 600px) {
-  .public-address { flex-wrap: wrap; gap: 4px; }
-  .public-address > span { flex-basis: 100%; }
   .location-line > span:last-child { display: none; }
   .stage-tools button { font-size: 0.7rem; padding: 3px 7px; }
   .stage-controls { top: 8px; right: 8px; left: 8px; }
