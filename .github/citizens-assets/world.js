@@ -1247,60 +1247,114 @@ const exteriorWood = new THREE.MeshStandardMaterial({color:0x594739,roughness:.8
 const exteriorGlass = new THREE.MeshStandardMaterial({color:0x8daeb4,roughness:.38,metalness:.12});
 const exteriorPath = new THREE.MeshStandardMaterial({color:0xb6ac97,roughness:1});
 const exteriorGreen = new THREE.MeshStandardMaterial({color:0x5b7956,roughness:1});
+// Both facades are drawn from WRITER_HOME_BLUEPRINT. All coordinates below are
+// local to the floor, with only the city view offset down to STREET_Y.
 function rebuildWriterExterior(level=0){
   for(const node of [...writerExterior.children]){
     const index=clickables.indexOf(node);if(index>=0)clickables.splice(index,1);
     writerExterior.remove(node);node.geometry?.dispose?.();
   }
-  const [w,d]=writerHouseDimensions(level),h=3.05+(level>=2?.35:0);
-  exteriorPart(new THREE.BoxGeometry(w+.38,.18,d+.38),exteriorPath,0,STREET_Y+.04,0);
-  exteriorPart(new THREE.BoxGeometry(w,h,d),exteriorWall,0,STREET_Y+h/2,0);
-  // Two genuinely pitched, matte roof planes — not an oversized flat slab.
+  const [w,d]=writerHouseDimensions(level);
+  const home=WRITER_HOME_BLUEPRINT,h=home.room.height,front=d/2,back=-d/2;
+  const door=home.facade.door,frontGlass=home.facade.frontWindow,rear=home.facade.rearWindow;
+  const b=(bw,bh,bd,mat,x,y,z)=>exteriorPart(new THREE.BoxGeometry(bw,bh,bd),mat,x,STREET_Y+y,z);
+  const rearFrame=new THREE.MeshStandardMaterial({color:0xe8e1d3,roughness:.6});
+  // Each actual wall has real openings. A fake glass decal on a solid cube
+  // would hide the correspondence with the interior room.
+  b(w+.24,.18,d+.24,exteriorWood,0,.01,0);
+  for(const side of [-1,1]) b(.12,h,d,exteriorWall,side*w/2,h/2,0);
+  const rearLeft=rear.x0,rearRight=rear.x1;
+  b(rearLeft+w/2,h,.12,exteriorWall,(rearLeft-w/2)/2,h/2,back);
+  b(w/2-rearRight,h,.12,exteriorWall,(rearRight+w/2)/2,h/2,back);
+  b(rearRight-rearLeft,rear.y0,.12,exteriorWall,(rearLeft+rearRight)/2,rear.y0/2,back);
+  b(rearRight-rearLeft,h-rear.y1,.12,exteriorWall,(rearLeft+rearRight)/2,(h+rear.y1)/2,back);
+  b(rearRight-rearLeft,rear.y1-rear.y0,.045,exteriorGlass,(rearLeft+rearRight)/2,(rear.y0+rear.y1)/2,back-.065);
+  for(const x of [rearLeft,rearRight,(rearLeft+rearRight)/2])
+    b(.075,rear.y1-rear.y0,.18,rearFrame,x,(rear.y0+rear.y1)/2,back-.11);
+  for(const y of [rear.y0,rear.y1])b(rearRight-rearLeft+.18,.075,.20,rearFrame,(rearLeft+rearRight)/2,y,back-.11);
+  const dl=door.x-door.width/2,dr=door.x+door.width/2;
+  const wl=frontGlass.x-frontGlass.width/2,wr=frontGlass.x+frontGlass.width/2;
+  const continuous=[[-w/2,dl],[dr,wl],[wr,w/2]];
+  for(const [a,z] of continuous) if(z>a) b(z-a,h,.12,exteriorWall,(z+a)/2,h/2,front);
+  b(door.width,h-door.height,.12,exteriorWall,door.x,(door.height+h)/2,front);
+  const whTop=frontGlass.sill+frontGlass.height;
+  b(frontGlass.width,frontGlass.sill,.12,exteriorWall,frontGlass.x,frontGlass.sill/2,front);
+  b(frontGlass.width,h-whTop,.12,exteriorWall,frontGlass.x,(whTop+h)/2,front);
+  b(frontGlass.width,frontGlass.height,.04,exteriorGlass,frontGlass.x,
+    frontGlass.sill+frontGlass.height/2,front+.075);
+  for(const x of [wl,wr,frontGlass.x])
+    b(.08,frontGlass.height+.09,.19,rearFrame,x,frontGlass.sill+frontGlass.height/2,front+.12);
+  for(const y of [frontGlass.sill,whTop])
+    b(frontGlass.width+.18,.08,.20,rearFrame,frontGlass.x,y,front+.12);
+  const portal=b(door.width,door.height,.09,exteriorWood,door.x,door.height/2,front+.075);
+  b(door.width+.2,.12,.23,exteriorWood,door.x,door.height+.06,front+.14);
+  b(.05,.07,.09,frameMat,door.x+door.width*.34,1.03,front+.19);
+  // No false extra storey: single roof resting directly above the single room.
   for(const side of [-1,1]){
-    const roof=exteriorPart(new THREE.BoxGeometry(w/2+.45,.16,d+.65),exteriorRoof,
-      side*w/4,STREET_Y+h+.43,0);
+    const roof=b(w/2+.45,.17,d+.60,exteriorRoof,side*w/4,h+.43,0);
     roof.rotation.z=-side*.38;
   }
-  const gableShape=new THREE.Shape();
-  gableShape.moveTo(-w/2,0);gableShape.lineTo(w/2,0);
-  gableShape.lineTo(0,.96);gableShape.closePath();
-  exteriorPart(new THREE.ShapeGeometry(gableShape),exteriorWall,0,STREET_Y+h,d/2+.01);
-  exteriorPart(new THREE.BoxGeometry(.4,.9,.45),exteriorWood,-w*.27,STREET_Y+h+.62,-d*.22);
-  const portal=exteriorPart(new THREE.BoxGeometry(.96,2.06,.12),exteriorWood,-.65,STREET_Y+1.03,d/2+.07);
-  const window=exteriorPart(new THREE.BoxGeometry(1.18,1.05,.09),exteriorGlass,w*.24,STREET_Y+1.72,d/2+.07);
-  exteriorPart(new THREE.BoxGeometry(1.32,.07,.18),exteriorWood,w*.24,STREET_Y+2.3,d/2+.12);
-  exteriorPart(new THREE.BoxGeometry(1.2,.12,.27),exteriorWood,-.65,STREET_Y+2.19,d/2+.25);
-  exteriorPart(new THREE.SphereGeometry(.055,10,8),new THREE.MeshStandardMaterial({color:0xd2ae73,metalness:.55,roughness:.35}),-.30,STREET_Y+1.05,d/2+.17);
-  exteriorPart(new THREE.BoxGeometry(.13,.26,.1),new THREE.MeshStandardMaterial({
-    color:0xe2c58d,emissive:0xa96b32,emissiveIntensity:.65
-  }),-1.58,STREET_Y+2.25,d/2+.12);
-  exteriorPart(new THREE.BoxGeometry(1.25,.13,.72),exteriorPath,-.65,STREET_Y+.08,d/2+.39);
-  // A pedestrian approach and planted front setbacks, no private parking at level zero.
-  exteriorPart(new THREE.BoxGeometry(1.25,.075,6.55-d/2),exteriorPath,-.65,STREET_Y+.035,(6.55+d/2)/2);
-  for(const x of [-1,1].map(side=>side*(w/2+.55))){
-    exteriorPart(new THREE.BoxGeometry(.5,.12,4.8),exteriorGreen,x,STREET_Y+.07,0);
+  const gable=new THREE.Shape();gable.moveTo(-w/2,0);gable.lineTo(w/2,0);
+  gable.lineTo(0,home.facade.roof.rise);gable.closePath();
+  const triangle=exteriorPart(new THREE.ShapeGeometry(gable),exteriorWall,0,STREET_Y+h,front+.025);
+  triangle.material.side=THREE.DoubleSide;
+  b(w+.26,.10,.22,exteriorWood,0,h,front+.035);
+  b(1.3,.12,.78,exteriorPath,door.x,.05,front+.44);
+  // Safe, continuous pedestrian approach without an oversized front courtyard.
+  const approachEnd=6.48;
+  const walkDepth=approachEnd-(front+.44);
+  if(walkDepth>.2)b(1.3,.07,walkDepth,exteriorPath,door.x,.03,(front+.44+approachEnd)/2);
+  for(const side of [-1,1]){
+    const gx=side*(w/2+.54);
+    if(Math.abs(gx)+.26<4.4)b(.44,.12,Math.min(d,6.2),exteriorGreen,gx,.08,0);
   }
-  if(level>=3){
-    exteriorPart(new THREE.BoxGeometry(1.6,.08,2),exteriorPath,3.45,STREET_Y+.035,4.2);
-    exteriorPart(new THREE.BoxGeometry(1.6,.06,1.5),exteriorPath,3.45,STREET_Y+.025,5.95);
-  }
-  const hit=exteriorPart(new THREE.BoxGeometry(w, h+.6,d+.15),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,STREET_Y+(h+.6)/2,0);
+  if(level>=3) b(1.38,.07,2.15,exteriorPath,3.5,.035,5.05);
+  const hit=b(w,h,d,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,h/2,0);
   hit.userData.writerExterior=true;
   clickable(hit,"p-status","خانهٔ نویسنده — ورود به اتاق");
-  // Front door remains independently clickable for assistive scene inspection.
-  clickable(portal,"p-status","ورود به اتاق نویسنده");
   portal.userData.writerExterior=true;
-  window.userData.writerExterior=true;
+  clickable(portal,"p-status","در ورودی اتاق نویسنده");
+  writerExterior.userData.plan=home;
   currentWriterHouseLevel=level;
+}
+function rebuildWriterInteriorShell(level=0){
+  baseWriterRoomShell.visible=level===0;
+  for(const child of [...expandedWriterRoomShell.children]){
+    expandedWriterRoomShell.remove(child);child.geometry?.dispose?.();
+  }
+  if(level===0){expandedWriterRoomShell.visible=false;return;}
+  const [w,d]=writerHouseDimensions(level),h=WRITER_HOME_BLUEPRINT.room.height;
+  const rear=WRITER_HOME_BLUEPRINT.facade.rearWindow;
+  const roomPart=(bw,bh,bd,mat,x,y,z)=>{
+    const part=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),mat);
+    part.position.set(x,y,z);part.receiveShadow=true;expandedWriterRoomShell.add(part);return part;
+  };
+  roomPart(w,.12,d,M.darkWood,0,-.06,0);
+  roomPart(w,.025,d,M.floor,0,.012,0);
+  for(const side of [-1,1])roomPart(.12,h,d,M.wall,side*w/2,h/2,0);
+  roomPart(rear.x0+w/2,h,.12,M.wall,(rear.x0-w/2)/2,h/2,-d/2);
+  roomPart(w/2-rear.x1,h,.12,M.wall,(rear.x1+w/2)/2,h/2,-d/2);
+  roomPart(rear.x1-rear.x0,rear.y0,.12,M.wall,(rear.x0+rear.x1)/2,rear.y0/2,-d/2);
+  roomPart(rear.x1-rear.x0,h-rear.y1,.12,M.wall,(rear.x0+rear.x1)/2,(rear.y1+h)/2,-d/2);
+  const rim=new THREE.MeshStandardMaterial({color:0xe8e1d3,roughness:.6});
+  roomPart(rear.x1-rear.x0,rear.y1-rear.y0,.04,exteriorGlass,
+    (rear.x0+rear.x1)/2,(rear.y0+rear.y1)/2,-d/2+.05);
+  for(const x of [rear.x0,rear.x1,(rear.x0+rear.x1)/2])
+    roomPart(.07,rear.y1-rear.y0,.14,rim,x,(rear.y0+rear.y1)/2,-d/2+.12);
+  // Like the original room, the frontal wall is cut away for the reader.
+  expandedWriterRoomShell.visible=true;
 }
 function updateWriterHouse(acceptedCount){
   const next=writerHouseLevel(acceptedCount);
-  if(next!==currentWriterHouseLevel)rebuildWriterExterior(next);
+  if(next!==currentWriterHouseLevel){rebuildWriterExterior(next);rebuildWriterInteriorShell(next);setWriterSceneMode(view);}
 }
 function setWriterSceneMode(mode){
   const outdoors=["town","cars","publisher","bookstore"].includes(mode);
   writerExterior.visible=outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
+  legacyWriterArchitecture.visible=false;
+  baseWriterRoomShell.visible=!outdoors && currentWriterHouseLevel===0;
+  expandedWriterRoomShell.visible=!outdoors && currentWriterHouseLevel>0;
 }
 updateWriterHouse(0);
 
