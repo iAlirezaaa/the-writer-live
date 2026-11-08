@@ -1,4 +1,5 @@
 import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
+import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v1";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -168,18 +169,16 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   sign("کافه و میدان", -6, STREET_Y + 2, 14.2, 2.4);
   const townSign = sign("محلهٔ نویسنده", 0, STREET_Y + 1.1, 14.8, 3.5);
   clickable(townSign, "p-town", "زندگی شهر").userData.view = "town";
-  for (let row = 0; row < 2; row++) for (let col = 0; col < 6; col++) {
-    const x = -20 + col * 8, z = -18 - row * 10, h = 4 + ((col * 3 + row * 2) % 5);
-    const wall = material(`back${col % 3}`, [0x7c8990, 0x998777, 0x718781][col % 3]);
-    box(5, h, 5, wall, x, STREET_Y + h / 2, z);
-    box(5.2, 0.2, 5.2, darkWood, x, STREET_Y + h + 0.1, z);
-    for (let y = 1.2; y < h - 0.5; y += 1.8) for (const dx of [-1.5, 0, 1.5]) box(0.6, 0.8, 0.05, glass, x + dx, STREET_Y + y, z + 2.53);
-  }
-  const mountainMat = material("mountain", 0x65727c);
+  // Replaces the flat twelve backdrop blocks with authored architecture,
+  // public spaces and a publisher office on an upper floor. The author's
+  // original home and the tested traffic/pedestrian routes are untouched.
+  const districts = buildCityDistricts({ THREE, group, clickable, canvasTex, streetY: STREET_Y });
+    const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
   const carLayer = buildTownCars({ THREE, city: group, streetY: STREET_Y });
   return {
     group,
+    districts,
     trafficState(){return carLayer.trafficState();},
     update(day, elapsed, crossingDemand=false) {
       const lighting = nightLighting(day);
@@ -187,6 +186,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       glass.emissiveIntensity = 0.05 + (1 - day) * 0.8;
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
+      districts.update(day,elapsed);
       carLayer.setCrossingDemand(crossingDemand===true);
       carLayer.update(day, elapsed);
     },
