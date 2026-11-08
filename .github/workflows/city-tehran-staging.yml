@@ -1,0 +1,84 @@
+name: Tehran city weather staging gate
+on:
+  push:
+    branches: ["city/mayor-010-tehran-weather"]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Full pinned live site build (no deployment)
+        run: |
+          mkdir -p _site
+          cp -a index.html web read snapshot _site/
+          touch _site/.nojekyll
+          # Keep the reviewed city UI even if a local snapshot producer has an
+          # outdated worktree. The next two scripts patch these exact assets.
+          for name in citizens.js citizen-motion-library.js objects.js world.js town.js town-cars.js; do
+            cp ".github/citizens-assets/$name" "_site/web/$name"
+          done
+          cp .github/city-assets/town-districts.js _site/web/town-districts.js
+          cp .github/city-assets/urban-plan.js _site/web/urban-plan.js
+          cp .github/city-assets/road-surface.js _site/web/road-surface.js
+          cp .github/city-assets/city-growth.js _site/web/city-growth.js
+          cp .github/city-assets/tehran-environment.js _site/web/tehran-environment.js
+          python3 .github/scripts/prepare_car_deploy.py _site
+          # The snapshot exporter may copy stale reader files from a local checkout.
+          # Always ship the reviewed, versioned reading assets from this repository.
+          mkdir -p _site/read _site/web
+          for name in book.css book.js read.js book-cover.js feedback.js; do
+            cp ".github/reader-assets/$name" "_site/web/$name"
+          done
+          cp .github/reader-assets/read.html _site/read/index.html
+          python3 .github/scripts/prepare_reader_deploy.py _site
+          python3 .github/scripts/prepare_citizens_deploy.py _site
+          # Pin the complete observer shell AFTER legacy publishing safeguards.
+          # The authoring data/API snapshots remain unchanged.
+          python3 .github/scripts/prepare_observer_deploy.py _site
+          python3 .github/scripts/prepare_city_deploy.py _site
+          cp _site/web/town-districts.js /tmp/the-writer-town-districts.mjs
+          node --check /tmp/the-writer-town-districts.mjs
+          cp _site/web/urban-plan.js /tmp/the-writer-urban-plan.mjs
+          node --check /tmp/the-writer-urban-plan.mjs
+          cp _site/web/city-growth.js /tmp/the-writer-city-growth.mjs
+          node --check /tmp/the-writer-city-growth.mjs
+          cp _site/web/road-surface.js /tmp/the-writer-road-surface.mjs
+          node --check /tmp/the-writer-road-surface.mjs
+          node tests/tehran_environment_probe.mjs _site
+          node tests/urban_plan_probe.mjs _site
+          node tests/road_topology_probe.mjs _site
+          node tests/writer_house_consistency_probe.mjs _site
+          node tests/city_districts_probe.mjs _site
+          node tests/city_housing_access_probe.mjs _site
+          # Protect original writer-house clearance and proven sidewalk graph.
+          for check in layout paths wiring; do
+            node --experimental-vm-modules tests/town_scene_probe.mjs _site "$check" < _site/snapshot/town.json
+          done
+          for name in observer-ui persian-display; do
+            cp "_site/web/$name.js" "/tmp/the-writer-observer-$name.mjs"
+            node --check "/tmp/the-writer-observer-$name.mjs"
+          done
+          test -s _site/web/feedback.js
+          ! grep -q 'id="reader-feedback"' _site/read/index.html
+          grep -q 'feedback.js?v=reader-feedback-3' _site/web/book.js
+          grep -q 'sendReaderVote' _site/web/book.js
+          grep -q 'openPublicVote' _site/web/feedback.js
+          node tests/observatory_probe.mjs _site
+          for name in citizens citizen-motion-library objects; do
+            cp "_site/web/$name.js" "/tmp/the-writer-city-$name.mjs"
+            node --check "/tmp/the-writer-city-$name.mjs"
+          done
+          node tests/citizens_v2_probe.mjs _site _site/snapshot/town.json
+          node tests/city_traffic_probe.mjs _site _site/snapshot/town.json
+          node tests/citizens_probe.mjs _site < _site/snapshot/town.json
+          for name in book read book-cover feedback; do
+            cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
+            node --check "/tmp/the-writer-reader-$name.mjs"
+          done
+          for name in town town-cars world; do
+            cp "_site/web/$name.js" "/tmp/the-writer-$name.mjs"
+            node --check "/tmp/the-writer-$name.mjs"
+          done

@@ -5,8 +5,10 @@ import { openExplorer } from "./explorer.js";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v1";
-import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v1";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v3";
+import { createTehranWeatherService, tehranWeatherLabel } from "./tehran-environment.js?v=tehran-environment-20261108-v1";
+import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
+import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
 import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v4";
@@ -213,7 +215,17 @@ const M = {
 };
 
 const clickables = [];
-function mesh(geo, mat, x, y, z, { cast = true, receive = true, parent = scene } = {}) {
+// Keep the original author's lived-in room. Obsolete four-wing architecture is archived
+// in a disabled scene group, not allowed to masquerade as the one-room interior.
+const legacyWriterArchitecture = new THREE.Group();
+legacyWriterArchitecture.name="legacy-writer-mansion-disabled";
+legacyWriterArchitecture.visible=false;scene.add(legacyWriterArchitecture);
+const baseWriterRoomShell = new THREE.Group();
+baseWriterRoomShell.name="writer-room-shell";scene.add(baseWriterRoomShell);
+const expandedWriterRoomShell = new THREE.Group();
+expandedWriterRoomShell.name="writer-room-shell-expanded";scene.add(expandedWriterRoomShell);
+let writerMeshParent=scene;
+function mesh(geo, mat, x, y, z, { cast = true, receive = true, parent = writerMeshParent } = {}) {
   const m = new THREE.Mesh(geo, mat);
   m.position.set(x, y, z);
   m.castShadow = cast; m.receiveShadow = receive;
@@ -224,7 +236,13 @@ const box = (w, h, d, mat, x, y, z, opt) => mesh(new THREE.BoxGeometry(w, h, d),
 function clickable(m, panel, label) { m.userData.panel = panel; m.userData.label = label; clickables.push(m); return m; }
 
 const town = buildTown({ THREE, scene, clickable, canvasTex });
+// New district tower/lofts replace duplicated legacy shop volumes at identical lots.
+// Keep them in authoring source for navigation regression and compatibility.
+const obsoleteShops=town.group.getObjectByName("legacy-shopfront-interiors");
+if(obsoleteShops)obsoleteShops.visible=false;
 const citizens = createCitizens({ THREE, scene, clickable, motionArchive });
+// The original detailed dollhouse remains intact but is not the exterior facade.
+const citySceneBaseline = new Set(scene.children);
 let serverClockOffset = 0;
 let serverUtcOffset = -new Date().getTimezoneOffset();
 let previewHour = null;
@@ -240,19 +258,19 @@ function wallTime(now) {
 }
 
 // ============ the house shell (open front, window in the back wall) ============
+writerMeshParent=baseWriterRoomShell;
 const floor = mesh(new THREE.PlaneGeometry(6, 6), M.floor, 0, 0, 0, { cast: false });
 floor.rotation.x = -Math.PI / 2;
 box(6.2, 0.12, 6.2, M.darkWood, 0, -0.07, 0, { cast: false });
-const WIN = { x0: -1.6, x1: 0.4, y0: 1.0, y1: 2.5 };
+const WIN = WRITER_HOME_BLUEPRINT.facade.rearWindow;
 box(WIN.x0 + 3, 3.2, 0.12, M.wall, (-3 + WIN.x0) / 2, 1.6, -3);
 box(3 - WIN.x1, 3.2, 0.12, M.wall, (WIN.x1 + 3) / 2, 1.6, -3);
 box(WIN.x1 - WIN.x0, WIN.y0, 0.12, M.wall, (WIN.x0 + WIN.x1) / 2, WIN.y0 / 2, -3);
 box(WIN.x1 - WIN.x0, 3.2 - WIN.y1, 0.12, M.wall, (WIN.x0 + WIN.x1) / 2, (3.2 + WIN.y1) / 2, -3);
 for (const side of [-1, 1]) {
-  // Leave a real opening through each partition instead of letting the new rooms overlap the house.
-  box(0.12, 3.2, 3.35, M.wall, side * 3, 1.6, -1.325);
-  box(0.12, 3.2, 1.55, M.wall, side * 3, 1.6, 2.225);
-  box(0.12, 0.96, 1.10, M.wall, side * 3, 2.72, 0.70);
+  // Stage zero is a real SINGLE room: no open doors into non-existent side wings.
+  box(0.12, WRITER_HOME_BLUEPRINT.room.height, WRITER_HOME_BLUEPRINT.room.depth,
+    M.wall, side*3, WRITER_HOME_BLUEPRINT.room.height/2, 0);
 }
 // window frame, mullions, sill, glass
 const frameMat = new THREE.MeshStandardMaterial({ color: 0xe8e1d3, roughness: 0.6 });
@@ -286,7 +304,17 @@ box(6, 0.03, 0.03, M.darkWood, 0, 2.98, -2.92, { cast: false });
 box(0.03, 0.03, 6, M.darkWood, -2.92, 2.98, 0, { cast: false });
 box(0.03, 0.03, 6, M.darkWood, 2.92, 2.98, 0, { cast: false });
 
-// ============ the rest of the building: ground floor, street facade, roofline ============
+// The interior shares the actual front-door anchor with the exterior. Its other
+// front-wall polygons are removed only for the reader's dollhouse cutaway camera.
+const doorSpec=WRITER_HOME_BLUEPRINT.facade.door;
+const roomEntry=clickable(box(doorSpec.width,doorSpec.height,.075,M.darkWood,
+  doorSpec.x,doorSpec.height/2,WRITER_HOME_BLUEPRINT.room.depth/2+.035),
+  "p-town","درِ خروجی — بازگشت به شهر");
+roomEntry.userData.returnToTown=true;
+box(doorSpec.width+.24,.12,.18,M.wood,doorSpec.x,doorSpec.height+.05,
+  WRITER_HOME_BLUEPRINT.room.depth/2+.03);
+// ============ retired four-wing house — preserved solely for backwards compatibility ============
+writerMeshParent=legacyWriterArchitecture;
 // the room is the upper floor; below live the stairwell, the hallway and the street door
 box(6.4, 0.12, 6.4, M.darkWood, 0, -3.06, 0, { cast: false });
 for (const side of [-1, 1]) {
@@ -313,7 +341,7 @@ function addRoomDoor(side, floorY, z, panel, label) {
   const x = side * 2.96, width = 1.0, height = 2.18;
   for (const dz of [-width / 2 - 0.07, width / 2 + 0.07]) box(0.14, height + 0.16, 0.12, M.darkWood, x, floorY + height / 2, z + dz);
   box(0.14, 0.14, width + 0.26, M.darkWood, x, floorY + height + 0.03, z);
-  const hinge = new THREE.Group(); hinge.position.set(x, floorY, z - width / 2); hinge.rotation.y = side * 0.58; scene.add(hinge);
+  const hinge = new THREE.Group(); hinge.position.set(x, floorY, z - width / 2); hinge.rotation.y = side * 0.58; legacyWriterArchitecture.add(hinge);
   const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.075, height, width), M.wood);
   leaf.position.set(0, height / 2, width / 2); leaf.castShadow = true; hinge.add(leaf);
   const inset = new THREE.Mesh(new THREE.BoxGeometry(0.025, 1.53, 0.62), M.darkWood);
@@ -331,7 +359,7 @@ box(0.4, 0.4, 0.4, M.wood, 2.4, -2.8, -2.4);
 box(0.34, 0.34, 0.34, M.wood, 2.4, -2.43, -2.44);
 const groundLight = new THREE.PointLight(0xffd6a0, 0.55, 6, 1.8);
 groundLight.position.set(-0.5, -1.5, 1.2);
-scene.add(groundLight);
+legacyWriterArchitecture.add(groundLight);
 // The main dashboard's house: an open-front, two-storey cottage. The existing
 // writer room stays live in the centre; real-time home scenes flank it.
 const cottagePlaster = new THREE.MeshStandardMaterial({ color: 0xd8c8b0, roughness: 0.96 });
@@ -400,7 +428,7 @@ function buildCottageWing(cx, floorY, side, room) {
     const fireMat = new THREE.MeshStandardMaterial({ color: 0xf17b31, emissive: 0xff5b20, emissiveIntensity: 1.6, roughness: 0.4 });
     mesh(new THREE.ConeGeometry(0.30, 0.85, 7), fireMat, cx - 0.22, floorY + 0.75, -2.13, { cast: false });
     mesh(new THREE.ConeGeometry(0.28, 0.70, 7), new THREE.MeshStandardMaterial({ color: 0xf6c05f, emissive: 0xff942e, emissiveIntensity: 1.1 }), cx + 0.22, floorY + 0.66, -2.12, { cast: false });
-    const fireLight = new THREE.PointLight(0xff9b4a, 1.9, 6, 1.7); fireLight.position.set(cx, floorY + 1.15, -1.65); scene.add(fireLight);
+    const fireLight = new THREE.PointLight(0xff9b4a, 1.9, 6, 1.7); fireLight.position.set(cx, floorY + 1.15, -1.65); legacyWriterArchitecture.add(fireLight);
     box(2.88, 0.58, 0.96, M.sofa, cx, floorY + 0.53, 0.26);
     box(2.92, 0.56, 0.16, M.sofa, cx, floorY + 0.91, -0.24);
     for (const x of [cx - 1.25, cx + 1.25]) box(0.36, 0.70, 0.96, M.sofa, x, floorY + 0.63, 0.26);
@@ -454,7 +482,7 @@ gableGeo.setAttribute("position", new THREE.Float32BufferAttribute([
   -9.45,3.28,3.13, 9.45,3.28,3.13, 0,5.28,3.13,
 ],3));
 gableGeo.setIndex([0,1,2]); gableGeo.computeVertexNormals();
-scene.add(new THREE.Mesh(gableGeo, new THREE.MeshStandardMaterial({ color: 0xc9b89f, roughness: 0.96, side: THREE.DoubleSide })));
+legacyWriterArchitecture.add(new THREE.Mesh(gableGeo, new THREE.MeshStandardMaterial({ color: 0xc9b89f, roughness: 0.96, side: THREE.DoubleSide })));
 const backRoof = box(19.35, 0.18, 4.00, slateMats[1], 0, 4.33, -1.64);
 backRoof.rotation.x = -0.48;
 box(19.60, 0.20, 0.24, cottageBeam, 0, 5.22, 0.02);
@@ -504,6 +532,8 @@ for(const x of [-10.2,10.2]){
 const facade = clickable(box(19.0, 6.4, 0.24, new THREE.MeshBasicMaterial({ visible: false }), 0, 0.10, 3.12, { cast: false }), "p-care", "خانهٔ نویسنده");
 facade.userData.view = "building";
 
+// The old 2-storey shell and four wings remain disabled. The working room starts here.
+writerMeshParent=scene;
 // rug
 const rugTex = canvasTex(256, 200, (g, w, h) => {
   g.fillStyle = "#6a2f2a"; g.fillRect(0, 0, w, h);
@@ -1211,6 +1241,164 @@ function paintClock(now) {
   clockTex.needsUpdate = true;
 }
 
+// ============ small exterior writer house (independent from private interior) ============
+const interiorSceneObjects = scene.children.filter(node => !citySceneBaseline.has(node));
+// The original room was authored with floor Y=0, three units ABOVE the town.
+// Parent the entire authored room (including its animated writer and props) to
+// the actual street-level origin instead of supporting it with a fake lower floor.
+const writerInteriorWorldRoot = new THREE.Group();
+writerInteriorWorldRoot.name = "writer-interior-street-level";
+writerInteriorWorldRoot.position.y = STREET_Y;
+scene.add(writerInteriorWorldRoot);
+for (const node of interiorSceneObjects) writerInteriorWorldRoot.add(node);
+// The two architectural shell groups were created BEFORE citySceneBaseline,
+// so they are deliberately absent from interiorSceneObjects. Reparent BOTH
+// shells explicitly, or their walls remain at world Y=0 while the floor and
+// character are lowered to STREET_Y.
+writerInteriorWorldRoot.add(baseWriterRoomShell);
+writerInteriorWorldRoot.add(expandedWriterRoomShell);
+writerInteriorWorldRoot.updateMatrixWorld(true);
+// Dynamic room props created later must use the same grounded coordinate frame.
+writerMeshParent = writerInteriorWorldRoot;
+const writerExterior = new THREE.Group();
+writerExterior.name = "writer-home-exterior-v2";
+scene.add(writerExterior);
+let currentWriterHouseLevel = -1;
+let currentWriterSceneMode = "town";
+function exteriorPart(geo, material, x, y, z) {
+  const m = new THREE.Mesh(geo, material);m.position.set(x,y,z);
+  m.castShadow=true;m.receiveShadow=true;writerExterior.add(m);return m;
+}
+const exteriorWall = new THREE.MeshStandardMaterial({color:0xc7b39a,roughness:.92});
+const exteriorRoof = new THREE.MeshStandardMaterial({color:0x56616a,roughness:.9});
+const exteriorWood = new THREE.MeshStandardMaterial({color:0x594739,roughness:.84});
+const exteriorGlass = new THREE.MeshStandardMaterial({color:0x8daeb4,roughness:.38,metalness:.12});
+const exteriorPath = new THREE.MeshStandardMaterial({color:0xb6ac97,roughness:1});
+const exteriorGreen = new THREE.MeshStandardMaterial({color:0x5b7956,roughness:1});
+// Both facades are drawn from WRITER_HOME_BLUEPRINT. All coordinates below are
+// local to the floor, with only the city view offset down to STREET_Y.
+function rebuildWriterExterior(level=0){
+  for(const node of [...writerExterior.children]){
+    const index=clickables.indexOf(node);if(index>=0)clickables.splice(index,1);
+    writerExterior.remove(node);node.geometry?.dispose?.();
+  }
+  const [w,d]=writerHouseDimensions(level);
+  const home=WRITER_HOME_BLUEPRINT,h=home.room.height,front=d/2,back=-d/2;
+  const door=home.facade.door,frontGlass=home.facade.frontWindow,rear=home.facade.rearWindow;
+  const b=(bw,bh,bd,mat,x,y,z)=>exteriorPart(new THREE.BoxGeometry(bw,bh,bd),mat,x,STREET_Y+y,z);
+  const rearFrame=new THREE.MeshStandardMaterial({color:0xe8e1d3,roughness:.6});
+  // Each actual wall has real openings. A fake glass decal on a solid cube
+  // would hide the correspondence with the interior room.
+  b(w+.24,.18,d+.24,exteriorWood,0,.01,0);
+  for(const side of [-1,1]) b(.12,h,d,exteriorWall,side*w/2,h/2,0);
+  const rearLeft=rear.x0,rearRight=rear.x1;
+  b(rearLeft+w/2,h,.12,exteriorWall,(rearLeft-w/2)/2,h/2,back);
+  b(w/2-rearRight,h,.12,exteriorWall,(rearRight+w/2)/2,h/2,back);
+  b(rearRight-rearLeft,rear.y0,.12,exteriorWall,(rearLeft+rearRight)/2,rear.y0/2,back);
+  b(rearRight-rearLeft,h-rear.y1,.12,exteriorWall,(rearLeft+rearRight)/2,(h+rear.y1)/2,back);
+  b(rearRight-rearLeft,rear.y1-rear.y0,.045,exteriorGlass,(rearLeft+rearRight)/2,(rear.y0+rear.y1)/2,back-.065);
+  for(const x of [rearLeft,rearRight,(rearLeft+rearRight)/2])
+    b(.075,rear.y1-rear.y0,.18,rearFrame,x,(rear.y0+rear.y1)/2,back-.11);
+  for(const y of [rear.y0,rear.y1])b(rearRight-rearLeft+.18,.075,.20,rearFrame,(rearLeft+rearRight)/2,y,back-.11);
+  const dl=door.x-door.width/2,dr=door.x+door.width/2;
+  const wl=frontGlass.x-frontGlass.width/2,wr=frontGlass.x+frontGlass.width/2;
+  const continuous=[[-w/2,dl],[dr,wl],[wr,w/2]];
+  for(const [a,z] of continuous) if(z>a) b(z-a,h,.12,exteriorWall,(z+a)/2,h/2,front);
+  b(door.width,h-door.height,.12,exteriorWall,door.x,(door.height+h)/2,front);
+  const whTop=frontGlass.sill+frontGlass.height;
+  b(frontGlass.width,frontGlass.sill,.12,exteriorWall,frontGlass.x,frontGlass.sill/2,front);
+  b(frontGlass.width,h-whTop,.12,exteriorWall,frontGlass.x,(whTop+h)/2,front);
+  b(frontGlass.width,frontGlass.height,.04,exteriorGlass,frontGlass.x,
+    frontGlass.sill+frontGlass.height/2,front+.075);
+  for(const x of [wl,wr,frontGlass.x])
+    b(.08,frontGlass.height+.09,.19,rearFrame,x,frontGlass.sill+frontGlass.height/2,front+.12);
+  for(const y of [frontGlass.sill,whTop])
+    b(frontGlass.width+.18,.08,.20,rearFrame,frontGlass.x,y,front+.12);
+  const portal=b(door.width,door.height,.09,exteriorWood,door.x,door.height/2,front+.075);
+  b(door.width+.2,.12,.23,exteriorWood,door.x,door.height+.06,front+.14);
+  b(.05,.07,.09,frameMat,door.x+door.width*.34,1.03,front+.19);
+  // No false extra storey: single roof resting directly above the single room.
+  for(const side of [-1,1]){
+    const roof=b(w/2+.45,.17,d+.60,exteriorRoof,side*w/4,h+.43,0);
+    roof.rotation.z=-side*.38;
+  }
+  const gable=new THREE.Shape();gable.moveTo(-w/2,0);gable.lineTo(w/2,0);
+  gable.lineTo(0,home.facade.roof.rise);gable.closePath();
+  const triangle=exteriorPart(new THREE.ShapeGeometry(gable),exteriorWall,0,STREET_Y+h,front+.025);
+  triangle.material.side=THREE.DoubleSide;
+  b(w+.26,.10,.22,exteriorWood,0,h,front+.035);
+  b(1.3,.12,.78,exteriorPath,door.x,.05,front+.44);
+  // Safe, continuous pedestrian approach without an oversized front courtyard.
+  const approachEnd=6.48;
+  const walkDepth=approachEnd-(front+.44);
+  if(walkDepth>.2)b(1.3,.07,walkDepth,exteriorPath,door.x,.03,(front+.44+approachEnd)/2);
+  for(const side of [-1,1]){
+    const gx=side*(w/2+.54);
+    if(Math.abs(gx)+.26<4.4)b(.44,.12,Math.min(d,6.2),exteriorGreen,gx,.08,0);
+  }
+  if(level>=3) b(1.38,.07,2.15,exteriorPath,3.5,.035,5.05);
+  const hit=b(w,h,d,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,h/2,0);
+  hit.userData.writerExterior=true;
+  clickable(hit,"p-status","خانهٔ نویسنده — ورود به اتاق");
+  portal.userData.writerExterior=true;
+  clickable(portal,"p-status","در ورودی اتاق نویسنده");
+  writerExterior.userData.plan=home;
+  currentWriterHouseLevel=level;
+}
+function rebuildWriterInteriorShell(level=0){
+  baseWriterRoomShell.visible=level===0;
+  for(const child of [...expandedWriterRoomShell.children]){
+    // Stage upgrades must not leave detached click targets in the raycaster.
+    // A stale invisible door otherwise steals clicks after a house resize.
+    const staleIndex=clickables.indexOf(child);
+    if(staleIndex>=0)clickables.splice(staleIndex,1);
+    child.visible=false;
+    expandedWriterRoomShell.remove(child);child.geometry?.dispose?.();
+  }
+  if(level===0){expandedWriterRoomShell.visible=false;return;}
+  const [w,d]=writerHouseDimensions(level),h=WRITER_HOME_BLUEPRINT.room.height;
+  const rear=WRITER_HOME_BLUEPRINT.facade.rearWindow;
+  const roomPart=(bw,bh,bd,mat,x,y,z)=>{
+    const part=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),mat);
+    part.position.set(x,y,z);part.receiveShadow=true;expandedWriterRoomShell.add(part);return part;
+  };
+  roomPart(w,.12,d,M.darkWood,0,-.06,0);
+  roomPart(w,.025,d,M.floor,0,.012,0);
+  for(const side of [-1,1])roomPart(.12,h,d,M.wall,side*w/2,h/2,0);
+  roomPart(rear.x0+w/2,h,.12,M.wall,(rear.x0-w/2)/2,h/2,-d/2);
+  roomPart(w/2-rear.x1,h,.12,M.wall,(rear.x1+w/2)/2,h/2,-d/2);
+  roomPart(rear.x1-rear.x0,rear.y0,.12,M.wall,(rear.x0+rear.x1)/2,rear.y0/2,-d/2);
+  roomPart(rear.x1-rear.x0,h-rear.y1,.12,M.wall,(rear.x0+rear.x1)/2,(rear.y1+h)/2,-d/2);
+  const rim=new THREE.MeshStandardMaterial({color:0xe8e1d3,roughness:.6});
+  roomPart(rear.x1-rear.x0,rear.y1-rear.y0,.04,exteriorGlass,
+    (rear.x0+rear.x1)/2,(rear.y0+rear.y1)/2,-d/2+.05);
+  for(const x of [rear.x0,rear.x1,(rear.x0+rear.x1)/2])
+    roomPart(.07,rear.y1-rear.y0,.14,rim,x,(rear.y0+rear.y1)/2,-d/2+.12);
+  // Same entrance in the expanded single-storey floor plan.
+  const doorSpec=WRITER_HOME_BLUEPRINT.facade.door;
+  const entry=roomPart(doorSpec.width,doorSpec.height,.075,M.darkWood,
+    doorSpec.x,doorSpec.height/2,d/2+.035);
+  entry.userData.returnToTown=true;
+  clickable(entry,"p-town","درِ خروجی — بازگشت به شهر");
+  // Like the original room, the frontal wall is cut away for the reader.
+  expandedWriterRoomShell.visible=true;
+}
+function updateWriterHouse(acceptedCount){
+  const next=writerHouseLevel(acceptedCount);
+  if(next!==currentWriterHouseLevel){rebuildWriterExterior(next);rebuildWriterInteriorShell(next);setWriterSceneMode(currentWriterSceneMode);}
+}
+function setWriterSceneMode(mode){
+  currentWriterSceneMode=mode;
+  const outdoors=["town","cars","publisher","bookstore"].includes(mode);
+  writerExterior.visible=outdoors;
+  writerInteriorWorldRoot.visible=!outdoors;
+  for(const obj of interiorSceneObjects)obj.visible=!outdoors;
+  legacyWriterArchitecture.visible=false;
+  baseWriterRoomShell.visible=!outdoors && currentWriterHouseLevel===0;
+  expandedWriterRoomShell.visible=!outdoors && currentWriterHouseLevel>0;
+}
+updateWriterHouse(0);
+
 // ============ camera views ============
 function paintAchievements(rowsList) {
   const g = achCtx;
@@ -1552,23 +1740,32 @@ const VIEWS = {
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
-  overview: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
-  building: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
+  // The old view framed a 19-unit mansion; stage zero is only one 6x6 room.
+  overview: { pos: [1.4, 5.4, 14.5], target: [0, 1.3, 0] },
+  building: { pos: [1.6, 4.6, 11.5], target: [0, 1.5, 0] },
   desk:     { pos: [2.7, 2.0, 0.3], target: [1.35, 1.0, -2.0] },
   window:   { pos: [0.6, 1.75, 1.6], target: [-0.6, 1.9, -8] },
   library:  { pos: [0.6, 1.9, 0.8], target: [-2.6, 1.2, -0.9] },
 };
-let view = "overview";
-let camGoal = { pos: new THREE.Vector3(...VIEWS.overview.pos), target: new THREE.Vector3(...VIEWS.overview.target) };
+let view = "town";
+let camGoal = { pos: new THREE.Vector3(...VIEWS.town.pos), target: new THREE.Vector3(...VIEWS.town.target) };
+camera.position.copy(camGoal.pos);controls.target.copy(camGoal.target);setWriterSceneMode("town");controls.update();
 let camMoving = false;
 function setView(name) {
   if (name !== "follow" && !VIEWS[name]) return;
   focus = null;
   closeInspect(false);
   view = name;
+  setWriterSceneMode(name);
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   if (name !== "follow") {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
+    // Room view coordinates describe the writer's local 6x6 floor.
+    // The entire live room is now grounded at STREET_Y, not above the city.
+    if (!["town","cars","publisher","bookstore"].includes(name)) {
+      camGoal.pos.y += STREET_Y;
+      camGoal.target.y += STREET_Y;
+    }
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
   }
   const names = { cars: "ماشین‌های شهر", town: "محلهٔ نویسنده", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
@@ -1607,6 +1804,23 @@ function setFocus(f) {
 }
 
 // ============ the loop ============
+// City weather is independent of author/citizen simulation time and previewHour.
+const cityWeatherService=createTehranWeatherService();
+let cityAtmosphere=cityWeatherService.snapshot();
+let lastCityWeatherTick=-2;
+const cityWeatherNotice=document.createElement("p");
+cityWeatherNotice.id="tehran-weather-status";
+cityWeatherNotice.className="small muted";
+cityWeatherNotice.setAttribute("role","status");
+const cityWeatherText=document.createElement("span");
+const cityWeatherCredit=document.createElement("a");
+cityWeatherCredit.href="https://open-meteo.com/en/docs";
+cityWeatherCredit.target="_blank";
+cityWeatherCredit.rel="noopener noreferrer";
+cityWeatherCredit.textContent=" · داده: Open-Meteo";
+cityWeatherNotice.append(cityWeatherText,cityWeatherCredit);
+document.getElementById("town-summary")?.insertAdjacentElement("afterend",cityWeatherNotice);
+cityWeatherText.textContent=tehranWeatherLabel(cityAtmosphere);
 const clock = new THREE.Clock();
 let state = { asleep: false, status: "idle", library_books: 0, accepted_count: 0, rejected_count: 0 };
 let lastClock = 0;
@@ -1740,6 +1954,9 @@ function animate() {
   blanket.position.y += ((sleepiness > 0.5 ? 0.66 : 0.54) - blanket.position.y) * Math.min(1, dt * 2);
 
   tmpV.set(0, 0, 0); skull.getWorldPosition(tmpV);
+  // Speech and sleeping sprites are children of the grounded room; convert
+  // the skull's world elevation back into its local coordinate frame.
+  tmpV.y -= STREET_Y;
   bubble.position.set(tmpV.x, tmpV.y + 0.55 + Math.sin(t * 2) * 0.015, tmpV.z);
   bubble.visible = !state.asleep && !lying && !rising;
   zzz.forEach((z) => {
@@ -1748,8 +1965,14 @@ function animate() {
     z.s.material.opacity = sleepiness > 0.9 ? Math.sin(z.t * Math.PI) : 0;
   });
 
-  // --- the sky and the light follow the real hour
-  const { sunAngle, day, dusk } = dayInfo(wallTime(now));
+  // --- City outdoors follow actual Tehran time and model weather, NOT author clock.
+  if(t-lastCityWeatherTick>=1){
+    lastCityWeatherTick=t;
+    cityAtmosphere=cityWeatherService.snapshot();
+    cityWeatherText.textContent=tehranWeatherLabel(cityAtmosphere);
+    void cityWeatherService.refreshIfDue();
+  }
+  const { sunAngle, day, dusk } = cityAtmosphere.sky;
   const sunDir = new THREE.Vector3(Math.cos(sunAngle) * 0.6, Math.sin(sunAngle), -0.8).normalize();
   const moonDir = new THREE.Vector3(-sunDir.x, -sunDir.y, sunDir.z).normalize();
   sun.position.copy(sunDir).multiplyScalar(95);
@@ -1758,7 +1981,7 @@ function animate() {
   moon.visible = day < 0.6;
   const dayTop = new THREE.Color(0x5a8fc8), nightTop = new THREE.Color(0x04060f);
   const dayBottom = new THREE.Color(0xcfe0ee), nightBottom = new THREE.Color(0x141b2e), duskBottom = new THREE.Color(0xe39a64);
-  skyUniforms.top.value.copy(nightTop).lerp(dayTop, day);
+  skyUniforms.top.value.copy(nightTop).lerp(dayTop, day).multiplyScalar(1-(cityAtmosphere.weather?.cloudCover??0)*.0025);
   skyUniforms.bottom.value.copy(nightBottom).lerp(dayBottom, day).lerp(duskBottom, dusk * 0.7);
   scene.fog.color.copy(skyUniforms.bottom.value).multiplyScalar(0.8);
   starMat.opacity = clamp01(1 - day * 1.6) * 0.85;
@@ -1771,8 +1994,8 @@ function animate() {
   viewFill.intensity = lighting.fill;
   viewFill.position.copy(camera.position);
   viewFill.target.position.copy(controls.target);
-  town.update(day, t, citizens.crossingDemand());
-  clouds.forEach((c, i) => { c.position.x += dt * (0.4 + i * 0.05); if (c.position.x > 70) c.position.x = -70; c.material.opacity = 0.15 + day * 0.45; });
+  town.update(day, t, citizens.crossingDemand(), cityAtmosphere.weather);
+  clouds.forEach((c, i) => { c.position.x += dt * (0.4 + i * 0.05); if (c.position.x > 70) c.position.x = -70; c.material.opacity = cityAtmosphere.weather ? (0.08+cityAtmosphere.weather.cloudCover*.006) : (0.15+day*.45); });
 
   // --- room lights: the whole home is lit while the writer is awake, dark when it sleeps
   const awake = !state.asleep;
@@ -1803,8 +2026,8 @@ function animate() {
 
   // --- camera
   if (view === "follow") {
-    camGoal.target.set(character.position.x, 1.1, character.position.z);
-    camGoal.pos.set(character.position.x + 1.8, 2.4, character.position.z + 3.2);
+    camGoal.target.set(character.position.x, 1.1 + STREET_Y, character.position.z);
+    camGoal.pos.set(character.position.x + 1.8, 2.4 + STREET_Y, character.position.z + 3.2);
     camMoving = true;
   }
   if (camMoving) {
@@ -1841,7 +2064,7 @@ function pickAt(ev) {
   const r = renderer.domElement.getBoundingClientRect();
   pointer.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
-  return raycaster.intersectObjects(clickables, false)[0];
+  return raycaster.intersectObjects(clickables.filter(mesh=>{let parent=mesh;while(parent){if(!parent.visible)return false;parent=parent.parent;}return true;}), false)[0];
 }
 renderer.domElement.addEventListener("pointermove", (ev) => {
   const hit = pickAt(ev);
@@ -1862,6 +2085,8 @@ renderer.domElement.addEventListener("pointerup", (ev) => {
   const hit = pickAt(ev);
   if (!hit) { closeInspect(true); return; }
   const o = hit.object;
+  if(o.userData.writerExterior){setView("building");return;}
+  if(o.userData.returnToTown){setView("town");return;}
   if (o.userData.notebook && nb.isOpen) { nb.turnFromPointer(hit.point.x - nb.group.position.x); return; }
   if (o.userData.drawer) drawerOpen = true;
   inspect(o, hit.point);
@@ -1895,6 +2120,7 @@ setInterval(tickClock, 1000); tickClock();
 
 function renderStatus(s) {
   state = s;
+  updateWriterHouse(s.accepted_count || 0);
   $("name").textContent = s.name;
   const status = s.napping ? "چرت می‌زند" : s.asleep ? "در خواب" : (STATUS_TEXT[s.status] || "آماده");
   const wakeAt = s.napping ? hm(s.nap_until) : s.sleep.end;

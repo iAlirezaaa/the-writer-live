@@ -49,3 +49,17 @@ Status: source and live pinned assets synchronized and public staging + main Pag
 - Visual QA: street-level, accessibility ramps, mobile, day and night screenshots **NOT INSPECTED**.
 - Full pedestrian access for school, police, screenplay office, film studio, and street crossing safety remain open; this iteration specifically covers the 12 eastern housing aprons.
 - Private author/publisher/memory changes: **NONE** in MAYOR-009 scope.
+
+## MAYOR-010 — real Tehran sky and weather (2026-11-08)
+- [ ] Separate **city** sky/light clock from author/world simulation time: always compute from Asia/Tehran, without modifying citizen schedules, author date, publisher actions or stored data.
+- [ ] Consume current **Tehran-only** model weather, hourly refreshed within API limits, with explicit data source, timestamp and fail-closed unavailable state. Use actual sunrise/sunset when valid; display Tehran clock even offline.
+- [ ] Make the existing pooled 96-particle environment reflect **rain/snow only when reported**; eliminate the fictional automatic 90-second snow cycle. Use available cloud cover for sky/scene atmosphere.
+- [ ] Implement pure, deterministic Node probes for Tehran time, API parsing, daylight transitions, precipitation, stale/no-network behavior and source pin consistency.
+- [ ] Verify normal private testing and non-deploying public staging tests before changing the public pinned files; never copy private author or publisher content.
+- [ ] Record exact private/public commits and current live Pages success, sources, limitations and any uninspected screenshots.
+
+### Two new municipal ideas (MAYOR-010)
+1. **Weather-aware cultural events:** read-only ambient market umbrellas and park seating cues sourced from the same Tehran weather snapshot; no real events or new citizens implied.
+2. **Accessible sky observatory:** optional rooftop viewpoint with a Tehran sunrise/sunset dial and an easter-egg star chart, requiring camera occlusion checks and reduced-motion support.
+
+Status: TODO recorded **before** runtime edits. Open-Meteo's public free endpoint is **non-commercial only**; if this public site is commercial a licensed endpoint or alternative provider must replace it before production use. Current sky/weather and direct API transport have not yet been verified on the production browser.
