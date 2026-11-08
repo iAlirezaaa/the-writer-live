@@ -21,7 +21,7 @@ assert.equal(Motion.MOTION_CLIPS.talk.enabled,false);
 assert.equal(Motion.MOTION_CLIPS.listen.enabled,false);
 assert.equal(Object.keys(Motion.MOTION_CLIPS).length,10);
 
-function runAt(clock,frames=650){
+function runAt(clock,frames=450){
   const scene=new THREE.Scene(),pickables=[];
   const citizens=Citizens.createCitizens({
     THREE,scene,clickable:pickables,motionArchive:Motion
@@ -69,11 +69,18 @@ function runAt(clock,frames=650){
   return minGap;
 }
 const windows=[
+  "2026-11-08T00:15:00+03:30",
+  "2026-11-08T05:45:00+03:30",
   "2026-11-08T07:45:00+03:30",
+  "2026-11-08T09:45:00+03:30",
   "2026-11-08T11:45:00+03:30",
+  "2026-11-08T13:45:00+03:30",
+  "2026-11-08T15:45:00+03:30",
   "2026-11-08T17:45:00+03:30",
+  "2026-11-08T19:45:00+03:30",
+  "2026-11-08T22:45:00+03:30",
 ];
 const distances=windows.map(clock=>runAt(clock));
 console.log("CITIZENS-V2-OK",JSON.stringify({residents:payload.citizens.length,
   publisher:1,uniqueCores:payload.citizens.length,archiveClips:10,
-  collisionSamples:windows.length*650,minimumSpacing:Math.min(...distances)}));
+  collisionSamples:windows.length*450,minimumSpacing:Math.min(...distances)}));
