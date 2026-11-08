@@ -303,6 +303,15 @@ box(6, 0.03, 0.03, M.darkWood, 0, 2.98, -2.92, { cast: false });
 box(0.03, 0.03, 6, M.darkWood, -2.92, 2.98, 0, { cast: false });
 box(0.03, 0.03, 6, M.darkWood, 2.92, 2.98, 0, { cast: false });
 
+// The interior shares the actual front-door anchor with the exterior. Its other
+// front-wall polygons are removed only for the reader's dollhouse cutaway camera.
+const doorSpec=WRITER_HOME_BLUEPRINT.facade.door;
+const roomEntry=clickable(box(doorSpec.width,doorSpec.height,.075,M.darkWood,
+  doorSpec.x,doorSpec.height/2,WRITER_HOME_BLUEPRINT.room.depth/2+.035),
+  "p-town","درِ خروجی — بازگشت به شهر");
+roomEntry.userData.returnToTown=true;
+box(doorSpec.width+.24,.12,.18,M.wood,doorSpec.x,doorSpec.height+.05,
+  WRITER_HOME_BLUEPRINT.room.depth/2+.03);
 // ============ retired four-wing house — preserved solely for backwards compatibility ============
 writerMeshParent=legacyWriterArchitecture;
 // the room is the upper floor; below live the stairwell, the hallway and the street door
@@ -1342,6 +1351,12 @@ function rebuildWriterInteriorShell(level=0){
     (rear.x0+rear.x1)/2,(rear.y0+rear.y1)/2,-d/2+.05);
   for(const x of [rear.x0,rear.x1,(rear.x0+rear.x1)/2])
     roomPart(.07,rear.y1-rear.y0,.14,rim,x,(rear.y0+rear.y1)/2,-d/2+.12);
+  // Same entrance in the expanded single-storey floor plan.
+  const doorSpec=WRITER_HOME_BLUEPRINT.facade.door;
+  const entry=roomPart(doorSpec.width,doorSpec.height,.075,M.darkWood,
+    doorSpec.x,doorSpec.height/2,d/2+.035);
+  entry.userData.returnToTown=true;
+  clickable(entry,"p-town","درِ خروجی — بازگشت به شهر");
   // Like the original room, the frontal wall is cut away for the reader.
   expandedWriterRoomShell.visible=true;
 }
@@ -2014,6 +2029,7 @@ renderer.domElement.addEventListener("pointerup", (ev) => {
   if (!hit) { closeInspect(true); return; }
   const o = hit.object;
   if(o.userData.writerExterior){setView("building");return;}
+  if(o.userData.returnToTown){setView("town");return;}
   if (o.userData.notebook && nb.isOpen) { nb.turnFromPointer(hit.point.x - nb.group.position.x); return; }
   if (o.userData.drawer) drawerOpen = true;
   inspect(o, hit.point);
