@@ -11,7 +11,7 @@ import re
 import sys
 
 
-VERSION = "reader-20261108-v6"
+VERSION = "reader-20261109-v7"
 
 
 def patch_site(root: Path) -> None:
@@ -34,7 +34,7 @@ def patch_site(root: Path) -> None:
         '"vazir-classic"' in book,
         '"turn turn-prev", "→"' in book,
         '"turn turn-next", "←"' in book,
-        "read.js?v=observatory-20261108-v2" in html,
+        f"read.js?v={VERSION}" in html,
         "persian-display.js?v=observatory-20261108-v2" in reader,
         "overlay.dataset.readerTheme" in book,
     ]):
@@ -70,7 +70,7 @@ def patch_site(root: Path) -> None:
     if count != 1:
         raise RuntimeError("Cannot locate the dashboard world script")
     index_file.write_text(index, encoding="utf-8")
-    print("Reader deployment: stable cover art, responsive reading room and fresh assets OK")
+    print("Reader deployment: versioned RTL reader, adaptive margins and fresh assets OK")
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ const MARGIN_STATE_FA = {
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
 import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v6";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v7";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -89,6 +89,9 @@ function build() {
   const leadingSelect=picker("فاصلهٔ خطوط",[
     ["compact","فشرده"],["normal","معمولی"],["airy","باز"]
   ]);
+  const marginsSelect=picker("حاشیهٔ صفحه",[
+    ["narrow","کم"],["normal","معمولی"],["wide","زیاد"]
+  ]);
   const alignSelect=picker("چینش متن",[
     ["justify","دوطرفه"],["right","راست‌چین"]
   ]);
@@ -154,13 +157,14 @@ function build() {
   document.body.appendChild(overlay);
 
   ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark,
-    jump, syncStatus, syncBtn, settings, fontSelect, leadingSelect, alignSelect, modeSelect,
+    jump, syncStatus, syncBtn, settings, fontSelect, leadingSelect, marginsSelect, alignSelect, modeSelect,
     find, margin, marginBtn, voteUp, voteDown, voteStatus, closeBtn, themeSelect, focusBtn,
     selBtn, pop, popQuote, popName, popCategory, popRating, popText, popStatus, popCancel, measure };
 
   themeSelect.addEventListener("change",()=>setReaderOption("theme",themeSelect.value));
   fontSelect.addEventListener("change",()=>setReaderOption("fontFamily",fontSelect.value,true));
   leadingSelect.addEventListener("change",()=>setReaderOption("leading",leadingSelect.value,true));
+  marginsSelect.addEventListener("change",()=>setReaderOption("margins",marginsSelect.value,true));
   alignSelect.addEventListener("change",()=>setReaderOption("align",alignSelect.value,true));
   modeSelect.addEventListener("change",()=>setReaderOption("mode",modeSelect.value,true));
   syncBtn.addEventListener("click",connectReaderOwner);
@@ -227,7 +231,7 @@ function build() {
 
 const READER_DEFAULTS=Object.freeze({
   fontSize:1.06,fontFamily:"vazir-classic",theme:"paper",leading:"normal",
-  align:"justify",mode:"auto",focus:false
+  align:"justify",margins:"normal",mode:"auto",focus:false
 });
 const READER_FONTS={
   naskh:'"Noto Naskh Arabic"',vazir:'"Vazirmatn"',
@@ -261,16 +265,19 @@ function applyReaderAppearance(){
   v.theme=opt(v.theme,["paper","night","ink"],"paper");
   v.leading=opt(v.leading,["compact","normal","airy"],"normal");
   v.align=opt(v.align,["justify","right"],"justify");
+  v.margins=opt(v.margins,["narrow","normal","wide"],"normal");
   v.mode=opt(v.mode,["auto","single","spread"],"auto");
   ui.overlay.style.setProperty("--reader-font",`${v.fontSize}rem`);
   ui.overlay.dataset.readerFont=v.fontFamily;
   ui.overlay.dataset.readerTheme=v.theme;
   ui.overlay.dataset.readerLeading=v.leading;
   ui.overlay.dataset.readerAlign=v.align;
+  ui.overlay.dataset.readerMargins=v.margins;
   ui.themeSelect.value=v.theme;
   ui.fontSelect.value=v.fontFamily;
   ui.leadingSelect.value=v.leading;
   ui.alignSelect.value=v.align;
+  ui.marginsSelect.value=v.margins;
   ui.modeSelect.value=v.mode;
   ui.overlay.classList.toggle("reader-focus-mode",Boolean(v.focus));
   ui.focusBtn.setAttribute("aria-pressed",String(Boolean(v.focus)));
@@ -335,7 +342,7 @@ function readerState(){
   book.progress=progress;
   return {
     progress,bookmark:book.bookmark,fontSize:book.fontSize,fontFamily:book.fontFamily,
-    theme:book.theme,leading:book.leading,align:book.align,mode:book.mode,focus:book.focus,
+    theme:book.theme,leading:book.leading,align:book.align,margins:book.margins,mode:book.mode,focus:book.focus,
     updated:new Date().toISOString()
   };
 }

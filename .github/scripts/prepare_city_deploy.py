@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 
 VERSION="city-districts-20261108-v3"
+TOWN_VERSION="city-traffic-20261109-v1"
 ROOT=Path(".github/city-assets")
 
 
@@ -36,11 +37,11 @@ def inspect(site: Path) -> None:
         ("publisher office interior",'"editorial-office-desk"' in city),
         ("writer room explicitly protected",'"writerRoomUntouched:true"' in city or 'writerRoomUntouched:true' in city),
         ("city module connected",f'./town-districts.js?v={VERSION}' in town),
-        ("world town cache fresh",f'./town.js?v={VERSION}' in world),
+        ("world town cache fresh",f'./town.js?v={TOWN_VERSION}' in world),
         ("city catalog connected",f'./town-districts.js?v={VERSION}' in world),
         ("city information panel",'"place:"+civic.id' in objects),
         ("city venues navigable",'"town-places"' in world and 'renderCityPlaces()' in world),
-        ("new world entrypoint",'src="./web/world.js?v=city-world-20261109-v2"' in index),
+        ("new world entrypoint",'src="./web/world.js?v=city-world-20261109-traffic-v3"' in index),
         ("original camera menu kept",index.count("data-view=")==10),
         ("original notebook panels kept",index.count("data-panel=")==15),
         ("unchanged car source", 'buildTownCars' in town),

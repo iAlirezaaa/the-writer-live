@@ -16,9 +16,11 @@ export function buildTownCars({ THREE, city, streetY }) {
   const glass=material(0x8fbbc2,{metalness:.10,roughness:.24});
   const frame=material(0x2e4551,{metalness:.25});
   const chrome=material(0xb7c7c5,{metalness:.65,roughness:.29});
-  const headLight=material(0xffe8b9,{emissive:0xffce81,emissiveIntensity:.3});
+  const headLight=material(0xfff3ce,{emissive:0xffe5b4,emissiveIntensity:.3});
+  const headGlow=new THREE.MeshBasicMaterial({color:0xfff1ce});
+  const beamMaterial=new THREE.MeshBasicMaterial({color:0xffe8ac,transparent:true,opacity:.055,depthWrite:false,side:THREE.DoubleSide});
   const tailLight=material(0xc35b53,{emissive:0xa12620,emissiveIntensity:.25});
-  const indicator=material(0xffb34e,{emissive:0xff8b16,emissiveIntensity:0});
+  const indicator=material(0xffb34e,{emissive:0xff8b16,emissiveIntensity:1.5});
   const brake=material(0xe0524d,{emissive:0xff1711,emissiveIntensity:.2});
   const plate=material(0xe2ded2,{roughness:.8});
   const deliveryStripe=material(0xf2d6a1,{roughness:.75});
@@ -43,7 +45,6 @@ export function buildTownCars({ THREE, city, streetY }) {
     const g=hub?hubGeo:wheelGeo;
     return {geo:g,sx:hub?radius*.55:radius,sy:hub?.065:.09,sz:hub?radius*.55:radius};
   };
-  const vehicles=[];
   function makeVehicle(i,profile) {
     const root=new THREE.Group();fleet.add(root);
     root.name="town-car-"+i+"-"+profile.kind;
@@ -106,16 +107,36 @@ export function buildTownCars({ THREE, city, streetY }) {
     addBox(root,plate,.035,.086,W*.38,L*.5+.075,.67,0);
     addBox(root,plate,.035,.086,W*.38,-L*.5-.075,.67,0);
     // Four wheels: the axle lies on local Z after cylinder rotation around X.
+    const visibleHeadlights=[];
+    for(const side of [-1,1]){
+      const glow=addBox(root,headGlow,.024,.105,.15,L*.5+.069,.55,side*W*.32);
+      visibleHeadlights.push(glow);
+    }
+    // Low-opacity beam for every car; one real shadowless spotlight for a
+    // limited subset, to illuminate road without adding 12 costly lights.
+    const beam=new THREE.Mesh(new THREE.CylinderGeometry(.70,.045,6.0,10,1,true),beamMaterial);
+    beam.rotation.z=-Math.PI/2;beam.position.set(L*.5+3.03,.54,0);
+    beam.renderOrder=8;root.add(beam);
+    let spot=null;
+    if(i%2===0){
+      spot=new THREE.SpotLight(0xffedc6,0,10,Math.PI/6,.65,2);
+      spot.position.set(L*.5+.08,.65,0);spot.castShadow=false;
+      spot.target.position.set(L*.5+8,.25,0);
+      root.add(spot,spot.target);
+    }
     const signalMeshes=[];
     for(const side of [-1,1]){
-      signalMeshes.push(addBox(root,indicator,.055,.10,.13,L*.5+.03,.49,side*W*.45));
-      signalMeshes.push(addBox(root,indicator,.055,.10,.13,-L*.5-.03,.49,side*W*.45));
+      const frontSignal=addBox(root,indicator,.055,.10,.13,L*.5+.03,.49,side*W*.45);
+      const backSignal=addBox(root,indicator,.055,.10,.13,-L*.5-.03,.49,side*W*.45);
+      frontSignal.userData.turnSide=side;backSignal.userData.turnSide=side;
+      signalMeshes.push(frontSignal,backSignal);
     }
     const brakeMeshes=[];
     for(const side of [-1,1])brakeMeshes.push(addBox(root,brake,.065,.12,.16,-L*.5-.035,.60,side*W*.30));
     const wheelPivots=[];
     for(const axle of [-1,1])for(const side of [-1,1]){
       const pivot=new THREE.Group();
+      pivot.userData.front=axle===1;
       pivot.position.set(axle*L*.32,R+.015,side*(W*.5+.035));root.add(pivot);
       const t=wheelsGeometry(R),tread=new THREE.Mesh(t.geo,rubber);
       tread.scale.set(t.sx,t.sy,t.sz);tread.rotation.x=Math.PI/2;pivot.add(tread);
@@ -124,110 +145,311 @@ export function buildTownCars({ THREE, city, streetY }) {
       hub.position.z=side*.038;pivot.add(hub);
       wheelPivots.push(pivot);
     }
-    return {root,wheelPivots,profile,signalMeshes,brakeMeshes};
+    return {root,wheelPivots,profile,signalMeshes,brakeMeshes,visibleHeadlights,beam,spot};
   }
 
-  // Both streets are four metres wide, centred on z=+/-8.5. Use one direction
-  // per lane, with 1.65 metres between opposing lane centres (vehicle width
-  // including wheels is <=1.3 metres).
-  const lanes=[
-    {id:"upper-east",z:7.68,dir:1},
-    {id:"upper-west",z:9.32,dir:-1},
-    {id:"lower-east",z:-9.32,dir:1},
-    {id:"lower-west",z:-7.68,dir:-1}
-  ];
-  const BEGIN=-32,SPAN=64;
-  const laneCars=lanes.map(()=>[]);
-  // Stagger starting positions per lane to avoid synchronized convoys.
-  const laneOffsets=[0,7,13,4];
-  const slotPositions=[1,19,43];
-  // Advance traffic phase by wall time: reload does not replay frame zero.
-  const phaseSeconds=(Date.now()/1000)%SPAN;
+
+  // All nodes are junction centres on the paved ROAD_SEGMENTS shared by the
+  // urban plan: not independent splines through building plots.
+  const NODE={
+    A:{x:-29,z:-40}, B:{x:29,z:-40},
+    C:{x:-29,z:-24.5}, D:{x:29,z:-24.5},
+    E:{x:-29,z:-8.5}, F:{x:-25,z:-8.5},
+    G:{x:25,z:-8.5}, H:{x:29,z:-8.5},
+    I:{x:-25,z:8.5}, J:{x:25,z:8.5}
+  };
+  const TOURS=[
+    "C E F G H D C","C D H G F E C",
+    "C E F G J I F E C","C E F I J G F E C",
+    "C D B A C","C A B D C",
+    "C D H G J I F E C","C E F I J G H D C"
+  ].map(row=>row.split(" "));
+  // No dead-end driving or instant reversal: route selection is deterministic
+  // but changes at every C junction, over hundreds of blocks.
+  const hash=(n)=>{n=(Math.imul(n^0x9e3779b9,0x85ebca6b))>>>0;
+    n=(Math.imul(n^(n>>>13),0xc2b2ae35))>>>0;return (n^(n>>>16))>>>0;};
+  const dir=(a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz);
+    if(l<.001)throw Error("Traffic route has a zero-length edge");
+    return {x:dx/l,z:dz/l};};
+  const right=v=>({x:-v.z,z:v.x});
+  const add=(a,b,s=1)=>({x:a.x+b.x*s,z:a.z+b.z*s});
+  const R=1.50,LANE=.68;
+  const signalNodes=new Set(["C","D","F","G"]);
+  // Traffic is tied to absolute Unix time (identical across browser zones).
+  // Tehran local time separately governs night lamps.
+  const baseMs=Date.now();
+  function makeTour(seed,halfLength){
+    let state=hash(seed+2047),nodes=["C"];
+    const random=()=>{state=hash(state+0x6d2b79f5);return state/4294967296;};
+    for(let k=0;k<210;k++){
+      const incoming=nodes.length>1?nodes[nodes.length-2]:null;
+      let candidates=TOURS.filter(t=>t[1]!==incoming);
+      if(k===209)candidates=candidates.filter(t=>t[t.length-2]!==nodes[1]);
+      const tour=candidates[Math.floor(random()*candidates.length)]||candidates[0];
+      nodes.push(...tour.slice(1));
+    }
+    const head=dir(NODE.C,NODE[nodes[1]]);
+    const p0=add(add(NODE.C,head,R),right(head),LANE);
+    let points=[{x:p0.x,z:p0.z,s:0}],length=0;
+    const events=[];
+    const put=p=>{
+      const prev=points[points.length-1];
+      const d=Math.hypot(p.x-prev.x,p.z-prev.z);
+      if(d<1e-8)return;
+      length+=d;points.push({x:p.x,z:p.z,s:length});
+    };
+    for(let i=1;i<nodes.length;i++){
+      const before=NODE[nodes[i-1]],at=NODE[nodes[i]],
+        after=NODE[nodes[i===nodes.length-1?1:i+1]];
+      const a=dir(before,at),b=dir(at,after);
+      const start=add(add(at,a,-R),right(a),LANE);
+      // A pedestrian crossing is on the southern street only (x=0,z~8.5).
+      const last=points[points.length-1];
+      if((nodes[i-1]==="I"&&nodes[i]==="J")||
+         (nodes[i-1]==="J"&&nodes[i]==="I")){
+        if(last.x*start.x<0){
+          put({x:0,z:last.z+(start.z-last.z)*(-last.x)/(start.x-last.x)});
+          events.push({at:length-(halfLength+2.22),type:"crosswalk"});
+        }
+      }
+      put(start);
+      if(signalNodes.has(nodes[i])){
+        events.push({at:length-(halfLength+1.12),type:"signal",
+          node:nodes[i],axis:Math.abs(a.x)>.5?"h":"v"});
+      }
+      const endpoint=add(add(at,b,R),right(b),LANE);
+      if(a.x*b.x+a.z*b.z>.999){
+        put(endpoint);
+      }else{
+        if(a.x*b.x+a.z*b.z<-.1)throw Error("Illegal road U-turn");
+        const control=add(add(at,right(a),LANE),right(b),LANE);
+        // Quadratic turn keeps both axle centres within intersecting asphalt.
+        for(let j=1;j<=12;j++){
+          const t=j/12,u=1-t;
+          put({x:u*u*start.x+2*u*t*control.x+t*t*endpoint.x,
+               z:u*u*start.z+2*u*t*control.z+t*t*endpoint.z});
+        }
+      }
+    }
+    // Explicitly connect the last curve to the same starting lane point.
+    put(p0);
+    const stopEvents=events.map(e=>({...e,at:((e.at%length)+length)%length}))
+      .sort((a,b)=>a.at-b.at);
+    return {points,length,events:stopEvents,seed};
+  }
+  const bisect=(arr,s,key="s")=>{
+    let lo=0,hi=arr.length;
+    while(lo<hi){const m=(lo+hi)>>>1;if(arr[m][key]<s)lo=m+1;else hi=m;}
+    return lo;
+  };
+  function sample(route,s){
+    const d=((s%route.length)+route.length)%route.length,pts=route.points;
+    const idx=Math.max(1,Math.min(pts.length-1,bisect(pts,d)));
+    const a=pts[idx-1],b=pts[idx],f=(d-a.s)/(b.s-a.s);
+    const h=dir(a,b);
+    return {x:a.x+(b.x-a.x)*f,z:a.z+(b.z-a.z)*f,dx:h.x,dz:h.z};
+  }
+  function signalGreen(e,ms){
+    const offset={C:0,D:11,F:6,G:17}[e.node]||0;
+    const p=((ms/1000+offset)%52+52)%52;
+    return e.axis==="h"?p<22:p>=26&&p<48;
+  }
+  function nextStop(route,s){
+    const ix=bisect(route.events,s-1e-7,"at");
+    const e=route.events[ix%route.events.length];
+    return {...e,distance:(e.at-s+route.length)%route.length};
+  }
+  const vehicles=[];
+  // Stable phase offsets and >50km-ish schedules prevent the same short loop
+  // from replaying on reload. No localStorage or citizen/writer state involved.
   for(let i=0;i<12;i++){
-    const laneIndex=i%4,lane=lanes[laneIndex],slot=Math.floor(i/4);
-    const spec=profiles[(i+Math.floor(i/4))%profiles.length];
+    const spec=profiles[(i*5+Math.floor(i/3))%profiles.length];
     const model=makeVehicle(i,spec);
-    const car={model,lane,laneIndex,progress:(slotPositions[slot]+laneOffsets[laneIndex]+phaseSeconds*spec.pace)%SPAN,
-      distance:slotPositions[slot]+laneOffsets[laneIndex]+phaseSeconds*spec.pace,
-      speed:spec.pace*(.90+((i*7)%11)*.018)};
-    vehicles.push(car);laneCars[laneIndex].push(car);
+    const route=makeTour(i*811+17,spec.len*.5);
+    const speed=spec.pace*(.87+((i*7)%13)*.018);
+    const seed=hash(i*1171+83);
+    let progress=((baseMs/1000)*speed+seed*0.00001237)%route.length;
+    // Try non-overlapping world positions on first creation; still stable for
+    // the same wall-clock instant and independent of page reload count.
+    for(let attempts=0;attempts<180;attempts++){
+      const p=sample(route,progress);
+      if(vehicles.every(other=>{
+        const q=sample(other.route,other.progress);
+        return Math.hypot(p.x-q.x,p.z-q.z)>(spec.len+other.model.profile.len)*.5+.8;
+      }))break;
+      progress=(progress+4.3)%route.length;
+    }
+    vehicles.push({model,route,progress,distance:0,speed,velocity:speed,
+      renderSpeed:speed,lastPosition:null,turnSide:0});
   }
-  function sync(car){
-    const x=car.lane.dir===1?BEGIN+car.progress:-BEGIN-car.progress;
-    car.model.root.position.set(x,streetY-.03,car.lane.z);
-    car.model.root.rotation.y=car.lane.dir===1?0:Math.PI;
-    for(const wheel of car.model.wheelPivots)
-      wheel.rotation.z=-car.distance/car.model.profile.r;
+  // Four traffic-control posts, each with perpendicular red/green faces.
+  const signalPosts=[];
+  const redBulb=new THREE.MeshBasicMaterial({color:0xff3420});
+  const greenBulb=new THREE.MeshBasicMaterial({color:0x4eff93});
+  const offBulb=new THREE.MeshBasicMaterial({color:0x282c2b});
+  const makeLight=(parent,x,y,z)=>{
+    const mesh=new THREE.Mesh(new THREE.BoxGeometry(.18,.18,.045),offBulb);
+    mesh.position.set(x,y,z);parent.add(mesh);return mesh;
+  };
+  for(const id of signalNodes){
+    const n=NODE[id],pole=new THREE.Group();fleet.add(pole);
+    pole.name="traffic-signal-"+id;
+    pole.position.set(n.x+(n.x<0?-2.48:2.48),streetY,n.z+2.46);
+    addBox(pole,frame,.12,2.8,.12,0,1.4,0);
+    addBox(pole,trim,.38,.8,.35,0,2.85,0);
+    const rh=makeLight(pole,-.1,3.04,.19),gh=makeLight(pole,-.1,2.76,.19);
+    const rv=makeLight(pole,.11,3.04,.19),gv=makeLight(pole,.11,2.76,.19);
+    signalPosts.push({id,rh,gh,rv,gv});
   }
-  for(const car of vehicles)sync(car);
-  let lastTime=null;
-  let pedestrianCrossingRequested=false;
-  let nightFactor=0;
-  // A visual signal synchronized with the existing pedestrian reservation.
-  const signalGroup=new THREE.Group();signalGroup.name="town-traffic-signals";fleet.add(signalGroup);
-  const redLamp=material(0x40100d,{emissive:0xff1c12,emissiveIntensity:0});
-  const greenLamp=material(0x0c4021,{emissive:0x19e66a,emissiveIntensity:.5});
+  // Separate pedestrian-request signals at the existing upper crosswalk.
+  const crossingLights=[];
+  // Keep posts behind the public footpath at z=11.3; that route is reserved
+  // for citizens and must not intersect any traffic-signal furniture.
   for(const x of [-2.8,2.8]){
-    const pole=addBox(signalGroup,frame,.12,2.6,.12,x,streetY+1.25,11.1);
-    addBox(signalGroup,trim,.38,.84,.3,x,streetY+2.72,11.1);
-    addBox(signalGroup,redLamp,.22,.22,.06,x,streetY+2.9,11.27);
-    addBox(signalGroup,greenLamp,.22,.22,.06,x,streetY+2.55,11.27);
+    const g=new THREE.Group();g.position.set(x,streetY,13.25);fleet.add(g);
+    addBox(g,frame,.12,2.65,.12,0,1.32,0);
+    addBox(g,trim,.34,.8,.3,0,2.78,0);
+    crossingLights.push({r:makeLight(g,0,2.95,.18),
+                         g:makeLight(g,0,2.60,.18)});
   }
-  // A single crosswalk crosses the two upper-road lanes at x=0.
-  // Cars approaching from either side stop BEFORE their nose reaches x=-/+2.0.
-  // Cars already past the stop line must leave the crossing instead of
-  // freezing on top of a pedestrian.
-  const CROSSWALK_GAP=2.1;
-  function setCrossingDemand(value){pedestrianCrossingRequested=value===true;}
+  let pedestrianCrossingRequested=false;
+  let lastElapsed=null,startElapsed=null;
+  let lastNow=baseMs;
+  function setCrossingDemand(v){pedestrianCrossingRequested=v===true;}
   function trafficState(){
     return vehicles.map(car=>({
-      x:car.model.root.position.x,
-      z:car.model.root.position.z,
-      halfLength:car.model.profile.len*.5,
-      speed:car.speed,
-      lane:car.lane.id,
+      x:car.model.root.position.x,z:car.model.root.position.z,
+      halfLength:car.model.profile.len*.5,speed:car.renderSpeed,
+      lane:"road-graph",heading:car.model.root.rotation.y
     }));
   }
-  function tick(elapsed){
+  function position(car){
+    const p=sample(car.route,car.progress);
+    car.model.root.position.set(p.x,streetY-.03,p.z);
+    car.model.root.rotation.y=Math.atan2(-p.dz,p.dx);
+    const future=sample(car.route,car.progress+1.3);
+    const cross=p.dx*future.dz-p.dz*future.dx;
+    car.turnSide=Math.abs(cross)>.055?(cross>0?1:-1):0;
+    for(const wheel of car.model.wheelPivots){
+      wheel.rotation.z=-car.distance/car.model.profile.r;
+      if(wheel.userData.front)wheel.rotation.y=Math.max(-.35,Math.min(.35,-cross*.65));
+    }
+  }
+  for(const car of vehicles)position(car);
+  function tick(elapsed,ms){
     if(!Number.isFinite(elapsed))return;
-    if(lastTime===null){lastTime=elapsed;return;}
-    let delta=Math.min(.18,Math.max(0,elapsed-lastTime));
-    lastTime=elapsed;
+    if(lastElapsed===null){lastElapsed=elapsed;startElapsed=elapsed;return;}
+    let delta=Math.max(0,Math.min(.18,elapsed-lastElapsed));
+    lastElapsed=elapsed;
+    // Use real Tehran-independent epoch time for absolute phase. Elapsed
+    // supplies fixed-delta test mode and protects against large tab pauses.
     while(delta>1e-7){
       const dt=Math.min(.04,delta);
       for(const car of vehicles){
         let step=car.speed*dt;
-        for(const ahead of laneCars[car.laneIndex]){
-          if(car===ahead)continue;
-          const gap=(ahead.progress-car.progress+SPAN)%SPAN;
-          const safeGap=(car.model.profile.len+ahead.model.profile.len)/2+.70;
-          step=Math.min(step,Math.max(0,gap-safeGap));
+        const next=nextStop(car.route,car.progress);
+        const stop=next.type==="crosswalk"?
+          pedestrianCrossingRequested:!signalGreen(next,ms);
+        if(stop&&next.distance<=step+.015)
+          step=Math.min(step,Math.max(0,next.distance));
+        if(step>1e-6){
+          const p=sample(car.route,car.progress+step);
+          for(const other of vehicles){
+            if(car===other)continue;
+            const q=sample(other.route,other.progress);
+            // Only stop for a real leader in the same travel lane.
+            // Cross-road right-of-way is controlled at traffic-light nodes;
+            // global radial collision tests created four-way gridlock.
+            const align=p.dx*q.dx+p.dz*q.dz;
+            if(align>.86){
+              const dx=q.x-p.x,dz=q.z-p.z;
+              const forward=dx*p.dx+dz*p.dz;
+              const lateral=Math.abs(-dx*p.dz+dz*p.dx);
+              const headway=(car.model.profile.len+
+                other.model.profile.len)*.5+.72;
+              if(lateral<.73 && forward>=0 && forward<headway){
+                step=0;break;
+              }
+            }
+          }
         }
-        if(pedestrianCrossingRequested && car.lane.z>0){
-          // Both directions use progress 0..SPAN towards the crossing.
-          const stopAt=-BEGIN-(car.model.profile.len*.5+CROSSWALK_GAP);
-          if(car.progress<=stopAt && car.progress+step>stopAt)
-            step=Math.max(0,stopAt-car.progress);
-        }
-        car.model.braking=step<car.speed*dt*.7;
-        car.progress=(car.progress+step)%SPAN;
-        car.distance+=step;sync(car);
+        car.model.braking=step<car.speed*dt*.65;
+        car.renderSpeed=dt>0?step/dt:0;
+        car.progress=(car.progress+step)%car.route.length;
+        car.distance+=step;
+        position(car);
       }
       delta-=dt;
     }
   }
+  const tehranHour=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Tehran",
+    hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+  function nightFromTehran(ms){
+    const p=tehranHour.formatToParts(new Date(ms));
+    const h=Number(p.find(x=>x.type==="hour")?.value||0)+
+      Number(p.find(x=>x.type==="minute")?.value||0)/60;
+    // Ramp on 17-19 and off 5-7, independent of browser timezone.
+    return h>=19||h<5?1:h>=17?(h-17)/2:h<7?(7-h)/2:0;
+  }
+  let nightFactor=0;
   function update(day,elapsed){
-    const light=Math.max(0,Math.min(1,Number(day)||0));
-    headLight.emissiveIntensity=.22+(1-light)*1.45;
-    nightFactor=1-light;
-    tailLight.emissiveIntensity=.12+nightFactor*.36;
-    redLamp.emissiveIntensity=pedestrianCrossingRequested?1.8:.08;
-    greenLamp.emissiveIntensity=pedestrianCrossingRequested?.03:1.1;
-    tick(elapsed);
+    if(!Number.isFinite(elapsed))return;
+    if(startElapsed===null)startElapsed=elapsed;
+    const realNow=Date.now();
+    const nowMs=Math.max(realNow,baseMs+(elapsed-startElapsed)*1000);
+    lastNow=nowMs;
+    const sceneNight=1-Math.max(0,Math.min(1,Number(day)||0));
+    nightFactor=Math.max(sceneNight,nightFromTehran(nowMs));
+    headLight.emissiveIntensity=.3+nightFactor*3.0;
+    tailLight.emissiveIntensity=.16+nightFactor*.7;
+    const blink=Math.floor(nowMs/380)%2===0;
+    tick(elapsed,nowMs);
     for(const car of vehicles){
-      for(const mesh of car.model.brakeMeshes)mesh.visible=!!car.model.braking;
-      for(const mesh of car.model.signalMeshes)mesh.visible=false;
+      const m=car.model;
+      for(const glow of m.visibleHeadlights)glow.visible=nightFactor>.16;
+      m.beam.visible=nightFactor>.35;
+      if(m.spot)m.spot.intensity=nightFactor*2.1;
+      for(const light of m.brakeMeshes)light.visible=m.braking;
+      for(const light of m.signalMeshes)
+        light.visible=blink&&car.turnSide===light.userData.turnSide;
+    }
+    for(const e of signalPosts){
+      const gh=signalGreen({node:e.id,axis:"h"},nowMs);
+      const gv=signalGreen({node:e.id,axis:"v"},nowMs);
+      e.rh.material=gh?offBulb:redBulb;e.gh.material=gh?greenBulb:offBulb;
+      e.rv.material=gv?offBulb:redBulb;e.gv.material=gv?greenBulb:offBulb;
+    }
+    for(const e of crossingLights){
+      e.r.material=pedestrianCrossingRequested?redBulb:offBulb;
+      e.g.material=pedestrianCrossingRequested?offBulb:greenBulb;
     }
   }
-  return {update,vehicles,setCrossingDemand,trafficState};
+  // Pure diagnostics to support geometry-specific CI without scene screenshots.
+  function routeDiagnostics(roads){
+    const rects=(roads||[
+      {axis:"x",at:-8.5,min:-31.2,max:31.2,width:4},
+      {axis:"x",at:8.5,min:-27,max:27,width:4},
+      {axis:"z",at:-25,min:-10.5,max:10.5,width:4},
+      {axis:"z",at:25,min:-10.5,max:10.5,width:4},
+      {axis:"z",at:-29,min:-42,max:1.5,width:4.3},
+      {axis:"z",at:29,min:-42,max:1.5,width:4.3},
+      {axis:"x",at:-24.5,min:-31.2,max:31.2,width:4},
+      {axis:"x",at:-40,min:-31.2,max:31.2,width:4.4}
+    ]).map(r=>r.axis==="x"?
+      {x0:r.min,x1:r.max,z0:r.at-r.width/2,z1:r.at+r.width/2}:
+      {x0:r.at-r.width/2,x1:r.at+r.width/2,z0:r.min,z1:r.max});
+    let checked=0,offroad=0;
+    for(const car of vehicles){
+      for(const p of car.route.points){
+        checked++;
+        if(!rects.some(r=>p.x>=r.x0-.01&&p.x<=r.x1+.01&&
+            p.z>=r.z0-.01&&p.z<=r.z1+.01))offroad++;
+      }
+    }
+    return {vehicles:vehicles.length,checked,offroad,
+      routeLengths:vehicles.map(v=>Math.round(v.route.length)),
+      trafficClock:"absolute-epoch",lightingZone:"Asia/Tehran",
+      signals:signalPosts.length};
+  }
+  return {update,vehicles,setCrossingDemand,trafficState,routeDiagnostics};
 }
