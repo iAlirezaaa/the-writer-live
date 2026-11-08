@@ -8,7 +8,9 @@ const root=resolve(process.argv[2]||".");
 const read=path=>readFileSync(resolve(root,path),"utf8");
 const load=text=>import("data:text/javascript;base64,"+Buffer.from(text).toString("base64"));
 const THREE=await load(read("web/vendor/three.module.js"));
-const districts=await load(read("web/town-districts.js"));
+const urban=await load(read("web/urban-plan.js"));
+const districtSource=read("web/town-districts.js").split("\\n").filter(line=>!line.startsWith("import ")).join("\\n").replace(/^export /gm,"");
+const districts=new Function("auditUrbanPlan",districtSource+";return {buildCityDistricts,auditCityPlan,CITY_BLOCKS,CITY_PLACE_CATALOG};")(urban.auditUrbanPlan);
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
