@@ -38,4 +38,16 @@ assert.equal(service.snapshot().weather,null,"No fabricated data beyond maximum 
 assert.equal(service.snapshot().status,"unavailable");
 assert.match(mod.tehranWeatherLabel(service.snapshot()),/در دسترس نیست/);
 assert.equal(mod.tehranSkyAt(epoch).day,0,"Tehran night works offline");
+// Midnight boundary must follow Tehran, not UTC or the viewer's local timezone.
+const beforeMidnight=Date.UTC(2026,10,8,20,29);
+const afterMidnight=Date.UTC(2026,10,8,20,30);
+assert.deepEqual(mod.tehranClockParts(beforeMidnight),{
+ date:"2026-11-08",hour:23,minute:59,label:"۲۳:۵۹"});
+assert.deepEqual(mod.tehranClockParts(afterMidnight),{
+ date:"2026-11-09",hour:0,minute:0,label:"۰۰:۰۰"});
+const previousDaySun={day:"2026-11-08",sunrise:6.5,sunset:17};
+assert.equal(mod.tehranSkyAt(beforeMidnight,previousDaySun).solarSource,"provider");
+assert.equal(mod.tehranSkyAt(afterMidnight,previousDaySun).solarSource,"fallback",
+ "Yesterday's solar data must not be applied after Tehran midnight");
+assert.equal(mod.tehranSkyAt(afterMidnight,previousDaySun).day,0);
 console.log("TEHRAN-ENVIRONMENT-OK "+JSON.stringify({timeZone:mod.TEHRAN_TIMEZONE,weatherRequests:calls,weatherStates:["rain","snow","unavailable"],tehranClock:"۲۰:۰۰"}));
