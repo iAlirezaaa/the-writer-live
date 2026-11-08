@@ -5,9 +5,9 @@ import { openExplorer } from "./explorer.js";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v2";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v3";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
-import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v2";
+import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
 import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v4";
@@ -1347,6 +1347,11 @@ function rebuildWriterExterior(level=0){
 function rebuildWriterInteriorShell(level=0){
   baseWriterRoomShell.visible=level===0;
   for(const child of [...expandedWriterRoomShell.children]){
+    // Stage upgrades must not leave detached click targets in the raycaster.
+    // A stale invisible door otherwise steals clicks after a house resize.
+    const staleIndex=clickables.indexOf(child);
+    if(staleIndex>=0)clickables.splice(staleIndex,1);
+    child.visible=false;
     expandedWriterRoomShell.remove(child);child.geometry?.dispose?.();
   }
   if(level===0){expandedWriterRoomShell.visible=false;return;}
@@ -1734,8 +1739,9 @@ const VIEWS = {
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
-  overview: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
-  building: { pos: [0.2, 8.0, 26.0], target: [0, 0.05, 0] },
+  // The old view framed a 19-unit mansion; stage zero is only one 6x6 room.
+  overview: { pos: [1.4, 5.4, 14.5], target: [0, 1.3, 0] },
+  building: { pos: [1.6, 4.6, 11.5], target: [0, 1.5, 0] },
   desk:     { pos: [2.7, 2.0, 0.3], target: [1.35, 1.0, -2.0] },
   window:   { pos: [0.6, 1.75, 1.6], target: [-0.6, 1.9, -8] },
   library:  { pos: [0.6, 1.9, 0.8], target: [-2.6, 1.2, -0.9] },
