@@ -1,6 +1,6 @@
 // The Writer — editorial library. Covers are stable per story and rendered without remote images.
-import { openBook } from "./book.js?v=reader-20261108-v3";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v3";
+import { openBook } from "./book.js?v=reader-20261108-v4";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
