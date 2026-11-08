@@ -41,6 +41,18 @@ assert.ok(world.includes('writerInteriorWorldRoot.add(expandedWriterRoomShell);'
   "Upgrade-stage walls were NOT attached to the grounded room root");
 assert.ok(world.includes('writerInteriorWorldRoot.visible=!outdoors;'),
   "Writer wall visibility is not tied to the grounded room root");
+// A changed growth tier must dispose geometry AND unregister its old raycast
+// target; otherwise a detached door intercepts interactions in the new room.
+assert.ok(world.includes("const staleIndex=clickables.indexOf(child)") &&
+  world.includes("if(staleIndex>=0)clickables.splice(staleIndex,1)") &&
+  world.includes("child.visible=false"),
+  "Stage growth leaks detached clickable meshes into writer room navigation");
+// The initial one-room interior must be framed as a room, not a whole mansion.
+const buildingCamera=world.match(/building:\s*\{\s*pos:\s*\[([^\]]+)\],\s*target:/);
+assert.ok(buildingCamera,"Writer interior camera is missing");
+const camZ=Number(buildingCamera[1].split(",")[2]);
+assert.ok(camZ>=8 && camZ<=16,
+  "Stage-zero room camera still targets the obsolete 19-unit mansion");
 assert.ok(world.includes('const baseWriterRoomShell = new THREE.Group()') &&
   world.includes('const expandedWriterRoomShell = new THREE.Group()'),
   "Actual wall assemblies must exist as explicit architecture objects");
