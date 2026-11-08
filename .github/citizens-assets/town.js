@@ -1,5 +1,5 @@
 import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
-import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v1";
+import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v2";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
