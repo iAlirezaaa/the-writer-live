@@ -10,7 +10,7 @@ from pathlib import Path
 from shutil import copy2
 import sys
 
-VERSION="observatory-20261108-v1"
+VERSION="observatory-20261108-v2"
 ROOT=Path(".github/observer-assets")
 
 
@@ -49,6 +49,7 @@ def prepare(site: Path) -> None:
         "root script cache":f'src="./web/world.js?v={VERSION}"' in index,
         "relative import map":'"three": "./web/vendor/three.module.js"' in index,
         "relative book link":'href="./read/"' in index,
+        "resident directory search":'id="town-search"' in index and 'resident-go-to' in world,
         "date conversion on 3D canvas":'solarDate(String(e.at).slice(0, 10))' in world,
     }
     failed=[name for name,ok in checks.items() if not ok]
