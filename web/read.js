@@ -1,110 +1,69 @@
-// The Writer — editorial library. Covers are stable per story and rendered without remote images.
+// Public reader: a shelf of covers. Each story opens as a book (book.js), where readers can comment on passages.
 import { openBook } from "./book.js";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 
-const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
-const $ = id => document.getElementById(id);
-const nfa = number => new Intl.NumberFormat("fa-IR").format(number);
+const STATUS = { accepted: "پذیرفته", rejected: "رد شده", pending: "در جریان" };
+const COVERS = ["#4a3322", "#2f4a5a", "#5a3a4a", "#3a4a32", "#5a4a2a", "#3a3a5a"];
+const $ = (id) => document.getElementById(id);
 let stories = [];
 
 function savedProgress(id) {
-  if (id == null) return 0;
-  try {
-    const value = JSON.parse(localStorage.getItem(`the-writer-reading:${id}`) || "{}");
-    return Math.max(0, Math.min(1, Number(value?.progress) || 0));
-  } catch { return 0; }
+  try { return Math.max(0, Math.min(1, Number(JSON.parse(localStorage.getItem(`the-writer-reading:${id}`) || "{}").progress) || 0)); }
+  catch { return 0; }
 }
-function make(tag, cls, value) {
-  const node=document.createElement(tag);
-  if(cls) node.className=cls;
-  if(value != null) node.textContent=String(value);
-  return node;
-}
-function makeCover(story) {
-  const item=make("article","cover-item");
-  const button=make("button","cover");
-  button.type="button";
-  const visual=applyCoverVisual(button,story);
-  const heading=make("span","cover-heading");
-  heading.append(make("span","cover-imprint","THE WRITER"),make("span","cover-series",`EDITION  /  ${visual.edition}`));
-  const title=make("span","c-title",story.title||"اثر بی‌عنوان");
-  const subject=make("span","cover-subject",story.stage||"داستان");
-  const signature=make("span","cover-signature","یک داستان از جهان نویسنده");
-  const base=make("span","cover-bottom");
-  base.append(make("span","cover-issue",`TW — ${visual.edition}`),make("span","cover-symbol","●"));
-  button.append(heading,createCoverArt(),title,subject,signature,base);
-  const meta=make("div","cover-caption");
-  const metaTop=make("div","cover-meta-top");
-  const status=make("span",`c-status ${story.status||"pending"}`,STATUS[story.status]||story.status||"نامشخص");
-  const stage=make("span","c-meta",`${nfa(story.words||0)} واژه`);
-  metaTop.append(status,stage);
-  const score=make("span","c-score",story.score==null?"بدون امتیاز":`امتیاز منتقد · ${nfa(story.score)}`);
-  const p=savedProgress(story.id);
-  const reading=make("div","cover-reading");
-  const text=make("span","cover-reading-label",p>0?`ادامهٔ مطالعه · ${nfa(Math.round(p*100))}٪`:"باز کردن و مطالعه");
-  const rail=make("span","c-progress-track");
-  const fill=make("span","");
-  fill.style.width=`${Math.round(p*100)}%`;
-  rail.append(fill);
-  reading.append(text,rail);
-  meta.append(metaTop,score,reading);
-  button.setAttribute("aria-label",`${story.title||"اثر بی‌عنوان"}، ${STATUS[story.status]||story.status||"نامشخص"}، ${story.stage||"داستان"}، ${p>0?`ادامه از ${Math.round(p*100)} درصد`:"شروع مطالعه"}`);
-  button.addEventListener("click",()=>{
-    const id=String(story.id||"");
-    if(!id)return;
-    try {
-      if(decodeURIComponent(location.hash.slice(1))===id) route();
-      else location.hash=encodeURIComponent(id);
-    }catch{location.hash=encodeURIComponent(id)}
-  });
-  item.append(button,meta);
-  return item;
-}
-function renderShelf() {
-  const shelf=$("covers");
-  if(!shelf)return;
-  const query=$("story-search").value.trim().toLocaleLowerCase("fa");
-  const status=$("story-status").value;
-  const list=stories.filter(story=>
-    (status==="all"||story.status===status) &&
-    (!query||`${story.title||""} ${story.stage||""}`.toLocaleLowerCase("fa").includes(query))
-  );
-  const sort=$("story-sort").value;
-  list.sort((a,b)=>{
-    if(sort==="title")return String(a.title||"").localeCompare(String(b.title||""),"fa");
-    if(sort==="score")return (Number(b.score)||0)-(Number(a.score)||0);
-    const dates=(Date.parse(a.created)||0)-(Date.parse(b.created)||0);
-    return sort==="newest"?-dates:dates;
-  });
-  const cards=list.map(makeCover);
-  shelf.replaceChildren(...cards);
-  $("shelf-count").textContent=`${nfa(list.length)} اثر از ${nfa(stories.length)}`;
-  if(!list.length)shelf.append(make("p","reading-empty",stories.length?"اثری با این جست‌وجو یا فیلتر پیدا نشد.":"هنوز داستانی در کتابخانه نیست."));
-}
-async function route(){
-  let id="";
-  try{id=decodeURIComponent(location.hash.slice(1))}catch{location.hash="";return}
-  if(!id)return;
-  try{await openBook(id)}
-  catch{location.hash="";}
-}
-async function showShelf(){
-  const result=await getJSON("/api/stories");
-  stories=Array.isArray(result)?result:[];
+
+async function showShelf() {
+  stories = await getJSON("/api/stories");
   renderShelf();
 }
-window.addEventListener("hashchange",route);
-window.addEventListener("writer:reading-closed",renderShelf);
+
+function renderShelf() {
+  const list = stories.filter(s => {
+    const q = $("story-search").value.trim().toLocaleLowerCase("fa");
+    const status = $("story-status").value;
+    return (status === "all" || s.status === status) && (!q || `${s.title||""} ${s.stage||""}`.toLocaleLowerCase("fa").includes(q));
+  });
+  const sort = $("story-sort").value;
+  list.sort((a,b) => sort === "title" ? String(a.title).localeCompare(String(b.title),"fa")
+    : sort === "score" ? Number(b.score||0)-Number(a.score||0)
+      : (Date.parse(a.created)||0)-(Date.parse(b.created)||0));
+  if (sort === "newest") list.reverse();
+  const shelf = $("covers");
+  shelf.replaceChildren();
+  list.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.className = "cover";
+    b.style.setProperty("--cover", COVERS[i % COVERS.length]);
+    const status = document.createElement("span"); status.className = "c-status"; status.textContent = STATUS[s.status] || s.status;
+    const title = document.createElement("span"); title.className = "c-title"; title.textContent = s.title;
+    const meta = document.createElement("span"); meta.className = "c-meta";
+    meta.textContent = `${s.stage||"داستان"} · ${new Intl.NumberFormat("fa-IR").format(s.words||0)} کلمه`;
+    const score = document.createElement("span"); score.className = "c-score"; score.textContent = `امتیاز ${new Intl.NumberFormat("fa-IR").format(s.score??"—")}`;
+    const progress = savedProgress(s.id);
+    const progressBox = document.createElement("span"); progressBox.className = "c-progress";
+    const progressText = document.createElement("span"); progressText.textContent = progress ? `ادامهٔ مطالعه · ${Math.round(progress*100)}٪` : "برای خواندن باز کنید";
+    const track = document.createElement("span"); track.className = "c-progress-track";
+    const fill = document.createElement("span"); fill.style.width = `${progress*100}%`; track.append(fill); progressBox.append(progressText,track);
+    b.setAttribute("aria-label",`${s.title}، ${STATUS[s.status]||s.status}، ${meta.textContent}`);
+    b.append(status, title, meta, score, progressBox);
+    b.addEventListener("click", () => { if (decodeURIComponent(location.hash.slice(1)) === s.id) route(); else location.hash = s.id; });
+    shelf.appendChild(b);
+  });
+  $("shelf-count").textContent = `${new Intl.NumberFormat("fa-IR").format(list.length)} از ${new Intl.NumberFormat("fa-IR").format(stories.length)} داستان`;
+  if (!list.length) shelf.textContent = stories.length ? "با این فیلتر داستانی پیدا نشد." : "هنوز داستانی نوشته نشده است.";
+}
+
+function route() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (id) openBook(id).catch(() => { location.hash = ""; });
+}
+window.addEventListener("hashchange", route);
 if(isGitHubPages()){
-  $("reader-note").textContent="نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. مطالعه و نشانک در مرورگر شما ذخیره می‌شوند؛ حاشیه‌نویسی در نسخهٔ محلی فعال است.";
+  $("reader-note").textContent="در این نسخهٔ عمومی، قفسه فقط آثار پذیرفته‌شدهٔ قابل انتشار را نشان می‌دهد. حاشیه‌نویسی و ثبت نظر در نسخهٔ محلی فعال است.";
   $("story-status").querySelector('option[value="rejected"]')?.remove();
 }
 $("home-link").href=appHref("");
 $("story-search").addEventListener("input",renderShelf);
 $("story-status").addEventListener("change",renderShelf);
 $("story-sort").addEventListener("change",renderShelf);
-showShelf().then(route).catch(()=>{
-  $("shelf-count").textContent="اتصال برقرار نشد";
-  $("covers").replaceChildren(make("p","reading-empty","کتابخانه در دسترس نیست. اتصال یا انتشار فایل‌های داستان را بررسی کنید."));
-});
+showShelf().then(route).catch(() => { $("covers").textContent = "کتابخانه در دسترس نیست؛ اتصال را بررسی کنید."; });
