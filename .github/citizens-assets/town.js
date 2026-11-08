@@ -1,5 +1,7 @@
 import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
 import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v2";
+import { ROAD_SEGMENTS } from "./urban-plan.js?v=urban-plan-20261108-v3";
+import { buildSeamlessRoadSurface } from "./road-surface.js?v=road-surface-20261108-v3";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -187,6 +189,11 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   // public spaces and a publisher office on an upper floor. The author's
   // original home and the tested traffic/pedestrian routes are untouched.
   const districts = buildCityDistricts({ THREE, group, clickable, canvasTex, streetY: STREET_Y });
+  // A single union mesh covers the old main streets and every district extension.
+  // It is ONE asphalt surface, not coplanar road patches glued together.
+  // Keep the original underneath as a collision/path reference for resident routes.
+  const cityRoadSurface=buildSeamlessRoadSurface(THREE,ROAD_SEGMENTS,{streetY:STREET_Y});
+  group.add(cityRoadSurface);
     const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
   const carLayer = buildTownCars({ THREE, city: group, streetY: STREET_Y });
