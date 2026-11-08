@@ -5,8 +5,9 @@ import { openExplorer } from "./explorer.js";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v1";
-import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v1";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v2";
+import { writerHouseLevel, writerHouseDimensions } from "./urban-plan.js?v=urban-plan-20261108-v2";
+import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v2";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
 import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v4";
@@ -225,6 +226,8 @@ function clickable(m, panel, label) { m.userData.panel = panel; m.userData.label
 
 const town = buildTown({ THREE, scene, clickable, canvasTex });
 const citizens = createCitizens({ THREE, scene, clickable, motionArchive });
+// The original detailed dollhouse remains intact but is not the exterior facade.
+const citySceneBaseline = new Set(scene.children);
 let serverClockOffset = 0;
 let serverUtcOffset = -new Date().getTimezoneOffset();
 let previewHour = null;
@@ -1211,6 +1214,63 @@ function paintClock(now) {
   clockTex.needsUpdate = true;
 }
 
+// ============ small exterior writer house (independent from private interior) ============
+const interiorSceneObjects = scene.children.filter(node => !citySceneBaseline.has(node));
+const writerExterior = new THREE.Group();
+writerExterior.name = "writer-home-exterior-v2";
+scene.add(writerExterior);
+let currentWriterHouseLevel = -1;
+function exteriorPart(geo, material, x, y, z) {
+  const m = new THREE.Mesh(geo, material);m.position.set(x,y,z);
+  m.castShadow=true;m.receiveShadow=true;writerExterior.add(m);return m;
+}
+const exteriorWall = new THREE.MeshStandardMaterial({color:0xc7b39a,roughness:.92});
+const exteriorRoof = new THREE.MeshStandardMaterial({color:0x56616a,roughness:.9});
+const exteriorWood = new THREE.MeshStandardMaterial({color:0x594739,roughness:.84});
+const exteriorGlass = new THREE.MeshStandardMaterial({color:0x8daeb4,roughness:.38,metalness:.12});
+const exteriorPath = new THREE.MeshStandardMaterial({color:0xb6ac97,roughness:1});
+const exteriorGreen = new THREE.MeshStandardMaterial({color:0x5b7956,roughness:1});
+function rebuildWriterExterior(level=0){
+  for(const node of [...writerExterior.children]){
+    const index=clickables.indexOf(node);if(index>=0)clickables.splice(index,1);
+    writerExterior.remove(node);node.geometry?.dispose?.();
+  }
+  const [w,d]=writerHouseDimensions(level),h=3.05+(level>=2?.35:0);
+  exteriorPart(new THREE.BoxGeometry(w+.38,.18,d+.38),exteriorPath,0,STREET_Y+.04,0);
+  exteriorPart(new THREE.BoxGeometry(w,h,d),exteriorWall,0,STREET_Y+h/2,0);
+  exteriorPart(new THREE.BoxGeometry(w+.36,.32,d+.55),exteriorRoof,0,STREET_Y+h+.13,0);
+  const portal=exteriorPart(new THREE.BoxGeometry(.96,2.06,.12),exteriorWood,-.65,STREET_Y+1.03,d/2+.07);
+  const window=exteriorPart(new THREE.BoxGeometry(1.18,1.05,.09),exteriorGlass,w*.24,STREET_Y+1.72,d/2+.07);
+  exteriorPart(new THREE.BoxGeometry(1.32,.07,.18),exteriorWood,w*.24,STREET_Y+2.3,d/2+.12);
+  exteriorPart(new THREE.BoxGeometry(1.25,.13,.72),exteriorPath,-.65,STREET_Y+.08,d/2+.39);
+  // A pedestrian approach and planted front setbacks, no private parking at level zero.
+  exteriorPart(new THREE.BoxGeometry(1.25,.075,6.55-d/2),exteriorPath,-.65,STREET_Y+.035,(6.55+d/2)/2);
+  for(const x of [-3.35,3.35]){
+    exteriorPart(new THREE.BoxGeometry(.5,.12,4.8),exteriorGreen,x,STREET_Y+.07,0);
+  }
+  if(level>=3){
+    exteriorPart(new THREE.BoxGeometry(1.6,.08,2.5),exteriorPath,3.1,STREET_Y+.035,4.1);
+  }
+  const hit=exteriorPart(new THREE.BoxGeometry(w, h+.6,d+.15),new THREE.MeshBasicMaterial({visible:false}),0,STREET_Y+(h+.6)/2,0);
+  hit.userData.writerExterior=true;
+  clickable(hit,"p-status","خانهٔ نویسنده — ورود به اتاق");
+  // Front door remains independently clickable for assistive scene inspection.
+  clickable(portal,"p-status","ورود به اتاق نویسنده");
+  portal.userData.writerExterior=true;
+  window.userData.writerExterior=true;
+  currentWriterHouseLevel=level;
+}
+function updateWriterHouse(acceptedCount){
+  const next=writerHouseLevel(acceptedCount);
+  if(next!==currentWriterHouseLevel)rebuildWriterExterior(next);
+}
+function setWriterSceneMode(mode){
+  const outdoors=["town","cars","publisher","bookstore"].includes(mode);
+  writerExterior.visible=outdoors;
+  for(const obj of interiorSceneObjects)obj.visible=!outdoors;
+}
+updateWriterHouse(0);
+
 // ============ camera views ============
 function paintAchievements(rowsList) {
   const g = achCtx;
@@ -1558,14 +1618,16 @@ const VIEWS = {
   window:   { pos: [0.6, 1.75, 1.6], target: [-0.6, 1.9, -8] },
   library:  { pos: [0.6, 1.9, 0.8], target: [-2.6, 1.2, -0.9] },
 };
-let view = "overview";
-let camGoal = { pos: new THREE.Vector3(...VIEWS.overview.pos), target: new THREE.Vector3(...VIEWS.overview.target) };
+let view = "town";
+let camGoal = { pos: new THREE.Vector3(...VIEWS.town.pos), target: new THREE.Vector3(...VIEWS.town.target) };
+camera.position.copy(camGoal.pos);controls.target.copy(camGoal.target);setWriterSceneMode("town");controls.update();
 let camMoving = false;
 function setView(name) {
   if (name !== "follow" && !VIEWS[name]) return;
   focus = null;
   closeInspect(false);
   view = name;
+  setWriterSceneMode(name);
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   if (name !== "follow") {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
@@ -1841,7 +1903,7 @@ function pickAt(ev) {
   const r = renderer.domElement.getBoundingClientRect();
   pointer.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
-  return raycaster.intersectObjects(clickables, false)[0];
+  return raycaster.intersectObjects(clickables.filter(mesh=>{let parent=mesh;while(parent){if(!parent.visible)return false;parent=parent.parent;}return true;}), false)[0];
 }
 renderer.domElement.addEventListener("pointermove", (ev) => {
   const hit = pickAt(ev);
@@ -1862,6 +1924,7 @@ renderer.domElement.addEventListener("pointerup", (ev) => {
   const hit = pickAt(ev);
   if (!hit) { closeInspect(true); return; }
   const o = hit.object;
+  if(o.userData.writerExterior){setView("building");return;}
   if (o.userData.notebook && nb.isOpen) { nb.turnFromPointer(hit.point.x - nb.group.position.x); return; }
   if (o.userData.drawer) drawerOpen = true;
   inspect(o, hit.point);
@@ -1895,6 +1958,7 @@ setInterval(tickClock, 1000); tickClock();
 
 function renderStatus(s) {
   state = s;
+  updateWriterHouse(s.accepted_count || 0);
   $("name").textContent = s.name;
   const status = s.napping ? "چرت می‌زند" : s.asleep ? "در خواب" : (STATUS_TEXT[s.status] || "آماده");
   const wakeAt = s.napping ? hm(s.nap_until) : s.sleep.end;
