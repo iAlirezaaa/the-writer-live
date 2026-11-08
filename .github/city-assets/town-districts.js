@@ -1,11 +1,12 @@
-import { auditUrbanPlan } from "./urban-plan.js?v=urban-plan-20261108-v2";
+import { auditUrbanPlan } from "./urban-plan.js?v=urban-plan-20261108-v3";
+import { ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
 /* THE WRITER — CITY DISTRICT KIT / v1
  * Architectural layer only. The author's house, room props, current pedestrian
  * graph, and moving traffic lanes are NEVER modified by this module.
  * Uses cached geometries/materials and instanced window facades to keep draw
  * calls affordable. These are designed fictional venues, not proof of visits.
  */
-export const DISTRICT_KIT_VERSION="district-kit-20261108-v2";
+export const DISTRICT_KIT_VERSION="district-kit-20261108-v3";
 export const CITY_BLOCKS=Object.freeze([
   {id:"west-arcade",x:-20,z:-18,w:5.4,d:5.6,floors:4,style:"brick",title:"رواق غربی",district:"محلهٔ قدیمی"},
   {id:"media-loft",x:-12,z:-18,w:5.2,d:5.4,floors:5,style:"loft",title:"استودیوهای شهر",district:"محلهٔ هنر"},
@@ -343,16 +344,18 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   // New streets make the expanded layout a block system instead of random
   // props. These side lanes are VISUAL ONLY, not part of the car simulator.
   const road=mat("new-road",0x404b50),roadStripe=mat("road-line",0xdfd9c0);
-  const newStreet=(x,z,w,d)=>{
-    B(w,.07,d,road,x,H(-.077),z);
+  const newStreet=(x,z,w,d,showMarkings=true)=>{
+    // The asphalt itself lives in ONE union mesh in town.js; adding another
+    // rectangle here would reintroduce the patchwork and z-fighting defect.
+    if(!showMarkings)return;
     if(w>d)for(let t=x-w/2+3;t<x+w/2-1;t+=4.4)
-      B(1.4,.018,.08,roadStripe,t,H(-.027),z);
+      B(1.4,.018,.08,roadStripe,t,H(ROAD_PAINT_CENTER_OFFSET),z);
     else for(let t=z-d/2+3;t<z+d/2-1;t+=4.4)
-      B(.08,.018,1.4,roadStripe,x,H(-.027),t);
+      B(.08,.018,1.4,roadStripe,x,H(ROAD_PAINT_CENTER_OFFSET),t);
   };
   newStreet(-29,-20,4.3,43);newStreet(29,-20,4.3,43);
   // Both outer streets now connect to the existing east/west network.
-  newStreet(0,-8.5,63,4);
+  newStreet(0,-8.5,63,4,false); // Original town already draws main-road markings.
   // Street between the two southern rows of blocks: no disconnected facades.
   newStreet(0,-24.5,63,4);
   newStreet(0,-40,63,4.4);
@@ -380,7 +383,7 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   // Decorative side-street access and curb zones are explicitly not sim lanes.
   for(const x of [-29,29]){
     B(1.2,.12,42,sidewalk,x+(x<0?-3:3),H(.02),-20);
-    for(let z=-36;z<=-5;z+=6)B(.1,.07,.9,roadStripe,x,H(-.027),z);
+    for(let z=-36;z<=-5;z+=6)B(.1,.018,.9,roadStripe,x,H(ROAD_PAINT_CENTER_OFFSET),z);
   }
   for(const [x,z] of [[-26,-34],[26,-34],[-26,-10],[26,-10]]){
     C(.095,.13,3.6,dark,x,H(1.8),z,8);
