@@ -23,9 +23,9 @@ jobs:
           mkdir -p _site
           cp -a index.html web read snapshot _site/
           touch _site/.nojekyll
-          # Keep the reviewed city UI even if a local snapshot producer has an
-          # outdated worktree. The next two scripts patch these exact assets.
-          for name in citizens.js citizen-motion-library.js objects.js world.js town.js town-cars.js; do
+          # The snapshot publisher supplies the current character motion and
+          # dashboard entrypoint. Preserve those authored files in the artifact.
+          for name in objects.js town.js town-cars.js; do
             cp ".github/citizens-assets/$name" "_site/web/$name"
           done
           cp .github/city-assets/town-districts.js _site/web/town-districts.js
@@ -43,8 +43,7 @@ jobs:
           cp .github/reader-assets/read.html _site/read/index.html
           python3 .github/scripts/prepare_reader_deploy.py _site
           python3 .github/scripts/prepare_citizens_deploy.py _site
-          # Pin the complete observer shell AFTER legacy publishing safeguards.
-          # The authoring data/API snapshots remain unchanged.
+          # Check the observer shell without replacing the current index/style.
           python3 .github/scripts/prepare_observer_deploy.py _site
           python3 .github/scripts/prepare_city_deploy.py _site
           cp _site/web/town-districts.js /tmp/the-writer-town-districts.mjs

@@ -40,7 +40,7 @@ def inspect(site: Path) -> None:
         ("city catalog connected",f'./town-districts.js?v={VERSION}' in world),
         ("city information panel",'"place:"+civic.id' in objects),
         ("city venues navigable",'"town-places"' in world and 'renderCityPlaces()' in world),
-        ("new world entrypoint",'src="./web/world.js?v=city-world-20261108-v6"' in index),
+        ("new world entrypoint",'src="./web/world.js?v=city-world-20261109-v1"' in index),
         ("original camera menu kept",index.count("data-view=")==10),
         ("original notebook panels kept",index.count("data-panel=")==15),
         ("unchanged car source", 'buildTownCars' in town),

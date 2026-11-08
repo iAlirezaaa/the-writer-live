@@ -11,7 +11,7 @@ from shutil import copy2
 import sys
 
 VERSION="observatory-20261108-v4"
-WORLD_VERSION="city-world-20261108-v6"
+WORLD_VERSION="city-world-20261109-v1"
 READER_VERSION="observatory-20261108-v2"
 ROOT=Path(".github/observer-assets")
 
@@ -21,12 +21,11 @@ def prepare(site: Path) -> None:
     site.mkdir(parents=True,exist_ok=True)
     web=site/"web"
     web.mkdir(exist_ok=True)
-    for name in ("observer-ui.js","observer.css","persian-display.js","style.css"):
+    for name in ("observer-ui.js","observer.css","persian-display.js"):
         source=ROOT/name
         if not source.is_file():
             raise RuntimeError("Missing pinned UI asset: "+str(source))
         copy2(source,web/name)
-    copy2(ROOT/"index.html",site/"index.html")
     index=(site/"index.html").read_text(encoding="utf-8")
     observer=(web/"observer-ui.js").read_text(encoding="utf-8")
     locale=(web/"persian-display.js").read_text(encoding="utf-8")

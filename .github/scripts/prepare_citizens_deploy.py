@@ -9,7 +9,8 @@ from pathlib import Path
 import re
 import sys
 
-VERSION = "citizens-20261108-v3"
+VERSION = "citizens-20261109-v1"
+WORLD_VERSION = "city-world-20261109-v1"
 
 
 def patch_site(root: Path) -> None:
@@ -45,7 +46,7 @@ def patch_site(root: Path) -> None:
     # but current world.js already explicitly imports book.js?v=reader-v4.
     index,count=re.subn(
         r'src="\./web/world\.js(?:\?v=[^"]+)?"',
-        f'src="./web/world.js?v={VERSION}"',
+        f'src="./web/world.js?v={WORLD_VERSION}"',
         index,count=1
     )
     if count!=1:
