@@ -2001,7 +2001,9 @@ function renderPlannerList(p) {
     const body=document.createElement("div");body.className="task-body";
     const title=document.createElement("strong");title.textContent=b.label||TASK_FA[b.task]||b.task;
     const meta=document.createElement("div");meta.className="task-meta";
-    const state=document.createElement("span");state.className="task-state";state.textContent=b.id===currentId?"در حال انجام":BLOCK_FA[b.status]||b.status;
+    const state=document.createElement("span");state.className="task-state";state.textContent=b.status==="planned"&&b.attempts
+      ? `در حال ادامه${b.next_retry_at ? ` · تلاش بعدی ${hm(b.next_retry_at)}` : ""}`
+      : b.id===currentId?"در حال انجام":BLOCK_FA[b.status]||b.status;
     const growth=document.createElement("span");growth.className="task-growth";growth.textContent=growthKinds.has(b.task)?"رشد شخصی":"برنامهٔ روز";
     meta.append(state,growth);body.append(title,meta);
     if(b.note||b.result){const note=document.createElement("span");note.className="task-note";note.textContent=[b.result,b.note].filter(Boolean).join(" · ");body.append(note);}
@@ -2204,12 +2206,15 @@ async function loadPublicRoutine() {
   const done = plan.blocks.filter((block) => block.status === "done").length;
   $("day-label").textContent = plan.day || "";
   $("now-line").textContent = plan.current
-    ? `اکنون: ${hm(plan.current.start)}–${hm(plan.current.end)} · ${plan.current.label}`
+    ? `${plan.current.attempts ? "در حال ادامه" : "اکنون"}: ${hm(plan.current.start)}–${hm(plan.current.end)} · ${plan.current.label}`
     : writer.activity;
   $("next-line").textContent = plan.next ? `بعدی: ${hm(plan.next.start)} · ${plan.next.label}` : "کار بعدی ثبت نشده است";
   $("plan-progress").textContent = `${faNum(done)} از ${faNum(plan.blocks.length)} کار امروز انجام‌شده`;
   $("plan").replaceChildren(...plan.blocks.map((block) => item(
-    `${hm(block.start)}–${hm(block.end)} · ${block.label}`, BLOCK_FA[block.status] || block.status)));
+    `${hm(block.start)}–${hm(block.end)} · ${block.label}`,
+    block.status === "planned" && block.attempts
+      ? `در حال ادامه${block.next_retry_at ? ` · تلاش بعدی ${hm(block.next_retry_at)}` : ""}`
+      : BLOCK_FA[block.status] || block.status)));
 }
 async function refreshAll() {
   if (STATIC_PUBLIC) {

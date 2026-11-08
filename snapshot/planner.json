@@ -1,185 +1,231 @@
 {
   "blocks": [
     {
+      "attempts": null,
       "end": "2026-11-08T07:45",
       "id": "202611080700",
       "label": "نوشتن داستان",
+      "next_retry_at": null,
       "start": "2026-11-08T07:00",
       "status": "done",
       "task": "write"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T08:30",
       "id": "202611080745",
       "label": "دفترچه",
+      "next_retry_at": null,
       "start": "2026-11-08T07:45",
       "status": "done",
       "task": "diary"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T09:15",
       "id": "202611080830",
       "label": "نوشتن داستان",
+      "next_retry_at": null,
       "start": "2026-11-08T08:30",
       "status": "done",
       "task": "write"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T10:00",
       "id": "202611080915",
       "label": "یادگیری مهارت",
+      "next_retry_at": null,
       "start": "2026-11-08T09:15",
       "status": "done",
       "task": "learn"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T10:45",
       "id": "202611081000",
       "label": "چرت",
+      "next_retry_at": null,
       "start": "2026-11-08T10:00",
       "status": "skipped",
       "task": "nap"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T11:29",
       "id": "202611081044",
       "label": "نوشتن داستان",
+      "next_retry_at": null,
       "start": "2026-11-08T10:44",
       "status": "done",
       "task": "write"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T12:14",
       "id": "202611081129",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T11:29",
       "status": "done",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T12:59",
       "id": "202611081214",
       "label": "تحقیق",
+      "next_retry_at": null,
       "start": "2026-11-08T12:14",
       "status": "planned",
       "task": "research"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T13:44",
       "id": "202611081259",
       "label": "چرت",
+      "next_retry_at": null,
       "start": "2026-11-08T12:59",
       "status": "planned",
       "task": "nap"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T14:29",
       "id": "202611081344",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T13:44",
       "status": "planned",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T15:14",
       "id": "202611081429",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T14:29",
       "status": "planned",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T15:59",
       "id": "202611081514",
       "label": "تحقیق",
+      "next_retry_at": null,
       "start": "2026-11-08T15:14",
       "status": "planned",
       "task": "research"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T16:44",
       "id": "202611081559",
       "label": "چرت",
+      "next_retry_at": null,
       "start": "2026-11-08T15:59",
       "status": "planned",
       "task": "nap"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T17:29",
       "id": "202611081644",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T16:44",
       "status": "planned",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T18:14",
       "id": "202611081729",
       "label": "یادگیری مهارت",
+      "next_retry_at": null,
       "start": "2026-11-08T17:29",
       "status": "planned",
       "task": "learn"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T18:59",
       "id": "202611081814",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T18:14",
       "status": "planned",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T19:44",
       "id": "202611081859",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T18:59",
       "status": "planned",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T20:29",
       "id": "202611081944",
       "label": "نوشتن داستان",
+      "next_retry_at": null,
       "start": "2026-11-08T19:44",
       "status": "planned",
       "task": "write"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T21:14",
       "id": "202611082029",
       "label": "چرت",
+      "next_retry_at": null,
       "start": "2026-11-08T20:29",
       "status": "planned",
       "task": "nap"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T21:59",
       "id": "202611082114",
       "label": "چرت",
+      "next_retry_at": null,
       "start": "2026-11-08T21:14",
       "status": "planned",
       "task": "nap"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T22:44",
       "id": "202611082159",
       "label": "استراحت",
+      "next_retry_at": null,
       "start": "2026-11-08T21:59",
       "status": "planned",
       "task": "rest"
     },
     {
+      "attempts": null,
       "end": "2026-11-08T23:29",
       "id": "202611082244",
       "label": "نوشتن داستان",
+      "next_retry_at": null,
       "start": "2026-11-08T22:44",
       "status": "planned",
       "task": "write"
     },
     {
+      "attempts": null,
       "end": "2026-11-09T00:14",
       "id": "202611082329",
       "label": "چرت",
+      "next_retry_at": null,
       "start": "2026-11-08T23:29",
       "status": "planned",
       "task": "nap"
@@ -188,9 +234,11 @@
   "current": null,
   "day": "2026-11-08",
   "next": {
+    "attempts": null,
     "end": "2026-11-08T12:59",
     "id": "202611081214",
     "label": "تحقیق",
+    "next_retry_at": null,
     "start": "2026-11-08T12:14",
     "status": "planned",
     "task": "research"
