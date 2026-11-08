@@ -9,20 +9,20 @@ The public experience opens with an EXTERIOR view of the town. The writer begins
 ## Current implementation
 
 - Road-first planning contract with 8 connected road segments, 17 parcels, entry anchors, parking allocation, and green buffer declarations.
-- Central writer parcel reserved for gradual progression; stage zero has a 4.8 × 4.8 exterior footprint and **zero parking**.
+- Central writer parcel reserved for gradual progression; stage zero has a 6 × 6 single-room interior/exterior footprint and **zero parking**.
 - Growth is based on **accepted story count**, not passage of time: 0–3 / 4–9 / 10–19 / 20–39 / 40+ accepted works map to levels 0..4. Preserve the writer's authored state. This is a presentation tier, not an assertion of a real-life house.
 - Central and southern streets physically joined to the perimeter street model; no freestanding roads ending short of each other. The southern building row is set back to make space for an actual road with sidewalks on both sides.
 - Residential street-facing properties have modest planting strips, short access aprons and marked curbside parking. Two shared parking areas serve the dense southern blocks; paved pedestrian spurs reach every southern district front door. Public car-lane trajectories and resident routines are not changed.
 - Existing character motion archive and authored interior meshes are preserved. Exterior/interior switching uses visibility, never deletion of saved data.
 - Public deploy pins source modules so older snapshot exporters cannot restore the old house.
-- Validation: `tests/urban_plan_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/town_scene_probe.mjs` and the Pages workflow.
+- Validation: `tests/urban_plan_probe.mjs`, `tests/road_topology_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/writer_house_consistency_probe.mjs`, `tests/town_scene_probe.mjs` and the Pages workflow.
 
 ## Parcel and street invariants
 
 1. Buildings never occupy the same ground footprint; enforce a positive minimum spatial separation.
 2. Every building has a stable entry anchor and an approach to an existing walking/driving surface. Roof overhang may cross the footprint slightly but cannot cross another lot.
 3. Parking is provided only where applicable and cannot obstruct doorways, pedestrian crossings, or car circulation. Writer level zero has no assigned private parking.
-4. Main streets must form a single connected graph; secondary streets join with aligned surfaces and curbs. Roads never terminate short of intersections.
+4. Main streets must form a single connected graph and one tessellated asphalt surface without road-patch overlays; secondary streets join with aligned surfaces and curbs. Roads never terminate short of intersections.
 5. Garden beds, trees, benches and streetlights must not block sidewalks, emergency access or visibility at junctions.
 6. In exterior mode show streets and house façades; do not expose the multi-room cutaway until the writer's home is selected.
 7. The original interior contents and the real writer's memory remain unchanged. Future interior expansions require separate stage-specific layouts and should not silently relocate objects.
