@@ -312,6 +312,33 @@ try {
     for (const box of flat) assert.ok(close(box.max.y, STREET_Y, 0.25), "Old town ground survives at room zero in world.js");
     const realTown = world.probeScene.getObjectByName("town");
     assert.ok(realTown, "world.js did not buildTown");
+    const writerRoot=world.probeScene.getObjectByName("writer-interior-street-level");
+    const roomWalls=world.probeScene.getObjectByName("writer-room-shell");
+    const expansionWalls=world.probeScene.getObjectByName("writer-room-shell-expanded");
+    assert.ok(writerRoot && roomWalls && expansionWalls,"Writer room or wall assembly missing");
+    assert.ok(close(writerRoot.position.y, STREET_Y),"Writer interior root still floats");
+    assert.equal(roomWalls.parent,writerRoot,
+      "Base room walls did not follow writer floor down to STREET_Y");
+    assert.equal(expansionWalls.parent,writerRoot,
+      "Future room walls did not follow writer floor down to STREET_Y");
+    const solidWalls=roomWalls.children.filter(mesh=>mesh.isMesh&&
+      mesh.geometry?.type==="BoxGeometry"&&
+      close(mesh.geometry.parameters.height,3.2,.01)&&
+      (close(mesh.geometry.parameters.width,.12,.01)||close(mesh.geometry.parameters.depth,.12,.01)));
+    assert.ok(solidWalls.length>=4,"Actual writer room walls missing from grounded shell");
+    for(const wall of solidWalls){
+      const wb=bounds(wall);
+      assert.ok(close(wb.min.y,STREET_Y,.02),"Writer wall has visible gap below at "+wb.min.y);
+      assert.ok(close(wb.max.y,STREET_Y+3.2,.02),"Writer wall height shifted above room");
+    }
+    const roomFloor=roomWalls.children.find(mesh=>mesh.isMesh&&
+      mesh.geometry?.type==="PlaneGeometry"&&
+      close(mesh.geometry.parameters.width,6,.01));
+    assert.ok(roomFloor,"Writer room floor was not linked to its walls");
+    assert.ok(close(roomFloor.getWorldPosition(new THREE.Vector3()).y,STREET_Y,.02),
+      "Writer floor and walls use different elevations");
+    assert.ok(!roomWalls.visible||writerRoot.visible,
+      "Writer room visible outside its own transformed root");
     const outside = descendants(world.probeScene, (o) => o.isHemisphereLight || o.isDirectionalLight
       || (o.isPointLight && attached(o, realTown)));
     assert.ok(outside.length >= 7, "World outdoor lighting was not attached");
