@@ -28,6 +28,7 @@ jobs:
           for name in citizens.js citizen-motion-library.js objects.js world.js town.js town-cars.js; do
             cp ".github/citizens-assets/$name" "_site/web/$name"
           done
+          cp .github/city-assets/town-districts.js _site/web/town-districts.js
           python3 .github/scripts/prepare_car_deploy.py _site
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
@@ -41,6 +42,10 @@ jobs:
           # Pin the complete observer shell AFTER legacy publishing safeguards.
           # The authoring data/API snapshots remain unchanged.
           python3 .github/scripts/prepare_observer_deploy.py _site
+          python3 .github/scripts/prepare_city_deploy.py _site
+          cp _site/web/town-districts.js /tmp/the-writer-town-districts.mjs
+          node --check /tmp/the-writer-town-districts.mjs
+          node tests/city_districts_probe.mjs _site
           for name in observer-ui persian-display; do
             cp "_site/web/$name.js" "/tmp/the-writer-observer-$name.mjs"
             node --check "/tmp/the-writer-observer-$name.mjs"
