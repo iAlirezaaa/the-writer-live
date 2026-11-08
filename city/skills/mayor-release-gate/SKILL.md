@@ -22,3 +22,8 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - Check `tests/tehran_environment_probe.mjs` for local 20:00 night, sunrise/sunset, rain/snow, request deduplication, 15-minute caching and unavailable stale readings.
 - Check public pinned `.github/city-assets/tehran-environment.js` and deployment overlay before syncing; distinguish a passing unit probe from verified live network conditions.
 - Open-Meteo response is model-derived weather, not an in-situ station observation; retain attribution and confirm licensing for production usage.
+
+## Tehran midnight boundary (MAYOR-011)
+- Assert UTC 20:29 and 20:30 on 2026-11-08 correspond to Tehran 23:59 and next-day 00:00 respectively; do not use browser-local time.
+- Invalidate yesterday's sunrise/sunset metadata at Tehran midnight and use explicit fallback until matching-day provider data arrives.
+- Regression-only edits do not prove real-browser API access or visual rendering; require independent Pages/CI evidence before any deployment claim.
