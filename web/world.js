@@ -50,6 +50,7 @@ async function getJSON(url, opts) {
     if (pathname === "/api/stories") return snapshotFetch("stories.json");
     if (pathname === "/api/status") return snapshotFetch("status.json");
     if (pathname === "/api/planner") return snapshotFetch("planner.json");
+    if (pathname === "/api/timeline") return snapshotFetch("timeline.json");
     const story = pathname.match(/^\/api\/stories\/([^/]+)$/);
     if (story) return snapshotFetch(`stories/${encodeURIComponent(decodeURIComponent(story[1]))}.json`);
     throw new Error("این بخش در نسخهٔ عمومی در دسترس نیست.");
@@ -1694,6 +1695,10 @@ async function loadLife() {
   const b = await getJSON("/api/backstory").catch(() => null);
   if (b && !b.no_backstory && album) album.rotation.z = 0.06 + Math.min(0.5, (b.stats?.canon || 0) * 0.02);
 }
+async function loadPublicTimeline() {
+  const timeline = await getJSON("/api/timeline").catch(() => null);
+  if (timeline) paintTimeline(timeline.events || [], 0);
+}
 
 // ---------- what the writer keeps inside the desk notebook ----------
 let nbInk = "#2a2118";
@@ -2740,7 +2745,7 @@ async function refreshAll() {
     renderPublicObserverPanels(null);
     // Static Pages has no owner/admin POST API.
     const comments = $("comment-form");if(comments)comments.hidden=true;
-    await Promise.allSettled([loadStories(),loadTown(),loadPublicRoutine()]);
+    await Promise.allSettled([loadStories(),loadTown(),loadPublicRoutine(),loadPublicTimeline()]);
     return;
   }
   await loadStatus();
@@ -2767,7 +2772,7 @@ observerUI=initObserverUI({
 });
 refreshAll();
 if (STATIC_PUBLIC) {
-  setInterval(() => Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]), 10000);
+  setInterval(() => Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine(), loadPublicTimeline()]), 10000);
   setInterval(updatePublicFreshness, 1000);
 }
 else { setInterval(loadStatus, 5000); setInterval(refreshAll, 30000); setInterval(pollRoom, 20000); }
