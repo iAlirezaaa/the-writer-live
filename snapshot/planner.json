@@ -147,7 +147,7 @@
       "label": "استراحت",
       "next_retry_at": null,
       "start": "2026-11-08T17:18",
-      "status": "planned",
+      "status": "done",
       "task": "rest"
     },
     {
@@ -235,12 +235,12 @@
   "day": "2026-11-08",
   "next": {
     "attempts": null,
-    "end": "2026-11-08T18:03",
-    "id": "202611081718",
-    "label": "استراحت",
+    "end": "2026-11-08T18:48",
+    "id": "202611081803",
+    "label": "تحقیق",
     "next_retry_at": null,
-    "start": "2026-11-08T17:18",
+    "start": "2026-11-08T18:03",
     "status": "planned",
-    "task": "rest"
+    "task": "research"
   }
 }
