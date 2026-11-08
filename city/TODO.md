@@ -87,3 +87,17 @@ Release: documentation only; no runtime assets changed or newly deployed; test e
 2. **Clock/weather split-status badge:** city-only diagnostic badge displaying separately the last verified Tehran clock test and live provider-fetch age; never mislabel cached or unavailable weather as live.
 
 Release: documentation-only. Previous public deploy success is historical and does not validate new runtime behavior; private CI remains red.
+
+
+## MAYOR-016 — Clock-driven routed traffic (2026-11-09)
+- [x] Independent TODO registered before runtime changes in `city/tasks/MAYOR-016-clock-driven-traffic-graph.md`.
+- [x] Replace repeating four straight lanes with clock-anchored directed routes and turning arcs that stay inside the actual road union.
+- [x] Add 4 junction signals, pedestrian-demand signal poles clear of citizen sidewalks, headlights for Tehran night, braking and turn indicators.
+- [x] Add public/private matching route geometry, reload-continuity and night-headlight regression tests.
+- [x] Public CI `CITY-TRAFFIC-OK` passed: [run 42534337743](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42534337743).
+- [ ] Full Pages release blocked by unrelated pre-existing `web/world.js` syntax error in writer forearm animation; no out-of-city code modified.
+- [ ] Browser-level nighttime render, GPU/light budget and long-run real intersection collision observation require visual verification.
+
+### Two proposed backlog ideas (MAYOR-016)
+1. **Intersection occupancy arbitration**: safe turn/merge tokens with right-of-way priorities that prevent car overlap without reintroducing deadlocks.
+2. **Adaptive real-light pool**: give SpotLights to only nearby/on-screen headlights while every far car retains emissive lenses and turn/brake visibility.
