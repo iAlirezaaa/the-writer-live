@@ -8,6 +8,8 @@ import { initPanels } from "./panels.js";
 import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-e";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v1";
+import { solarDate, persianDigits, displayText } from "./persian-display.js";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
    also lives in the room. Click an object: the camera moves into it and its contents open inside it.
@@ -16,6 +18,7 @@ setTHREE(THREE);
 
 // ============ helpers ============
 const $ = (id) => document.getElementById(id);
+let observerUI=null;
 const STATIC_PUBLIC = location.hostname.endsWith("github.io");
 function item(text, sub, onClick) {
   const li = document.createElement("li");
@@ -1255,7 +1258,7 @@ function paintTimeline(rowsList, chapters) {
     g.fillText(String(e.title || "").slice(0, 26), 0, 0);
     g.restore();
     g.fillStyle = "#7a6b52"; g.font = "400 16px Vazirmatn, Tahoma, sans-serif";
-    g.fillText(String(e.at).slice(0, 10), x, spineY + 26);
+    g.fillText(solarDate(String(e.at).slice(0, 10)), x, spineY + 26);
     if (e.label) { g.fillStyle = TL_KIND_COLOR[e.kind] || "#6b4a2e"; g.fillText(e.label, x, spineY + 50); }
   });
   if (rows.length) {
@@ -1439,6 +1442,7 @@ function setView(name) {
   }
   const names = { cars: "ماشین‌های شهر", town: "محلهٔ نویسنده", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
   $("location-label").textContent = names[name] || "اتاق نویسنده";
+  observerUI?.syncView(name);
   camMoving = true;
 }
 document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
@@ -1738,6 +1742,7 @@ function selectTab(id, fromRoom) {
   if (!id) return;
   document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === id));
   document.querySelectorAll(".tabbar button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.panel === id)));
+  observerUI?.syncTab(id);
   if (id === "p-graph") requestAnimationFrame(drawGraph);
   if (fromRoom && window.innerWidth <= 1000) $(id).scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -1753,6 +1758,7 @@ function toast(text) {
 function tickClock() {
   const now = new Date();
   $("clock").textContent = now.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+  observerUI?.updateTime(worldNow());
 }
 setInterval(tickClock, 1000); tickClock();
 
@@ -1764,6 +1770,7 @@ function renderStatus(s) {
   $("presence-text").textContent = status;
   $("presence").classList.toggle("awake", !s.asleep);
   $("activity").textContent = s.napping ? `خسته بود؛ چرت می‌زند تا ${wakeAt}` : s.asleep ? `خواب است تا ${wakeAt}` : s.activity;
+  observerUI?.updateStatus(s);
   drawBubble(s.activity || status);
   paintScreen(s);
   const counts = `${s.accepted_count}/${s.rejected_count}/${s.library_books || 0}`;
@@ -1957,7 +1964,9 @@ async function loadExperiments() {
 const sideKey = "the-writer-side-collapsed";
 function setSide(collapsed) {
   document.body.classList.toggle("side-collapsed", collapsed);
-  $("toggle-side").textContent = collapsed ? "باز کردن منو" : "بستن منو";
+  $("toggle-side").textContent = collapsed ? "باز کردن دفتر مشاهده" : "بستن دفتر مشاهده";
+  $("observer-watch").textContent = collapsed ? "باز کردن دفتر" : "نمای تماشا";
+  $("observer-watch").setAttribute("aria-pressed", String(collapsed));
   $("toggle-side").setAttribute("aria-expanded", String(!collapsed));
   try { localStorage.setItem(sideKey, collapsed ? "1" : "0"); } catch { /* ignore */ }
   requestAnimationFrame(() => { resize(); drawGraph(); });
@@ -2215,6 +2224,7 @@ async function loadPublicRoutine() {
   $("presence-text").textContent = writer.asleep ? "در خواب" : "بیدار";
   $("presence").classList.toggle("awake", !writer.asleep);
   $("activity").textContent = writer.activity;
+  observerUI?.updateStatus(writer);
   $("k-stories").textContent = String(writer.accepted_count);
   $("k-stories-sub").textContent = "داستان پذیرفته‌شده";
   $("k-energy").textContent = `${Math.round(writer.energy * 100)}٪`;
@@ -2235,14 +2245,31 @@ async function loadPublicRoutine() {
 async function refreshAll() {
   if (STATIC_PUBLIC) {
     document.body.classList.add("public-view");
-    document.querySelectorAll('[role="tab"]').forEach((button) => {
-      button.hidden = !["p-stories", "p-town", "p-planner"].includes(button.dataset.panel);
-    });
-    document.querySelectorAll(".panel").forEach((panel) => {
-      panel.hidden = !["p-stories", "p-town", "p-planner"].includes(panel.id);
-    });
-    const comments = $("comment-form"); if (comments) comments.hidden = true;
-    await Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]);
+    // All fifteen sections remain accessible in the PUBLIC interface.
+    // For sections without a safe exported snapshot, explain why the source
+    // cannot be read instead of silently deleting the menu destination.
+    const withPublicData=new Set(["p-stories","p-town","p-planner","p-status"]);
+    for(const panel of document.querySelectorAll(".panel")){
+      panel.hidden=false;
+      if(withPublicData.has(panel.id))continue;
+      if(panel.dataset.publicPrepared==="true")continue;
+      const note=document.createElement("div");
+      note.className="observer-public-notice";
+      const heading=document.createElement("strong");
+      heading.textContent="این پرونده در نسخهٔ عمومی خلاصه شده است";
+      const description=document.createElement("p");
+      description.textContent="این بخش به اطلاعات داخلی نویسنده یا ناشر نیاز دارد. دادهٔ خصوصی در خروجی عمومی منتشر نمی‌شود؛ برای تماشای محله و خواندن داستان‌ها از مسیرهای مرتبط استفاده کنید.";
+      const action=document.createElement("a");
+      const base=STATIC_PUBLIC?"/"+(location.pathname.split("/").filter(Boolean)[0]||""):"";
+      action.href=panel.id==="p-books"?base+"/read/":base+"/";
+      action.textContent=panel.id==="p-books"?"رفتن به کتابخانهٔ عمومی":"بازگشت به مشاهدهٔ شهر";
+      note.append(heading,description,action);
+      panel.replaceChildren(note);
+      panel.dataset.publicPrepared="true";
+    }
+    // Static Pages has no owner/admin POST API.
+    const comments = $("comment-form");if(comments)comments.hidden=true;
+    await Promise.allSettled([loadStories(),loadTown(),loadPublicRoutine()]);
     return;
   }
   await loadStatus();
@@ -2253,6 +2280,14 @@ async function refreshAll() {
   ]);
   await loadNotebookPages();
 }
+observerUI=initObserverUI({
+  selectTab,setView,
+  onShowPanel:(id)=>{
+    if(id)selectTab(id);
+    setSide(id?false:true);
+  },
+  getSceneHour:()=>wallTime(worldNow()).getHours()
+});
 refreshAll();
 if (STATIC_PUBLIC) setInterval(() => Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]), 30000);
 else { setInterval(loadStatus, 5000); setInterval(refreshAll, 30000); setInterval(pollRoom, 20000); }
