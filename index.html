@@ -6,7 +6,7 @@
   <title>اتاق هادس</title>
   <link rel="stylesheet" href="./web/style.css">
   <link rel="stylesheet" href="./web/book.css?v=reader-20261108-v4">
-  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261108-v2">
+  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261108-v3">
   <script type="importmap">
   {
     "imports": {
@@ -53,12 +53,15 @@
         <span class="observer-eyebrow"><i aria-hidden="true"></i> جهان نویسنده</span>
         <strong id="observer-mode-label">داستان زندگی در جریان است</strong>
         <span id="observer-theme-status">هماهنگ با ساعت صحنه</span>
+        <span id="observer-scene-date" class="observer-scene-date" aria-label="تاریخ شمسی صحنه">—</span>
       </div>
       <div class="stage-controls">
         <div class="location-line"><span class="location-dot" aria-hidden="true"></span><strong id="location-label">اتاق نویسنده</strong><span id="observer-scene-context">اتاق نویسنده</span>
           <button id="scene-data-link" type="button" title="باز کردن پروندهٔ همین مکان">مشاهدهٔ پروندهٔ «اتاق نویسنده»</button>
         </div>
-        <div class="stage-tools" role="toolbar" aria-label="نما">
+        <details class="observer-camera-drawer">
+          <summary>انتخاب نمای دوربین <span aria-hidden="true">⌄</span></summary>
+          <div class="stage-tools" role="toolbar" aria-label="نما">
           <button data-view="town">شهر</button>
           <button data-view="cars">ماشین‌ها</button>
           <button data-view="publisher">دفتر ناشر</button>
@@ -70,6 +73,7 @@
           <button data-view="window">پنجره</button>
           <button data-view="library">کتابخانه</button>
         </div>
+        </details>
         <details class="scene-settings">
           <summary>نور و ساعت نمایش</summary>
           <label>ساعت <select id="scene-time"><option value="live">زنده</option><option value="9">صبح</option><option value="17">غروب</option><option value="23">شب</option></select></label>
@@ -155,6 +159,15 @@
             <button data-inspect="life">زندگی نویسنده</button>
           </div>
           <p id="town-summary" class="small" role="status">در حال بارگذاری محله</p>
+          <section class="observer-city-directory" aria-labelledby="city-places-title">
+            <div class="observer-city-directory-head">
+              <div><span class="observer-journal-kicker">راهنمای محله‌ها</span>
+                <h3 id="city-places-title">گردش در شهر</h3></div>
+              <span id="city-places-count" class="small">—</span>
+            </div>
+            <p class="muted small">محله‌های متنوع، برج نشر، پارک‌ها و مکان‌های فرهنگی. «تماشا» دوربین را به مکان می‌برد؛ «شناخت» جزئیات آن را نشان می‌دهد.</p>
+            <div class="observer-city-grid" id="town-places" role="list"></div>
+          </section>
           <label class="observer-resident-search" for="town-search">پیدا کردن یک شهروند
             <input id="town-search" type="search" placeholder="نام، شغل یا هدف شخصیت…" autocomplete="off">
           </label>
@@ -301,6 +314,6 @@
 
   <div class="toast" id="toast" hidden></div>
   <div class="drop-overlay" id="drop-overlay" hidden><div>فایل را رها کنید تا به جهان داستانی اضافه شود</div></div>
-  <script type="module" src="./web/world.js?v=observatory-20261108-v2"></script>
+  <script type="module" src="./web/world.js?v=city-world-20261108-v1"></script>
 </body>
 </html>
