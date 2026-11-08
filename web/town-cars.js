@@ -209,7 +209,9 @@ export function buildTownCars({ THREE, city, streetY }) {
          (nodes[i-1]==="J"&&nodes[i]==="I")){
         if(last.x*start.x<0){
           put({x:0,z:last.z+(start.z-last.z)*(-last.x)/(start.x-last.x)});
-          events.push({at:length-(halfLength+2.22),type:"crosswalk"});
+          // Keep a wider front-bumper margin: the curved junction path can
+          // shave a few tenths off the nominal longitudinal stop distance.
+          events.push({at:length-(halfLength+2.55),type:"crosswalk"});
         }
       }
       put(start);
