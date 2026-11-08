@@ -18,7 +18,7 @@
     {
       "done": false,
       "label": "ویژگی پررنگ",
-      "progress": 0.6875
+      "progress": 0.7063
     },
     {
       "done": false,
@@ -27,43 +27,43 @@
     },
     {
       "done": false,
-      "label": "ویژگیِ تمام‌قد",
-      "progress": 0.55
+      "label": "پنج داستان پذیرفته‌شده",
+      "progress": 0.6
     },
     {
       "done": false,
-      "label": "پنج داستان پذیرفته‌شده",
-      "progress": 0.4
+      "label": "ویژگیِ تمام‌قد",
+      "progress": 0.565
+    },
+    {
+      "done": false,
+      "label": "نوولت",
+      "progress": 0.5
     },
     {
       "done": false,
       "label": "ده هزار کلمه",
-      "progress": 0.2602
+      "progress": 0.3875
+    },
+    {
+      "done": false,
+      "label": "رمان‌واره",
+      "progress": 0.3333
     },
     {
       "done": false,
       "label": "پانزده داستان",
-      "progress": 0.1333
+      "progress": 0.2
     },
     {
       "done": false,
       "label": "ده خواننده",
       "progress": 0.1
-    },
-    {
-      "done": false,
-      "label": "ده ساعت تحقیق",
-      "progress": 0.067
-    },
-    {
-      "done": false,
-      "label": "چهل داستان",
-      "progress": 0.05
     }
   ],
   "stats": {
-    "done": 4,
-    "pct": 10,
+    "done": 5,
+    "pct": 13,
     "total": 39
   }
 }
