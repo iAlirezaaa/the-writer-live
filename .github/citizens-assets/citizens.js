@@ -42,6 +42,19 @@ const PERSONAS = [
 const MAIN = 5.7, OPPOSITE = 11.3, EPS = 1e-7;
 const ACTIVITIES = new Set(["sleep", "work", "read", "carry", "sweep", "idle"]);
 
+// Deterministic crowd slots computed from overlapping authored daily routines.
+ // Each simultaneous visitor has a different slot; no random offsets and no
+ // spillover into the adjacent café/garden/square's reserved corridor.
+export const STATION_SLOTS=Object.freeze({
+  bookstore:Object.freeze({"citizen-03":0,"citizen-04":1,"citizen-08":2,"citizen-05":3,"citizen-07":4,"citizen-12":5,"citizen-02":3,"citizen-06":2}),
+  cafe:Object.freeze({"citizen-10":0,"citizen-06":1,"citizen-02":2,"citizen-03":1,"citizen-05":2,"citizen-07":2,"citizen-09":3,"citizen-11":1,"citizen-01":2,"citizen-08":2,"citizen-12":0,"citizen-04":1}),
+  depot:Object.freeze({"citizen-07":0,"citizen-08":1,"citizen-12":2,"citizen-10":1,"citizen-09":0,"citizen-11":0}),
+  garden:Object.freeze({"citizen-09":0,"citizen-05":1,"citizen-10":2,"citizen-12":3,"citizen-01":2,"citizen-04":1,"citizen-06":2,"citizen-03":1,"citizen-11":0}),
+  publisher:Object.freeze({"citizen-01":0,"citizen-02":1,"citizen-07":2,"citizen-12":3,"citizen-08":2}),
+  square:Object.freeze({"citizen-03":0,"citizen-11":1,"citizen-06":2,"citizen-04":2,"citizen-08":0,"citizen-09":1,"citizen-01":1,"citizen-05":1,"citizen-12":0,"citizen-02":0,"citizen-10":0}),
+});
+const STATION_SIZES=Object.freeze({bookstore:6,publisher:4,cafe:4,garden:4,depot:3,square:3});
+
 export const DEFAULT_PLACES = Object.freeze(Object.fromEntries([
   ["home-west", -19, 2, true], ["home-east", 19, 2, true],
   ["publisher", -10, 4, false], ["bookstore", 10, 4, false],
@@ -94,13 +107,15 @@ export function stationPoint(place, id, places = DEFAULT_PLACES) {
   const point = places[place];
   if (!point) throw new RangeError(`Unknown town place: ${place}`);
   const { station } = seededVariation(id);
-  // Reserve stable spaced standing slots ALONG the known sidewalk network.
-  // Off-network scatter causes pathfinding failures and overlapping crowds.
-  const number=Math.max(0,Number(String(id).match(/\d+$/)?.[0]||1)-1);
+  // Placement is indexed by each place's authored daily visitor conflicts.
+  // Stations never overlap adjacent venues and remain on valid network lines.
+  const n=Math.max(0,Number(String(id).match(/\d+$/)?.[0]||1)-1);
   if(point.indoor)return {x:point.x,z:point.z+station*.25};
-  if(point.z<MAIN)return {x:point.x,z:2.64+((number*7)%4)*.77};
-  const slot=((number*7)%13)-6;
-  return {x:Math.max(-22.5,Math.min(22.5,point.x+slot*.76)),z:point.z};
+  const slotMap=STATION_SLOTS[place]||{};
+  const max=STATION_SIZES[place]||4;
+  const slot=Number.isInteger(slotMap[id])?slotMap[id]:((n*7)%max);
+  if(point.z<MAIN)return {x:point.x,z:2.12+slot*.68};
+  return {x:point.x+(slot-(max-1)/2)*.76,z:point.z};
 }
 
 export function buildRoute(from, to, places = DEFAULT_PLACES) {
@@ -465,7 +480,7 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
     if(!resident){
       resident=createResident(THREE,scene,clickable,row,places,
         lastDate?minuteOfDay(lastDate,offset):600,motionArchive);
-      resident.figure.root.position.set(-10,FEET_Y,2.02);
+      resident.figure.root.position.set(-10,FEET_Y,1.18);
       resident.figure.root.visible=true;
       residents.set(row.id,resident);
     }else{
@@ -540,7 +555,11 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
         resident.place = resident.goal.place;
         figure.root.rotation.y = places[resident.place].z < MAIN ? Math.PI : traits.phase * 0.2 - 0.6;
       }
-      figure.root.visible = walking || resident.goal.activity !== "sleep";
+      // Home interiors are not modelled yet. Keep residents who are resting
+      // indoors hidden rather than stacking multiple identical bodies in one
+      // door opening; their schedule and identity remain inspectable.
+      const indoors=!walking&&resident.goal.place===row.home;
+      figure.root.visible=walking||(!indoors&&resident.goal.activity!=="sleep");
       animateFigure(figure, walking ? "walk" : resident.goal.activity, row.role, animationTime, traits.phase, motionArchive);
       paintRoute(resident);
     }
