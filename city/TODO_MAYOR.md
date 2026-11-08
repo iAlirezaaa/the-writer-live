@@ -85,3 +85,10 @@ Status: published city-only change, last full Pages run [42504481657](https://gi
 - [ ] IDEA-005: low-cost weather-aware bus shelter lighting using shared materials, with no traffic path edits.
 - [ ] IDEA-006: seasonal public observatory signage displaying Tehran sunrise/sunset, with accessible text fallback.
 Status: TODO registered before any implementation; source review found timezone `Asia/Tehran`, Open-Meteo current conditions, 15-minute refresh and stale-data fallback. Runtime and deployment verification pending.
+
+## MAYOR-011 — Tehran midnight boundary regression (2026-11-08)
+- [ ] Add deterministic tests for Tehran midnight rollover and viewer-timezone independence; no runtime edits.
+- [ ] Verify private test and public pinned module parity before mirroring test and documentation.
+- [ ] Record test execution limitations, source/public commits and release status.
+- [ ] IDEA-007: accessible Tehran clock plaque with explicit offline badge and reduced-motion rendering.
+- [ ] IDEA-008: optional low-poly seasonal tree tint driven by verified Tehran conditions, disabled if unavailable.
