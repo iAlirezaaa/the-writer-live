@@ -56,7 +56,7 @@ def patch_site(root: Path) -> None:
         town = new_import + "\n\n" + town
 
     ret = "  return {\n    group,\n    update(day, elapsed)"
-    if "const carLayer=buildTownCars(" not in town:
+    if not re.search(r'\bconst\s+carLayer\s*=\s*buildTownCars\s*\(', town):
         if ret not in town:
             raise RuntimeError("Town return boundary changed")
         town = town.replace(
@@ -64,7 +64,7 @@ def patch_site(root: Path) -> None:
             "  const carLayer=buildTownCars({THREE,city:group,streetY:STREET_Y});\n" + ret,
             1
         )
-    if "carLayer.update(day,elapsed);" not in town:
+    if not re.search(r'\bcarLayer\.update\s*\(\s*day\s*,\s*elapsed\s*\)', town):
         update_anchor = "      umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;"
         if update_anchor not in town:
             raise RuntimeError("Town update hook changed")
@@ -122,7 +122,7 @@ def patch_site(root: Path) -> None:
     if count != 1:
         raise RuntimeError("Page entrypoint script not found")
     index_file.write_text(html, encoding="utf-8")
-    assert "carLayer.update(day,elapsed);" in town
+    assert re.search(r'\bcarLayer\.update\s*\(\s*day\s*,\s*elapsed\s*\)', town)
     assert new_import in town
     assert bust_import in world
     assert versioned in html
