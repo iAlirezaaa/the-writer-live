@@ -11,8 +11,8 @@ The public experience opens with an EXTERIOR view of the town. The writer begins
 - Road-first planning contract with 8 connected road segments, 17 parcels, entry anchors, parking allocation, and green buffer declarations.
 - Central writer parcel reserved for gradual progression; stage zero has a 4.8 × 4.8 exterior footprint and **zero parking**.
 - Growth is based on **accepted story count**, not passage of time: 0–3 / 4–9 / 10–19 / 20–39 / 40+ accepted works map to levels 0..4. Preserve the writer's authored state. This is a presentation tier, not an assertion of a real-life house.
-- Central and southern streets physically joined to the perimeter street model; no freestanding roads ending short of each other.
-- Residential street-facing properties have modest planting strips, short access aprons and marked curbside parking; public car-lane trajectories and resident routines are not changed.
+- Central and southern streets physically joined to the perimeter street model; no freestanding roads ending short of each other. The southern building row is set back to make space for an actual road with sidewalks on both sides.
+- Residential street-facing properties have modest planting strips, short access aprons and marked curbside parking. Two shared parking areas serve the dense southern blocks; paved pedestrian spurs reach every southern district front door. Public car-lane trajectories and resident routines are not changed.
 - Existing character motion archive and authored interior meshes are preserved. Exterior/interior switching uses visibility, never deletion of saved data.
 - Public deploy pins source modules so older snapshot exporters cannot restore the old house.
 - Validation: `tests/urban_plan_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/town_scene_probe.mjs` and the Pages workflow.
