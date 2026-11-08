@@ -24,11 +24,11 @@ def patch_site(root: Path) -> None:
     if not all(s in cars for s in (
         "export function buildTownCars", 'kind:"compact"', 'kind:"sedan"',
         'kind:"taxi"', 'kind:"van"', 'kind:"pickup"',
-        "const laneCars=", "safeGap="
+        "const laneCars=", "safeGap=", "setCrossingDemand", "trafficState"
     )):
         raise RuntimeError("Detailed collision-aware fleet is unavailable")
 
-    version = "fleet-20261108-d"
+    version = "fleet-20261108-e"
     town = town_file.read_text(encoding="utf-8")
     # Older publishing processes reinsert these simple, incorrect cars.
     legacy_start = town.find("  const cars = [];")
