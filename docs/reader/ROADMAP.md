@@ -59,3 +59,7 @@ Track actual page overflows across viewports, JS errors, keyboard focus order, a
 - Public protected reader assets and cache versions updated to `reader-20261109-v7`. Preserved public-only note/voting behavior in pinned `read.js`.
 - Deployment initially failed because the separate observer guard expected the previous reader script version; synchronized that guard in the public repository. Later deployment must still pass all guards before declaring the site live.
 - **Verification scope:** source-level invariants and GitHub asset checks performed. Python unit tests and real-browser visual/performance tests have not been independently executed in this chat. Pages workflow and final publication must be inspected separately.
+
+### Deployment blocker observed 2026-11-09
+
+The public Pages run [42533887789](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42533887789) passed the versioned reader deployment guard, the observatory guard and the initial city smoke tests, then failed an **unrelated** city path test: `TOWN-SCENE-FAIL paths: Route walks through furniture/wall at {"x":-3,"z":11.3}`. Reader changes are committed and pinned but cannot be described as live/deployed until the shared Pages workflow succeeds. The city's independent owner/task should resolve this geometry regression; the reader automation should continue validating its own files without changing city behavior.
