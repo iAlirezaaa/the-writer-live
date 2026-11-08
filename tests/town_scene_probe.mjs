@@ -179,16 +179,22 @@ try {
         assert.ok(insideXZ(b.box, target, 0.5) && close(target.z, b.box.max.z, 0.5), `${key} click target is not on its building`);
         const ray = new THREE.Raycaster(target.clone().add(new THREE.Vector3(0, 0, 5)), new THREE.Vector3(0, 0, -1));
         const hits = ray.intersectObjects(clickables, false);
-        assert.ok(hits.length && hits[0].object.userData.view === key,
-          `${key} cannot actually be picked, target=${target.toArray().map(v=>v.toFixed(2)).join(",")},
-          first=${hits.slice(0,5).map(hit=>JSON.stringify({
-            view:hit.object.userData.view,
-            id:hit.object.userData.placeId,
-            mesh:hit.object.name,
-            distance:Math.round(hit.distance*100)/100,
-            visible:hit.object.visible,
-            materialVisible:hit.object.material?.visible
-          })).join("|")}`);
+        // A *visible shop sign* must be the nearest click target. A hidden
+        // full-width frontage may legitimately sit behind a clickable passing
+        // citizen (the closest object should be that citizen). The facade
+        // still has to appear further down the same ray: do not accept an
+        // unrelated building or fake click metadata.
+        assert.ok(hits.some(hit=>hit.object.userData.view===key),
+          `${key} has no physical raycast target at ${target.toArray()}`);
+        const first=hits[0].object;
+        const valid=first.userData.view===key ||
+          (!visible(mesh) && first.userData.citizenId && first.userData.view==="town");
+        assert.ok(valid,
+          `${key} is occluded by a non-citizen object: ${hits.slice(0,3).map(h=>
+            JSON.stringify({view:h.object.userData.view,citizen:h.object.userData.citizenId,
+              distance:h.distance})).join("|")}`);
+        if(visible(mesh))
+          assert.equal(first.userData.view,key,`${key} visible sign must remain pickable`);
       }
     }
     assert.ok(!overlapsXZ(...buildingBounds), "Publisher and bookstore actual structures overlap");
