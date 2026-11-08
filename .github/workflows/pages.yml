@@ -68,7 +68,9 @@ jobs:
           done
           test -s _site/web/feedback.js
           ! grep -q 'id="reader-feedback"' _site/read/index.html
-          grep -q 'feedback.js?v=reader-feedback-2' _site/web/book.js
+          grep -q 'feedback.js?v=reader-feedback-3' _site/web/book.js
+          grep -q 'sendReaderVote' _site/web/book.js
+          grep -q 'openPublicVote' _site/web/feedback.js
           node tests/observatory_probe.mjs _site
           for name in citizens citizen-motion-library objects; do
             cp "_site/web/$name.js" "/tmp/the-writer-city-$name.mjs"
