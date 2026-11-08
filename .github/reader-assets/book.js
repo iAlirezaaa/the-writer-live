@@ -21,7 +21,7 @@ const MARGIN_STATE_FA = {
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
 import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v5";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v6";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
