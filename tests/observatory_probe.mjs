@@ -35,7 +35,7 @@ const css=text("web/observer.css");
 const world=text("web/world.js");
 const actions=text("web/read.js");
 const script=ui.replace(/^import .*;$/gm,"").replace(/^export /gm,"");
-const data=new Function(script+"; return {PANEL_GROUPS,PANEL_CONTEXT,VIEW_CONTEXT,SCENE_GROUPS};")();
+const data=new Function(script+"; return {PANEL_GROUPS,PANEL_CONTEXT,VIEW_CONTEXT,SCENE_GROUPS,observerTabStops};")();
 const tabs=[...html.matchAll(/data-panel="([^"]+)"/g)].map(m=>m[1]);
 const views=[...html.matchAll(/data-view="([^"]+)"/g)].map(m=>m[1]);
 const menu=data.PANEL_GROUPS.flatMap(g=>g.ids);
@@ -50,6 +50,24 @@ assert.deepEqual([...menu].sort(),[...tabs].sort());
 assert.deepEqual([...scene].sort(),[...views].sort());
 assert.equal(new Set(menu).size,15);
 assert.equal(new Set(scene).size,10);
+
+const tabStops=data.observerTabStops("p-stories");
+assert.equal(Object.keys(tabStops).length,5,"Every journal group has a keyboard entry");
+for(const group of data.PANEL_GROUPS){
+  assert.ok(group.ids.includes(tabStops[group.title]),
+    "No keyboard entry in "+group.title);
+}
+assert.equal(tabStops["نوشته‌ها و انتشار"],"p-stories");
+const remembered=data.observerTabStops("p-world",{
+  ...tabStops,"زندگی نویسنده":"p-diary"
+});
+assert.equal(remembered["زندگی نویسنده"],"p-diary",
+  "Switching panels must preserve the inactive group's keyboard entry");
+assert.equal(remembered["شهر و جهان"],"p-world",
+  "Selecting a panel must update its group's keyboard entry");
+assert.ok(ui.includes("const groupStops=observerTabStops(id,previousStops)"),
+  "Observer must actually apply keyboard entries for each group");
+
 for(const id of menu){
   assert.ok(data.PANEL_CONTEXT[id]?.view,"Every journal panel must link to a place in the 3D world");
   assert.ok(views.includes(data.PANEL_CONTEXT[id].view));
