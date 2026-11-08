@@ -10,8 +10,8 @@ from pathlib import Path
 from shutil import copy2
 import sys
 
-VERSION="observatory-20261108-v3"
-WORLD_VERSION="city-world-20261108-v2"
+VERSION="observatory-20261108-v4"
+WORLD_VERSION="city-world-20261108-v3"
 READER_VERSION="observatory-20261108-v2"
 ROOT=Path(".github/observer-assets")
 
@@ -38,6 +38,7 @@ def prepare(site: Path) -> None:
         "complete original tabs":index.count("data-panel=")==15,
         "complete original cameras":index.count("data-view=")==10,
         "journal categories":len([x for x in ("زندگی نویسنده","نوشته‌ها و انتشار","شهر و جهان","ذهن و مسیر پیشرفت","ابزار و نگهداری") if x in observer])==5,
+        "keyboard accessible RTL tabs":'buttons.setAttribute("role","tablist")' in observer and 'event.key==="ArrowLeft"' in observer,
         "camera grouping":'SCENE_GROUPS' in observer,
         "theme control":'id="observer-theme"' in index,
         "theme mode":'body.app[data-observer-theme="dark"]' in style,
