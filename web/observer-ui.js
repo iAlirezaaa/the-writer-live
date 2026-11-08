@@ -157,6 +157,7 @@ export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
       timeZone:"Asia/Tehran",weekday:"long",day:"numeric",month:"long",year:"numeric"
     }).format(date);
     if($("observer-date"))$("observer-date").textContent=formatted;
+    if($("observer-scene-date"))$("observer-scene-date").textContent=formatted;
     updateTheme();
   }
   function updateStatus(status){
