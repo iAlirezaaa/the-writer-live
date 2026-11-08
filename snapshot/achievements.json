@@ -22,11 +22,6 @@
     },
     {
       "done": false,
-      "label": "سه قراردادِ داستانی",
-      "progress": 0.6667
-    },
-    {
-      "done": false,
       "label": "پنج داستان پذیرفته‌شده",
       "progress": 0.6
     },
@@ -42,6 +37,11 @@
     },
     {
       "done": false,
+      "label": "هفت اثر در فهرست ناشر",
+      "progress": 0.4286
+    },
+    {
+      "done": false,
       "label": "ده هزار کلمه",
       "progress": 0.3875
     },
@@ -52,18 +52,18 @@
     },
     {
       "done": false,
-      "label": "هفت اثر در فهرست ناشر",
-      "progress": 0.2857
+      "label": "پانزده داستان",
+      "progress": 0.2
     },
     {
       "done": false,
-      "label": "پانزده داستان",
+      "label": "پانزده اثر در فهرست ناشر",
       "progress": 0.2
     }
   ],
   "stats": {
-    "done": 7,
-    "pct": 16,
+    "done": 8,
+    "pct": 19,
     "total": 43
   }
 }
