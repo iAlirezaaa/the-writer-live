@@ -987,3 +987,247 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
   .book-overlay .page,.book-overlay .leaf-face{padding-top:14px;padding-bottom:23px;}
   .book-overlay .book-footer{min-height:32px;padding-block:2px;}
 }
+
+
+/* === Reading room v4: definitive RTL viewport grid fix =====================
+   v3 allowed a percentage-height book inside a flex: 1 1 0 shelf.
+   That percentage can resolve against an indefinite flex size, collapsing
+   the book into a narrow strip and leaving blank space beneath it.
+   Use definite grid tracks: header | minmax(0,1fr) reader | footer.
+   The arrows have EXPLICIT columns and never depend on inherited direction.
+*/
+@font-face {
+  font-family: "Vazir";
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/vazir-font/30.1.0/Vazir-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vazir";
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/vazir-font/30.1.0/Vazir-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 900;
+  font-display: swap;
+}
+.book-overlay:not([hidden]){
+  display:grid;
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  max-height:none;
+  min-height:0;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:max-content minmax(0,1fr) max-content;
+  justify-items:stretch;
+  align-items:stretch;
+  overflow:hidden;
+}
+.book-overlay > .book-bar{
+  grid-column:1;grid-row:1;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  max-height:min(25dvh,160px);
+  overflow:visible;
+  justify-self:stretch;
+  align-self:start;
+}
+.book-overlay > .book-shelf{
+  grid-column:1;grid-row:2;
+  display:grid;
+  direction:ltr;
+  grid-template-columns:clamp(34px,5vw,54px) minmax(0,1fr) clamp(34px,5vw,54px);
+  grid-template-rows:minmax(0,1fr);
+  justify-items:center;
+  align-items:center;
+  justify-content:stretch;
+  align-content:stretch;
+  gap:clamp(5px,1vw,14px);
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  max-height:100%;
+  margin:0;
+  padding:clamp(5px,1.3vh,12px) clamp(8px,1vw,18px);
+  overflow:hidden;
+  flex:none;
+  box-sizing:border-box;
+}
+.book-overlay > .book-shelf > .book{
+  grid-column:2;grid-row:1;
+  direction:rtl;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:minmax(0,1fr);
+  align-self:stretch;
+  justify-self:center;
+  width:min(1080px,100%);
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  flex:none;
+  margin:0;
+  /* Keep the 3D turning leaf visible beyond the paper gutter. */
+  overflow:visible;
+}
+.book-overlay > .book-shelf > .book.single{
+  grid-template-columns:minmax(0,1fr);
+  width:min(660px,100%);
+}
+.book-overlay .page-right,
+.book-overlay .page-left{
+  min-height:0;
+  min-width:0;
+  overflow:hidden;
+}
+.book-overlay .page-right{grid-column:1;grid-row:1;}
+.book-overlay .page-left{grid-column:2;grid-row:1;}
+.book-overlay .book.single .page-right{grid-column:1;}
+.book-overlay .page[hidden]{display:none!important;}
+.book-overlay > .book-shelf > .turn{
+  direction:ltr;
+  flex:none;
+  align-self:center;
+  justify-self:center;
+  padding:0;
+  width:clamp(32px,4vw,46px);
+  min-height:48px;
+  height:clamp(48px,6vw,60px);
+  line-height:1;
+  font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:1.6rem;
+  font-weight:500;
+  touch-action:manipulation;
+}
+.book-overlay > .book-shelf > .turn-prev{
+  grid-column:3;
+  grid-row:1;
+}
+.book-overlay > .book-shelf > .turn-next{
+  grid-column:1;
+  grid-row:1;
+}
+.book-overlay > .book-footer{
+  grid-column:1;grid-row:3;
+  justify-self:center;
+  align-self:end;
+  width:min(1080px,calc(100vw - 30px));
+  min-height:45px;
+  max-height:22dvh;
+  box-sizing:border-box;
+  margin:0;
+  padding:7px 10px 11px;
+  overflow-y:auto;
+}
+.book-overlay[data-reader-font="vazir-classic"]{
+  --reader-typeface:"Vazir","Vazirmatn",Tahoma,sans-serif;
+}
+.book-overlay .page,
+.book-overlay .leaf-face,
+.book-overlay .page-measure{
+  font-size:var(--reader-font,1.06rem);
+  font-family:var(--reader-typeface);
+  line-height:var(--reader-leading,2.05);
+  box-sizing:border-box;
+}
+.book-overlay .page-measure{
+  width:400px;height:400px;
+  display:block;
+  position:fixed;
+  top:-10000px;left:-10000px;
+  overflow:hidden;
+  visibility:hidden;
+  pointer-events:none;
+  padding:inherit;
+}
+.book-overlay .page-content{
+  min-width:0;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.book-overlay .page-content p {
+  text-align:var(--reader-align,justify);
+  line-height:var(--reader-leading,2.05);
+  hyphens:none;
+}
+/* Keep a minimum functional paper height when the viewport is particularly
+   short; the toolbar compacts first instead of making the paper disappear. */
+@media(max-height:640px){
+  .book-overlay > .book-bar{
+    min-height:0;
+    padding:5px 10px;
+    max-height:125px;
+  }
+  .book-overlay .book-bar-title::before{display:none;}
+  .book-overlay > .book-shelf{padding-block:5px;}
+  .book-overlay .page,.book-overlay .leaf-face{padding:18px 24px 28px;}
+  .book-overlay > .book-footer{min-height:38px;padding:4px 7px;}
+}
+@media(max-width:860px){
+  .book-overlay > .book-shelf{
+    grid-template-columns:34px minmax(0,1fr) 34px;
+    gap:4px;
+    padding-inline:5px;
+  }
+  .book-overlay > .book-shelf > .book,
+  .book-overlay > .book-shelf > .book.single{width:100%;height:100%;}
+  .book-overlay > .book-shelf > .turn{
+    width:32px;
+    height:52px;
+    min-height:40px;
+  }
+  .book-overlay .page,.book-overlay .leaf-face{
+    padding:22px 18px 32px;
+  }
+  .book-overlay > .book-bar{
+    min-height:0;
+    padding:6px 10px;
+    max-height:150px;
+  }
+  .book-overlay > .book-footer{
+    width:100%;
+    gap:6px 9px;
+    padding:6px 9px 10px;
+  }
+}
+@media(max-width:480px){
+  .book-overlay > .book-shelf{
+    grid-template-columns:28px minmax(0,1fr) 28px;
+    gap:3px;
+    padding-inline:4px;
+  }
+  .book-overlay > .book-shelf > .turn{
+    width:27px;height:48px;
+    min-height:40px;
+    font-size:1.4rem;
+  }
+  .book-overlay .page,.book-overlay .leaf-face{
+    padding:16px 13px 27px;
+  }
+  .book-overlay > .book-bar{
+    padding:5px 8px;
+    max-height:158px;
+  }
+  .book-overlay .book-tools{
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    max-width:100%;
+  }
+  .book-overlay .book-bar-title{
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .book-overlay > .book-footer{
+    max-height:110px;
+    padding:5px 7px 8px;
+  }
+}
+@media(max-height:390px){
+  .book-overlay > .book-bar{max-height:98px;}
+  .book-overlay .page,.book-overlay .leaf-face{padding:10px 14px 20px;}
+  .book-overlay > .book-footer{min-height:33px;max-height:66px;}
+}
