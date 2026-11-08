@@ -36,6 +36,8 @@ async function getJSON(url, opts) {
     const base = `/${location.pathname.split("/").filter(Boolean)[0] || ""}/snapshot/`;
     if (pathname === "/api/town") return fetch(`${base}town.json`, { cache: "no-store" }).then((r) => r.json());
     if (pathname === "/api/stories") return fetch(`${base}stories.json`, { cache: "no-store" }).then((r) => r.json());
+    if (pathname === "/api/status") return fetch(`${base}status.json`, { cache: "no-store" }).then((r) => r.json());
+    if (pathname === "/api/planner") return fetch(`${base}planner.json`, { cache: "no-store" }).then((r) => r.json());
     const story = pathname.match(/^\/api\/stories\/([^/]+)$/);
     if (story) return fetch(`${base}stories/${encodeURIComponent(decodeURIComponent(story[1]))}.json`, { cache: "no-store" }).then((r) => r.json());
     if (pathname === "/api/public-link") return { url: "https://ialirezaaa.github.io/the-writer-live/", kind: "fixed" };
@@ -2213,17 +2215,37 @@ const panels = initPanels({
   }).then((r) => r.json().then((d) => ({ ok: r.ok, d }))),
   toast,
 });
+async function loadPublicRoutine() {
+  const [writer, plan] = await Promise.all([getJSON("/api/status"), getJSON("/api/planner")]);
+  $("name").textContent = writer.name;
+  $("presence-text").textContent = writer.asleep ? "در خواب" : "بیدار";
+  $("presence").classList.toggle("awake", !writer.asleep);
+  $("activity").textContent = writer.activity;
+  $("k-stories").textContent = String(writer.accepted_count);
+  $("k-stories-sub").textContent = "داستان پذیرفته‌شده";
+  $("k-energy").textContent = `${Math.round(writer.energy * 100)}٪`;
+  $("k-stage").textContent = writer.stage;
+  const done = plan.blocks.filter((block) => block.status === "done").length;
+  $("day-label").textContent = plan.day || "";
+  $("now-line").textContent = plan.current
+    ? `اکنون: ${hm(plan.current.start)}–${hm(plan.current.end)} · ${plan.current.label}`
+    : writer.activity;
+  $("next-line").textContent = plan.next ? `بعدی: ${hm(plan.next.start)} · ${plan.next.label}` : "کار بعدی ثبت نشده است";
+  $("plan-progress").textContent = `${faNum(done)} از ${faNum(plan.blocks.length)} کار امروز انجام‌شده`;
+  $("plan").replaceChildren(...plan.blocks.map((block) => item(
+    `${hm(block.start)}–${hm(block.end)} · ${block.label}`, BLOCK_FA[block.status] || block.status)));
+}
 async function refreshAll() {
   if (STATIC_PUBLIC) {
     document.body.classList.add("public-view");
     document.querySelectorAll('[role="tab"]').forEach((button) => {
-      button.hidden = !["p-stories", "p-town"].includes(button.dataset.panel);
+      button.hidden = !["p-stories", "p-town", "p-planner"].includes(button.dataset.panel);
     });
     document.querySelectorAll(".panel").forEach((panel) => {
-      panel.hidden = !["p-stories", "p-town"].includes(panel.id);
+      panel.hidden = !["p-stories", "p-town", "p-planner"].includes(panel.id);
     });
     const comments = $("comment-form"); if (comments) comments.hidden = true;
-    await Promise.allSettled([loadStories(), loadTown(), loadPublicLink()]);
+    await Promise.allSettled([loadStories(), loadTown(), loadPublicLink(), loadPublicRoutine()]);
     return;
   }
   await loadStatus();
@@ -2235,6 +2257,6 @@ async function refreshAll() {
   await loadNotebookPages();
 }
 refreshAll();
-if (STATIC_PUBLIC) setInterval(() => Promise.allSettled([loadStories(), loadTown()]), 30000);
+if (STATIC_PUBLIC) setInterval(() => Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]), 30000);
 else { setInterval(loadStatus, 5000); setInterval(refreshAll, 30000); setInterval(pollRoom, 20000); }
 animate();
