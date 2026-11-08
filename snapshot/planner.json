@@ -157,7 +157,7 @@
       "label": "تحقیق",
       "next_retry_at": null,
       "start": "2026-11-08T18:03",
-      "status": "planned",
+      "status": "done",
       "task": "research"
     },
     {
@@ -235,12 +235,12 @@
   "day": "2026-11-08",
   "next": {
     "attempts": null,
-    "end": "2026-11-08T18:48",
-    "id": "202611081803",
-    "label": "تحقیق",
+    "end": "2026-11-08T19:33",
+    "id": "202611081848",
+    "label": "چرت",
     "next_retry_at": null,
-    "start": "2026-11-08T18:03",
+    "start": "2026-11-08T18:48",
     "status": "planned",
-    "task": "research"
+    "task": "nap"
   }
 }
