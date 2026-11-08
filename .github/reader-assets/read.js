@@ -2,6 +2,7 @@
 import { openBook } from "./book.js?v=reader-20261108-v4";
 import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
+import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v1";
 
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
 const $ = id => document.getElementById(id);
@@ -104,6 +105,7 @@ $("home-link").href=appHref("");
 $("story-search").addEventListener("input",renderShelf);
 $("story-status").addEventListener("change",renderShelf);
 $("story-sort").addEventListener("change",renderShelf);
+installPersianPresentation(document.body);
 showShelf().then(route).catch(()=>{
   $("shelf-count").textContent="اتصال برقرار نشد";
   $("covers").replaceChildren(make("p","reading-empty","کتابخانه در دسترس نیست. اتصال یا انتشار فایل‌های داستان را بررسی کنید."));
