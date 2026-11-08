@@ -8,8 +8,8 @@ import { initPanels } from "./panels.js";
 import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-e";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
-import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v1";
-import { solarDate, persianDigits, displayText } from "./persian-display.js";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v2";
+import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
    also lives in the room. Click an object: the camera moves into it and its contents open inside it.
@@ -1301,13 +1301,20 @@ async function loadTown() {
     const rows = livingRows.map((resident) => {
       const detail = document.createElement("details");
       detail.className = "resident-row"; detail.dataset.id = resident.id; detail.open = expanded.has(resident.id);
+      const core=identities.get(resident.id)?.core?.core||resident.core?.core||{};
+      detail.dataset.search=[resident.label,ROLE_LABELS[resident.role]||resident.role,
+        core.value,core.desire,core.flaw].join(" ").toLocaleLowerCase("fa-IR");
+      const filter=$("town-search")?.value.trim().toLocaleLowerCase("fa-IR")||"";
+      detail.hidden=Boolean(filter)&&!detail.dataset.search.includes(filter);
       const summary = document.createElement("summary");
       residentSummaries.set(resident.id, summary);
       const meta=identities.get(resident.id)?.core?.core||resident.core?.core||{};
       const essence=document.createElement("p");essence.className="small";
       essence.textContent=`ارزش: ${meta.value||"—"} · نقص: ${meta.flaw||"—"} · هدف: ${meta.desire||"—"}`;
       const social=document.createElement("p");social.className="time";
-      social.textContent="مکالمه و حافظه: طراحی‌شده، هنوز غیرفعال";
+      social.textContent=resident.role==="publisher"
+        ?"ناشر: پروندهٔ گفت‌وگو و تجربه‌های تحریریه در نسخهٔ خصوصی فعال است"
+        :"مکالمه و حافظه: طراحی‌شده، هنوز غیرفعال";
       const agent = document.createElement("p");
       agent.className = "time"; agent.textContent = resident.role==="publisher" ? "ناشر مستقل: گفت‌وگوهای واقعی و پروندهٔ بازنویسی فعال؛ ایجنت شهریِ خودکار غیرفعال" : `ایجنت ${resident.agent.id} · غیرفعال · بدون ابزار`;
       const biography = document.createElement("p"); biography.className = "small"; biography.textContent = identities.get(resident.id)?.story || resident.story || "";
@@ -1317,7 +1324,19 @@ async function loadTown() {
         const time = `${String(Math.floor(entry.start / 60)).padStart(2, "0")}:${String(entry.start % 60).padStart(2, "0")}`;
         schedule.append(item(`${faNum(time)} · ${ACTIVITY_LABELS[entry.activity]} · ${PLACE_LABELS[entry.place]}`));
       }
-      detail.append(summary, biography, essence, occupation, social, agent, schedule); return detail;
+      const jump=document.createElement("button");
+      jump.type="button";jump.className="resident-go-to";
+      jump.textContent="دیدن شخصیت در صحنه";
+      jump.addEventListener("click",()=>{
+        setView(resident.role==="publisher"?"publisher":"town");
+        const actor=clickables.find(mesh=>mesh.userData.citizenId===resident.id);
+        if(actor)inspect(actor);
+        else toast("این شخصیت هنوز در صحنه بارگذاری نشده است.");
+      });
+      const direct=document.createElement("div");
+      direct.className="resident-actions";direct.append(jump);
+      detail.append(summary, biography, essence, occupation, social, agent, schedule, direct);
+      return detail;
     });
     $("town-residents").replaceChildren(...rows);
     updateTownSummary();
@@ -2228,6 +2247,27 @@ async function loadPublicRoutine() {
   $("k-stories").textContent = String(writer.accepted_count);
   $("k-stories-sub").textContent = "داستان پذیرفته‌شده";
   $("k-energy").textContent = `${Math.round(writer.energy * 100)}٪`;
+  // The public snapshot does not contain the writer's private mind state.
+  // Display real public facts rather than misleading default mental meters.
+  const energy=$("energy");
+  if(energy)energy.value=Number(writer.energy)||0;
+  for(const id of ["m-confidence","m-restlessness","m-pride"]){
+    const m=$(id);if(!m)continue;
+    m.hidden=true;
+    if(m.previousElementSibling)m.previousElementSibling.hidden=true;
+  }
+  const facts=$("facts");
+  if(facts){
+    facts.replaceChildren();
+    for(const [key,value] of [
+      ["مشاهدهٔ فعلی",writer.activity||"—"],
+      ["وضعیت",writer.asleep?"در خواب":"بیدار"],
+      ["انرژی ثبت‌شده",Math.round((Number(writer.energy)||0)*100)+"٪"]
+    ]){
+      const label=document.createElement("dt"),detail=document.createElement("dd");
+      label.textContent=key;detail.textContent=value;facts.append(label,detail);
+    }
+  }
   $("k-stage").textContent = writer.stage;
   const done = plan.blocks.filter((block) => block.status === "done").length;
   $("day-label").textContent = plan.day || "";
@@ -2280,6 +2320,11 @@ async function refreshAll() {
   ]);
   await loadNotebookPages();
 }
+$("town-search")?.addEventListener("input",()=>{
+  const needle=$("town-search").value.trim().toLocaleLowerCase("fa-IR");
+  for(const entry of $("town-residents").querySelectorAll(".resident-row"))
+    entry.hidden=Boolean(needle)&&!entry.dataset.search.includes(needle);
+});
 observerUI=initObserverUI({
   selectTab,setView,
   onShowPanel:(id)=>{
