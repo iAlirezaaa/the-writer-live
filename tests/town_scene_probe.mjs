@@ -282,6 +282,8 @@ try {
         clientWidth: 1000, clientHeight: 700, value: "", children: [],
         append(...children) { this.children.push(...children); }, appendChild(child) { this.children.push(child); return child; },
         prepend() {}, replaceChildren() {}, setAttribute() {}, addEventListener() {}, removeEventListener() {},
+        querySelectorAll(){return [];}, querySelector(){return element();},
+        matches(){return false;}, closest(){return element();}, contains(){return false;},
         getContext: drawingContext, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1000, height: 700 }) };
     }
     const elements = new Map();
