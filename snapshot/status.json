@@ -1,8 +1,8 @@
 {
   "accepted_count": 3,
-  "activity": "استراحت",
-  "asleep": false,
-  "energy": 0.575,
+  "activity": "خوابم",
+  "asleep": true,
+  "energy": 0.574,
   "name": "هادس",
   "stage": "داستان بلند",
   "story_count": 3
