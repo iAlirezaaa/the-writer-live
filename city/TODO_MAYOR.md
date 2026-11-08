@@ -76,3 +76,12 @@ Status: published city-only change, last full Pages run [42504481657](https://gi
 - Failure: the weather panel clearly says unavailable and precipitation remains hidden; daylight uses Tehran timezone with 06:00–18:00 fallback if sunrise/sunset data unavailable. Never invent current rainfall.
 - Visual QA: desktop street-level, rain/snow imagery, day/night/sunrise and mobile screenshots NOT INSPECTED.
 
+
+## MAYOR-010 — Tehran environment contract audit (2026-11-08)
+- [ ] Verify the existing `web/tehran-environment.js` integration and `tests/tehran_environment_probe.mjs` against actual CI and deployed Pages; **do not claim live weather is operational until verified**.
+- [ ] Confirm public pinned `.github/city-assets/tehran-environment.js` matches the private source and public overlay. No runtime edits without tests.
+- [ ] Validate Tehran local solar clock independently of viewer timezone; stale/unavailable weather must never be represented as live observation.
+- [ ] Inspect API licensing/attribution and network failure behavior before any release.
+- [ ] IDEA-005: low-cost weather-aware bus shelter lighting using shared materials, with no traffic path edits.
+- [ ] IDEA-006: seasonal public observatory signage displaying Tehran sunrise/sunset, with accessible text fallback.
+Status: TODO registered before any implementation; source review found timezone `Asia/Tehran`, Open-Meteo current conditions, 15-minute refresh and stale-data fallback. Runtime and deployment verification pending.
