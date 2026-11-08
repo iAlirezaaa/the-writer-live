@@ -46,6 +46,18 @@ const SCENE_GROUPS=[
   {name:"خانه و نویسنده",ids:["building","overview","follow","desk","window","library"]}
 ];
 
+// One keyboard entry per navigation group, even when another group is active.
+// Remember the previous entry within inactive groups; never remove a panel.
+export function observerTabStops(activeId, previous={}){
+  const stops={};
+  for(const group of PANEL_GROUPS){
+    const remembered=previous[group.title];
+    stops[group.title]=group.ids.includes(activeId)?activeId:
+      group.ids.includes(remembered)?remembered:group.ids[0];
+  }
+  return stops;
+}
+
 export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
   const $=id=>document.getElementById(id);
   installPersianPresentation(document.body);
@@ -125,7 +137,15 @@ export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
   function syncTab(id){
     if(!PANEL_CONTEXT[id])return;
     currentTab=id;
-    tabs.forEach(tab=>{tab.tabIndex=tab.dataset.panel===id?0:-1;});
+    const previousStops=Object.fromEntries(PANEL_GROUPS.map(group=>[
+      group.title,group.ids.find(panelId=>tabById.get(panelId)?.tabIndex===0)
+    ]));
+    const groupStops=observerTabStops(id,previousStops);
+    for(const group of PANEL_GROUPS){
+      for(const panelId of group.ids){
+        tabById.get(panelId).tabIndex=groupStops[group.title]===panelId?0:-1;
+      }
+    }
     const panel=$(id),details=PANEL_CONTEXT[id];
     const group=PANEL_GROUPS.find(g=>g.ids.includes(id));
     if($("observer-panel-title"))$("observer-panel-title").textContent=panel?.dataset.title||tabById.get(id)?.textContent||"مشاهده";
