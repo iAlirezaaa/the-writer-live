@@ -248,6 +248,20 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   const pw=5.55,pd=5.58,level=3.1,base=3.28,top=base+5*level;
   const towerWall=mat("publisher-wall",0x605d67),towerTrim=mat("publisher-trim",0xd4b997),
     towerEdge=mat("publisher-edge",0x343e4c);
+  // Make a load-bearing ground floor below the upper apartment and editorial office.
+  // The old shop interior is deprecated, so the replacement cannot start midair.
+  B(pw+.25,.17,pd+.22,towerEdge,0,.075,0,tower);
+  B(pw,base-.12,pd,towerWall,0,(base-.12)/2+.16,0,tower);
+  B(pw+.18,.16,pd+.18,towerTrim,0,base,0,tower);
+  const publisherDoor=B(1.28,2.35,.11,door,0,1.23,pd/2+.10,tower);
+  publisherDoor.name="publisher-street-door";
+  B(1.55,.18,.48,towerEdge,0,2.50,pd/2+.25,tower);
+  for(const xx of [-1.83,1.83]){
+    B(.93,1.38,.08,glass,xx,1.65,pd/2+.11,tower);
+    B(1.10,.11,.23,towerTrim,xx,.91,pd/2+.16,tower);
+  }
+  B(1.58,.12,2.92,paving,-10,H(.06),4.18);
+  B(2.10,.08,1.45,stone,-10,H(.04),3.50);
   // Preserve the original lobby footprint and all old publisher click targets.
   for(let floor=0;floor<5;floor++){
     const low=base+floor*level,high=low+level;
@@ -299,6 +313,19 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   // relocating the old bookstore floor, storefront, sign or reader navigation.
   const bookstore=new THREE.Group();bookstore.name="bookstore-lofts";bookstore.position.set(10,streetY,0);root.add(bookstore);
   const bookstoreWall=mat("bookstore-upper",0x788b82);
+  // Ground-floor retail volume aligns physically with the two upper floors.
+  const bookstoreBase=3.37;
+  B(6.06,.17,6.10,towerEdge,0,.07,0,bookstore);
+  B(5.75,bookstoreBase-.09,5.8,bookstoreWall,0,(bookstoreBase-.09)/2+.13,0,bookstore);
+  B(6.1,.17,6.1,towerEdge,0,bookstoreBase,0,bookstore);
+  const bookDoor=B(1.24,2.28,.12,door,0,1.18,2.97,bookstore);
+  bookDoor.name="bookstore-street-door";
+  for(const xx of [-1.95,1.95]){
+    B(1.06,1.55,.075,glass,xx,1.62,2.99,bookstore);
+    B(1.24,.11,.19,towerEdge,xx,.82,3.07,bookstore);
+  }
+  B(1.62,.12,2.92,paving,10,H(.06),4.18);
+  B(2.1,.08,1.45,stone,10,H(.04),3.50);
   for(let levelIndex=0;levelIndex<2;levelIndex++){
     const y=3.37+levelIndex*3.05;
     B(5.75,2.98,5.8,bookstoreWall,0,y+1.49,0,bookstore);
@@ -310,6 +337,9 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
     }
   }
   sign("خانهٔ کتاب · طبقهٔ بالا",10,streetY+7.95,3.22,3.9);
+  const bookLobby=sign("خانهٔ کتاب · ورودی",10,streetY+2.75,3.22,3.8);
+  clickable(bookLobby,"p-books","خانهٔ کتاب — ورودی");
+  bookLobby.userData.view="bookstore";
   // New streets make the expanded layout a block system instead of random
   // props. These side lanes are VISUAL ONLY, not part of the car simulator.
   const road=mat("new-road",0x404b50),roadStripe=mat("road-line",0xdfd9c0);
