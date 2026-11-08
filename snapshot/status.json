@@ -1,8 +1,8 @@
 {
   "accepted_count": 2,
-  "activity": "خوابم",
-  "asleep": true,
-  "energy": 1.0,
+  "activity": "دارم در دفترچه می‌نویسم",
+  "asleep": false,
+  "energy": 0.999,
   "name": "هادس",
   "stage": "داستان کوتاه",
   "story_count": 2
