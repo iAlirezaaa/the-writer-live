@@ -53,7 +53,7 @@
       "id": "202611081129",
       "label": "استراحت",
       "start": "2026-11-08T11:29",
-      "status": "planned",
+      "status": "done",
       "task": "rest"
     },
     {
@@ -185,14 +185,7 @@
       "task": "nap"
     }
   ],
-  "current": {
-    "end": "2026-11-08T12:14",
-    "id": "202611081129",
-    "label": "استراحت",
-    "start": "2026-11-08T11:29",
-    "status": "planned",
-    "task": "rest"
-  },
+  "current": null,
   "day": "2026-11-08",
   "next": {
     "end": "2026-11-08T12:59",
