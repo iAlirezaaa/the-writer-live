@@ -48,11 +48,12 @@ def patch_site(root: Path) -> None:
 
     old_import = 'import { buildTownCars } from "./town-cars.js";'
     new_import = f'import {{ buildTownCars }} from "./town-cars.js?v={version}";'
-    if new_import not in town:
-        if old_import in town:
-            town = town.replace(old_import, new_import, 1)
-        else:
-            town = new_import + "\n\n" + town
+    town, count = re.subn(
+        r'^import \{ buildTownCars \} from "\./town-cars\.js(?:\?v=[^"]+)?";',
+        lambda _m: new_import, town, count=1, flags=re.MULTILINE
+    )
+    if count == 0:
+        town = new_import + "\n\n" + town
 
     ret = "  return {\n    group,\n    update(day, elapsed)"
     if "const carLayer=buildTownCars(" not in town:
@@ -77,11 +78,12 @@ def patch_site(root: Path) -> None:
     world = world_file.read_text(encoding="utf-8")
     town_import = 'import { buildTown, nightLighting } from "./town.js";'
     bust_import = f'import {{ buildTown, nightLighting }} from "./town.js?v={version}";'
-    if bust_import not in world:
-        if town_import not in world:
-            # This is intentional fail-closed rather than shipping a broken view.
-            raise RuntimeError("Cannot locate the town import in world.js")
-        world = world.replace(town_import, bust_import, 1)
+    world, count = re.subn(
+        r'^import \{ buildTown, nightLighting \} from "\./town\.js(?:\?v=[^"]+)?";',
+        lambda _m: bust_import, world, count=1, flags=re.MULTILINE
+    )
+    if count != 1:
+        raise RuntimeError("Cannot locate the town import in world.js")
     if "  cars:     { pos:" not in world:
         town_view = "  town:     { pos: [26, 30, 53], target: [0, -1, 2] },"
         if town_view not in world:
@@ -113,10 +115,12 @@ def patch_site(root: Path) -> None:
     # again, even when the browser/CDN cached the former bundle.
     plain = 'src="./web/world.js"'
     versioned = f'src="./web/world.js?v={version}"'
-    if versioned not in html:
-        if plain not in html:
-            raise RuntimeError("Page entrypoint script not found")
-        html = html.replace(plain, versioned, 1)
+    html, count = re.subn(
+        r'src="\./web/world\.js(?:\?v=[^"]+)?",',
+        lambda _m: versioned, html, count=1
+    )
+    if count != 1:
+        raise RuntimeError("Page entrypoint script not found")
     index_file.write_text(html, encoding="utf-8")
     assert "carLayer.update(day,elapsed);" in town
     assert new_import in town
