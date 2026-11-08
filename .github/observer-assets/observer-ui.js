@@ -73,13 +73,38 @@ export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
     const hint=document.createElement("span");hint.textContent=group.hint;
     header.append(title,hint);
     const buttons=document.createElement("div");buttons.className="observer-nav-options";
-    buttons.setAttribute("role","group");buttons.setAttribute("aria-label",group.title);
+    buttons.setAttribute("role","tablist");buttons.setAttribute("aria-label",group.title);
+    const groupTabs=[];
     for(const id of group.ids){
       const tab=tabById.get(id);
+      tab.id="observer-tab-"+id;
       tab.setAttribute("aria-controls",id);
       tab.setAttribute("type","button");
-      buttons.append(tab);
+      tab.tabIndex=tab.getAttribute("aria-selected")==="true"?0:-1;
+      const pane=$(id);
+      if(pane){
+        pane.setAttribute("role","tabpanel");
+        pane.setAttribute("aria-labelledby",tab.id);
+        pane.tabIndex=0;
+      }
+      buttons.append(tab);groupTabs.push(tab);
     }
+    // Right-to-left keyboard traversal: arrow-right moves to the previous
+    // tab, arrow-left to the next. Home/End jump to the group boundaries.
+    buttons.addEventListener("keydown",event=>{
+      const tab=event.target.closest?.("button[data-panel]");
+      if(!tab)return;
+      const i=groupTabs.indexOf(tab);
+      let next=i;
+      if(event.key==="ArrowLeft")next=(i+1)%groupTabs.length;
+      else if(event.key==="ArrowRight")next=(i-1+groupTabs.length)%groupTabs.length;
+      else if(event.key==="Home")next=0;
+      else if(event.key==="End")next=groupTabs.length-1;
+      else return;
+      event.preventDefault();
+      groupTabs[next].focus();
+      groupTabs[next].click();
+    });
     sec.append(header,buttons);nav.append(sec);
   }
   camera.setAttribute("aria-label","همهٔ نماهای دوربین");
@@ -100,6 +125,7 @@ export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
   function syncTab(id){
     if(!PANEL_CONTEXT[id])return;
     currentTab=id;
+    tabs.forEach(tab=>{tab.tabIndex=tab.dataset.panel===id?0:-1;});
     const panel=$(id),details=PANEL_CONTEXT[id];
     const group=PANEL_GROUPS.find(g=>g.ids.includes(id));
     if($("observer-panel-title"))$("observer-panel-title").textContent=panel?.dataset.title||tabById.get(id)?.textContent||"مشاهده";
