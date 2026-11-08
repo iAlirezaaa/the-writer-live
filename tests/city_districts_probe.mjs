@@ -9,6 +9,7 @@ const read=path=>readFileSync(resolve(root,path),"utf8");
 const load=text=>import("data:text/javascript;base64,"+Buffer.from(text).toString("base64"));
 const THREE=await load(read("web/vendor/three.module.js"));
 const urban=await load(read("web/urban-plan.js"));
+const roads=await load(read("web/road-surface.js"));
 const districtSource=read("web/town-districts.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const districts=new Function("auditUrbanPlan",districtSource+";return {buildCityDistricts,auditCityPlan,CITY_BLOCKS,CITY_PLACE_CATALOG};")(urban.auditUrbanPlan);
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
@@ -16,9 +17,9 @@ const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
