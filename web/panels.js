@@ -192,6 +192,11 @@ async function loadPublish() {
     const s = d.stats || {};
     const out = [para(`${s.done ?? 0} از ${s.total ?? 0} — فقط با شاهد باز می‌شود.`),
       rows((d.rows || []).slice(0, 40).map((r) => [`${r.done ? "✓ " : "· "}${r.label}`, `${r.goal} · ${r.have}/${r.target} ${r.unit || ""}`]))];
+    if ((d.publisher_awards || []).length)
+      out.push(heading("نشان‌های اختصاصی تأیید ناشر"),
+        rows(d.publisher_awards.map((r) => [
+          r.label, `اثر شمارهٔ ${r.publication_number || "—"} · ${(r.unlocked_at || "").slice(0, 10)} · فقط شبیه‌سازی`
+        ])));
     if (wd) {
       out.push(heading("کمد لباس"));
       if (wd.locked) {

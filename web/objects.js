@@ -204,6 +204,12 @@ const SOURCES = {
       const done = (a.rows || []).filter((r) => r.done).length;
       return [kv([["رسیده", `${done} از ${(a.rows || []).length}`], ...Object.entries(a.stats || {}).filter(([k]) => k !== "latest" && k !== "near")]),
       cell("p", "body", a.summary || ""),
+      ...((a.publisher_awards || []).length ? [
+        cell("h4", "grp", "نشان‌های اختصاصی چاپ"),
+        list(a.publisher_awards.map((r) =>
+          row(r.label, `اثر شمارهٔ ${r.publication_number || "—"} · ${(r.unlocked_at || "").slice(0, 10)} · فقط در جهان داستانی`,
+            r.story_id ? () => ctx.openStory(r.story_id) : null, "تأیید شده")))
+      ] : []),
       list((a.rows || []).slice().sort((x, y) => (y.done - x.done) || (x.near ? -1 : 1)).slice(0, 30).map((r) =>
         row(r.label, `${r.goal} · ${r.have}/${r.target} ${r.unit || ""}${r.unlocked_at ? " · " + String(r.unlocked_at).slice(0, 10) : ""}`,
           null, r.done ? "رسید" : (r.near ? "نزدیک" : null))))];
