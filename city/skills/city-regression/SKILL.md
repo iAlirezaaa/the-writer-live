@@ -13,3 +13,9 @@ description: Enforce physical 3D tests, project-safe deployment and visual QA fo
 - Preserve published story IDs, user comments, author memories, 15 observer tabs, 10 camera views, day/night and Persian date handling.
 - Latest GitHub Actions deployment must succeed. Failure is a blocker. Prior successful runs are not proof a newer revision passed.
 - Document separately: source sync, tests passed, and any visual inspections **not yet completed**.
+
+## Iteration 002: pedestrian clearance audit (documentation-only)
+- For each civic entrance (school, police, screenplay office, film studio), capture: parcel ID, road-graph node, door world position, landing elevation, sidewalk width, nearest crossing, and emergency vehicle access.
+- Check continuous walkable clearance >= 1.5 scene units, no sign/foliage collision and no unsupported entrance; test daytime and nighttime visibility separately.
+- Compare actual private `web/` source against public pinned assets before copying; never mirror author data or entire private trees.
+- A documented checklist is not a passing geometry test. Run existing Node probes and inspect screenshots before marking any geometry or public runtime change verified.
