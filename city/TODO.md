@@ -62,3 +62,15 @@ Status: documentation-only; runtime probes, visual QA and deployment for this it
 2. **Civic access evidence cards**: generate per-building school/police/studio entrance cards with coordinates, clearance, ground height and screenshot reference, without storing citizen routes.
 
 Iteration 004 evidence: six source/pin blobs matched via GitHub fetch_file (2026-11-08). Node geometry/scene probes NOT RUN; screenshots NOT INSPECTED; new Pages deployment NOT VERIFIED. Documentation-only; no runtime publication authorized.
+
+## MAYOR-013 — Tehran weather freshness documentation (2026-11-08)
+- [x] Register independent TODO at `city/tasks/MAYOR-013-tehran-weather-staleness-audit.md` before editing skills.
+- [x] Inspect private Tehran environment module and existing regression probe; compare the private module SHA against both public copies: `b4c23c71328a3838d30facbec998e96530a6ea45` in all three locations at audit time.
+- [x] Extend municipal release-gate skill with timestamp, cache, retry, midnight and provider-failure test matrix.
+- [ ] Execute Node tests, real-browser provider fetch, visual QA and fresh Pages deployment checks; none executed in this documentation-only audit.
+
+## Two new backlog proposals (MAYOR-013)
+1. **Provider timestamp contract fixture**: a deterministic, city-only set of weather payloads covering explicit offsets, offset-free Tehran time, stale readings and malformed fields.
+2. **Weather fallback visual snapshot**: compare dawn, noon, dusk and midnight lighting under fresh, unavailable and just-expired provider states without altering citizen clocks.
+
+Release: documentation only; no runtime assets changed or newly deployed; test execution and real-time Tehran weather in production NOT VERIFIED.
