@@ -18,9 +18,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare public site with correct vehicle imports
+        run: |
+          mkdir -p _site
+          cp -a index.html web read snapshot _site/
+          touch _site/.nojekyll
+          python3 .github/scripts/prepare_car_deploy.py _site
+          for name in town town-cars world; do
+            cp "_site/web/$name.js" "/tmp/the-writer-$name.mjs"
+            node --check "/tmp/the-writer-$name.mjs"
+          done
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
