@@ -245,27 +245,179 @@ export function createCityLife({ THREE, city }) {
   }
 
   // Light traffic, moving on the two pre-existing streets only.
-  const carBodies=[mat(0x729b8e),mat(0xc29485),mat(0x7c90ad),mat(0xe5bd83)];
-  const cars=[];
-  function car(i) {
-    const g=group(root);
-    g.name="city-car-"+i;
-    const body=carBodies[i%carBodies.length];
-    cuboid(g,1.32,.31,.70,0,.26,0,body);
-    cuboid(g,.65,.34,.57,-.11,.53,0,body);
-    for(const sx of [-.42,.42])for(const sz of [-.38,.38]){
-      const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.10,10),palette.tyres);
-      wheel.rotation.x=Math.PI/2;wheel.position.set(sx,.15,sz);g.add(wheel);
-    }
-    for(const sx of [-.50,.50]){
-      cuboid(g,.07,.12,.06,.65,.31,sx*.53,palette.headlights);
-    }
-    return g;
+
+  // Vehicle local +X always faces forward; local +Z is a side. All parts,
+  // including wheels, lights and mirrors, stay parented to their car root.
+  const vehicleMaterials=[
+    mat(0x729b8e),mat(0xc99486),mat(0x8299b8),
+    mat(0xe5bd83),mat(0x9f817e),mat(0x8fa58f),
+    mat(0x253f49),mat(0x344956),mat(0x52616b),
+    mat(0xffefc0,{emissive:0xffdb89,emissiveIntensity:.45}),
+    mat(0xe56c5d,{emissive:0xd64135,emissiveIntensity:.18}),
+    mat(0xd5dedd,{metalness:.26,roughness:.34}),
+    mat(0x99bdc2,{metalness:.09,roughness:.25}),
+    mat(0xede1ce),mat(0xf2d7a0)
+  ];
+  const carPaints=vehicleMaterials.slice(0,6);
+  const [windowTrim,windowDark,tyre,headlamp,taillamp,rim,vehicleGlass,numberPlate,taxiSign]=vehicleMaterials.slice(6);
+  const carSpecs=[
+    {kind:"compact",length:1.56,width:.72,radius:.17,speed:.74},
+    {kind:"sedan",length:1.91,width:.77,radius:.18,speed:.80},
+    {kind:"taxi",length:1.85,width:.76,radius:.18,speed:.73},
+    {kind:"delivery-van",length:2.06,width:.76,radius:.18,speed:.58},
+    {kind:"hatchback",length:1.69,width:.73,radius:.17,speed:.78},
+    {kind:"pickup",length:2.08,width:.77,radius:.19,speed:.62}
+  ];
+  const cars=[],wheelGeometryCache=new Map(),hubGeometryCache=new Map();
+  function wheelGeometry(radius,hub=false){
+    const key=radius.toFixed(3),map=hub?hubGeometryCache:wheelGeometryCache;
+    if(!map.has(key))map.set(key,new THREE.CylinderGeometry(
+      hub?radius*.52:radius,hub?radius*.52:radius,hub?.118:.12,12
+    ));
+    return map.get(key);
   }
-  for(let i=0;i<5;i++){
-    const g=car(i);
-    const horizontal=i<3,forward=i%2===0;
-    cars.push({g,horizontal,forward,speed:.60+(i%3)*.14,phase:i*4.9});
+  function makeCar(i,spec){
+    const g=group(root);
+    g.name="city-car-"+i+"-"+spec.kind;
+    g.userData.vehicleType=spec.kind;
+    const L=spec.length,W=spec.width,paint=carPaints[i%carPaints.length];
+    const half=L*.5,wheels=[];
+    // Chassis with wheels clearing the pavement.
+    cuboid(g,L,.24,W,0,.36,0,paint);
+    cuboid(g,L*.91,.075,W*.90,0,.235,0,windowTrim);
+    cuboid(g,L*.46,.13,W*.94,L*.01,.46,0,paint);
+    const van=spec.kind==="delivery-van",pickup=spec.kind==="pickup";
+    const cabinCenter=van?L*.23:pickup?L*.19:-L*.09;
+    const cabinLength=van?L*.31:pickup?L*.34:L*.49;
+    const roofHeight=van?1.03:pickup?.77:.79;
+    const cabinHeight=roofHeight-.53;
+    cuboid(g,cabinLength,cabinHeight,W*.82,cabinCenter,.53+cabinHeight/2,0,paint);
+    cuboid(g,cabinLength*.89,.055,W*.84,cabinCenter,roofHeight+.027,0,paint);
+    cuboid(g,.032,Math.max(.19,cabinHeight*.75),W*.74,
+      cabinCenter+cabinLength/2+.016,.53+cabinHeight*.52,0,vehicleGlass);
+    cuboid(g,.032,Math.max(.19,cabinHeight*.75),W*.74,
+      cabinCenter-cabinLength/2-.016,.53+cabinHeight*.52,0,vehicleGlass);
+    for(const side of [-1,1]){
+      cuboid(g,cabinLength*.77,cabinHeight*.66,.032,
+        cabinCenter,.57+cabinHeight*.51,side*(W*.41+.012),vehicleGlass);
+      cuboid(g,.042,cabinHeight*.77,.05,
+        cabinCenter+.035,.58+cabinHeight*.52,side*(W*.41+.028),windowTrim);
+      cuboid(g,.18,.036,.06,cabinCenter+.045,.53,side*(W*.50+.015),rim);
+      cuboid(g,.16,.07,.12,
+        cabinCenter+cabinLength*.43,.68,side*(W*.50+.06),windowTrim);
+    }
+    if(van){
+      const boxX=-L*.20;
+      cuboid(g,L*.57,.55,W*.93,boxX,.70,0,paint);
+      cuboid(g,.055,.45,W*.76,-half+.015,.70,0,windowTrim);
+      cuboid(g,.03,.40,.03,-half-.022,.71,0,rim);
+      cuboid(g,L*.50,.045,W*.96,boxX,.98,0,paint);
+    }
+    if(pickup){
+      const bedCenter=-L*.30,bedL=L*.42;
+      cuboid(g,bedL,.08,W*.94,bedCenter,.48,0,windowTrim);
+      for(const side of [-1,1])
+        cuboid(g,bedL,.22,.07,bedCenter,.59,side*W*.46,paint);
+      cuboid(g,.075,.24,W*.94,-half+.025,.59,0,paint);
+    }
+    if(spec.kind==="taxi"){
+      cuboid(g,.43,.10,.26,cabinCenter,.91,0,taxiSign);
+      cuboid(g,.28,.04,.28,cabinCenter,.99,0,windowTrim);
+    }
+    if(spec.kind==="hatchback")
+      cuboid(g,.34,.06,W*.79,-half+.18,roofHeight+.08,paint);
+    // Front (+X) lamps and grille; rear (-X) red lamps and plates.
+    for(const side of [-1,1]){
+      cuboid(g,.055,.135,.17,half+.025,.40,side*W*.32,headlamp);
+      cuboid(g,.055,.135,.17,-half-.025,.40,side*W*.32,taillamp);
+    }
+    cuboid(g,.058,.17,W*.38,half+.029,.33,0,windowDark);
+    cuboid(g,.058,.065,W*.48,half+.04,.56,0,numberPlate);
+    cuboid(g,.052,.07,W*.43,-half-.038,.55,0,numberPlate);
+    for(const axleSide of [-1,1]){
+      const x=axleSide*L*.295;
+      for(const zside of [-1,1]){
+        // Cylinder axis starts at local Y, rotate to the Z wheel axle. Spin
+        // the wheel pivot around Z; never rotate or move a child in world space.
+        const pivot=group(g,x,spec.radius,zside*(W*.5+.028));
+        const tread=new THREE.Mesh(wheelGeometry(spec.radius),tyre);
+        tread.rotation.x=Math.PI/2;pivot.add(tread);
+        const hub=new THREE.Mesh(wheelGeometry(spec.radius,true),rim);
+        hub.rotation.x=Math.PI/2;
+        hub.position.z=zside*.012;pivot.add(hub);
+        wheels.push(pivot);
+      }
+    }
+    return {g,wheels,length:L,width:W,radius:spec.radius,kind:spec.kind};
+  }
+  // One direction per lane, with enough space between opposite lanes.
+  const carLanes=[
+    {id:"east",axis:"h",forward:1,start:-12.8,end:12.8,fixed:.55},
+    {id:"west",axis:"h",forward:-1,start:12.8,end:-12.8,fixed:1.55},
+    {id:"north",axis:"v",forward:1,start:-10.65,end:10.65,fixed:1.19},
+    {id:"south",axis:"v",forward:-1,start:10.65,end:-10.65,fixed:2.22}
+  ].map(lane=>({...lane,length:Math.abs(lane.end-lane.start)}));
+  const slots={h:[.8,8.4,18.1],v:[.8,6.4,15.8]};
+  const laneMembers=new Map(carLanes.map(l=>[l.id,[]]));
+  // Bounding zone covers the actual intersection AND the long van body;
+  // a perpendicular vehicle cannot enter until crossing traffic clears.
+  const CONFLICT_RADIUS=2.32;
+  function criticalRange(car){
+    const middle=car.lane.axis==="h"?1.7:1.05;
+    const along=car.lane.forward*(middle-car.lane.start);
+    return {entry:along-CONFLICT_RADIUS,exit:along+CONFLICT_RADIUS};
+  }
+  function syncCar(car){
+    const lane=car.lane,pos=lane.start+lane.forward*car.progress;
+    if(lane.axis==="h"){
+      car.model.g.position.set(pos,-.113,lane.fixed);
+      car.model.g.rotation.y=lane.forward===1?0:Math.PI;
+    }else{
+      car.model.g.position.set(lane.fixed,-.113,pos);
+      car.model.g.rotation.y=lane.forward===1?-Math.PI/2:Math.PI/2;
+    }
+    for(const wheel of car.model.wheels)
+      wheel.rotation.z=-car.distance/car.model.radius;
+  }
+  for(let i=0;i<12;i++){
+    const lane=carLanes[i%4],slot=Math.floor(i/4);
+    const spec=carSpecs[(i+slot)%carSpecs.length],model=makeCar(i,spec);
+    const car={model,lane,progress:slots[lane.axis][slot],
+      distance:slots[lane.axis][slot],speed:spec.speed*(.93+(i%3)*.055)};
+    Object.assign(car,criticalRange(car));
+    cars.push(car);laneMembers.get(lane.id).push(car);syncCar(car);
+  }
+  const inConflict=car=>car.progress>=car.entry-.0001&&car.progress<=car.exit+.0001;
+  function stepCars(dt){
+    for(const car of cars){
+      let step=car.speed*dt;
+      // Following gap is computed circularly: works even while vehicles wrap.
+      for(const ahead of laneMembers.get(car.lane.id)){
+        if(ahead===car)continue;
+        const gap=(ahead.progress-car.progress+car.lane.length)%car.lane.length;
+        const minSeparation=(car.model.length+ahead.model.length)/2+.46;
+        step=Math.min(step,Math.max(0,gap-minSeparation));
+      }
+      // Mutex for the central intersection. Vehicles already across the
+      // entry line keep priority, so perpendicular traffic never clips.
+      if(car.progress<car.entry && car.progress+step>=car.entry){
+        if(cars.some(other=>other.lane.axis!==car.lane.axis&&inConflict(other)))
+          step=Math.max(0,car.entry-car.progress-.045);
+      }
+      if(step<=0)continue;
+      car.progress=(car.progress+step)%car.lane.length;
+      car.distance+=step;syncCar(car);
+    }
+  }
+  let lastCarSeconds=null;
+  function updateCars(seconds){
+    if(!Number.isFinite(seconds))return;
+    if(lastCarSeconds===null){lastCarSeconds=seconds;return;}
+    let remaining=Math.min(Math.max(0,seconds-lastCarSeconds),.18);
+    lastCarSeconds=seconds;
+    while(remaining>1e-6){
+      const dt=Math.min(.035,remaining);stepCars(dt);remaining-=dt;
+    }
   }
 
   const animatedLeaves=[];
@@ -296,20 +448,7 @@ export function createCityLife({ THREE, city }) {
       const s=Math.sin(seconds*.8+v.phase)*.065;
       v.model.leftArm.rotation.x=s;v.model.rightArm.rotation.x=-s;
     }
-    for(const c of cars){
-      const lane=c.horizontal?21.8:18.8;
-      const progress=(seconds*c.speed+c.phase)%lane;
-      const dir=c.forward?1:-1;
-      if(c.horizontal){
-        c.g.position.set((c.forward?-11.0:11.0)+dir*progress,-.015,
-                         c.forward?.57:1.55);
-        c.g.rotation.y=c.forward?Math.PI/2:-Math.PI/2;
-      }else{
-        c.g.position.set(c.forward?1.26:2.12,-.015,
-                         (c.forward?-9.2:9.2)+dir*progress);
-        c.g.rotation.y=c.forward?0:Math.PI;
-      }
-    }
+    updateCars(seconds);
     for(let i=0;i<animatedLeaves.length;i++)
       animatedLeaves[i].rotation.z=Math.sin(seconds*.63+i)*.035;
   }
@@ -326,6 +465,6 @@ export function createCityLife({ THREE, city }) {
       o.geometry!==sharedSphere&&o.geometry!==sharedCylinder)o.geometry?.dispose();});
     sharedBox.dispose();sharedSphere.dispose();sharedCylinder.dispose();
     for(const m of [...Object.values(palette),...SKIN_M,...COAT_M,...HAIR_M,
-      ...TROUSER,...carBodies,...emissiveMaterials])m.dispose();
+      ...TROUSER,...vehicleMaterials,...emissiveMaterials])m.dispose();
   }};
 }
