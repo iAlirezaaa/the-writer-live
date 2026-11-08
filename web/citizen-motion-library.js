@@ -42,7 +42,12 @@ export function evaluateClip(name,seconds,phase=0,out=null){
     bounce:name==="walk"?Math.abs(gait)*.022:Math.abs(wave)*.006,
     head:name==="read"?.12+wave*.02:wave*.11,
     arms:name==="walk"?gait*.43:wave*.08,
-    intensity:name==="sleep"?.14:1
+    intensity:name==="sleep"?.14:1,
+    breath:Math.sin(t*1.7)*.012,
+    gaze:Math.sin(t*.43+phase*.7)*.13,
+    blink:Math.max(0,1-Math.abs(((t+phase*.31)%4.9)-.12)/.12),
+    fidget:Math.sin(t*1.17+phase)*.045,
+    pageTurn:name==="read"?Math.max(0,1-Math.abs(((t+phase*.23)%clip.seconds)-clip.seconds*.73)/.42):0
   });
   return pose;
 }

@@ -255,9 +255,10 @@ function buildFigure(THREE, row, agent, clickable) {
   else if(hairType===2)box(rig,"side-fringe",[.30,.08,.26],hair.material,.075,1.60,.025);
   else if(hairType===3)box(rig,"hair-knot",[.16,.15,.16],hair.material,0,1.69,-.13);
   else if(hairType===4)box(rig,"wide-hair",[.45,.08,.30],hair.material,0,1.59,-.01);
+  const eyes=[];
   for (const x of [-0.065, 0.065]) {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 6), material("#302c28"));
-    eye.position.set(x, 1.49, 0.155); rig.add(eye);
+    eye.position.set(x, 1.49, 0.155); rig.add(eye); eyes.push(eye);
   }
   box(rig, "waist", [0.34, 0.17, 0.26], trousers, 0, 0.69, 0);
   const limb = (name, x, y, mat, length, width) => {
@@ -282,6 +283,7 @@ function buildFigure(THREE, row, agent, clickable) {
     box(book, "book-cover", [0.20, 0.035, 0.26], cover, x, 0, 0);
     box(book, "book-pages", [0.18, 0.035, 0.24], paper, x, 0.03, 0);
   }
+  const page = box(book,"turning-page",[0.17,0.012,0.23],paper,0.01,0.058,0);
   const parcel = box(rig, "parcel", [0.42, 0.3, 0.32], wood, 0, 0.88, 0.38);
   const clipboard = box(rig, "work-pad", [0.30, 0.04, 0.24], paper, -0.05, 0.94, 0.32);
   const broom = new THREE.Group(); broom.name = "broom"; broom.position.set(0.34, 0, 0.3); rig.add(broom);
@@ -333,17 +335,19 @@ function buildFigure(THREE, row, agent, clickable) {
     if (typeof clickable === "function") clickable(mesh, "p-world", row.label);
     else if (Array.isArray(clickable)) clickable.push(mesh);
   }
-  return { root, rig, head, cloth, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom, pickables,
+  return { root, rig, head, torso, eyes, page, cloth, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom, pickables,
     identitySign, stature };
 }
 
 function animateFigure(figure, activity, role, t, phase, motionArchive) {
-  const { rig, head, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom } = figure;
+  const { rig, head, torso, eyes, page, leftArm, rightArm, leftLeg, rightLeg, book, parcel, clipboard, broom } = figure;
   const pose=motionArchive?.evaluateClip?.(activity,t,phase,
     figure.pose||(figure.pose={}));
   const wave=pose?pose.sway:Math.sin(t*2.2+phase);
   const stride=pose?pose.step:Math.sin(t*7+phase);
   rig.position.y = 0; rig.rotation.set(0, 0, 0);
+  torso.scale.y=1+(pose?.breath||0);
+  for (const eye of eyes) eye.scale.y=1-.92*(pose?.blink||0);
   head.rotation.set(0, 0, 0);
   for (const limb of [leftArm, rightArm, leftLeg, rightLeg]) limb.rotation.set(0, 0, 0);
   book.visible = activity === "read";
@@ -351,6 +355,10 @@ function animateFigure(figure, activity, role, t, phase, motionArchive) {
   clipboard.visible = activity === "work";
   broom.visible = activity === "sweep";
   broom.rotation.set(0, 0, 0); broom.position.x = 0.34;
+  parcel.position.y=.88;
+  clipboard.rotation.z=0;
+  page.rotation.y = -(pose?.pageTurn||0)*Math.PI*.83;
+  book.rotation.set(0,0,0);
   if (activity === "walk") {
     leftLeg.rotation.x = stride * 0.43; rightLeg.rotation.x = -stride * 0.43;
     leftArm.rotation.x = -stride * 0.36; rightArm.rotation.x = stride * 0.36;
@@ -358,20 +366,26 @@ function animateFigure(figure, activity, role, t, phase, motionArchive) {
     if (parcel.visible) leftArm.rotation.x = rightArm.rotation.x = -0.95;
   } else if (activity === "read") {
     leftArm.rotation.x = -1.03; rightArm.rotation.x = -1.05 + wave * 0.06;
-    head.rotation.x = 0.24 + wave * 0.035; book.rotation.z = wave * 0.025;
+    head.rotation.x = 0.24 + wave * 0.035; head.rotation.y=(pose?.gaze||0)*.28;
+    book.rotation.z = wave * 0.025;
+    rightArm.rotation.z=(pose?.pageTurn||0)*.13;
   } else if (activity === "carry") {
     leftArm.rotation.x = rightArm.rotation.x = -0.95;
     rig.rotation.z = wave * 0.035; head.rotation.y = wave * 0.08;
+    parcel.position.y=.88+(pose?.breath||0)*.45;
   } else if (activity === "sweep") {
     rightArm.rotation.x = -0.52; rightArm.rotation.z = wave * 0.25;
     leftArm.rotation.x = -0.22; rig.rotation.x = 0.09;
     broom.rotation.z = wave * 0.16; broom.position.x = 0.34 + wave * 0.19;
   } else if (activity === "work") {
     leftArm.rotation.x = -1.05; rightArm.rotation.x = -0.75 + wave * 0.28;
-    head.rotation.x = 0.15; rig.rotation.x = role === "gardener" ? 0.18 + wave * 0.09 : 0.025 * wave;
+    head.rotation.x = 0.15; head.rotation.y=(pose?.gaze||0)*.4;
+    rig.rotation.x = role === "gardener" ? 0.18 + wave * 0.09 : 0.025 * wave;
+    clipboard.rotation.z=(pose?.fidget||0)*.4;
   } else if (activity === "idle") {
-    head.rotation.y = Math.sin(t * 0.55 + phase) * 0.28;
+    head.rotation.y = (pose?.gaze||0)*2.1;
     leftArm.rotation.z = 0.035 + wave * 0.025; rightArm.rotation.z = -0.035 - wave * 0.025;
+    rightArm.rotation.x=(pose?.fidget||0)*1.5;
   }
 }
 

@@ -106,6 +106,7 @@ pre {
 .presence { display: inline-flex; align-items: center; gap: var(--s2); font-size: 0.88rem; color: var(--muted); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
 .presence.awake .dot { background: var(--lamp); }
+.sync-time { color: var(--faint); font-size: .74rem; white-space: nowrap; }
 
 /* ---------- the app: app bar, 3D stage, dashboard sidebar ---------- */
 body.app { height: 100vh; overflow: hidden; }

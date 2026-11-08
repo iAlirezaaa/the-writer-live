@@ -9,8 +9,8 @@ import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-2
 import { createTehranWeatherService, tehranWeatherLabel } from "./tehran-environment.js?v=tehran-environment-20261108-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
-import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
-import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
+import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261109-v1";
+import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261109-v1";
 import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v4";
 import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
@@ -922,6 +922,10 @@ const hair = new THREE.Mesh(new THREE.SphereGeometry(0.15, 24, 16, 0, Math.PI * 
 const hairBack = new THREE.Mesh(new THREE.SphereGeometry(0.145, 20, 16), MAT.hair); hairBack.position.set(0, 0.1, -0.045); hairBack.scale.set(1, 0.9, 0.8); head.add(hairBack);
 const glassesMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.5 });
 for (const x of [-0.05, 0.05]) { const g = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.006, 6, 16), glassesMat); g.position.set(x, 0.14, 0.13); head.add(g); }
+const writerEyes = [-0.05,0.05].map((x) => {
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.012,8,6), glassesMat);
+  eye.position.set(x,0.14,0.139); head.add(eye); return eye;
+});
 const upperArmL = segment(torso, -0.27, 0.5, 0.32, 0.055, MAT.sweater);
 const upperArmR = segment(torso, 0.27, 0.5, 0.32, 0.055, MAT.sweater);
 const foreArmL = segment(upperArmL, 0, -0.32, 0.3, 0.048, MAT.sweater);
@@ -1940,6 +1944,14 @@ function animate() {
   const deskFocus = settled && (pose === POSES.type || pose === POSES.write || pose === POSES.screenread);
   head.rotation.y = lying ? Math.sin(t * 0.12) * 0.35 : deskFocus ? Math.sin(t * 0.6) * 0.05
     : pose === POSES.gaze ? Math.sin(t * 0.3) * 0.3 : Math.sin(t * 0.4) * 0.12;
+  const blink = Math.max(0,1-Math.abs((t%5.2)-.15)/.13);
+  for (const eye of writerEyes) eye.scale.y=1-blink*.94;
+  if (settled && pose === POSES.read) {
+    foreArmR.rotation.z += Math.max(0,1-Math.abs((t%6.8)-5.1)/.45)*.13;
+  }
+  if (settled && pose === POSES.think) {
+    head.rotation.z=Math.sin(t*.7)*.055;
+  } else head.rotation.z=0;
   handPaper.visible = settled && (pose === POSES.read || pose === POSES.standread);
   handPen.visible = settled && pose === POSES.write;
   curtains.forEach((c, i) => { c.rotation.z = Math.sin(t * 0.4 + i * 1.7) * 0.015; });
@@ -2581,6 +2593,13 @@ async function loadPublicRoutine() {
   $("presence-text").textContent = writer.asleep ? "در خواب" : "بیدار";
   $("presence").classList.toggle("awake", !writer.asleep);
   $("activity").textContent = writer.activity;
+  const syncedAt = writer.snapshot_at ? new Date(writer.snapshot_at) : null;
+  const syncLabel = $("sync-time");
+  if (syncLabel && syncedAt && !Number.isNaN(syncedAt.getTime())) {
+    syncLabel.hidden = false;
+    syncLabel.textContent = `آخرین دریافت: ${syncedAt.toLocaleTimeString("fa-IR", {hour:"2-digit",minute:"2-digit"})}`;
+    syncLabel.title = syncedAt.toLocaleString("fa-IR");
+  }
   observerUI?.updateStatus(writer);
   $("k-stories").textContent = String(writer.accepted_count);
   $("k-stories-sub").textContent = "داستان پذیرفته‌شده";
