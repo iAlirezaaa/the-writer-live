@@ -1,6 +1,6 @@
 // The Writer — editorial library. Covers are stable per story and rendered without remote images.
-import { openBook } from "./book.js?v=reader-20261108-v4";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
+import { openBook } from "./book.js?v=reader-20261108-v5";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v5";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
 
@@ -98,7 +98,7 @@ async function showShelf(){
 window.addEventListener("hashchange",route);
 window.addEventListener("writer:reading-closed",renderShelf);
 if(isGitHubPages()){
-  $("reader-note").textContent="نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. مطالعه و نشانک در مرورگر شما ذخیره می‌شوند؛ حاشیه‌نویسی در نسخهٔ محلی فعال است.";
+  $("reader-note").textContent="نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. مطالعه و نشانک در مرورگر شما ذخیره می‌شوند؛ برای ثبت نظر کلی، کتاب را باز کنید؛ برای حاشیه‌نویسی بخشی از متن را انتخاب کنید.";
   $("story-status").querySelector('option[value="rejected"]')?.remove();
 }
 $("home-link").href=appHref("");
