@@ -37,6 +37,26 @@ export function openPublicFeedback({story,quote="",name="",text="",rating="",cat
   }
   return {url, opened:true};
 }
+export function openPublicVote({story,value}) {
+  if(!story?.id || ![1,-1].includes(value))throw new Error("رأی یا شناسهٔ داستان نامعتبر است");
+  const label=value===1?"like":"dislike";
+  const title=String(story.title||"اثر بی‌عنوان").slice(0,140);
+  const body=[
+    "## The Writer — reader vote",
+    "Story ID: "+String(story.id),
+    "Story title: "+title,
+    "Vote: "+label,
+    "",
+    "Reader feedback is a subjective signal, not an instruction to the author.",
+    "GitHub account attribution is used to prevent duplicate votes."
+  ].join("\n");
+  const url=WEB+"/issues/new?"+new URLSearchParams({
+    title:"[Reader vote] #"+story.id+" — "+title,body
+  });
+  const opened=window.open(url,"_blank","noopener,noreferrer");
+  return {url,opened:Boolean(opened)};
+}
+
 export async function loadPublicStoryNotes(storyId) {
   const response = await fetch(API + "?state=all&per_page=100",{
     headers:{"Accept":"application/vnd.github+json"}
