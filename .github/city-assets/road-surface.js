@@ -2,7 +2,10 @@
  * Geometry is a disjoint tessellation of their UNION, never overlapping plates.
  * A common street elevation and asphalt shader eliminate road patch seams.
  */
-export const ROAD_SURFACE_VERSION="road-surface-20261108-v3";
+export const ROAD_SURFACE_VERSION="road-surface-20261108-v4";
+// Paint sits slightly above the asphalt plane; no hidden/doubled lane markings.
+export const ROAD_SURFACE_OFFSET=-0.020;
+export const ROAD_PAINT_CENTER_OFFSET=-0.010;
 
 export function roadRect(segment) {
   if (!segment || !Number.isFinite(segment.width) || segment.width <= 0 ||
@@ -46,7 +49,7 @@ export function buildSeamlessRoadSurface(THREE,segments,{
   streetY=-3,color=0x39464e
 }={}) {
   const plan=calculateRoadUnion(segments);
-  const surfaceY=streetY-.020;
+  const surfaceY=streetY+ROAD_SURFACE_OFFSET;
   const vertices=[];
   for(const [x0,x1,z0,z1] of plan.cells){
     // Counterclockwise winding viewed from above; no coplanar overlapping
