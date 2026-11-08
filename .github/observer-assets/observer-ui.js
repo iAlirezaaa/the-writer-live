@@ -3,7 +3,7 @@
  * No navigation destinations or API actions are deleted, and no new backend
  * permissions are introduced. Panels are the same live DOM nodes.
  */
-import {installPersianPresentation,persianDigits} from "./persian-display.js";
+import {installPersianPresentation,persianDigits} from "./persian-display.js?v=observatory-20261108-v2";
 
 export const PANEL_GROUPS=Object.freeze([
   {title:"زندگی نویسنده",hint:"اکنون، عادت‌ها و روند رشد",ids:["p-status","p-planner","p-diary","p-inner","p-self"]},
