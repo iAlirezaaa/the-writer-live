@@ -550,6 +550,27 @@ rug.rotation.x = -Math.PI / 2;
 box(1.8, 0.06, 0.8, M.wood, 1.4, 0.75, -2.25);
 for (const [x, z] of [[0.55, -2.6], [2.25, -2.6], [0.55, -1.9], [2.25, -1.9]]) box(0.06, 0.72, 0.06, M.wood, x, 0.36, z);
 box(0.45, 0.5, 0.7, M.darkWood, 2.0, 0.42, -2.25);
+// A working folio makes the desk feel used: leather blotter, loose manuscript,
+// ruled notes, a brass clip and a small ink bottle beside the writer's hand.
+const deskBlotter = box(0.72, 0.025, 0.56, new THREE.MeshStandardMaterial({ color: 0x594236, roughness: 0.92 }), 1.38, 0.795, -2.22);
+deskBlotter.rotation.y = -0.035;
+const writingPage = new THREE.Group(); writingPage.position.set(1.38, 0.814, -2.22); writingPage.rotation.y = -0.035; scene.add(writingPage);
+const manuscriptSheet = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.012, 0.52), M.paper);
+manuscriptSheet.receiveShadow = true; writingPage.add(manuscriptSheet);
+const manuscriptLines = [];
+for (let i = 0; i < 9; i++) {
+  const line = new THREE.Mesh(new THREE.BoxGeometry(0.29 - (i % 3) * 0.018, 0.002, 0.004),
+    new THREE.MeshStandardMaterial({ color: 0x80684e, roughness: 1 }));
+  line.position.set(-0.018 + (i % 3) * 0.009, 0.008, -0.17 + i * 0.035);
+  line.visible = false; writingPage.add(line); manuscriptLines.push(line);
+}
+// Keep the pen and page together visually as a writing station, without making
+// the little props obstacles in the walking grid.
+const folioClip = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.018, 0.035), M.brass);
+folioClip.position.set(0.155, 0.01, -0.23); writingPage.add(folioClip);
+const inkBottle = mesh(new THREE.CylinderGeometry(0.032, 0.036, 0.075, 12),
+  new THREE.MeshStandardMaterial({ color: 0x253c4b, roughness: 0.35, metalness: 0.08 }), 1.73, 0.84, -2.45);
+mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.018, 12), M.brass, 1.73, 0.887, -2.45);
 // monitor with a live screen
 const screenCanvas = document.createElement("canvas");
 screenCanvas.width = 512; screenCanvas.height = 300;
@@ -1934,12 +1955,29 @@ function animate() {
   foreArmR.rotation.x = cur.elR - (walking ? 0.25 : 0);
   upperArmL.rotation.z = -0.06; upperArmR.rotation.z = 0.06;
   if (settled && pose === POSES.type) {
-    foreArmL.rotation.x += Math.sin(t * 15) * 0.05;
-    foreArmR.rotation.x += Math.cos(t * 13) * 0.05;
+    // Short alternating key presses with a breathing pause, instead of a
+    // constant mechanical oscillation.
+    const typing = Math.sin(t * 8.4);
+    foreArmL.rotation.x += Math.sin(t * 15.5) * 0.045 * (typing > -0.35 ? 1 : 0.22);
+    foreArmR.rotation.x += Math.cos(t * 14.2) * 0.05 * (typing < 0.35 ? 1 : 0.22);
+    foreArmL.rotation.z += Math.sin(t * 4.2 + 1.1) * 0.018;
   }
-  if (settled && pose === POSES.write) foreArmR.rotation.z = Math.sin(t * 6) * 0.08;
+  if (settled && pose === POSES.write) {
+    const stroke = Math.sin(t * 8.5);
+    foreArmR.rotation.z = stroke * 0.095;
+    foreArmR.rotation.x += Math.sin(t * 5.2) * 0.035;
+    foreArmL.rotation.z += Math.sin(t * 0.8) * 0.025;
+    // The page fills with ink as the writing session advances, then turns and
+    // starts fresh. The cycle is visual only; actual work remains server-led.
+    const pagePhase = (t % 72) / 72;
+    manuscriptLines.forEach((line, i) => { line.visible = pagePhase > i / manuscriptLines.length * 0.72; });
+    writingPage.rotation.z += (Math.sin(t * 0.17) * 0.018 - writingPage.rotation.z) * Math.min(1, dt * 1.2);
+  } else {
+    manuscriptLines.forEach((line) => { line.visible = false; });
+    writingPage.rotation.z += (0 - writingPage.rotation.z) * Math.min(1, dt * 1.5);
+  }
   else foreArmR.rotation.z = 0;
-  head.rotation.x = cur.head;
+  head.rotation.x = cur.head + (settled && pose === POSES.write ? Math.max(0, Math.sin(t * 0.8)) * 0.035 : 0);
   // at the desk the eyes stay near the page; standing at the window they wander
   const deskFocus = settled && (pose === POSES.type || pose === POSES.write || pose === POSES.screenread);
   head.rotation.y = lying ? Math.sin(t * 0.12) * 0.35 : deskFocus ? Math.sin(t * 0.6) * 0.05
