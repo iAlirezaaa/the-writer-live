@@ -141,9 +141,9 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       roof.rotation.x = side * 0.48;
     }
     box(0.55, 1.35, 0.62, brick, b.x + 1.55, STREET_Y + 4.7, b.z - 1.25);
-    box(b.w + 0.35, 0.16, 0.18, wood, b.x, STREET_Y + 4.04, b.z + 2.57);
-    box(1.0, 2.1, 0.13, darkWood, b.x, STREET_Y + 1.05, b.z + 2.57);
-    box(1.22, 0.12, 0.22, wood, b.x, STREET_Y + 2.16, b.z + 2.59);
+    box(b.w + 0.35, 0.16, 0.18, wood, b.x, STREET_Y + 4.04, b.z + 2.40);
+    box(1.0, 2.1, 0.13, darkWood, b.x, STREET_Y + 1.05, b.z + 2.40);
+    box(1.22, 0.12, 0.22, wood, b.x, STREET_Y + 2.16, b.z + 2.39);
     for (const dx of [-1.58, 1.58]) for (const floor of [0, 1]) {
       const y = STREET_Y + (floor ? 3.05 : 1.55), x = b.x + dx;
       box(0.96, 1.05, 0.07, glass, x, y, b.z + 2.57);
