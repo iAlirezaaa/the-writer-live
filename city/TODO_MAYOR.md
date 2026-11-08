@@ -31,14 +31,21 @@ Scope: **city only**. No writer, publisher, citizen route, memory, or story chan
 - Status: **documentation gate recorded; no runtime geometry released and no automated test execution claimed in this entry**.
 
 ## Iteration MAYOR-009 — housing access continuity (2026-11-08)
-- [ ] Replace the 12 eastern residential approach paths that terminate about 1.06 scene units short of asphalt, without relocating homes, roads, residents, writer or publisher.
-- [ ] Add a real Three.js geometry probe that measures each named housing walk vs the existing east-housing-link road edge, door face, ground elevation and minimum width.
-- [ ] Execute a dedicated city-only private CI gate and existing urban/road/district tests before publishing any geometry.
-- [ ] Mirror only approved scene, probe, skill and TODO changes to the public pinned assets; confirm the new Pages workflow.
-- [ ] Record exact commit links, remaining visual QA, and performance impact (no extra draw calls expected: same twelve path meshes).
+- [x] Replace the 12 eastern residential approach paths that terminate about 1.06 scene units short of asphalt, without relocating homes, roads, residents, writer or publisher.
+- [x] Add a real Three.js geometry probe that measures each named housing walk vs the existing east-housing-link road edge, door face, ground elevation and minimum width.
+- [x] Executed the dedicated private CI gate [run 42502228465](https://github.com/iAlirezaaa/the-writer/actions/runs/42502228465) — **FAILED, logs unavailable**. Confirmed all existing public-build checks on the pre-release staging branch before publication: [run 42502451800](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42502451800) — **SUCCESS**.
+- [x] Mirrored reviewed scene, probe, skill and TODO to public main in [c68bd2b](https://github.com/iAlirezaaa/the-writer-live/commit/c68bd2b30bd1d8774081cbc94b1bdcc64ab5317b). The new Pages [run 42502537433](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42502537433) **SUCCEEDED**, including deployment.
+- [x] Recorded private source [c5e4951](https://github.com/iAlirezaaa/the-writer/commit/c5e4951cec2d188c9ead5f872d11f77ca7955d87), public staging and deploy links, residual visual QA, and performance caveats.
 
 ## Two ideas proposed for after MAYOR-009
 - [ ] IDEA-003: curb-ramp and tactile paving library at the school/police crosswalks, backed by continuous accessible-route probes.
 - [ ] IDEA-004: studio-to-forest educational trail with small reusable film-set clue markers and a resident-free Easter egg index.
 
-Status: TODO registered BEFORE runtime modification; private tests and public sync PENDING.
+Status: source and live pinned assets synchronized and public staging + main Pages jobs passed. Private city CI run failed with no retrievable logs; do not count it as passing.
+
+### Evidence for MAYOR-009
+- Public run 42502537433 emitted `URBAN-PLAN-OK` (12 connected roads; 0 road disconnections, 0 parcel collisions), `ROAD-TOPOLOGY-OK` (85 connected asphalt cells), `CITY-DISTRICTS-OK` (15 discoverable places, planned housing capacity 432, 0 intersections), `HOUSING-ACCESS-OK` (12 paved homes; min walk width 2; road east-housing-link).
+- Runtime change: one mesh per housing approach before and after (12 total); no new materials, no city agents, no altered traffic splines. Actual GPU draw calls and frame-time measurements: **NOT MEASURED**.
+- Visual QA: street-level, accessibility ramps, mobile, day and night screenshots **NOT INSPECTED**.
+- Full pedestrian access for school, police, screenplay office, film studio, and street crossing safety remain open; this iteration specifically covers the 12 eastern housing aprons.
+- Private author/publisher/memory changes: **NONE** in MAYOR-009 scope.
