@@ -18,6 +18,8 @@ export function buildTownCars({ THREE, city, streetY }) {
   const chrome=material(0xb7c7c5,{metalness:.65,roughness:.29});
   const headLight=material(0xffe8b9,{emissive:0xffce81,emissiveIntensity:.3});
   const tailLight=material(0xc35b53,{emissive:0xa12620,emissiveIntensity:.25});
+  const indicator=material(0xffb34e,{emissive:0xff8b16,emissiveIntensity:0});
+  const brake=material(0xe0524d,{emissive:0xff1711,emissiveIntensity:.2});
   const plate=material(0xe2ded2,{roughness:.8});
   const deliveryStripe=material(0xf2d6a1,{roughness:.75});
 
@@ -104,6 +106,13 @@ export function buildTownCars({ THREE, city, streetY }) {
     addBox(root,plate,.035,.086,W*.38,L*.5+.075,.67,0);
     addBox(root,plate,.035,.086,W*.38,-L*.5-.075,.67,0);
     // Four wheels: the axle lies on local Z after cylinder rotation around X.
+    const signalMeshes=[];
+    for(const side of [-1,1]){
+      signalMeshes.push(addBox(root,indicator,.055,.10,.13,L*.5+.03,.49,side*W*.45));
+      signalMeshes.push(addBox(root,indicator,.055,.10,.13,-L*.5-.03,.49,side*W*.45));
+    }
+    const brakeMeshes=[];
+    for(const side of [-1,1])brakeMeshes.push(addBox(root,brake,.065,.12,.16,-L*.5-.035,.60,side*W*.30));
     const wheelPivots=[];
     for(const axle of [-1,1])for(const side of [-1,1]){
       const pivot=new THREE.Group();
@@ -115,7 +124,7 @@ export function buildTownCars({ THREE, city, streetY }) {
       hub.position.z=side*.038;pivot.add(hub);
       wheelPivots.push(pivot);
     }
-    return {root,wheelPivots,profile};
+    return {root,wheelPivots,profile,signalMeshes,brakeMeshes};
   }
 
   // Both streets are four metres wide, centred on z=+/-8.5. Use one direction
@@ -129,13 +138,18 @@ export function buildTownCars({ THREE, city, streetY }) {
   ];
   const BEGIN=-32,SPAN=64;
   const laneCars=lanes.map(()=>[]);
-  const originalPositions=[2,22,42];
+  // Stagger starting positions per lane to avoid synchronized convoys.
+  const laneOffsets=[0,7,13,4];
+  const slotPositions=[1,19,43];
+  // Advance traffic phase by wall time: reload does not replay frame zero.
+  const phaseSeconds=(Date.now()/1000)%SPAN;
   for(let i=0;i<12;i++){
     const laneIndex=i%4,lane=lanes[laneIndex],slot=Math.floor(i/4);
     const spec=profiles[(i+Math.floor(i/4))%profiles.length];
     const model=makeVehicle(i,spec);
-    const car={model,lane,laneIndex,progress:originalPositions[slot],
-      distance:originalPositions[slot],speed:spec.pace*(.92+(i%4)*.025)};
+    const car={model,lane,laneIndex,progress:(slotPositions[slot]+laneOffsets[laneIndex]+phaseSeconds*spec.pace)%SPAN,
+      distance:slotPositions[slot]+laneOffsets[laneIndex]+phaseSeconds*spec.pace,
+      speed:spec.pace*(.90+((i*7)%11)*.018)};
     vehicles.push(car);laneCars[laneIndex].push(car);
   }
   function sync(car){
@@ -148,6 +162,17 @@ export function buildTownCars({ THREE, city, streetY }) {
   for(const car of vehicles)sync(car);
   let lastTime=null;
   let pedestrianCrossingRequested=false;
+  let nightFactor=0;
+  // A visual signal synchronized with the existing pedestrian reservation.
+  const signalGroup=new THREE.Group();signalGroup.name="town-traffic-signals";fleet.add(signalGroup);
+  const redLamp=material(0x40100d,{emissive:0xff1c12,emissiveIntensity:0});
+  const greenLamp=material(0x0c4021,{emissive:0x19e66a,emissiveIntensity:.5});
+  for(const x of [-2.8,2.8]){
+    const pole=addBox(signalGroup,frame,.12,2.6,.12,x,streetY+1.25,11.1);
+    addBox(signalGroup,trim,.38,.84,.3,x,streetY+2.72,11.1);
+    addBox(signalGroup,redLamp,.22,.22,.06,x,streetY+2.9,11.27);
+    addBox(signalGroup,greenLamp,.22,.22,.06,x,streetY+2.55,11.27);
+  }
   // A single crosswalk crosses the two upper-road lanes at x=0.
   // Cars approaching from either side stop BEFORE their nose reaches x=-/+2.0.
   // Cars already past the stop line must leave the crossing instead of
@@ -184,6 +209,7 @@ export function buildTownCars({ THREE, city, streetY }) {
           if(car.progress<=stopAt && car.progress+step>stopAt)
             step=Math.max(0,stopAt-car.progress);
         }
+        car.model.braking=step<car.speed*dt*.7;
         car.progress=(car.progress+step)%SPAN;
         car.distance+=step;sync(car);
       }
@@ -193,8 +219,15 @@ export function buildTownCars({ THREE, city, streetY }) {
   function update(day,elapsed){
     const light=Math.max(0,Math.min(1,Number(day)||0));
     headLight.emissiveIntensity=.22+(1-light)*1.45;
-    tailLight.emissiveIntensity=.12+(1-light)*.36;
+    nightFactor=1-light;
+    tailLight.emissiveIntensity=.12+nightFactor*.36;
+    redLamp.emissiveIntensity=pedestrianCrossingRequested?1.8:.08;
+    greenLamp.emissiveIntensity=pedestrianCrossingRequested?.03:1.1;
     tick(elapsed);
+    for(const car of vehicles){
+      for(const mesh of car.model.brakeMeshes)mesh.visible=!!car.model.braking;
+      for(const mesh of car.model.signalMeshes)mesh.visible=false;
+    }
   }
   return {update,vehicles,setCrossingDemand,trafficState};
 }
