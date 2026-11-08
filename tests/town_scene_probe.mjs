@@ -233,7 +233,21 @@ try {
     for (const [key, p] of Object.entries(DEFAULT_PLACES)) {
       assert.ok(close(roster.places[key].x, p.x) && close(roster.places[key].z, p.z), `Server place drifts: ${key}`);
       const building = footprints.find((b) => b.key === key);
-      if (building) assert.ok(insideXZ(building.box, p), `${key} destination misses its actual building`);
+      if(building){
+        if(key==="publisher"||key==="bookstore"){
+          // The public front door leads onto an actual 2m-wide stone apron.
+          // The destination is the *outdoor approach*, not a point inside
+          // the building's wall or ground-floor door volume.
+          const approach=p.z>=building.box.max.z-0.1 &&
+            p.z<=building.box.max.z+1.5 &&
+            Math.abs(p.x-building.x)<=1.0;
+          assert.ok(approach, `${key} destination misses its built entrance apron`);
+          assert.ok(surfaces.some(({box})=>insideXZ(box,p,0.08)),
+            `${key} approach is not physically paved`);
+        }else{
+          assert.ok(insideXZ(building.box,p),`${key} home destination misses its shell`);
+        }
+      }
       for (const to of Object.keys(DEFAULT_PLACES)) {
         let from = stationPoint(key, roster.citizens[0].id);
         for (const next of buildRoute(from, stationPoint(to, roster.citizens[0].id))) { segment(from, next); from = next; }
