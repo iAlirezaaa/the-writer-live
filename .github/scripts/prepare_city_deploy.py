@@ -7,7 +7,7 @@ publisher meetings, authored citizen routines or car trajectories are changed.
 from pathlib import Path
 import sys
 
-VERSION="city-districts-20261108-v2"
+VERSION="city-districts-20261108-v3"
 ROOT=Path(".github/city-assets")
 
 
@@ -18,7 +18,11 @@ def inspect(site: Path) -> None:
     objects=(site/"web/objects.js").read_text(encoding="utf-8")
     index=(site/"index.html").read_text(encoding="utf-8")
     urban=(site/"web/urban-plan.js").read_text(encoding="utf-8")
+    roads=(site/"web/road-surface.js").read_text(encoding="utf-8")
     expected=[
+        ("one unified road mesh module", "export function buildSeamlessRoadSurface" in roads),
+        ("road paint elevation shared", "export const ROAD_PAINT_CENTER_OFFSET" in roads),
+        ("one writer room root", "writerInteriorWorldRoot.add(baseWriterRoomShell)" in world),
         ("urban master plan shipped", "export function auditUrbanPlan" in urban),
         ("writer home exterior", "writer-home-exterior-v2" in world),
         ("outdoor facade first", 'let view = "town"' in world),
@@ -31,7 +35,7 @@ def inspect(site: Path) -> None:
         ("city catalog connected",f'./town-districts.js?v={VERSION}' in world),
         ("city information panel",'"place:"+civic.id' in objects),
         ("city venues navigable",'"town-places"' in world and 'renderCityPlaces()' in world),
-        ("new world entrypoint",'src="./web/world.js?v=city-world-20261108-v3"' in index),
+        ("new world entrypoint",'src="./web/world.js?v=city-world-20261108-v4"' in index),
         ("original camera menu kept",index.count("data-view=")==10),
         ("original notebook panels kept",index.count("data-panel=")==15),
         ("unchanged car source", 'buildTownCars' in town),
