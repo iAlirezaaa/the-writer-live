@@ -6,6 +6,7 @@ import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=cit
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
 import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v3";
+import { createTehranWeatherService, tehranWeatherLabel } from "./tehran-environment.js?v=tehran-environment-20261108-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
@@ -1803,6 +1804,23 @@ function setFocus(f) {
 }
 
 // ============ the loop ============
+// City weather is independent of author/citizen simulation time and previewHour.
+const cityWeatherService=createTehranWeatherService();
+let cityAtmosphere=cityWeatherService.snapshot();
+let lastCityWeatherTick=-2;
+const cityWeatherNotice=document.createElement("p");
+cityWeatherNotice.id="tehran-weather-status";
+cityWeatherNotice.className="small muted";
+cityWeatherNotice.setAttribute("role","status");
+const cityWeatherText=document.createElement("span");
+const cityWeatherCredit=document.createElement("a");
+cityWeatherCredit.href="https://open-meteo.com/en/docs";
+cityWeatherCredit.target="_blank";
+cityWeatherCredit.rel="noopener noreferrer";
+cityWeatherCredit.textContent=" · داده: Open-Meteo";
+cityWeatherNotice.append(cityWeatherText,cityWeatherCredit);
+document.getElementById("town-summary")?.insertAdjacentElement("afterend",cityWeatherNotice);
+cityWeatherText.textContent=tehranWeatherLabel(cityAtmosphere);
 const clock = new THREE.Clock();
 let state = { asleep: false, status: "idle", library_books: 0, accepted_count: 0, rejected_count: 0 };
 let lastClock = 0;
@@ -1947,8 +1965,14 @@ function animate() {
     z.s.material.opacity = sleepiness > 0.9 ? Math.sin(z.t * Math.PI) : 0;
   });
 
-  // --- the sky and the light follow the real hour
-  const { sunAngle, day, dusk } = dayInfo(wallTime(now));
+  // --- City outdoors follow actual Tehran time and model weather, NOT author clock.
+  if(t-lastCityWeatherTick>=1){
+    lastCityWeatherTick=t;
+    cityAtmosphere=cityWeatherService.snapshot();
+    cityWeatherText.textContent=tehranWeatherLabel(cityAtmosphere);
+    void cityWeatherService.refreshIfDue();
+  }
+  const { sunAngle, day, dusk } = cityAtmosphere.sky;
   const sunDir = new THREE.Vector3(Math.cos(sunAngle) * 0.6, Math.sin(sunAngle), -0.8).normalize();
   const moonDir = new THREE.Vector3(-sunDir.x, -sunDir.y, sunDir.z).normalize();
   sun.position.copy(sunDir).multiplyScalar(95);
@@ -1957,7 +1981,7 @@ function animate() {
   moon.visible = day < 0.6;
   const dayTop = new THREE.Color(0x5a8fc8), nightTop = new THREE.Color(0x04060f);
   const dayBottom = new THREE.Color(0xcfe0ee), nightBottom = new THREE.Color(0x141b2e), duskBottom = new THREE.Color(0xe39a64);
-  skyUniforms.top.value.copy(nightTop).lerp(dayTop, day);
+  skyUniforms.top.value.copy(nightTop).lerp(dayTop, day).multiplyScalar(1-(cityAtmosphere.weather?.cloudCover??0)*.0025);
   skyUniforms.bottom.value.copy(nightBottom).lerp(dayBottom, day).lerp(duskBottom, dusk * 0.7);
   scene.fog.color.copy(skyUniforms.bottom.value).multiplyScalar(0.8);
   starMat.opacity = clamp01(1 - day * 1.6) * 0.85;
@@ -1970,8 +1994,8 @@ function animate() {
   viewFill.intensity = lighting.fill;
   viewFill.position.copy(camera.position);
   viewFill.target.position.copy(controls.target);
-  town.update(day, t, citizens.crossingDemand());
-  clouds.forEach((c, i) => { c.position.x += dt * (0.4 + i * 0.05); if (c.position.x > 70) c.position.x = -70; c.material.opacity = 0.15 + day * 0.45; });
+  town.update(day, t, citizens.crossingDemand(), cityAtmosphere.weather);
+  clouds.forEach((c, i) => { c.position.x += dt * (0.4 + i * 0.05); if (c.position.x > 70) c.position.x = -70; c.material.opacity = cityAtmosphere.weather ? (0.08+cityAtmosphere.weather.cloudCover*.006) : (0.15+day*.45); });
 
   // --- room lights: the whole home is lit while the writer is awake, dark when it sleeps
   const awake = !state.asleep;

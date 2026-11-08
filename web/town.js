@@ -204,14 +204,14 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
     districts,
     growth,
     trafficState(){return carLayer.trafficState();},
-    update(day, elapsed, crossingDemand=false) {
+    update(day, elapsed, crossingDemand=false, weather=null) {
       const lighting = nightLighting(day);
       lamps.forEach((light) => { light.intensity = lighting.street; });
       glass.emissiveIntensity = 0.05 + (1 - day) * 0.8;
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
       districts.update(day,elapsed);
-      growth.update(day,elapsed);
+      growth.update(day,elapsed,weather);
       carLayer.setCrossingDemand(crossingDemand===true);
       carLayer.update(day, elapsed);
     },

@@ -225,7 +225,7 @@ export function buildCityGrowth({THREE,group,clickable,canvasTex,places=[],stree
  });
  const precipitation=new THREE.Points(precipitationGeo,weatherMat);
  precipitation.name="lightweight-weather-particles";root.add(precipitation);
- function update(day=1,elapsed=0){
+ function update(day=1,elapsed=0,weather=null){
    const night=1-Math.max(0,Math.min(1,day));
    windows.emissiveIntensity=.04+night*.85;
    glass.emissiveIntensity=.03+night*.2;
@@ -238,12 +238,18 @@ export function buildCityGrowth({THREE,group,clickable,canvasTex,places=[],stree
    }
    for(let i=0;i<cats.length;i++)cats[i].tail.rotation.z=-.4+
      Math.sin(elapsed*1.6+i)*.12;
-   // Weather cycle remains illustrative; it does not alter the actual local forecast.
-   precipitation.visible=(Math.floor(elapsed/90)%4===2);
+   // Only actual Tehran weather activates the shared 96-particle layer.
+   // A missing/stale response means NO invented rain or snow.
+   const kind=weather?.precipitationType;
+   precipitation.visible=kind==="rain"||kind==="snow";
    if(precipitation.visible){
+     const rain=kind==="rain";
+     weatherMat.color.setHex(rain?0x9fbccd:0xe9edf1);
+     weatherMat.size=rain?.115:.19;
      const a=precipitationGeo.attributes.position;
+     const drift=(elapsed*(rain?8:1.2))%30;
      for(let i=0;i<snowCount;i++){
-       a.setY(i,Y(2+(i*17+900-elapsed*.7)%30));
+       a.setY(i,Y(2+(i*17+900-drift)%30));
      }
      a.needsUpdate=true;
    }
