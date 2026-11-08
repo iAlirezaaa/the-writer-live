@@ -552,9 +552,9 @@ for (const [x, z] of [[0.55, -2.6], [2.25, -2.6], [0.55, -1.9], [2.25, -1.9]]) b
 box(0.45, 0.5, 0.7, M.darkWood, 2.0, 0.42, -2.25);
 // A working folio makes the desk feel used: leather blotter, loose manuscript,
 // ruled notes, a brass clip and a small ink bottle beside the writer's hand.
-const deskBlotter = box(0.72, 0.025, 0.56, new THREE.MeshStandardMaterial({ color: 0x594236, roughness: 0.92 }), 1.38, 0.795, -2.22);
+const deskBlotter = box(0.72, 0.025, 0.56, new THREE.MeshStandardMaterial({ color: 0x594236, roughness: 0.92 }), 1.48, 0.795, -2.15);
 deskBlotter.rotation.y = -0.035;
-const writingPage = new THREE.Group(); writingPage.position.set(1.38, 0.814, -2.22); writingPage.rotation.y = -0.035; scene.add(writingPage);
+const writingPage = new THREE.Group(); writingPage.position.set(1.48, 0.814, -2.15); writingPage.rotation.y = -0.035; scene.add(writingPage);
 const manuscriptSheet = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.012, 0.52), M.paper);
 manuscriptSheet.receiveShadow = true; writingPage.add(manuscriptSheet);
 const manuscriptLines = [];
@@ -571,6 +571,18 @@ folioClip.position.set(0.155, 0.01, -0.23); writingPage.add(folioClip);
 const inkBottle = mesh(new THREE.CylinderGeometry(0.032, 0.036, 0.075, 12),
   new THREE.MeshStandardMaterial({ color: 0x253c4b, roughness: 0.35, metalness: 0.08 }), 1.73, 0.84, -2.45);
 mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.018, 12), M.brass, 1.73, 0.887, -2.45);
+// A compact keyboard and a worn mouse pad make the research/writing station
+// read as a lived-in tool rather than a bare monitor on a table.
+const keyboardKeys = [];
+box(0.56, 0.025, 0.19, new THREE.MeshStandardMaterial({ color: 0x393633, roughness: 0.7 }), 1.36, 0.80, -2.50);
+for (let row = 0; row < 3; row++) for (let col = 0; col < 12; col++) {
+  const key = box(0.032, 0.014, 0.034, new THREE.MeshStandardMaterial({ color: (row + col) % 5 ? 0x80796e : 0x9a7345, roughness: 0.68 }),
+    1.105 + col * 0.046, 0.819, -2.555 + row * 0.05, { cast: false });
+  keyboardKeys.push(key);
+}
+box(0.20, 0.012, 0.15, new THREE.MeshStandardMaterial({ color: 0x6c5542, roughness: 0.98 }), 1.84, 0.788, -2.50, { cast: false });
+const mouse = mesh(new THREE.SphereGeometry(0.055, 16, 12), new THREE.MeshStandardMaterial({ color: 0x544d43, roughness: 0.62 }), 1.84, 0.83, -2.50);
+mouse.scale.set(0.75, 0.48, 1.15);
 // monitor with a live screen
 const screenCanvas = document.createElement("canvas");
 screenCanvas.width = 512; screenCanvas.height = 300;
@@ -1961,6 +1973,12 @@ function animate() {
     foreArmL.rotation.x += Math.sin(t * 15.5) * 0.045 * (typing > -0.35 ? 1 : 0.22);
     foreArmR.rotation.x += Math.cos(t * 14.2) * 0.05 * (typing < 0.35 ? 1 : 0.22);
     foreArmL.rotation.z += Math.sin(t * 4.2 + 1.1) * 0.018;
+    keyboardKeys.forEach((key, i) => {
+      const press = Math.max(0, Math.sin(t * 12 + i * 2.1));
+      key.position.y = 0.819 - press * 0.004;
+    });
+  } else {
+    keyboardKeys.forEach((key) => { key.position.y += (0.819 - key.position.y) * Math.min(1, dt * 8); });
   }
   if (settled && pose === POSES.write) {
     const stroke = Math.sin(t * 8.5);
@@ -1975,8 +1993,8 @@ function animate() {
   } else {
     manuscriptLines.forEach((line) => { line.visible = false; });
     writingPage.rotation.z += (0 - writingPage.rotation.z) * Math.min(1, dt * 1.5);
+    foreArmR.rotation.z = 0;
   }
-  else foreArmR.rotation.z = 0;
   head.rotation.x = cur.head + (settled && pose === POSES.write ? Math.max(0, Math.sin(t * 0.8)) * 0.035 : 0);
   // at the desk the eyes stay near the page; standing at the window they wander
   const deskFocus = settled && (pose === POSES.type || pose === POSES.write || pose === POSES.screenread);
