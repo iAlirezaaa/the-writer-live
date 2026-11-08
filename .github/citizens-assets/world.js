@@ -1250,6 +1250,13 @@ writerInteriorWorldRoot.name = "writer-interior-street-level";
 writerInteriorWorldRoot.position.y = STREET_Y;
 scene.add(writerInteriorWorldRoot);
 for (const node of interiorSceneObjects) writerInteriorWorldRoot.add(node);
+// The two architectural shell groups were created BEFORE citySceneBaseline,
+// so they are deliberately absent from interiorSceneObjects. Reparent BOTH
+// shells explicitly, or their walls remain at world Y=0 while the floor and
+// character are lowered to STREET_Y.
+writerInteriorWorldRoot.add(baseWriterRoomShell);
+writerInteriorWorldRoot.add(expandedWriterRoomShell);
+writerInteriorWorldRoot.updateMatrixWorld(true);
 // Dynamic room props created later must use the same grounded coordinate frame.
 writerMeshParent = writerInteriorWorldRoot;
 const writerExterior = new THREE.Group();
