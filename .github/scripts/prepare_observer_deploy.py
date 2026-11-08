@@ -11,7 +11,7 @@ from shutil import copy2
 import sys
 
 VERSION="observatory-20261108-v4"
-WORLD_VERSION="city-world-20261109-v1"
+WORLD_VERSION="city-world-20261109-v2"
 READER_VERSION="observatory-20261108-v2"
 ROOT=Path(".github/observer-assets")
 
