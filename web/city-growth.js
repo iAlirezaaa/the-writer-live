@@ -95,7 +95,15 @@ export function buildCityGrowth({THREE,group,clickable,canvasTex,places=[],stree
    box(b.w+.34,.32,b.d+.34,roof,0,12.18,0,parent);
    box(b.w+.18,.19,b.d+.18,stone,0,.10,0,parent);
    box(1.15,2.22,.15,entryMat,0,1.11,b.z===-16?-b.d/2-.10:b.d/2+.10,parent);
-   box(2.0,.10,2.4,stone,b.x, Y(.06),b.z===-16?b.z-4.24:b.z+4.24);
+   // Reach the actual asphalt edge (z = -24.5 +/- road half-width), rather than
+   // stopping ~1.06 scene units short. Keep one path mesh per house.
+   const eastRoadZ=-24.5, eastRoadHalfWidth=2;
+   const roadEdge=b.z===-16?eastRoadZ+eastRoadHalfWidth:eastRoadZ-eastRoadHalfWidth;
+   const doorFace=b.z+(b.z===-16?-b.d/2-.08:b.d/2+.08);
+   const pathMin=Math.min(roadEdge,doorFace)-.15;
+   const pathMax=Math.max(roadEdge,doorFace)+.15;
+   const walk=box(2.0,.10,pathMax-pathMin,stone,b.x,Y(.06),(pathMin+pathMax)/2);
+   walk.name="housing-walk-"+b.id;
    for(let f=0;f<4;f++)for(let k=0;k<4;k++){
      const x=b.x+(-2.1+k*1.4),y=Y(.95+f*wallFloor+1.02);
      const z=b.z+(b.z===-16?-b.d/2-.10:b.d/2+.10);
