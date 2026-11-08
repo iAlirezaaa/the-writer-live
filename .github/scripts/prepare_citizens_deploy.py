@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import sys
 
-VERSION = "citizens-20261108-v2"
+VERSION = "citizens-20261108-v3"
 
 
 def patch_site(root: Path) -> None:
@@ -21,6 +21,8 @@ def patch_site(root: Path) -> None:
         'export function createCitizens' in sources["citizens.js"],
         'setPublisherProfile' in sources["citizens.js"],
         'function paintRoute' in sources["citizens.js"],
+        'cos*dx-sin*dz' in sources["citizens.js"],
+        'sin*dx+cos*dz' in sources["citizens.js"],
         'function crossingDemand' in sources["citizens.js"],
         'crossingOwner' in sources["citizens.js"],
         'citizens.crossingDemand()' in sources["world.js"],
