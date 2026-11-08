@@ -11,7 +11,7 @@ import re
 import sys
 
 
-VERSION = "reader-20261108-v3"
+VERSION = "reader-20261108-v4"
 
 
 def patch_site(root: Path) -> None:
@@ -28,6 +28,12 @@ def patch_site(root: Path) -> None:
         "makeCover(" in reader,
         f'./book.js?v={VERSION}' in reader,
         "Reading experience v2" in css,
+        "Reading room v4: definitive RTL viewport grid fix" in css,
+        "grid-template-rows:max-content minmax(0,1fr) max-content" in css,
+        'font-family: "Vazir"' in css,
+        '"vazir-classic"' in book,
+        '"turn-prev", "→"' in book,
+        '"turn-next", "←"' in book,
         f"read.js?v={VERSION}" in html,
         "overlay.dataset.readerTheme" in book,
     ]):
