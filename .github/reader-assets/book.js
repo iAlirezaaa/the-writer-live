@@ -20,7 +20,7 @@ const MARGIN_STATE_FA = {
   suspect: "مردود: با متن نمی‌خواند",
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v3";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -76,8 +76,8 @@ function build() {
     return select;
   }
   const fontSelect=picker("قلم فارسی",[
-    ["naskh","نسخ · Noto Naskh"],["vazir","وزیرمتن · Vazirmatn"],
-    ["amiri","امیری · Amiri"]
+    ["vazir-classic","وزیر · Vazir"],["vazir","وزیرمتن · Vazirmatn"],
+    ["naskh","نسخ · Noto Naskh"],["amiri","امیری · Amiri"]
   ]);
   const leadingSelect=picker("فاصلهٔ خطوط",[
     ["compact","فشرده"],["normal","معمولی"],["airy","باز"]
@@ -107,8 +107,14 @@ function build() {
   const pageR = el("div", "page page-right");
   const pageL = el("div", "page page-left");
   bookEl.append(pageR, pageL);           // RTL: the first page of a spread is on the right
-  const prev = el("button", "turn turn-prev", "›"); prev.setAttribute("aria-label", "صفحه‌ی قبل");
-  const next = el("button", "turn turn-next", "‹"); next.setAttribute("aria-label", "صفحه‌ی بعد");
+  // Persian RTL book: right-hand arrow returns to the previous page;
+  // left-hand arrow moves forward. Grid explicitly anchors their sides.
+  const prev = el("button", "turn turn-prev", "→");
+  prev.setAttribute("aria-label", "صفحهٔ قبل، سمت راست");
+  prev.title="صفحهٔ قبل · کلید پیکان راست";
+  const next = el("button", "turn turn-next", "←");
+  next.setAttribute("aria-label", "صفحهٔ بعد، سمت چپ");
+  next.title="صفحهٔ بعد · کلید پیکان چپ";
   shelf.append(prev, bookEl, next);
   const footer = el("div", "book-footer");
   const counter = el("span", "book-counter");
@@ -207,10 +213,13 @@ function build() {
 }
 
 const READER_DEFAULTS=Object.freeze({
-  fontSize:1.06,fontFamily:"naskh",theme:"paper",leading:"normal",
+  fontSize:1.06,fontFamily:"vazir-classic",theme:"paper",leading:"normal",
   align:"justify",mode:"auto",focus:false
 });
-const READER_FONTS={naskh:'"Noto Naskh Arabic"',vazir:'"Vazirmatn"',amiri:'"Amiri"'};
+const READER_FONTS={
+  naskh:'"Noto Naskh Arabic"',vazir:'"Vazirmatn"',
+  "vazir-classic":'"Vazir"',amiri:'"Amiri"'
+};
 let syncTimer=null;
 let syncQueue=Promise.resolve();
 const opt=(value,accepted,fallback)=>accepted.includes(value)?value:fallback;
@@ -235,7 +244,7 @@ function applyReaderAppearance(){
   if(!ui||!book)return;
   const v=book;
   v.fontSize=Math.max(.85,Math.min(1.65,Number(v.fontSize)||1.06));
-  v.fontFamily=opt(v.fontFamily,["naskh","vazir","amiri"],"naskh");
+  v.fontFamily=opt(v.fontFamily,["naskh","vazir","vazir-classic","amiri"],"vazir-classic");
   v.theme=opt(v.theme,["paper","night","ink"],"paper");
   v.leading=opt(v.leading,["compact","normal","airy"],"normal");
   v.align=opt(v.align,["justify","right"],"justify");
@@ -605,6 +614,10 @@ function repaginate() {
   const r = ui.pageR.getBoundingClientRect();
   ui.measure.style.width = `${r.width}px`;
   ui.measure.style.height = `${r.height}px`;
+  // Match the *actual* responsive page padding before measuring paragraphs.
+  // Otherwise the hidden measuring page overestimates capacity and silently
+  // clips several lines at the bottom of a real page.
+  ui.measure.style.padding = getComputedStyle(ui.pageR).padding;
   const text = storyParagraphs().map((t, i) => ({ text: t, index: i }));
   book.pages = [titlePage(), ...paginate(text, "body")];
   const report = checkLines();
