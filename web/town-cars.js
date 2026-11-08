@@ -20,7 +20,7 @@ export function buildTownCars({ THREE, city, streetY }) {
   const headGlow=new THREE.MeshBasicMaterial({color:0xfff1ce});
   const beamMaterial=new THREE.MeshBasicMaterial({color:0xffe8ac,transparent:true,opacity:.055,depthWrite:false,side:THREE.DoubleSide});
   const tailLight=material(0xc35b53,{emissive:0xa12620,emissiveIntensity:.25});
-  const indicator=material(0xffb34e,{emissive:0xff8b16,emissiveIntensity:0});
+  const indicator=material(0xffb34e,{emissive:0xff8b16,emissiveIntensity:1.5});
   const brake=material(0xe0524d,{emissive:0xff1711,emissiveIntensity:.2});
   const plate=material(0xe2ded2,{roughness:.8});
   const deliveryStripe=material(0xf2d6a1,{roughness:.75});
@@ -303,8 +303,10 @@ export function buildTownCars({ THREE, city, streetY }) {
   }
   // Separate pedestrian-request signals at the existing upper crosswalk.
   const crossingLights=[];
+  // Keep posts behind the public footpath at z=11.3; that route is reserved
+  // for citizens and must not intersect any traffic-signal furniture.
   for(const x of [-2.8,2.8]){
-    const g=new THREE.Group();g.position.set(x,streetY,11.12);fleet.add(g);
+    const g=new THREE.Group();g.position.set(x,streetY,13.25);fleet.add(g);
     addBox(g,frame,.12,2.65,.12,0,1.32,0);
     addBox(g,trim,.34,.8,.3,0,2.78,0);
     crossingLights.push({r:makeLight(g,0,2.95,.18),
@@ -355,11 +357,20 @@ export function buildTownCars({ THREE, city, streetY }) {
           for(const other of vehicles){
             if(car===other)continue;
             const q=sample(other.route,other.progress);
-            const facing=p.dx*q.dx+p.dz*q.dz;
-            if(facing<-.35)continue; // legal opposing lanes
-            const gap=Math.hypot(p.x-q.x,p.z-q.z);
-            const safe=(car.model.profile.len+other.model.profile.len)*.5+.46;
-            if(gap<safe){step=0;break;}
+            // Only stop for a real leader in the same travel lane.
+            // Cross-road right-of-way is controlled at traffic-light nodes;
+            // global radial collision tests created four-way gridlock.
+            const align=p.dx*q.dx+p.dz*q.dz;
+            if(align>.86){
+              const dx=q.x-p.x,dz=q.z-p.z;
+              const forward=dx*p.dx+dz*p.dz;
+              const lateral=Math.abs(-dx*p.dz+dz*p.dx);
+              const headway=(car.model.profile.len+
+                other.model.profile.len)*.5+.72;
+              if(lateral<.73 && forward>=0 && forward<headway){
+                step=0;break;
+              }
+            }
           }
         }
         car.model.braking=step<car.speed*dt*.65;
