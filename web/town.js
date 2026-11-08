@@ -1,5 +1,3 @@
-import { buildTownCars } from "./town-cars.js";
-
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
   { key: "publisher", label: "دفتر ناشر", x: -10, z: 0, w: 6, d: 6 },
@@ -177,7 +175,26 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   }
   const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
-  const carLayer=buildTownCars({THREE,city:group,streetY:STREET_Y});
+  const cars = [];
+  function car(x, z, direction, color) {
+    const root = new THREE.Group(); root.position.set(x, STREET_Y - 0.03, z); group.add(root);
+    const paint = material(`car-${color}`, color, { metalness: 0.28, roughness: 0.42 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.62, 1.12), paint); body.position.y = 0.46; root.add(body);
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.56, 0.92), darkWood); cabin.position.set(-0.08, 1.0, 0); root.add(cabin);
+    for (const side of [-1, 1]) {
+      const pane = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.33, 0.025), glass); pane.position.set(-0.08, 1.04, side * 0.47); root.add(pane);
+      for (const dx of [-0.72, 0.72]) {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.16, 12), metal);
+        wheel.rotation.z = Math.PI / 2; wheel.position.set(dx, 0.26, side * 0.53); root.add(wheel);
+      }
+    }
+    for (const xLight of [-0.99, 0.99]) {
+      const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.08), bulbMat);
+      lamp.position.set(xLight * direction, 0.52, 0); root.add(lamp);
+    }
+    cars.push({ root, direction, startX: x, speed: 2.0 + cars.length * 0.35 });
+  }
+  car(-18, 8.5, 1, 0x7b5146); car(14, -8.5, -1, 0x58726e); car(2, 8.5, 1, 0xb18a4f);
   return {
     group,
     update(day, elapsed) {
@@ -186,7 +203,11 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       glass.emissiveIntensity = 0.05 + (1 - day) * 0.8;
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
-      carLayer.update(day,elapsed);
+      for (const vehicle of cars) {
+        const span = 58;
+        const progress = ((vehicle.startX + elapsed * vehicle.speed * vehicle.direction + span / 2) % span + span) % span;
+        vehicle.root.position.x = progress - span / 2;
+      }
     },
   };
 }
