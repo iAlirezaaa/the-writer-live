@@ -905,6 +905,7 @@ export function initObjects(context) {
 
 export function closeInspect(resetView) {
   openKey = null;
+  ctx?.citizenSelect?.(null);
   if (card) card.hidden = true;
   if (resetView && ctx?.setFocus) ctx.setFocus(null);
 }
@@ -913,8 +914,46 @@ export function currentObject() { return openKey; }
 
 export async function inspect(mesh, point) {
   if (!ctx) return;
-  const key = mesh.userData.view || PANEL_VIEW[mesh.userData.panel] || "status";
-  const src = SOURCES[key] || SOURCES.status;
+  const citizenId=mesh.userData.citizenId;
+  const citizen=citizenId?ctx.citizenStatus?.().find(p=>p.id===citizenId):null;
+  ctx?.citizenSelect?.(citizenId||null);
+  const key = citizen ? "citizen:"+citizenId : (mesh.userData.view || PANEL_VIEW[mesh.userData.panel] || "status");
+  const src = citizen ? {
+    title:citizen.label,
+    hint:"هویت داستانی این شهروند · شواهد و روتین، نه مکالمهٔ زنده",
+    async render(){
+      const core=citizen.core?.core||{};
+      const appearance=citizen.core?.appearance||{};
+      const route=citizen.route||[];
+      const upcoming=route.length?route.map(p=>`(${p.x.toFixed(1)}, ${p.z.toFixed(1)})`).slice(0,7).join(" ← "):"اکنون در مقصد";
+      const social=citizen.core?.capabilities||{};
+      const isPublisher=citizen.role==="publisher";
+      return [
+        cell("h4","grp",isPublisher?"ناشر · هویتِ مستقل":"هستهٔ شخصیت"),
+        kv([["نام",citizen.label],["پیشه",citizen.role],["ارزش محوری",core.value],
+          ["ضعف",core.flaw],["خواست درونی",core.desire],
+          ["عادت",core.habit],["لحن",core.temperament],
+          ["ویژگی ظاهری",appearance.silhouette],
+          ["وسیلهٔ اختصاصی",appearance.accessory]]),
+        cell("h4","grp","زندگی روزمره"),
+        cell("p","small",citizen.story||""),
+        kv([["رفتار فعلی",citizen.activity],["مقصد",citizen.destination],
+          ["مسیر حرکت",upcoming],["آرشیو انیمیشن",citizen.animation_archive]]),
+        ...(isPublisher?[
+          cell("h4","grp","حافظهٔ تحریریه و یادگیری"),
+          kv([["جلسه‌های بازنویسیِ ثبت‌شده",citizen.publisher?.learning?.episodes??0],
+            ["سابقهٔ واقعی",citizen.publisher?.public_proxy?"در نسخهٔ عمومی نمایش داده نمی‌شود":"در دفتر ناشر ثبت می‌شود"]]),
+          list((citizen.publisher?.learning?.recent||[]).slice(0,5).map(lesson=>
+            row(`داستان ${lesson.story_id} · تغییر امتیاز ${lesson.delta>0?"+":""}${lesson.delta}`,
+              lesson.lesson||"ارزیابی نسخهٔ تازه")))
+        ]:[]),
+        cell("h4","grp","قابلیت‌های آینده"),
+        kv([["گفت‌وگو",isPublisher?"از طریق سیستم مستقل ناشر":"غیرفعال"],
+            ["حافظه",isPublisher?"سوابق واقعی ناشر":"غیرفعال"],
+            ["کنترل مستقل",isPublisher?"رفتار محدود به ناشر":"غیرفعال"]])
+      ];
+    }
+  } : (SOURCES[key] || SOURCES.status);
   openKey = key;
   if (!card) buildCard();
   card.hidden = false;
