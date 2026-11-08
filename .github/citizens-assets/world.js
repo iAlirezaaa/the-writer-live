@@ -1245,13 +1245,14 @@ function rebuildWriterExterior(level=0){
   exteriorPart(new THREE.BoxGeometry(1.25,.13,.72),exteriorPath,-.65,STREET_Y+.08,d/2+.39);
   // A pedestrian approach and planted front setbacks, no private parking at level zero.
   exteriorPart(new THREE.BoxGeometry(1.25,.075,6.55-d/2),exteriorPath,-.65,STREET_Y+.035,(6.55+d/2)/2);
-  for(const x of [-3.35,3.35]){
+  for(const x of [-1,1].map(side=>side*(w/2+.55))){
     exteriorPart(new THREE.BoxGeometry(.5,.12,4.8),exteriorGreen,x,STREET_Y+.07,0);
   }
   if(level>=3){
-    exteriorPart(new THREE.BoxGeometry(1.6,.08,2.5),exteriorPath,3.1,STREET_Y+.035,4.1);
+    exteriorPart(new THREE.BoxGeometry(1.6,.08,2),exteriorPath,3.45,STREET_Y+.035,4.2);
+    exteriorPart(new THREE.BoxGeometry(1.6,.06,1.5),exteriorPath,3.45,STREET_Y+.025,5.95);
   }
-  const hit=exteriorPart(new THREE.BoxGeometry(w, h+.6,d+.15),new THREE.MeshBasicMaterial({visible:false}),0,STREET_Y+(h+.6)/2,0);
+  const hit=exteriorPart(new THREE.BoxGeometry(w, h+.6,d+.15),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,STREET_Y+(h+.6)/2,0);
   hit.userData.writerExterior=true;
   clickable(hit,"p-status","خانهٔ نویسنده — ورود به اتاق");
   // Front door remains independently clickable for assistive scene inspection.
