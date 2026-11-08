@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>کتابخانه‌ی داستان‌ها</title>
+  <link rel="stylesheet" href="../web/style.css">
+  <link rel="stylesheet" href="../web/book.css">
+</head>
+<body class="reader-page">
+  <header class="top">
+    <div>
+      <h1>داستان‌های نویسنده</h1>
+      <p id="reader-note" class="muted small">داستان‌ها را باز کنید، بخوانید، و روی هر بخش از متن نظر بگذارید. در نسخهٔ محلی، نوشته‌های ردشده هم برای مرور نویسنده نمایش داده می‌شوند.</p>
+    </div>
+    <a id="home-link" href="/">اتاق نویسنده</a>
+  </header>
+  <main class="grid">
+    <section class="card">
+      <div class="reader-shelf-tools" aria-label="جست‌وجو و مرتب‌سازی کتاب‌ها">
+        <label class="reader-search-label">جست‌وجو <input id="story-search" type="search" placeholder="عنوان یا مرحلهٔ داستان"></label>
+        <label>وضعیت <select id="story-status"><option value="all">همهٔ داستان‌ها</option><option value="accepted">پذیرفته‌شده‌ها</option><option value="rejected">ردشده‌ها</option></select></label>
+        <label>مرتب‌سازی <select id="story-sort"><option value="newest">تازه‌ترین</option><option value="oldest">قدیمی‌ترین</option><option value="title">عنوان</option><option value="score">امتیاز</option></select></label>
+        <span id="shelf-count" class="muted small" role="status"></span>
+      </div>
+      <div class="covers" id="covers"></div>
+    </section>
+  </main>
+  <script type="module" src="../web/read.js"></script>
+</body>
+</html>

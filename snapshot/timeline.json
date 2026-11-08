@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "total": 1
+  },
+  "events": [
+    {
+      "at": "2026-11-06T23:45:06",
+      "id": "first:accepted-story",
+      "importance": 3,
+      "kind": "first",
+      "source": "public milestone",
+      "title": "اولین داستان پذیرفته‌شده"
+    }
+  ],
+  "next": null,
+  "updated": "2026-11-07T01:48:02"
+}

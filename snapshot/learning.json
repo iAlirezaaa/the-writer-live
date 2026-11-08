@@ -1,0 +1,20 @@
+{
+  "achievements": {
+    "done": 3,
+    "total": 39
+  },
+  "skills": [
+    {
+      "label_fa": "روان‌شناسی شخصیت",
+      "next": "مبانی را از سه منبع متفاوت بخوان",
+      "pct": 6.0,
+      "sessions": 1,
+      "status": "learning"
+    }
+  ],
+  "stats": {
+    "adopted": 0,
+    "learning": 1,
+    "sessions_total": 1
+  }
+}

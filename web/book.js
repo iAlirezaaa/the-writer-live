@@ -19,15 +19,11 @@ const MARGIN_STATE_FA = {
   unverified: "جای گذاره پیدا شد؛ ادعا سنجیده نشده",
   suspect: "مردود: با متن نمی‌خواند",
 };
+import { getJSON, isGitHubPages } from "./snapshot.js";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
 
-async function getJSON(url, opts) {
-  const r = await fetch(url, opts);
-  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
-  return r.json();
-}
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const normalize = (s) => s.replace(/\s+/g, " ").trim();
 const ownerToken = () => { try { return sessionStorage.getItem("the-writer-owner-token") || ""; } catch { return ""; } };
@@ -49,8 +45,11 @@ function build() {
   const title = el("span", "book-bar-title");
   const tools = el("div", "book-tools");
   const marginBtn = el("button", "", "حاشیه‌ها");
+  const smallerBtn = el("button", "reader-font", "A−"); smallerBtn.title = "کوچک‌تر کردن نوشته"; smallerBtn.setAttribute("aria-label", smallerBtn.title);
+  const largerBtn = el("button", "reader-font", "A+"); largerBtn.title = "بزرگ‌تر کردن نوشته"; largerBtn.setAttribute("aria-label", largerBtn.title);
+  const find = el("input", "reader-find"); find.type = "search"; find.placeholder = "جست‌وجو در کتاب"; find.setAttribute("aria-label", find.placeholder);
   const closeBtn = el("button", "", "بستن");
-  tools.append(marginBtn, closeBtn);
+  tools.append(marginBtn, smallerBtn, largerBtn, find, closeBtn);
   bar.append(title, tools);
   const shelf = el("div", "book-shelf");
   const bookEl = el("div", "book");
@@ -62,7 +61,9 @@ function build() {
   shelf.append(prev, bookEl, next);
   const footer = el("div", "book-footer");
   const counter = el("span", "book-counter");
-  footer.append(counter);
+  const progress = el("input", "book-progress"); progress.type = "range"; progress.min = "0"; progress.max = "100"; progress.value = "0"; progress.setAttribute("aria-label", "رفتن به بخش دیگری از کتاب");
+  const bookmark = el("button", "book-bookmark", "نشانک");
+  footer.append(progress, counter, bookmark);
   const margin = el("aside", "book-margin"); margin.hidden = true;
   const selBtn = el("button", "sel-note", "نظر روی این بخش"); selBtn.hidden = true;
   const pop = el("form", "note-pop"); pop.hidden = true;
@@ -80,15 +81,22 @@ function build() {
   overlay.append(bar, shelf, footer, margin, selBtn, pop, measure);
   document.body.appendChild(overlay);
 
-  ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, margin, marginBtn, closeBtn, selBtn, pop, popQuote, popName, popText, popStatus, popCancel, measure };
+  ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark, find, margin, marginBtn, closeBtn, selBtn, pop, popQuote, popName, popText, popStatus, popCancel, measure };
 
   closeBtn.addEventListener("click", close);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
   prev.addEventListener("click", () => turn(-1));
   next.addEventListener("click", () => turn(1));
   marginBtn.addEventListener("click", () => { margin.hidden = !margin.hidden; marginBtn.setAttribute("aria-pressed", String(!margin.hidden)); });
+  smallerBtn.addEventListener("click", () => adjustFont(-0.08));
+  largerBtn.addEventListener("click", () => adjustFont(0.08));
+  progress.addEventListener("change", () => { if(!book)return;const per=spread(),fraction=Number(progress.value)/100;book.index=Math.min(Math.floor(fraction*Math.max(0,book.pages.length-1)/per)*per,Math.max(0,book.pages.length-per));show(); });
+  bookmark.addEventListener("click", toggleBookmark);
+  find.addEventListener("keydown", e => { if(e.key==="Enter"){e.preventDefault();findText(find.value);} });
   document.addEventListener("keydown", (e) => {
-    if (overlay.hidden || e.target.closest?.("input, textarea")) return;
+    if (overlay.hidden) return;
+    if ((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();ui.find.focus();ui.find.select();return;}
+    if (e.target.closest?.("input, textarea")) return;
     if (e.key === "Escape") close();
     if (e.key === "ArrowLeft") turn(1);
     if (e.key === "ArrowRight") turn(-1);
@@ -119,12 +127,42 @@ export async function openBook(storyId) {
     getJSON(`/api/stories/${encodeURIComponent(storyId)}`),
     getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(() => []),
   ]);
-  book = { story, comments: notes, pages: [], index: 0, turning: null, repaginateLater: false };
+  const saved=readProgress(storyId);
+  const resumeProgress=saved?.progress||0;
+  book = { story, comments: notes, pages: [], index: 0, turning: null, repaginateLater: false, fontSize:saved?.fontSize||1.06, bookmark:saved?.bookmark??null, progress:0 };
   ui.title.textContent = story.title;
   ui.overlay.hidden = false;
   document.body.classList.add("book-open");
+  ui.overlay.style.setProperty("--reader-font", `${book.fontSize}rem`);
   renderMargin();
   repaginate();
+  if(resumeProgress>0){const per=spread();book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,Math.max(0,book.pages.length-per));show();}
+}
+
+function readProgress(id=book?.story?.id){
+  if(!id)return null;
+  try{return JSON.parse(localStorage.getItem(`the-writer-reading:${id}`)||"null");}catch{return null;}
+}
+function writeProgress(){
+  if(!book)return;
+  const progress=book.pages.length<=1?0:book.index/(book.pages.length-1);
+  book.progress=progress;
+  try{localStorage.setItem(`the-writer-reading:${book.story.id}`,JSON.stringify({progress,bookmark:book.bookmark,fontSize:book.fontSize,updated:new Date().toISOString()}));}catch{}
+}
+function adjustFont(delta){
+  if(!book)return;
+  const anchor=anchorOf(book.pages[book.index]);book.fontSize=Math.max(.9,Math.min(1.42,Math.round((book.fontSize+delta)*100)/100));
+  ui.overlay.style.setProperty("--reader-font",`${book.fontSize}rem`);repaginate();
+  if(anchor){book.index=locate(anchor,spread());show();}
+}
+function toggleBookmark(){
+  if(!book)return;
+  if(book.bookmark===book.index)book.bookmark=null;
+  else if(book.bookmark!=null){book.index=Math.min(book.bookmark,Math.max(0,book.pages.length-spread()));show();}
+  else book.bookmark=book.index;
+  if(book.bookmark==null){ui.bookmark.textContent="ثبت نشانک";ui.bookmark.setAttribute("aria-pressed","false");}
+  else{ui.bookmark.textContent=book.bookmark===book.index?"نشانک اینجاست":"بازگشت به نشانک";ui.bookmark.setAttribute("aria-pressed",String(book.bookmark===book.index));}
+  writeProgress();
 }
 
 function close() {
@@ -309,6 +347,11 @@ function show() {
   ui.next.disabled = book.index + per >= book.pages.length;
   const last = Math.min(book.pages.length, book.index + per);
   ui.counter.textContent = `صفحه‌ی ${book.index + 1}${per === 2 && last > book.index + 1 ? `–${last}` : ""} از ${book.pages.length}`;
+  ui.progress.value=String(Math.round(book.pages.length<=1?0:book.index/(book.pages.length-1)*100));
+  ui.progress.title=`پیشرفت مطالعه: ${ui.progress.value}٪`;
+  ui.bookmark.textContent=book.bookmark==null?"ثبت نشانک":book.bookmark===book.index?"نشانک اینجاست":"بازگشت به نشانک";
+  ui.bookmark.setAttribute("aria-pressed",String(book.bookmark===book.index));
+  writeProgress();
 }
 
 // ---------- turning ----------
@@ -401,6 +444,10 @@ function openNoteForm(quote) {
 }
 async function sendNote(e) {
   e.preventDefault();
+  if (isGitHubPages()) {
+    ui.popStatus.textContent = "نسخهٔ آنلاین فقط‌خواندنی است؛ نظرها را در نسخهٔ محلی ثبت کنید.";
+    return;
+  }
   const r = await fetch(`/api/stories/${encodeURIComponent(book.story.id)}/comments`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: ui.popName.value, text: ui.popText.value, quote: ui.pop.dataset.quote }),
@@ -500,4 +547,13 @@ function goToQuote(q) {
   const per = spread();
   book.index = Math.min(i - (i % per), Math.max(0, book.pages.length - per));
   show();
+}
+function findText(value){
+  const needle=normalize(value).toLocaleLowerCase("fa");if(!needle||!book)return;
+  const start=book.index+spread();
+  const order=[...Array(book.pages.length-start)].map((_,i)=>start+i).concat([...Array(start)].map((_,i)=>i));
+  const textAt=i=>normalize(book.pages[i]?.node.textContent||"").toLocaleLowerCase("fa");
+  const match=order.find(i=>textAt(i).includes(needle))??order.find(i=>textAt(i).includes(needle.slice(0,Math.min(12,needle.length))));
+  if(match==null){ui.find.setCustomValidity("این عبارت در کتاب پیدا نشد.");ui.find.reportValidity();setTimeout(()=>ui.find.setCustomValidity(""),1600);return;}
+  const per=spread();book.index=Math.floor(match/per)*per;show();
 }

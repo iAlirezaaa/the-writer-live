@@ -1,0 +1,69 @@
+{
+  "rows": [
+    {
+      "done": false,
+      "label": "امتیاز هشتاد",
+      "progress": 0.9275
+    },
+    {
+      "done": false,
+      "label": "امتیاز هشتاد‌وپنج",
+      "progress": 0.8729
+    },
+    {
+      "done": false,
+      "label": "امتیاز نود",
+      "progress": 0.8244
+    },
+    {
+      "done": false,
+      "label": "ویژگی پررنگ",
+      "progress": 0.6875
+    },
+    {
+      "done": false,
+      "label": "یک ساعت تحقیق",
+      "progress": 0.67
+    },
+    {
+      "done": false,
+      "label": "ویژگیِ تمام‌قد",
+      "progress": 0.55
+    },
+    {
+      "done": false,
+      "label": "پنج داستان پذیرفته‌شده",
+      "progress": 0.4
+    },
+    {
+      "done": false,
+      "label": "ده هزار کلمه",
+      "progress": 0.2602
+    },
+    {
+      "done": false,
+      "label": "پانزده داستان",
+      "progress": 0.1333
+    },
+    {
+      "done": false,
+      "label": "ده خواننده",
+      "progress": 0.1
+    },
+    {
+      "done": false,
+      "label": "ده ساعت تحقیق",
+      "progress": 0.067
+    },
+    {
+      "done": false,
+      "label": "چهل داستان",
+      "progress": 0.05
+    }
+  ],
+  "stats": {
+    "done": 3,
+    "pct": 8,
+    "total": 39
+  }
+}

@@ -7,20 +7,20 @@
   <title>جهان نویسنده — نمای سه‌بعدی</title>
   <link rel="stylesheet" href="./web/studio.css">
   <script type="importmap">
-  {"imports":{"three":"./web/three.module.js","three/addons/":"./web/"}}
+  {"imports":{"three":"./web/vendor/three.module.js","three/addons/":"./web/vendor/addons/"}}
   </script>
 </head>
 <body>
   <a class="skip" href="#world">رفتن به جهان نویسنده</a>
   <header class="topbar">
-    <a class="brand" href="#home" onclick="document.querySelector('[data-mode=home]').click();return false" aria-label="بازگشت به نمای خانه"><span class="brand-symbol" aria-hidden="true">✦</span><span>جهان نویسنده<small>THE WRITER · LIVING WORLD</small></span></a>
+    <a class="brand" href="#world" aria-label="بازگشت به نمای خانه"><span class="brand-symbol" aria-hidden="true">✦</span><span>جهان نویسنده<small>THE WRITER · LIVING WORLD</small></span></a>
     <nav class="primary-nav" aria-label="بخش‌های اصلی">
       <button type="button" data-mode="home" class="active" aria-pressed="true">خانه</button>
       <button type="button" data-mode="city" aria-pressed="false">شهر</button>
-      <button type="button" data-mode="timeline" aria-pressed="false">روتین روز</button>
-      <a href="#city" onclick="document.querySelector('[data-mode=city]').click();return false">دفتر ناشر و شهروندان</a>
+      <button type="button" data-mode="timeline" aria-pressed="false">زندگی‌نامه</button>
+      <a href="./read/">داستان‌ها</a>
     </nav>
-    <div class="top-status"><span class="alive" aria-hidden="true"></span><span id="writer-status">جهان نمایشی زنده</span><a class="old-view" href="#city">دیدن شهر</a></div>
+    <div class="top-status"><span class="alive" aria-hidden="true"></span><span id="writer-status">در حال دریافت وضعیت…</span><a class="old-view" href="./read/">خواندن داستان‌ها</a></div>
   </header>
 
   <main class="app" id="world">
@@ -44,10 +44,16 @@
     <aside class="side-panel" aria-label="جزئیات و فعالیت‌های نویسنده">
       <div class="aside-intro"><span class="live-label">در حال زندگی</span><div class="avatar" aria-hidden="true">✎</div><h2 id="writer-name">نویسنده</h2><p id="writer-activity">آخرین فعالیت به‌زودی نمایش داده می‌شود.</p></div>
       <div class="stats" aria-label="خلاصه وضعیت"><div><span>داستان‌ها</span><strong id="story-count">—</strong></div><div><span>انرژی</span><strong id="energy-value">—</strong></div><div><span>آثار پذیرفته</span><strong id="accepted-count">—</strong></div></div>
-      <section class="details" aria-live="polite"><span class="eyebrow" id="detail-kicker">بازدید از خانه</span><h3 id="detail-title">خانهٔ نویسنده</h3><p id="detail-description">شش اتاق، یک زندگی. می‌توانید بخش‌های مختلف خانه را از نزدیک ببینید.</p><div id="detail-extra"></div><a id="detail-action" class="action" href="#city">رفتن به شهر <span aria-hidden="true">↗</span></a></section>
-      <section class="recent" id="recent-section"><div class="section-head"><h3>روال محله</h3><button id="open-timeline" type="button">دیدن شهر</button></div><ol class="event-list" id="event-list"><li class="empty">شهروندان میان خانه، کافه، کتاب‌فروشی و دفتر ناشر رفت‌وآمد می‌کنند.</li></ol></section>
+      <section class="growth-card" aria-label="رشد شخصی نویسنده">
+        <div class="section-head"><h3>رشد نویسنده</h3><span id="growth-updated" class="growth-updated">بر پایهٔ کارهای ثبت‌شده</span></div>
+        <div class="growth-metrics"><div><strong id="growth-skills">—</strong><span>مهارت</span></div><div><strong id="growth-levelups">—</strong><span>ارتقای هفتگی</span></div><div><strong id="growth-learning">—</strong><span>جلسهٔ یادگیری</span></div><div><strong id="growth-achievements">—</strong><span>سنگ‌راه</span></div></div>
+        <div class="growth-focus"><span>گام بعدی</span><strong id="growth-focus-title">در حال خواندن دفتر رشد…</strong><p id="growth-focus-goal"></p></div>
+        <ul class="growth-skills" id="growth-skill-list" aria-label="مهارت‌های در حال رشد"></ul>
+      </section>
+      <section class="details" aria-live="polite"><span class="eyebrow" id="detail-kicker">بازدید از خانه</span><h3 id="detail-title">خانهٔ نویسنده</h3><p id="detail-description">شش اتاق، یک زندگی. می‌توانید بخش‌های مختلف خانه را از نزدیک ببینید.</p><div id="detail-extra"></div><a id="detail-action" class="action" href="./read/">خواندن داستان‌ها <span aria-hidden="true">↗</span></a></section>
+      <section class="recent" id="recent-section"><div class="section-head"><h3 id="events-heading">لحظه‌های زندگی</h3><button id="open-timeline" type="button">دیدن همه</button></div><div class="timeline-tools" id="timeline-tools" hidden><label class="sr-only" for="timeline-search">جست‌وجوی رویدادها</label><input id="timeline-search" type="search" placeholder="جست‌وجو در رویدادها"><label class="sr-only" for="timeline-kind">نوع رویداد</label><select id="timeline-kind"><option value="all">همهٔ رویدادها</option><option value="first">اولین‌ها</option><option value="achievement">دستاوردها</option><option value="turning_point">نقطه‌های عطف</option><option value="release">انتشارها</option><option value="ritual">آیین‌ها</option><option value="chapter">فصل‌ها</option><option value="question">پرسش‌ها</option><option value="belief">باورها</option><option value="habit">عادت‌ها</option><option value="loss">از دست‌دادن‌ها</option></select></div><ol class="event-list" id="event-list"><li class="empty">در حال بارگذاری رویدادها…</li></ol></section>
       <div class="personalize"><span>رنگ خانه</span><div class="swatches" aria-label="انتخاب رنگ مبلمان"><button class="swatch" data-accent="sage" aria-label="سبز مریم‌گلی" aria-pressed="true" style="--swatch:#84a7a0"></button><button class="swatch" data-accent="clay" aria-label="سفالی" aria-pressed="false" style="--swatch:#c58d78"></button><button class="swatch" data-accent="blue" aria-label="آبی خاکستری" aria-pressed="false" style="--swatch:#809dc2"></button></div></div>
-      <p class="disclaimer">نسخهٔ عمومی نمایشی است؛ شهروندان و روتین‌ها شبیه‌سازی شده‌اند و به داده‌های خصوصی یا سرور خانگی وصل نیستند.</p>
+      <p class="disclaimer">رویدادها و آمار از خود پروژه خوانده می‌شوند. رنگ اتاق فقط تنظیم نمایشی این مرورگر است.</p>
     </aside>
   </main>
   <script type="module" src="./web/studio.js"></script>

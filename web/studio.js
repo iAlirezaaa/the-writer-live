@@ -1,12 +1,12 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/OrbitControls.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createCityLife } from "./studio-citylife.js";
+import { appHref, getJSON } from "./snapshot.js";
 
 /* Living World: additive Three.js view for the existing Python server.
    The visual world never manufactures achievements, sales, or real-world visits.
    It reads the existing public endpoints and never issues POST requests. */
 const $ = id => document.getElementById(id);
-const PUBLIC_DEMO = location.hostname.endsWith("github.io") || location.protocol === "file:";
 const ROOM_DEFS = [
   {id:"study", name:"اتاق کار", x:-3.78, level:1, color:0xf0e1cc,
    description:"میز نوشتن، کامپیوتر، دست‌نوشته‌ها و قفسه‌های مطالعه؛ جایی که داستان‌ها شکل می‌گیرند."},
@@ -29,9 +29,9 @@ const PLACE_DEFS = [
   {id:"park",name:"پارک شهر",x:5.2,z:5,paint:0xa6bf9c,description:"محلی برای قدم زدن و شکل گرفتن ایده‌های تازه در جهان نمایشی."}
 ];
 const detailDefault = {
-  home:{kicker:"بازدید از خانه",title:"خانهٔ نویسنده",description:"شش اتاق با کارکردهای متفاوت. اتاقی را انتخاب کنید تا از نزدیک دیده شود.",action:"گشت در شهر",href:"#city"},
+  home:{kicker:"بازدید از خانه",title:"خانهٔ نویسنده",description:"شش اتاق با کارکردهای متفاوت. اتاقی را انتخاب کنید تا از نزدیک دیده شود.",action:"خواندن داستان‌ها",href:appHref("read/")},
   city:{kicker:"گشت در شهر",title:"شهر نویسنده",description:"کتابفروشی، کافه، دفتر ناشر و مکان‌های دیگر. مکان‌ها نمایشی‌اند؛ رویدادهای ثبت‌شده در تایم‌لاین مشخص می‌شوند.",action:"بازگشت به خانه",href:"#home"},
-  timeline:{kicker:"زندگی شهر",title:"روال محله",description:"صبح‌ها مغازه‌ها باز می‌شوند، پیک‌ها بسته می‌برند، خواننده‌ها در کافه و پارک کتاب می‌خوانند و شب محله آرام می‌شود.",action:"دیدن شهر",href:"#city"}
+  timeline:{kicker:"زندگی‌نامه",title:"خط زمان زندگی",description:"رویدادهای این بخش مستقیماً از پروندهٔ تایم‌لاین پروژه خوانده می‌شوند و اگر رویدادی ثبت نشده باشد، چیزی ساخته نمی‌شود.",action:"داستان‌ها",href:appHref("read/")}
 };
 const COLORS={sage:0x84a7a0,clay:0xc58d78,blue:0x809dc2};
 const faNum=v=>new Intl.NumberFormat("fa-IR").format(v);
@@ -43,12 +43,28 @@ const materials={
  brass:boxMat(0xc3a37e),glass:boxMat(0xb1d3d6,{metalness:0.16,roughness:0.25}),
  paper:boxMat(0xfffbf1),floor:boxMat(0xdbd4c4)
 };
+const roomFloorCache=new Map();
+const roomFloor=(id,base)=>{
+ if(roomFloorCache.has(id))return roomFloorCache.get(id);
+ const c=document.createElement("canvas");c.width=512;c.height=512;const ctx=c.getContext("2d");
+ const color=`#${base.toString(16).padStart(6,"0")}`;ctx.fillStyle=color;ctx.fillRect(0,0,512,512);
+ if(id==="bath"||id==="kitchen"||id==="entry"){
+  const n=8,cell=512/n;ctx.strokeStyle="rgba(94,122,119,.18)";ctx.lineWidth=3;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if((x+y)%2===0){ctx.fillStyle="rgba(255,255,255,.12)";ctx.fillRect(x*cell+2,y*cell+2,cell-4,cell-4);}ctx.strokeRect(x*cell,y*cell,cell,cell);}
+ }else{
+  const row=64;ctx.lineWidth=2;
+  for(let y=0;y<512;y+=row){ctx.fillStyle=y%128===0?"rgba(255,255,255,.06)":"rgba(81,57,39,.045)";ctx.fillRect(0,y,512,row);ctx.strokeStyle="rgba(93,65,45,.18)";ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();
+   const offset=((y/row)%2)*32;for(let x=offset;x<512;x+=128){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+row);ctx.stroke();}
+  }
+ }
+ const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
+ const mat=boxMat(0xffffff,{map:texture,roughness:.94});roomFloorCache.set(id,mat);return mat;
+};
 const fabric=boxMat(COLORS.sage);
 let savedAccent="sage";try{const s=localStorage.getItem("the-writer-studio-accent");if(COLORS[s])savedAccent=s;}catch{}
 fabric.color.setHex(COLORS[savedAccent]);
-let currentMode="home", currentSelection=null, latestStatus=null, timeline=null, stories=[];
-let renderer, scene, camera, controls, home, city, hemi, sun, skyLight;
-let cityLife;
+let currentMode="home", currentSelection=null, latestStatus=null, timeline=null, stories=[], growth=null, learning=null, achievements=null;
+let renderer, scene, camera, controls, home, city, cityLife, hemi, sun, skyLight;
 let cameraMove=null, pointerStart=null;
 const targetHome=new THREE.Vector3(0,3.05,0),targetCity=new THREE.Vector3(0,1.4,0);
 const cameraHome=new THREE.Vector3(14,11.1,17.5),cameraCity=new THREE.Vector3(17,15.5,23);
@@ -91,20 +107,41 @@ const shelf=(g,x,z,w=1.5,h=2.1)=>{
  }
 };
 const windowPanel=(g,x,y,z,width=1.8,height=1.5)=>{
- // A painted deep-blue window set slightly in front of the back wall.
- solid(g,width,height,.04,x,y,z,boxMat(0x7fa8b2,{metalness:.15}));
- solid(g,.065,height+.07,.1,x,y,z+.03,materials.cream);
- solid(g,width+.05,.07,.1,x,y,z+.03,materials.cream);
+ // Deep-set divided windows echo the timber-and-glass townhouse reference.
+ solid(g,width,height,.04,x,y,z,boxMat(0xa9cbd0,{metalness:.12,roughness:.28}));
+ for(const dx of [-width/2-.035,width/2+.035])solid(g,.075,height+.12,.10,x+dx,y,z+.04,materials.cream);
+ for(const dy of [-height/2-.035,height/2+.035])solid(g,width+.14,.075,.10,x,y+dy,z+.04,materials.cream);
+ for(const dx of [-width/6,width/6])solid(g,.045,height,.075,x+dx,y,z+.055,materials.lightWood,false);
+ solid(g,width,.045,.075,x,y,z+.055,materials.lightWood,false);
+ solid(g,width+.24,.11,.18,x,y-height/2-.09,z+.08,materials.lightWood);
 };
 const makeWriter=(g)=>{
- const p=group(g,.10,.16,.95);
- cyl(p,.22,.25,.7,0,.55,0,boxMat(0x374e5a));
- sphere(p,.25,0,1.14,0,boxMat(0xd7a78b));
- sphere(p,.28,0,1.30,-.025,boxMat(0x3c434a));
- solid(p,.16,.52,.2,-.28,.56,0,boxMat(0x374e5a));
- solid(p,.16,.52,.2,.28,.56,0,boxMat(0x374e5a));
- p.userData.breathe=true;return p;
+ const p=group(g,.10,.16,.18);p.rotation.y=Math.PI;
+ const coat=boxMat(0x465e67), shirt=boxMat(0xe8ddc9), skin=boxMat(0xd5a184), hair=boxMat(0x393839);
+ cyl(p,.26,.31,.70,0,.54,0,coat);
+ solid(p,.26,.32,.31,0,.74,.015,shirt);
+ sphere(p,.24,0,1.13,0,skin);
+ sphere(p,.21,0,1.37,-.035,hair,12);
+ sphere(p,.11,0,1.14,.205,skin,10);
+ for(const x of [-.245,.245])sphere(p,.055,x,1.14,0,skin,8);
+ for(const x of [-.082,.082]){
+  solid(p,.064,.018,.02,x,1.19,.216,boxMat(0x493b37),false);
+  sphere(p,.024,x,1.155,.221,boxMat(0x302d2d),8);
+ }
+ const leftArm=group(p,-.27,.83,0),rightArm=group(p,.27,.83,0);
+ for(const [arm,dir] of [[leftArm,-1],[rightArm,1]]){
+  const upper=solid(arm,.145,.39,.15,dir*.04,-.18,-.02,coat);upper.rotation.x=-.72;
+  const lower=solid(arm,.13,.34,.13,dir*.045,-.31,-.28,coat);lower.rotation.x=-.20;
+  sphere(arm,.07,dir*.045,-.47,-.34,skin,8);
+ }
+ const legs=[];
+ for(const x of [-.13,.13]){
+  const leg=group(p,x,.34,.02);solid(leg,.17,.48,.18,0,-.16,.12,boxMat(0x34434b));
+  solid(leg,.18,.12,.35,0,-.37,-.12,boxMat(0x353331));legs.push(leg);
+ }
+ return {group:p,leftArm,rightArm,legs};
 };
+let writerRig=null;
 const furnish=(g,id)=>{
  if(id==="study"){
   rug(g,0,.45,2.7,3.35,0xd6c5af);
@@ -114,7 +151,7 @@ const furnish=(g,id)=>{
   solid(g,.44,.06,.2,.12,.92,-1.29,materials.ink);
   solid(g,.64,.055,.26,.12,.95,-.88,materials.cream);
   solid(g,.64,.12,.62,0,.55,.90,fabric);
-  makeWriter(g);
+  writerRig=makeWriter(g);
   shelf(g,-1.24,-2.45,1.2,2.23);
   shelf(g,1.15,-2.46,1.13,2.25);
   solid(g,.7,.06,.52,-.68,.96,-1.0,materials.paper);
@@ -173,7 +210,7 @@ const buildHome=()=>{
  ROOM_DEFS.forEach(r=>{
   const y=r.level*3.23;
   const g=group(root,r.x,y,0);g.userData.pick={kind:"room",id:r.id};clickables.push(g);
-  solid(g,3.73,.16,5.85,0,.00,0,boxMat(r.color));
+  solid(g,3.73,.16,5.85,0,.00,0,roomFloor(r.id,r.color));
   solid(g,3.73,2.96,.13,0,1.56,-2.89,boxMat(r.color+0x030303),false);
   solid(g,.15,2.97,5.8,-1.89,1.56,0,boxMat(0xd8d5c8),false);
   solid(g,.08,.10,5.8,1.87,0.12,0,materials.cream,false);
@@ -308,9 +345,11 @@ function begin3D(){
    if(t>=1)cameraMove=null;
   }
   if(motionAllowed && home?.visible){
-   const a=(ms||0)/1800;home.rotation.y=Math.sin(a)*.0015;
+   const sec=(ms||0)/1000,a=sec*2.4;home.rotation.y=Math.sin(sec/1.8)*.0015;
+   if(writerRig){writerRig.group.position.y=.16+Math.sin(a)*.012;writerRig.leftArm.rotation.x=Math.sin(a)*.07;writerRig.rightArm.rotation.x=Math.sin(a+1.3)*.09;writerRig.legs[0].rotation.x=Math.sin(a*.4)*.018;writerRig.legs[1].rotation.x=-Math.sin(a*.4)*.018;}
   }
-  cityLife?.update(ms||0);controls.update();renderer.render(scene,camera);
+  if(motionAllowed&&currentMode==="city")cityLife?.update((ms||0)/1000);
+  controls.update();renderer.render(scene,camera);
  }
  requestAnimationFrame(animate);
 }
@@ -339,13 +378,13 @@ function renderTabs(){
   });parent.append(b);
  }
 }
-function showInfo(kicker,title,description,extra=[],action="رفتن به شهر",href="#city"){
+function showInfo(kicker,title,description,extra=[],action="خواندن داستان‌ها",href=appHref("read/")){
  $("detail-kicker").textContent=kicker;$("detail-title").textContent=title;
  $("detail-description").textContent=description;
  const ex=$("detail-extra");ex.replaceChildren();
  for(const line of extra){const div=document.createElement("div");div.className="detail-row";div.textContent=line;ex.append(div);}
  const link=$("detail-action");link.textContent=action+" ↗";link.href=href;
- link.onclick=href==="#home"?(e=>{e.preventDefault();setMode("home");}):href==="#city"?(e=>{e.preventDefault();setMode("city");}):null;
+ link.onclick=href==="#home"?(e=>{e.preventDefault();setMode("home");}):null;
 }
 function refreshDetail(){
  if(currentMode==="timeline"){
@@ -353,7 +392,7 @@ function refreshDetail(){
   showInfo("زندگی‌نامه","ردپای زندگی",
    items.length?`تا امروز ${faNum(items.length)} رویداد با سند ثبت شده است.`:"هنوز رویدادی در پروندهٔ تایم‌لاین ثبت نشده است.",
    timeline?.next?.title?["قدم مهم بعدی: "+timeline.next.title]:[],
-   "رفتن به داستان‌ها","/read");return;
+   "رفتن به داستان‌ها",appHref("read/"));return;
  }
  if(!currentSelection){
   const d=detailDefault[currentMode]||detailDefault.home;
@@ -362,7 +401,7 @@ function refreshDetail(){
  if(currentMode==="city"){
   const p=PLACE_DEFS.find(p=>p.id===currentSelection.id);
   if(p)showInfo("مکان‌های شهر",p.name,p.description,["بازدیدها در این نسخه شبیه‌سازی بصری‌اند؛ برای ثبت ملاقات واقعی در چرخهٔ نویسنده باید از API مجاز استفاده شود."],
-   p.id==="bookstore"?"دیدن داستان‌ها":"بازگشت به خانه",p.id==="bookstore"?"/read":"#home");
+   p.id==="bookstore"?"دیدن داستان‌ها":"بازگشت به خانه",p.id==="bookstore"?appHref("read/"):"#home");
   return;
  }
  const r=ROOM_DEFS.find(r=>r.id===currentSelection.id);
@@ -374,7 +413,7 @@ function refreshDetail(){
  }
  if(r.id==="bedroom"&&latestStatus)extra.push(latestStatus.asleep?"نویسنده اکنون در خواب است.":"نویسنده اکنون بیدار است.");
  showInfo("اتاق‌های خانه",r.name,r.description,extra,
-   r.id==="study"?"خواندن آثار":"بازدید از شهر",r.id==="study"?"/read":"#home");
+   r.id==="study"?"خواندن آثار":"بازدید از شهر",r.id==="study"?appHref("read/"):"#home");
 }
 function selectRoom(id){
  const r=ROOM_DEFS.find(x=>x.id===id);if(!r)return;
@@ -402,6 +441,10 @@ function setMode(mode){
  $("view-kicker").textContent=mode==="city"?"شهر / نمای کلی":mode==="timeline"?"زندگی‌نامه / خانه":"خانه / نمای کلی";
  $("view-title").textContent=mode==="city"?"شهر داستان‌های نانوشته":mode==="timeline"?"زندگی در گذر زمان":"زندگی پشت پنجره‌ها";
  $("view-summary").textContent=mode==="city"?"مکان مورد نظر را از شهر انتخاب کنید.":mode==="timeline"?"لحظه‌های ثبت‌شده را در ستون کناری ببینید.":"روی یک اتاق کلیک کنید یا از فهرست پایین انتخاب کنید.";
+ $("timeline-tools").hidden=mode!=="timeline";
+ $("events-heading").textContent=mode==="timeline"?"خط زمان زندگی":"لحظه‌های زندگی";
+ if(mode==="city"&&cityLife)$("writer-status").textContent=`شهر زنده · ${faNum(cityLife.pedestrianCount)} شهروند · ${faNum(cityLife.vehicleCount)} خودرو`;
+ else if(latestStatus)$("writer-status").textContent=latestStatus.asleep?"در خواب":latestStatus.activity||"بیدار";
  document.querySelectorAll("[data-mode]").forEach(b=>{
   const pressed=b.dataset.mode===mode;b.classList.toggle("active",pressed);b.setAttribute("aria-pressed",String(pressed));
  });
@@ -409,47 +452,42 @@ function setMode(mode){
 }
 function renderEvents(){
  const parent=$("event-list");parent.replaceChildren();
- if(PUBLIC_DEMO){
-  for(const [time,label] of [["۰۷:۳۰","کافه و کتاب‌فروشی باز می‌شوند"],["۱۰:۰۰","پیک‌ها بسته‌ها را میان ناشر و کتاب‌فروشی می‌برند"],["۱۳:۰۰","خواننده‌ها در میدان و پارک مطالعه می‌کنند"],["۱۹:۰۰","مغازه‌ها آرام‌آرام تعطیل می‌شوند"]]){
-   const li=document.createElement("li"),dot=document.createElement("span"),inner=document.createElement("div"),title=document.createElement("span"),stamp=document.createElement("span");
-   dot.className="event-dot";inner.className="event-text";title.className="event-title";title.textContent=label;stamp.className="event-time";stamp.textContent=time;inner.append(title,stamp);li.append(dot,inner);parent.append(li);
-  }return;
- }
- const all=Array.isArray(timeline?.events)?timeline.events:[];
- const shown=currentMode==="timeline"?all.slice(-18).reverse():all.slice(-4).reverse();
+ const all=(Array.isArray(timeline?.events)?timeline.events:[]).slice().sort((a,b)=>String(a.at||"").localeCompare(String(b.at||"")));
+ const kind=$("timeline-kind")?.value||"all",query=($("timeline-search")?.value||"").trim().toLocaleLowerCase("fa");
+ const filtered=all.filter(e=>(kind==="all"||e.kind===kind)&&(!query||`${e.title||""} ${e.detail||""} ${e.source||""}`.toLocaleLowerCase("fa").includes(query)));
+ const shown=currentMode==="timeline"?filtered:filtered.slice(-4).reverse();
  if(!shown.length){
   const li=document.createElement("li");li.className="empty";
   li.textContent=timeline?"هنوز رویدادی در زندگی‌نامه ثبت نشده است.":"دادهٔ تایم‌لاین در دسترس نیست.";
   parent.append(li);return;
  }
+ let lastYear="";
  for(const item of shown){
-  const li=document.createElement("li");const dot=document.createElement("span");dot.className="event-dot";
+  const date=new Date(item.at||"");
+  const year=Number.isNaN(date.getTime())?"بی‌تاریخ":new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric"}).format(date);
+  if(currentMode==="timeline"&&year!==lastYear){const sep=document.createElement("li");sep.className="timeline-year";sep.textContent=year;parent.append(sep);lastYear=year;}
+  const li=document.createElement("li");li.className="timeline-event";li.dataset.kind=item.kind||"";const dot=document.createElement("span");dot.className="event-dot";
   const inner=document.createElement("div");inner.className="event-text";
   const title=document.createElement("span");title.className="event-title";title.textContent=item.title||"رویداد";
   const time=document.createElement("span");time.className="event-time";
-  time.textContent=(item.at||"").slice(0,10)+(item.source?" · "+item.source:"");
-  inner.append(title,time);li.append(dot,inner);parent.append(li);
+  time.textContent=Number.isNaN(date.getTime())?(item.at||"تاریخ ثبت نشده"):new Intl.DateTimeFormat("fa-IR-u-ca-persian",{dateStyle:"long"}).format(date);
+  inner.append(title,time);
+  if(currentMode==="timeline"&&item.detail){const detail=document.createElement("span");detail.className="event-detail";detail.textContent=item.detail;inner.append(detail);}
+  if(currentMode==="timeline"){const labels={first:"اولین‌بار",achievement:"دستاورد",turning_point:"نقطهٔ عطف",loss:"از دست‌دادن",release:"انتشار",ritual:"آیین",question:"پرسش",belief:"باور",habit:"عادت",chapter:"فصل"};const badge=document.createElement("span");badge.className="event-kind";badge.textContent=labels[item.kind]||item.kind||"رویداد";inner.append(badge);}
+  li.append(dot,inner);parent.append(li);
  }
 }
 async function fetchJSON(path){
  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),7000);
- try{const r=await fetch(path,{signal:controller.signal,cache:"no-store"});if(!r.ok)throw Error(r.status);return await r.json();}
+ try{return await getJSON(path,{signal:controller.signal,cache:"no-store"});}
  finally{clearTimeout(timeout);}
 }
 async function loadData(){
- if(PUBLIC_DEMO){
-  latestStatus={name:"هادس",asleep:false,activity:"جهان نمایشی محله",energy:null,accepted_count:0,story_count:0};
-  $("writer-name").textContent="هادس";
-  $("writer-status").textContent="جهان نمایشی زنده";
-  $("writer-activity").textContent="شهروندان طبق برنامهٔ روزانه در محله رفت‌وآمد می‌کنند.";
-  $("accepted-count").textContent="—";$("story-count").textContent="—";$("energy-value").textContent="—";
-  $("recent-section").hidden=false;renderEvents();return;
- }
- const results=await Promise.allSettled([fetchJSON("/api/status"),fetchJSON("/api/stories"),fetchJSON("/api/timeline")]);
+ const results=await Promise.allSettled([fetchJSON("/api/status"),fetchJSON("/api/stories"),fetchJSON("/api/timeline"),fetchJSON("/api/skillbook"),fetchJSON("/api/learning"),fetchJSON("/api/achievements")]);
  if(results[0].status==="fulfilled"){
   latestStatus=results[0].value;const st=latestStatus;
   $("writer-name").textContent=st.name||"نویسنده";
-  $("writer-status").textContent=st.asleep?"در خواب":st.activity||"بیدار";
+  $("writer-status").textContent=currentMode==="city"&&cityLife?`شهر زنده · ${faNum(cityLife.pedestrianCount)} شهروند · ${faNum(cityLife.vehicleCount)} خودرو`:st.asleep?"در خواب":st.activity||"بیدار";
   $("writer-activity").textContent=st.activity||"هنوز فعالیتی گزارش نشده است.";
   if(Number.isFinite(Number(st.energy)))$("energy-value").textContent=faNum(Math.round(Number(st.energy)*100))+"٪";
   $("accepted-count").textContent=faNum(st.accepted_count??0);
@@ -459,10 +497,36 @@ async function loadData(){
   stories=results[1].value;$("story-count").textContent=faNum(stories.length);
  }
  if(results[2].status==="fulfilled"&&results[2].value&&typeof results[2].value==="object")timeline=results[2].value;
- refreshDetail();renderEvents();
+ if(results[3].status==="fulfilled"&&results[3].value&&typeof results[3].value==="object")growth=results[3].value;
+ if(results[4].status==="fulfilled"&&results[4].value)learning=results[4].value;
+ if(results[5].status==="fulfilled"&&results[5].value&&typeof results[5].value==="object")achievements=results[5].value;
+ refreshDetail();renderEvents();renderGrowth();
+}
+function renderGrowth(){
+ if(!growth)return;
+ const stats=growth.stats||{}, overall=growth.progress?.overall||{}, learnStats=learning?.stats||{}, achievementStats=achievements?.stats||{};
+ const rows=(Array.isArray(growth.skills)?growth.skills:[]).filter(s=>!s.made_up).slice();
+ rows.sort((a,b)=>(Number(a.level)||0)-(Number(b.level)||0));
+ const active=(Array.isArray(learning?.skills)?learning.skills:[]).filter(s=>s.status!=="adopted");
+ $("growth-skills").textContent=faNum(stats.skills??rows.length);
+ $("growth-levelups").textContent=faNum(overall.level_ups_7??0);
+ $("growth-learning").textContent=faNum(learnStats.sessions_total??active.reduce((n,s)=>n+(Number(s.sessions)||0),0));
+ $("growth-achievements").textContent=`${faNum(achievementStats.done??learning?.achievements?.done??0)}/${faNum(achievementStats.total??learning?.achievements?.total??0)}`;
+ $("growth-updated").textContent=overall.fresh_evidence_7?`${faNum(overall.fresh_evidence_7)} شاهد تازه در این هفته`:"بر پایهٔ کارهای ثبت‌شده";
+ const focus=rows.find(s=>s.goal&&s.goal!=="مهارت به بالاترین سطح رسیده.")||rows[0];
+ $("growth-focus-title").textContent=focus?.label_fa||active[0]?.label_fa||"قدم بعدی هنوز ثبت نشده است";
+ $("growth-focus-goal").textContent=focus?.goal||active[0]?.next||"هر فعالیت تازه در دفتر رشد ثبت می‌شود.";
+ const list=$("growth-skill-list");list.replaceChildren();
+ for(const skill of rows.slice(0,3)){
+  const item=document.createElement("li"),name=document.createElement("span"),meter=document.createElement("progress");
+  name.textContent=skill.label_fa||"مهارت";meter.max=5;meter.value=Math.max(0,Math.min(5,Number(skill.level)||0));meter.setAttribute("aria-label",`${name.textContent}، سطح ${faNum(meter.value)} از ۵`);
+  item.append(name,meter);list.append(item);
+ }
 }
 document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
-$("open-timeline").addEventListener("click",()=>setMode("city"));
+$("open-timeline").addEventListener("click",()=>setMode("timeline"));
+$("timeline-kind")?.addEventListener("change",renderEvents);
+$("timeline-search")?.addEventListener("input",renderEvents);
 $("reset-camera").addEventListener("click",()=>{currentSelection=null;resetCamera();renderTabs();refreshDetail();});
 $("zoom-in").addEventListener("click",()=>{if(!camera||!controls)return;const dif=camera.position.clone().sub(controls.target).multiplyScalar(.82);camera.position.copy(controls.target).add(dif);controls.update();});
 $("zoom-out").addEventListener("click",()=>{if(!camera||!controls)return;const dif=camera.position.clone().sub(controls.target).multiplyScalar(1.22);camera.position.copy(controls.target).add(dif);controls.update();});
@@ -472,6 +536,7 @@ $("light-mode").addEventListener("click",()=>{
  const b=$("light-mode");b.textContent=daylight?"نور روز":"نور عصر";
  b.setAttribute("aria-pressed",String(daylight));
  if(!scene||!sun||!hemi)return;
+ cityLife?.setDusk(!daylight);
  scene.background.setHex(daylight?0xe5eff0:0x748a9a);
  scene.fog.color.setHex(daylight?0xe5eff0:0x748a9a);
  sun.color.setHex(daylight?0xffe5c4:0xf4b995);
