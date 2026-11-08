@@ -10,7 +10,9 @@ from pathlib import Path
 from shutil import copy2
 import sys
 
-VERSION="observatory-20261108-v2"
+VERSION="observatory-20261108-v3"
+WORLD_VERSION="city-world-20261108-v1"
+READER_VERSION="observatory-20261108-v2"
 ROOT=Path(".github/observer-assets")
 
 
@@ -45,11 +47,14 @@ def prepare(site: Path) -> None:
         "read-only public sections":'All fifteen sections remain accessible in the PUBLIC interface' in world,
         "scene integration":f'./observer-ui.js?v={VERSION}' in world,
         "reader locale":'installPersianPresentation(document.body)' in reader,
-        "reader cache":f'read.js?v={VERSION}' in reader_html,
-        "root script cache":f'src="./web/world.js?v={VERSION}"' in index,
+        "reader cache":f'read.js?v={READER_VERSION}' in reader_html,
+        "root script cache":f'src="./web/world.js?v={WORLD_VERSION}"' in index,
         "relative import map":'"three": "./web/vendor/three.module.js"' in index,
         "relative book link":'href="./read/"' in index,
         "resident directory search":'id="town-search"' in index and 'resident-go-to' in world,
+        "designed city directory":'id="town-places"' in index and 'renderCityPlaces()' in world,
+        "day/night scene calendar":'id="observer-scene-date"' in index,
+        "camera drawer":'observer-camera-drawer' in index and 'observer-camera-drawer' in style,
         "date conversion on 3D canvas":'solarDate(String(e.at).slice(0, 10))' in world,
     }
     failed=[name for name,ok in checks.items() if not ok]
