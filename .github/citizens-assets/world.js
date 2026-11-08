@@ -1333,6 +1333,63 @@ function renderCityPlaces(){
   host.replaceChildren(...rendered);
   $("city-places-count").textContent=String(CITY_PLACE_CATALOG.length)+" مکان";
 }
+// Public Pages exposes a deliberately limited fiction snapshot. Connect its
+// safe information to existing journal destinations, without displaying a
+// generic dead-end for the reader, city atlas or publisher profile.
+function renderPublicObserverPanels(payload){
+  if(!STATIC_PUBLIC)return;
+  const make=(tag,text,cls)=>{const node=document.createElement(tag);
+    node.textContent=text;if(cls)node.className=cls;return node;};
+  const action=(label,fn)=>{const button=make("button",label,"observer-safe-action");
+    button.type="button";button.addEventListener("click",fn);return button;};
+  const target=(id)=>$(id);
+  const library=target("p-books");
+  if(library){
+    const base="/"+(location.pathname.split("/").filter(Boolean)[0]||"");
+    const link=make("a","ورود به کتابخانهٔ عمومی","observer-safe-action");
+    link.href=base+"/read/";
+    const note=make("p","کتاب‌های منتشرشده و داستان‌های قابل مطالعه را در کتابخانه می‌بینید. پیشرفت خواندن در مرورگر خودتان ذخیره می‌شود.","muted small");
+    library.replaceChildren(make("h3","کتابخانهٔ نویسنده"),note,link);
+  }
+  const world=target("p-world");
+  if(world){
+    const intro=make("p","این فهرست نقشهٔ جهان نمایشی است، نه ثبت سفرهای واقعی نویسنده. بارگذاری فایل و تنظیم قواعد جهان فقط در نسخهٔ خصوصی امکان‌پذیر است.","muted small");
+    const count=make("p",`مکان‌های ساخته‌شده: ${CITY_PLACE_CATALOG.length}`,"observer-public-count");
+    const list=document.createElement("ul");list.className="list";
+    for(const place of CITY_PLACE_CATALOG){
+      const item=document.createElement("li");
+      const main=make("strong",place.name||place.title||place.id);
+      const region=make("span"," · "+(place.zone||"شهر"),"time");
+      item.append(main,region);list.append(item);
+    }
+    world.replaceChildren(make("h3","نقشهٔ محله و مکان‌ها"),intro,count,list,
+      action("تماشای شهر",()=>setView("town")),
+      action("فهرست شهروندان و مکان‌ها",()=>{selectTab("p-town");setSide(false);}));
+  }
+  const publishing=target("p-publish");
+  if(publishing){
+    const details=payload?.publisher?.publisher_core?.core||{};
+    const name=payload?.publisher?.name||"مدیر انتشارات محله";
+    const data=document.createElement("dl");data.className="facts";
+    for(const [label,value] of [
+      ["نام",name],["ارزش محوری",details.value||"کیفیت آثار ادبی"],
+      ["هدف",details.desire||"پیداکردن و پرورش آثار ارزشمند"],
+      ["تعارض درونی",details.inner_conflict||"سختگیری و حمایت از نویسنده"]
+    ]){
+      const dt=make("dt",label),dd=make("dd",value);data.append(dt,dd);
+    }
+    const summary=make("p","این نمای عمومی فقط هویت داستانی ناشر را نشان می‌دهد. تصمیم‌های واقعی چاپ، تجربه‌های خصوصی و یادداشت‌های تحریریه منتشر نمی‌شوند.","muted small");
+    publishing.replaceChildren(make("h3","پروندهٔ ناشر در جهان داستانی"),summary,data,
+      action("دیدن دفتر ناشر در صحنه",()=>setView("publisher")),
+      action("پیدا کردن ناشر در شهر",()=>{
+        selectTab("p-town");setSide(false);
+        const directory=$("town-residents");
+        const entry=directory?.querySelector('[data-id="publisher-character"]');
+        if(entry){entry.hidden=false;entry.open=true;entry.scrollIntoView({block:"nearest",behavior:"smooth"});}
+      }));
+  }
+}
+
 async function loadTown() {
   try {
     const payload = await getJSON("/api/town");
@@ -1393,6 +1450,7 @@ async function loadTown() {
       return detail;
     });
     $("town-residents").replaceChildren(...rows);
+    renderPublicObserverPanels(payload);
     updateTownSummary();
   } catch {
     $("town-summary").textContent = "برنامهٔ شهروندان دریافت نشد؛ در به‌روزرسانی بعد دوباره تلاش می‌شود.";
@@ -2342,7 +2400,7 @@ async function refreshAll() {
     // All fifteen sections remain accessible in the PUBLIC interface.
     // For sections without a safe exported snapshot, explain why the source
     // cannot be read instead of silently deleting the menu destination.
-    const withPublicData=new Set(["p-stories","p-town","p-planner","p-status"]);
+    const withPublicData=new Set(["p-stories","p-town","p-planner","p-status","p-books","p-world","p-publish"]);
     for(const panel of document.querySelectorAll(".panel")){
       panel.hidden=false;
       if(withPublicData.has(panel.id))continue;
@@ -2361,6 +2419,10 @@ async function refreshAll() {
       panel.replaceChildren(note);
       panel.dataset.publicPrepared="true";
     }
+    // Replace owner-only upload/meeting controls immediately, even if the
+    // static town fetch is slow or offline. Everything shown here comes from
+    // the allow-listed public catalog and optional safe town projection.
+    renderPublicObserverPanels(null);
     // Static Pages has no owner/admin POST API.
     const comments = $("comment-form");if(comments)comments.hidden=true;
     await Promise.allSettled([loadStories(),loadTown(),loadPublicRoutine()]);
