@@ -18,3 +18,6 @@ Any exterior/interior mismatch is a release blocker.
 ## Mandatory grounded-wall check (added after the floating-walls defect)
 
 The `baseWriterRoomShell` and `expandedWriterRoomShell` objects are initialized before `citySceneBaseline` is captured. Therefore the later `interiorSceneObjects` filter **does not contain either shell**. A naive blanket reposition moves furniture and floor props but leaves the actual walls above the town. Always attach both explicit shells to `writerInteriorWorldRoot` after moving the scene's dynamic room objects. The parent carries `position.y=STREET_Y`; neither shell gets its own independent elevation. Verify this contract in `tests/writer_house_consistency_probe.mjs`. Make visual inspections at level 0 and after growth.
+
+## Rebuilding and clicking
+Every stage rebuild must remove former expanded-shell children from `clickables`, mark removed nodes invisible and dispose their geometry. Camera presets for `building` and `overview` must frame the single 6x6 room rather than the retired 19-unit mansion; test those invariants with `writer_house_consistency_probe.mjs`.
