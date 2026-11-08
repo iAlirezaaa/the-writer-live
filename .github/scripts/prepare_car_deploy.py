@@ -24,11 +24,12 @@ def patch_site(root: Path) -> None:
     if not all(s in cars for s in (
         "export function buildTownCars", 'kind:"compact"', 'kind:"sedan"',
         'kind:"taxi"', 'kind:"van"', 'kind:"pickup"',
-        "const laneCars=", "safeGap=", "setCrossingDemand", "trafficState"
+        "routeDiagnostics", "signalGreen", "nightFromTehran",
+        "setCrossingDemand", "trafficState"
     )):
         raise RuntimeError("Detailed collision-aware fleet is unavailable")
 
-    version = "fleet-20261108-e"
+    version = "fleet-20261109-roadgraph-1"
     town = town_file.read_text(encoding="utf-8")
     # Older publishing processes reinsert these simple, incorrect cars.
     legacy_start = town.find("  const cars = [];")
@@ -79,7 +80,7 @@ def patch_site(root: Path) -> None:
     # Preserve the current street elevation and architected city module.
     # This guard owns vehicle integrity, not the newer town cache namespace.
     town_import = 'import { buildTown, nightLighting, STREET_Y } from "./town.js";'
-    bust_import = 'import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-20261108-v3";'
+    bust_import = 'import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-traffic-20261109-v1";'
     world, count = re.subn(
         r'^import \{ buildTown, nightLighting(?:, STREET_Y)? \} from "\./town\.js(?:\?v=[^"]+)?";',
         lambda _m: bust_import, world, count=1, flags=re.MULTILINE
@@ -128,7 +129,7 @@ def patch_site(root: Path) -> None:
     assert new_import in town
     assert bust_import in world
     assert versioned in html
-    print("Public deployment: collision-safe, six-profile vehicle fleet wired correctly")
+    print("Public deployment: Tehran clock-driven road graph, junction signals and night headlights pinned")
 
 
 if __name__ == "__main__":
