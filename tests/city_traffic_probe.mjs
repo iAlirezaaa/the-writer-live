@@ -17,6 +17,44 @@ const Fleet=await load("web/town-cars.js");
 const payload=JSON.parse(readFileSync(snapshot,"utf8"));
 const start="2026-11-08T00:01:00+03:30";
 
+// City graph acceptance: curved junction routes must remain on the actual
+// union of paved road rectangles, with long clock-anchored itineraries.
+const urban=await load("web/urban-plan.js");
+const geometry=cars.routeDiagnostics(urban.ROAD_SEGMENTS);
+assert.equal(geometry.vehicles,12,"Fleet population changed");
+assert.equal(geometry.offroad,0,
+  "Road-graph path samples leave asphalt: "+JSON.stringify(geometry));
+assert.ok(geometry.checked>10000,"Route graph has too few samples");
+assert.ok(geometry.routeLengths.every(x=>x>10000),
+  "A short traffic loop is still repeating");
+assert.equal(geometry.trafficClock,"absolute-epoch");
+assert.equal(geometry.lightingZone,"Asia/Tehran");
+assert.ok(geometry.signals>=4,"No junction traffic lights were constructed");
+assert.ok(streets.getObjectByName("traffic-signal-C"),
+  "Intersection signal missing");
+cars.update(0,.04);
+assert.ok(cars.vehicles.every(v=>v.model.visibleHeadlights.every(m=>m.visible)),
+  "Night-time headlight bulbs must be visible on every car");
+assert.ok(cars.vehicles.some(v=>v.model.spot?.intensity>0),
+  "Night-time headlights must cast real light onto asphalt");
+// Identical local clock -> identical starting positions, independent of
+// page reload or elapsed render time. Different clock -> changed positions.
+const realNow=Date.now;
+let frozen=1780020000000;
+try {
+  Date.now=()=>frozen;
+  const aa=Fleet.buildTownCars({THREE,city:new THREE.Group(),streetY:-3});
+  const bb=Fleet.buildTownCars({THREE,city:new THREE.Group(),streetY:-3});
+  assert.deepEqual(aa.trafficState().map(v=>[v.x,v.z]),
+    bb.trafficState().map(v=>[v.x,v.z]),
+    "Same time should have the same traffic snapshot");
+  frozen+=600000;
+  const cc=Fleet.buildTownCars({THREE,city:new THREE.Group(),streetY:-3});
+  assert.notDeepEqual(aa.trafficState().map(v=>[v.x,v.z]),
+    cc.trafficState().map(v=>[v.x,v.z]),
+    "Ten minutes of real-world time must advance the city");
+} finally {Date.now=realNow;}
+
 // Cars approaching a crossing must stop before their front bumpers reach it.
 // Already committed cars clear the crossing rather than stopping inside.
 const streets=new THREE.Group();
