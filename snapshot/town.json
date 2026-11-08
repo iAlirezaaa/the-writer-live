@@ -1,0 +1,774 @@
+{
+  "citizens": [
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-01",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#777e87",
+      "home": "home-west",
+      "id": "citizen-01",
+      "label": "مهران رستگار",
+      "role": "clerk",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 0
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 420
+        },
+        {
+          "activity": "work",
+          "place": "publisher",
+          "start": 465
+        },
+        {
+          "activity": "read",
+          "place": "square",
+          "start": 720
+        },
+        {
+          "activity": "work",
+          "place": "publisher",
+          "start": 780
+        },
+        {
+          "activity": "idle",
+          "place": "garden",
+          "start": 1020
+        },
+        {
+          "activity": "idle",
+          "place": "home-west",
+          "start": 1140
+        },
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 1320
+        }
+      ],
+      "story": "سال‌هاست قراردادها و نامه‌های دفتر ناشر را با دقت بررسی می‌کند؛ عصرها در باغچه به گل‌های رز رسیدگی می‌کند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-02",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#858279",
+      "home": "home-east",
+      "id": "citizen-02",
+      "label": "ناهید فرهمند",
+      "role": "clerk",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 0
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 450
+        },
+        {
+          "activity": "work",
+          "place": "publisher",
+          "start": 510
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 750
+        },
+        {
+          "activity": "work",
+          "place": "publisher",
+          "start": 810
+        },
+        {
+          "activity": "read",
+          "place": "bookstore",
+          "start": 1080
+        },
+        {
+          "activity": "idle",
+          "place": "home-east",
+          "start": 1200
+        },
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 1350
+        }
+      ],
+      "story": "کارمند بایگانی ناشر است و نسخه‌های تازه را مرتب می‌کند؛ برای استراحت به میدان و کتاب‌فروشی سر می‌زند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-03",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#8d7b69",
+      "home": "home-east",
+      "id": "citizen-03",
+      "label": "آرمان کیانی",
+      "role": "bookseller",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 0
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 435
+        },
+        {
+          "activity": "work",
+          "place": "bookstore",
+          "start": 495
+        },
+        {
+          "activity": "read",
+          "place": "garden",
+          "start": 735
+        },
+        {
+          "activity": "work",
+          "place": "bookstore",
+          "start": 795
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 1110
+        },
+        {
+          "activity": "idle",
+          "place": "home-east",
+          "start": 1215
+        },
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 1335
+        }
+      ],
+      "story": "کتاب‌فروش محله است و قفسه‌های کتاب را می‌شناسد؛ آخر هفته‌ها در باغچه رمان می‌خواند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-04",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#807464",
+      "home": "home-west",
+      "id": "citizen-04",
+      "label": "لیلا شریفی",
+      "role": "bookseller",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 0
+        },
+        {
+          "activity": "read",
+          "place": "garden",
+          "start": 510
+        },
+        {
+          "activity": "work",
+          "place": "bookstore",
+          "start": 600
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 840
+        },
+        {
+          "activity": "work",
+          "place": "bookstore",
+          "start": 900
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 1200
+        },
+        {
+          "activity": "idle",
+          "place": "home-west",
+          "start": 1290
+        },
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 1380
+        }
+      ],
+      "story": "کتاب‌فروش باتجربه‌ای است که کتاب‌های دست‌دوم را مرمت می‌کند؛ صبح‌ها پیش از باز کردن مغازه قدم می‌زند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-05",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#8c8980",
+      "home": "home-west",
+      "id": "citizen-05",
+      "label": "پروین دادخواه",
+      "role": "reader",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 0
+        },
+        {
+          "activity": "read",
+          "place": "cafe",
+          "start": 480
+        },
+        {
+          "activity": "read",
+          "place": "bookstore",
+          "start": 600
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 780
+        },
+        {
+          "activity": "read",
+          "place": "garden",
+          "start": 870
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 1110
+        },
+        {
+          "activity": "idle",
+          "place": "home-west",
+          "start": 1230
+        },
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 1330
+        }
+      ],
+      "story": "بازنشستهٔ مدرسه و خوانندهٔ همیشگی محله است؛ داستان‌ها را در کافه و باغچه می‌خواند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-06",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#7f8580",
+      "home": "home-east",
+      "id": "citizen-06",
+      "label": "سامان بهرامی",
+      "role": "reader",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 0
+        },
+        {
+          "activity": "read",
+          "place": "garden",
+          "start": 540
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 690
+        },
+        {
+          "activity": "read",
+          "place": "bookstore",
+          "start": 810
+        },
+        {
+          "activity": "read",
+          "place": "square",
+          "start": 990
+        },
+        {
+          "activity": "idle",
+          "place": "garden",
+          "start": 1170
+        },
+        {
+          "activity": "idle",
+          "place": "home-east",
+          "start": 1260
+        },
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 1395
+        }
+      ],
+      "story": "نقشه‌کش آرامی است که برای الهام گرفتن به میدان و باغچه می‌رود؛ همیشه دفترچه‌ای همراه دارد."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-07",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#92846e",
+      "home": "home-west",
+      "id": "citizen-07",
+      "label": "یونس نادری",
+      "role": "courier",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 0
+        },
+        {
+          "activity": "carry",
+          "place": "depot",
+          "start": 360
+        },
+        {
+          "activity": "carry",
+          "place": "publisher",
+          "start": 450
+        },
+        {
+          "activity": "carry",
+          "place": "bookstore",
+          "start": 570
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 690
+        },
+        {
+          "activity": "carry",
+          "place": "depot",
+          "start": 750
+        },
+        {
+          "activity": "carry",
+          "place": "publisher",
+          "start": 870
+        },
+        {
+          "activity": "carry",
+          "place": "bookstore",
+          "start": 990
+        },
+        {
+          "activity": "idle",
+          "place": "home-west",
+          "start": 1080
+        },
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 1260
+        }
+      ],
+      "story": "پیک محله است و بسته‌های کتاب را میان انبار و مغازه‌ها می‌رساند؛ مسیرهای خلوت شهر را بلد است."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-08",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#827d70",
+      "home": "home-east",
+      "id": "citizen-08",
+      "label": "سحر موسوی",
+      "role": "courier",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 0
+        },
+        {
+          "activity": "carry",
+          "place": "depot",
+          "start": 465
+        },
+        {
+          "activity": "carry",
+          "place": "bookstore",
+          "start": 555
+        },
+        {
+          "activity": "carry",
+          "place": "publisher",
+          "start": 675
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 765
+        },
+        {
+          "activity": "carry",
+          "place": "depot",
+          "start": 825
+        },
+        {
+          "activity": "carry",
+          "place": "cafe",
+          "start": 945
+        },
+        {
+          "activity": "carry",
+          "place": "bookstore",
+          "start": 1065
+        },
+        {
+          "activity": "idle",
+          "place": "home-east",
+          "start": 1170
+        },
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 1320
+        }
+      ],
+      "story": "پیک دقیق کتاب‌فروشی است؛ سفارش‌ها را با یادداشت کوتاه و بسته‌بندی محکم تحویل می‌دهد."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-09",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#75806a",
+      "home": "home-east",
+      "id": "citizen-09",
+      "label": "مریم رفیعی",
+      "role": "gardener",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 0
+        },
+        {
+          "activity": "work",
+          "place": "garden",
+          "start": 375
+        },
+        {
+          "activity": "carry",
+          "place": "depot",
+          "start": 570
+        },
+        {
+          "activity": "work",
+          "place": "garden",
+          "start": 630
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 750
+        },
+        {
+          "activity": "work",
+          "place": "garden",
+          "start": 810
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 1050
+        },
+        {
+          "activity": "idle",
+          "place": "home-east",
+          "start": 1140
+        },
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 1290
+        }
+      ],
+      "story": "باغبان محله است و باغچهٔ عمومی را نگه‌داری می‌کند؛ ابزارهایش را در انبار نزدیک میدان می‌گذارد."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-10",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#9a8b78",
+      "home": "home-west",
+      "id": "citizen-10",
+      "label": "کامران وثوق",
+      "role": "cafe",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 0
+        },
+        {
+          "activity": "carry",
+          "place": "depot",
+          "start": 345
+        },
+        {
+          "activity": "work",
+          "place": "cafe",
+          "start": 390
+        },
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 660
+        },
+        {
+          "activity": "work",
+          "place": "cafe",
+          "start": 720
+        },
+        {
+          "activity": "read",
+          "place": "garden",
+          "start": 960
+        },
+        {
+          "activity": "work",
+          "place": "cafe",
+          "start": 1020
+        },
+        {
+          "activity": "idle",
+          "place": "home-west",
+          "start": 1170
+        },
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 1275
+        }
+      ],
+      "story": "کافه‌دار محله است و قهوهٔ صبحگاهی را خودش آماده می‌کند؛ پس از کار در باغچه مطالعه می‌کند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-11",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#626c78",
+      "home": "home-east",
+      "id": "citizen-11",
+      "label": "داوود نیک‌پی",
+      "role": "night-watch",
+      "routine": [
+        {
+          "activity": "idle",
+          "place": "square",
+          "start": 0
+        },
+        {
+          "activity": "work",
+          "place": "depot",
+          "start": 120
+        },
+        {
+          "activity": "idle",
+          "place": "garden",
+          "start": 240
+        },
+        {
+          "activity": "work",
+          "place": "square",
+          "start": 330
+        },
+        {
+          "activity": "sleep",
+          "place": "home-east",
+          "start": 390
+        },
+        {
+          "activity": "idle",
+          "place": "home-east",
+          "start": 900
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 1020
+        },
+        {
+          "activity": "work",
+          "place": "square",
+          "start": 1140
+        },
+        {
+          "activity": "idle",
+          "place": "depot",
+          "start": 1260
+        },
+        {
+          "activity": "work",
+          "place": "garden",
+          "start": 1380
+        }
+      ],
+      "story": "نگهبان شب محله است؛ چراغ‌ها و مسیرهای اطراف میدان را در گشت‌های آرامش بررسی می‌کند."
+    },
+    {
+      "agent": {
+        "enabled": false,
+        "id": "citizen-12",
+        "mode": "dormant",
+        "tools": []
+      },
+      "color": "#7a8587",
+      "home": "home-west",
+      "id": "citizen-12",
+      "label": "رویا آذری",
+      "role": "cleaner",
+      "routine": [
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 0
+        },
+        {
+          "activity": "sweep",
+          "place": "square",
+          "start": 300
+        },
+        {
+          "activity": "sweep",
+          "place": "publisher",
+          "start": 420
+        },
+        {
+          "activity": "sweep",
+          "place": "bookstore",
+          "start": 540
+        },
+        {
+          "activity": "idle",
+          "place": "cafe",
+          "start": 660
+        },
+        {
+          "activity": "sweep",
+          "place": "depot",
+          "start": 720
+        },
+        {
+          "activity": "sweep",
+          "place": "garden",
+          "start": 900
+        },
+        {
+          "activity": "idle",
+          "place": "home-west",
+          "start": 1020
+        },
+        {
+          "activity": "sleep",
+          "place": "home-west",
+          "start": 1200
+        }
+      ],
+      "story": "رفتگر محله است و پیاده‌روها و جلوی مغازه‌ها را تمیز نگه می‌دارد؛ بعدازظهرها به خانه برمی‌گردد."
+    }
+  ],
+  "clock": "2026-11-08T10:50:47+03:30",
+  "description": "Authored anonymous background simulation; not a real population. All future agents are dormant.",
+  "places": {
+    "bookstore": {
+      "indoor": false,
+      "label": "Bookstore entrance",
+      "x": 10,
+      "z": 4
+    },
+    "cafe": {
+      "indoor": false,
+      "label": "Cafe",
+      "x": -6,
+      "z": 11.3
+    },
+    "depot": {
+      "indoor": false,
+      "label": "Depot",
+      "x": -18,
+      "z": 11.3
+    },
+    "garden": {
+      "indoor": false,
+      "label": "Garden",
+      "x": 7,
+      "z": 11.3
+    },
+    "home-east": {
+      "indoor": true,
+      "label": "East homes",
+      "x": 19,
+      "z": 2
+    },
+    "home-west": {
+      "indoor": true,
+      "label": "West homes",
+      "x": -19,
+      "z": 2
+    },
+    "publisher": {
+      "indoor": false,
+      "label": "Publisher entrance",
+      "x": -10,
+      "z": 4
+    },
+    "square": {
+      "indoor": false,
+      "label": "Town square",
+      "x": 0,
+      "z": 11.3
+    }
+  },
+  "simulated": true
+}
