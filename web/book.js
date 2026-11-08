@@ -20,6 +20,7 @@ const MARGIN_STATE_FA = {
   suspect: "مردود: با متن نمی‌خواند",
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -48,8 +49,20 @@ function build() {
   const smallerBtn = el("button", "reader-font", "A−"); smallerBtn.title = "کوچک‌تر کردن نوشته"; smallerBtn.setAttribute("aria-label", smallerBtn.title);
   const largerBtn = el("button", "reader-font", "A+"); largerBtn.title = "بزرگ‌تر کردن نوشته"; largerBtn.setAttribute("aria-label", largerBtn.title);
   const find = el("input", "reader-find"); find.type = "search"; find.placeholder = "جست‌وجو در کتاب"; find.setAttribute("aria-label", find.placeholder);
-  const closeBtn = el("button", "", "بستن");
-  tools.append(marginBtn, smallerBtn, largerBtn, find, closeBtn);
+  const themeSelect = el("select", "reader-theme");
+  themeSelect.setAttribute("aria-label", "رنگ و نور صفحهٔ مطالعه");
+  for(const [value,label] of [["paper","کاغذ روشن"],["night","مطالعه در شب"],["ink","جوهر و سنگ"]]){
+    const opt=el("option","",label);opt.value=value;themeSelect.appendChild(opt);
+  }
+  let preferredTheme="paper";
+  try{preferredTheme=localStorage.getItem("the-writer-reader-theme")||"paper";}catch{}
+  if(!["paper","night","ink"].includes(preferredTheme))preferredTheme="paper";
+  themeSelect.value=preferredTheme;
+  overlay.dataset.readerTheme=preferredTheme;
+  const focusBtn=el("button", "reader-focus", "حالت تمرکز");
+  focusBtn.type="button";focusBtn.setAttribute("aria-pressed","false");
+  const closeBtn = el("button", "reader-close", "بستن");
+  tools.append(marginBtn, smallerBtn, largerBtn, find, themeSelect, focusBtn, closeBtn);
   bar.append(title, tools);
   const shelf = el("div", "book-shelf");
   const bookEl = el("div", "book");
@@ -81,8 +94,19 @@ function build() {
   overlay.append(bar, shelf, footer, margin, selBtn, pop, measure);
   document.body.appendChild(overlay);
 
-  ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark, find, margin, marginBtn, closeBtn, selBtn, pop, popQuote, popName, popText, popStatus, popCancel, measure };
+  ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark, find, margin, marginBtn, closeBtn, themeSelect, focusBtn, selBtn, pop, popQuote, popName, popText, popStatus, popCancel, measure };
 
+  themeSelect.addEventListener("change", ()=>{
+    const theme=themeSelect.value;
+    if(!["paper","night","ink"].includes(theme))return;
+    overlay.dataset.readerTheme=theme;
+    try{localStorage.setItem("the-writer-reader-theme",theme);}catch{}
+  });
+  focusBtn.addEventListener("click",()=>{
+    const enabled=overlay.classList.toggle("reader-focus-mode");
+    focusBtn.setAttribute("aria-pressed",String(enabled));
+    if(enabled){margin.hidden=true;marginBtn.setAttribute("aria-pressed","false");}
+  });
   closeBtn.addEventListener("click", close);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
   prev.addEventListener("click", () => turn(-1));
@@ -169,6 +193,7 @@ function close() {
   endTurn();
   ui.overlay.hidden = true; ui.selBtn.hidden = true; ui.pop.hidden = true;
   document.body.classList.remove("book-open");
+  window.dispatchEvent(new Event("writer:reading-closed"));
 }
 
 export function setTurnSpeed(ms) {
@@ -216,7 +241,10 @@ function bindMarks(root) {
 function titlePage() {
   const s = book.story;
   const page = el("div", "page-content title-page");
-  page.append(el("div", "tp-kicker", "داستان"), el("h1", "tp-title", s.title));
+  const edition=applyCoverVisual(page,s);
+  const ornament=createCoverArt();ornament.classList.add("tp-art");
+  page.append(el("div", "tp-kicker", `THE WRITER · ${edition.edition}`), ornament,
+    el("h1", "tp-title", s.title));
   const ribbon = el("div", `tp-status ${s.status}`, STATUS_FA[s.status] || s.status);
   const meta = el("div", "tp-meta");
   meta.append(
