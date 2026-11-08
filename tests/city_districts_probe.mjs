@@ -40,6 +40,22 @@ const fakeCanvas=(w,h,draw)=>{
 const city=buildTown({THREE,scene,clickable,canvasTex:fakeCanvas});
 scene.updateMatrixWorld(true);
 assert.ok(scene.getObjectByName("town"));
+const roadUnion=scene.getObjectByName("city-road-union");
+assert.ok(roadUnion&&roadUnion.isMesh,"The town lost its unified asphalt road surface");
+assert.equal(roadUnion.userData.urbanSurface.segments,urban.ROAD_SEGMENTS.length,
+  "Not all authored streets are part of the same road material/mesh");
+const roadPositions=roadUnion.geometry.attributes.position;
+assert.equal(roadPositions.count,roadUnion.userData.urbanSurface.pieces*6,
+  "The city road is no longer the disjoint tessellation of road union");
+for(let i=0;i<roadPositions.count;i++){
+ assert.ok(Math.abs(roadPositions.getY(i)-(STREET_Y-.02))<1e-6,
+  "The unified asphalt is at an inconsistent road elevation");
+}
+const roadNormals=roadUnion.geometry.attributes.normal;
+for(let i=0;i<roadNormals.count;i++)
+ assert.ok(roadNormals.getY(i)>.99,
+   "An asphalt face is not oriented skyward");
+
 const district=scene.getObjectByName("city-districts");
 assert.ok(district,"Districts must actually be attached to the existing town");
 assert.equal(city.districts.group,district);
