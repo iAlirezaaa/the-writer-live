@@ -49,7 +49,7 @@ const THREE_BOX=new THREE.Box3();
 function bounds(object){object.updateWorldMatrix(true,true);return THREE_BOX.clone().setFromObject(object);}
 const surfaceAt=(x,z,minWidth,minDepth)=>{
  return district.children.some(obj=>{
-   if(!obj.isMesh||!obj.geometry?.isBoxGeometry)return false;
+   if(!obj.isMesh||obj.geometry?.type!=="BoxGeometry")return false;
    const box=bounds(obj),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
    return Math.abs(center.x-x)<.12&&Math.abs(center.z-z)<.12
      &&size.x>=minWidth&&size.z>=minDepth
