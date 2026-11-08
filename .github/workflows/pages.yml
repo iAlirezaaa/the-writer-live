@@ -29,6 +29,7 @@ jobs:
             cp ".github/citizens-assets/$name" "_site/web/$name"
           done
           cp .github/city-assets/town-districts.js _site/web/town-districts.js
+          cp .github/city-assets/urban-plan.js _site/web/urban-plan.js
           python3 .github/scripts/prepare_car_deploy.py _site
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
@@ -45,6 +46,9 @@ jobs:
           python3 .github/scripts/prepare_city_deploy.py _site
           cp _site/web/town-districts.js /tmp/the-writer-town-districts.mjs
           node --check /tmp/the-writer-town-districts.mjs
+          cp _site/web/urban-plan.js /tmp/the-writer-urban-plan.mjs
+          node --check /tmp/the-writer-urban-plan.mjs
+          node tests/urban_plan_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
           for check in layout paths wiring; do
