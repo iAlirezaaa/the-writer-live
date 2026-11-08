@@ -285,7 +285,8 @@ try {
         getContext: drawingContext, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1000, height: 700 }) };
     }
     const elements = new Map();
-    context.document = { createElement: element, querySelectorAll: () => [], addEventListener() {},
+    context.document = { createElement: element, querySelectorAll: () => [],
+      querySelector(selector){return this.getElementById(String(selector).replace(/^#/,""));}, addEventListener() {},
       getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); } };
     context.location = { href:"https://example.invalid/the-writer-live/",pathname:"/the-writer-live/",hostname:"example.invalid",origin:"https://example.invalid" };
     context.URL = URL;
