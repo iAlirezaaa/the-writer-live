@@ -42,6 +42,10 @@ const menu=data.PANEL_GROUPS.flatMap(g=>g.ids);
 const scene=data.SCENE_GROUPS.flatMap(g=>g.ids);
 assert.equal(tabs.length,15,"Keep all 15 original journal menus");
 assert.equal(views.length,10,"Keep all 10 original camera views");
+assert.ok(/href="(?:\.\/read\/|\/read)"/.test(html),
+  "Reader destination must have a correctly quoted local or public href");
+assert.ok(!/href="\.\/read\/>/.test(html),
+  "A malformed public reader href would silently break navigation");
 assert.deepEqual([...menu].sort(),[...tabs].sort());
 assert.deepEqual([...scene].sort(),[...views].sort());
 assert.equal(new Set(menu).size,15);
