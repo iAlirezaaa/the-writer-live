@@ -52,6 +52,7 @@ jobs:
           cp _site/web/road-surface.js /tmp/the-writer-road-surface.mjs
           node --check /tmp/the-writer-road-surface.mjs
           node tests/urban_plan_probe.mjs _site
+          node tests/road_topology_probe.mjs _site
           node tests/writer_house_consistency_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
