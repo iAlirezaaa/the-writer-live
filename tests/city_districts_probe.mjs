@@ -63,16 +63,6 @@ for(const line of mainPaint){
  assert.ok(bottom>STREET_Y+roads.ROAD_SURFACE_OFFSET,
   "Main street paint was buried under the unified asphalt");
 }
-const districtPaint=district.children.filter(obj=>obj.isMesh&&obj.geometry?.type==="BoxGeometry"&&
-  obj.material?.color?.getHex()===0xdfd9c0 &&
-  obj.geometry.parameters.width>=.07&&obj.geometry.parameters.width<=1.5);
-assert.ok(districtPaint.length>=10,"District lane lines disappeared");
-for(const line of districtPaint){
- if(line.geometry.parameters.height>.025)continue; // parking stalls are taller
- const bottom=line.position.y-line.geometry.parameters.height/2;
- assert.ok(bottom>STREET_Y+roads.ROAD_SURFACE_OFFSET,
-   "District lane paint was buried under the continuous asphalt");
-}
 const roadNormals=roadUnion.geometry.attributes.normal;
 for(let i=0;i<roadNormals.count;i++)
  assert.ok(roadNormals.getY(i)>.99,
@@ -84,6 +74,17 @@ assert.equal(city.districts.group,district);
 assert.equal(city.districts.stats.blocks,12);
 assert.equal(city.districts.stats.venues,9);
 assert.ok(city.districts.stats.dynamicLights>=3);
+const districtPaint=district.children.filter(obj=>obj.isMesh&&obj.geometry?.type==="BoxGeometry"&&
+  obj.material?.color?.getHex()===0xdfd9c0 &&
+  obj.geometry.parameters.width>=.07&&obj.geometry.parameters.width<=1.5);
+assert.ok(districtPaint.length>=10,"District lane lines disappeared");
+for(const line of districtPaint){
+ if(line.geometry.parameters.height>.025)continue; // parking stalls are taller
+ const bottom=line.position.y-line.geometry.parameters.height/2;
+ assert.ok(bottom>STREET_Y+roads.ROAD_SURFACE_OFFSET,
+   "District lane paint was buried under the continuous asphalt");
+}
+
 const THREE_BOX=new THREE.Box3();
 function bounds(object){object.updateWorldMatrix(true,true);return THREE_BOX.clone().setFromObject(object);}
 const surfaceAt=(x,z,minWidth,minDepth)=>{
