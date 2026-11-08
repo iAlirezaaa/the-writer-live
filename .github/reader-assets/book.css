@@ -1243,3 +1243,39 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
 .book-overlay .note-pop .time {line-height:1.7;}
 .book-overlay .note-card a {display:inline-block;margin-top:8px;color:#81581f;text-decoration:underline;}
 .book-overlay .note-pop textarea {width:100%;max-width:100%;resize:vertical;}
+
+
+/* Reader feedback controls — each vote applies to the CURRENT story only. */
+.book-overlay .book-tools .reader-vote {
+  border:1px solid rgba(227,199,145,.44);
+  color:var(--reader-ink, #e9d9ba);
+  background:rgba(188,140,72,.13);
+  white-space:nowrap;
+  min-width:88px;
+  padding:7px 10px;
+  border-radius:12px;
+}
+.book-overlay .book-tools .reader-vote:hover {
+  border-color:rgba(227,199,145,.8);
+  background:rgba(188,140,72,.22);
+}
+.book-overlay .reader-vote-status {
+  max-width:300px;
+  font-size:.71rem;
+  line-height:1.5;
+  color:#e4be88;
+  overflow-wrap:anywhere;
+}
+.book-overlay .reader-vote-status a {color:inherit;text-decoration:underline;}
+.book-overlay .reader-vote:focus-visible {
+  outline:2px solid #f3c57d;
+  outline-offset:2px;
+}
+@media(max-width:690px) {
+  .book-overlay .book-tools .reader-vote {
+    min-width:70px;
+    padding:6px 8px;
+    font-size:.71rem;
+  }
+  .book-overlay .reader-vote-status {min-width:145px;flex:0 0 auto;}
+}
