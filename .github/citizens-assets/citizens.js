@@ -382,7 +382,7 @@ function createResident(THREE, scene, clickable, row, places, minute, motionArch
   const goal = routineAt(row.routine, minute), point = stationPoint(goal.place, row.id, places);
   figure.root.position.set(point.x, FEET_Y, point.z);
   figure.root.rotation.y = point.z < MAIN ? Math.PI : traits.phase * 0.2 - 0.6;
-  figure.root.visible = goal.activity !== "sleep";
+  figure.root.visible = goal.activity !== "sleep" && goal.place !== row.home;
   animateFigure(figure, goal.activity, row.role, 0, traits.phase, motionArchive);
   // Route geometry is attached to its own citizen (no extra scene roots).
   // It is built from planned sidewalk waypoints and never participates in raycasts.
@@ -405,7 +405,35 @@ function createResident(THREE, scene, clickable, row, places, minute, motionArch
 export function createCitizens({ THREE, scene, clickable, motionArchive=null }) {
   const residents = new Map();
   let places=DEFAULT_PLACES,offset=0,lastDate=null,animationTime=0;
-  let selectedId=null;
+  let selectedId=null, crossingOwner=null;
+  const CROSS_EPS=.015, CROWD_RADIUS=.61;
+  const roadInterior=(p)=>Math.abs(p.x)<.12 && p.z>MAIN+CROSS_EPS && p.z<OPPOSITE-CROSS_EPS;
+  const onCrossing=(a,b)=>Math.abs(a.x)<.12 && Math.abs(b.x)<.12
+    && a.z>=MAIN-CROSS_EPS && a.z<=OPPOSITE+CROSS_EPS
+    && b.z>=MAIN-CROSS_EPS && b.z<=OPPOSITE+CROSS_EPS
+    && Math.abs(a.z-b.z)>.05;
+  function wantsCrossing(resident){
+    if(!resident.present || resident.row.role==="publisher" || !resident.route.length)return false;
+    const p=resident.figure.root.position;
+    const needs=resident.route.some((w,i)=>onCrossing(i?resident.route[i-1]:p,w));
+    if(!needs)return false;
+    // Reserve the crossing when near either mouth, not from blocks away.
+    return roadInterior(p)||(Math.abs(p.x)<1.2 &&
+      (Math.abs(p.z-MAIN)<.2 || Math.abs(p.z-OPPOSITE)<.2));
+  }
+  function crossingDemand(){
+    if(crossingOwner)return true;
+    return [...residents.values()].some(wantsCrossing);
+  }
+  function crossingIsClear(traffic){
+    if(!Array.isArray(traffic))return true; // old offline scene tests
+    return traffic.every(car=>!(
+      Number(car.z)>6 && Number(car.z)<11 &&
+      Math.abs(Number(car.x)) < // The stop line is at halfLength+2.1. A car that passed it must
+      // leave the entire crossing before a pedestrian is released.
+      Math.max(0,Number(car.halfLength)||0)+2.099
+    ));
+  }
   function select(id){
     selectedId=typeof id==="string"&&residents.has(id)?id:null;
     for(const resident of residents.values()){
@@ -435,6 +463,7 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
     places = normalized.places; offset = normalized.offset;
     if (!lastDate) lastDate = normalized.date;
     const ids = new Set(normalized.citizens.map((row) => row.id));
+    if(crossingOwner && !ids.has(crossingOwner))crossingOwner=null;
     for (const resident of residents.values()) {
       resident.present=resident.row.role==="publisher"||ids.has(resident.row.id);
       if(!resident.present)resident.figure.root.visible=false;
@@ -498,7 +527,7 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
     return row;
   }
 
-  function update(dt, elapsed, nowDate) {
+  function update(dt, elapsed, nowDate, traffic=null) {
     // A suspended tab must resume walking, not jump across the town in one frame.
     const step = Number.isFinite(dt) ? Math.max(0, Math.min(dt, 1)) : 0;
     if (nowDate !== undefined) {
@@ -517,17 +546,20 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
         resident.route = buildRoute(figure.root.position, stationPoint(next.place, row.id, places), places);
       }
       let remaining=step*traits.speed;
-      // Never move a capsule through another awake citizen; preview each
-      // movement and stop at a safety boundary instead of penetrating meshes.
+      resident.waitingForCrossing=false;
+      // Even a large delta must not tunnel a body through another capsule.
+      // The check is the whole swept segment, not just the final position.
       // Deterministic ID ordering prevents update-order randomness.
       const blockers=[...residents.values()].filter(other=>
         other!==resident&&other.present&&other.figure.root.visible)
         .sort((a,b)=>a.row.id.localeCompare(b.row.id));
-      const safeDistance=.61;
-      const clearTo=(candidate)=>{
+      const clearTo=(candidate,start)=>{
         for(const other of blockers){
-          const gap=distance(candidate,other.figure.root.position);
-          if(gap<safeDistance-1e-4)return false;
+          const p=other.figure.root.position,dx=candidate.x-start.x,dz=candidate.z-start.z;
+          const lenSq=dx*dx+dz*dz;
+          const t=lenSq>1e-10?Math.max(0,Math.min(1,((p.x-start.x)*dx+(p.z-start.z)*dz)/lenSq)):0;
+          const closest={x:start.x+dx*t,z:start.z+dz*t};
+          if(distance(closest,p)<CROWD_RADIUS-1e-4)return false;
         }
         return true;
       };
@@ -540,17 +572,49 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
           x:position.x+(waypoint.x-position.x)*move/length,
           z:position.z+(waypoint.z-position.z)*move/length
         };
-        if(!clearTo(candidate)){
-          // Keep a minimum separation even on fractional frames. Stop short
-          // of busy crossroads; no intersection teleporting or parent shifts.
+        const entersRoad=!roadInterior(position)&&roadInterior(candidate)
+          && onCrossing(position,waypoint);
+        if(entersRoad && (crossingOwner!==null && crossingOwner!==row.id ||
+                          !crossingIsClear(traffic))){
+          resident.waitingForCrossing=true;
           remaining=0;
           break;
         }
+        if(!clearTo(candidate,position)){
+          // Clip the movement to the largest collision-free prefix. This also
+          // prevents a suspended tab's larger step from tunneling past peers.
+          let low=0,high=1;
+          const start={x:position.x,z:position.z};
+          for(let k=0;k<14;k++){
+            const mid=(low+high)*.5;
+            const probe={x:start.x+(candidate.x-start.x)*mid,
+              z:start.z+(candidate.z-start.z)*mid};
+            if(clearTo(probe,start))low=mid;
+            else high=mid;
+          }
+          if(low>1e-5){
+            position.x=start.x+(candidate.x-start.x)*low;
+            position.z=start.z+(candidate.z-start.z)*low;
+            // Partial entry into the carriageway still owns its crossing.
+            if(entersRoad && roadInterior(position))crossingOwner=row.id;
+          }
+          remaining=0;
+          break;
+        }
+        if(entersRoad)crossingOwner=row.id;
         position.x=candidate.x;position.z=candidate.z;
         remaining-=move;
         if(length<=move+EPS)resident.route.shift();
+        if(crossingOwner===row.id&&!roadInterior(position)
+            && (Math.abs(position.z-MAIN)<CROSS_EPS
+                || Math.abs(position.z-OPPOSITE)<CROSS_EPS))
+          crossingOwner=null;
       }
       const walking = resident.route.length > 0;
+      // A scheduled change can release a crossing owner after it has
+      // safely reached the sidewalk; avoid holding a ghost reservation.
+      if(crossingOwner===row.id&&!roadInterior(figure.root.position)
+          && !wantsCrossing(resident))crossingOwner=null;
       if (!walking) {
         resident.place = resident.goal.place;
         figure.root.rotation.y = places[resident.place].z < MAIN ? Math.PI : traits.phase * 0.2 - 0.6;
@@ -583,8 +647,11 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
         :{enabled:false,mode:"dormant",records:0},
       animation_archive:motionArchive?.MOTION_LIBRARY_VERSION||CITIZEN_CORE_VERSION,
       publisher:resident.publisher?JSON.parse(JSON.stringify(resident.publisher)):null,
+      waitingForCrossing:resident.waitingForCrossing===true,
+      crossingOwner:crossingOwner===resident.row.id,
     }));
   }
 
-  return { setRoster, setPublisherProfile, update, status, select, animationLibrary:motionArchive?.MOTION_ARCHIVE||null };
+  return { setRoster, setPublisherProfile, update, status, select, crossingDemand,
+    animationLibrary:motionArchive?.MOTION_ARCHIVE||null };
 }
