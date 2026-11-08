@@ -2,7 +2,7 @@
  * Node: node tests/observatory_probe.mjs <root>
  */
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readFileSync,existsSync} from "node:fs";
 import {resolve} from "node:path";
 
 const root=resolve(process.argv[2]||".");
@@ -30,7 +30,7 @@ assert.equal(JSON.stringify(model),snapshot,
   "Visual-only formatting must never alter API/storage identifiers or dates");
 
 const ui=text("web/observer-ui.js");
-const html=text("web/index.html");
+const html=text(existsSync(resolve(root,"index.html"))?"index.html":"web/index.html");
 const css=text("web/observer.css");
 const world=text("web/world.js");
 const actions=text("web/read.js");
