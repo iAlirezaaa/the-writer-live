@@ -37,3 +37,16 @@ Every session: mark new TODO first; change source; run the urban/city/scene prob
 ## Two new backlog proposals (iteration 002)
 1. **Accessible civic wayfinding**: reusable tactile crossing markers and high-contrast wayfinding near school/police, gated by 1.5-unit unobstructed pedestrian width and door-landing probes.
 2. **Shared night-light budget inspector**: diagnostic overlay counting unique lights, draw calls and instanced emissive windows per district; no additional lights at runtime.
+
+## Iteration 003 — reproducible municipal gate (2026-11-08)
+- [x] Register a documentation-only acceptance-gate task before editing skills; no geometry, traffic, animation or citizen paths changed.
+- [x] Add a precise pass/fail evidence template to `city/skills/city-regression/SKILL.md` (source revision, probes, pinned mirror, Pages run, visual states).
+- [ ] Run the Node probes in a checkout and capture exit codes; connector file reads do not execute them.
+- [ ] Compare private source and public pinned blobs and inspect latest Pages run before any runtime publication.
+- [ ] Capture street, aerial, day, night and mobile screenshots for physical access validation.
+
+## Two new backlog ideas (iteration 003)
+1. **Municipal clearance manifest**: machine-readable civic doorway/sidewalk/crosswalk clearance fixtures, versioned under `city/` and validated before runtime changes.
+2. **District ambience density cap**: per-district pooled bird, cat, foliage and weather budgets with a deterministic performance benchmark, without touching citizen paths.
+
+Status: documentation-only; runtime probes, visual QA and deployment for this iteration NOT VERIFIED.
