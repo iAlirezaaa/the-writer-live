@@ -1237,6 +1237,7 @@ const writerExterior = new THREE.Group();
 writerExterior.name = "writer-home-exterior-v2";
 scene.add(writerExterior);
 let currentWriterHouseLevel = -1;
+let currentWriterSceneMode = "town";
 function exteriorPart(geo, material, x, y, z) {
   const m = new THREE.Mesh(geo, material);m.position.set(x,y,z);
   m.castShadow=true;m.receiveShadow=true;writerExterior.add(m);return m;
@@ -1346,9 +1347,10 @@ function rebuildWriterInteriorShell(level=0){
 }
 function updateWriterHouse(acceptedCount){
   const next=writerHouseLevel(acceptedCount);
-  if(next!==currentWriterHouseLevel){rebuildWriterExterior(next);rebuildWriterInteriorShell(next);setWriterSceneMode(view);}
+  if(next!==currentWriterHouseLevel){rebuildWriterExterior(next);rebuildWriterInteriorShell(next);setWriterSceneMode(currentWriterSceneMode);}
 }
 function setWriterSceneMode(mode){
+  currentWriterSceneMode=mode;
   const outdoors=["town","cars","publisher","bookstore"].includes(mode);
   writerExterior.visible=outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
