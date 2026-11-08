@@ -49,6 +49,7 @@ jobs:
           cp _site/web/urban-plan.js /tmp/the-writer-urban-plan.mjs
           node --check /tmp/the-writer-urban-plan.mjs
           node tests/urban_plan_probe.mjs _site
+          node tests/writer_house_consistency_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
           for check in layout paths wiring; do
