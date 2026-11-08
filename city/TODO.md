@@ -9,8 +9,9 @@ Updated: 2026-11-08. Owner: City subsystem only. Private authoring repo is the s
 - [x] Add northern mountain distance layer, eastern trees, five animated birds, two ambient cats, and pooled seasonal particle weather.
 - [x] Add four traffic-regulation signposts, a shared window/trunk/foliage instancing library, and public explorer entries.
 - [x] Extend the geometry and capacity acceptance probes.
-- [ ] Synchronize reviewed assets and documentation to the public pinned repo.
-- [ ] Confirm the newest public Pages workflow is green; perform street-level and mobile screenshots in day and night before declaring visual QA complete.
+- [x] Synced reviewed assets and documentation to public pinned repo in [7152a8e](https://github.com/iAlirezaaa/the-writer-live/commit/7152a8ed29a7aaab492bd71d378ca217571c8750).
+- [x] Public Pages build/deployment succeeded: [run 42497633411](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42497633411).
+- [ ] Street-level, day/night and mobile screenshot reviews remain unverified; do not declare visual QA complete.
 
 ## Next municipal backlog
 - [ ] Map real pedestrian clearances, marked crosswalks and step-free ramps beside the new school and police station.
