@@ -1,5 +1,6 @@
 import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
 import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v3";
+import { buildCityGrowth } from "./city-growth.js?v=civic-growth-20261108-v1";
 import { ROAD_SEGMENTS } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { buildSeamlessRoadSurface, ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
 
@@ -189,6 +190,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   // public spaces and a publisher office on an upper floor. The author's
   // original home and the tested traffic/pedestrian routes are untouched.
   const districts = buildCityDistricts({ THREE, group, clickable, canvasTex, streetY: STREET_Y });
+  const growth = buildCityGrowth({ THREE, group, clickable, canvasTex, places:districts.catalog, streetY:STREET_Y });
   // A single union mesh covers the old main streets and every district extension.
   // It is ONE asphalt surface, not coplanar road patches glued together.
   // Keep the original underneath as a collision/path reference for resident routes.
@@ -200,6 +202,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   return {
     group,
     districts,
+    growth,
     trafficState(){return carLayer.trafficState();},
     update(day, elapsed, crossingDemand=false) {
       const lighting = nightLighting(day);
@@ -208,6 +211,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
       districts.update(day,elapsed);
+      growth.update(day,elapsed);
       carLayer.setCrossingDemand(crossingDemand===true);
       carLayer.update(day, elapsed);
     },

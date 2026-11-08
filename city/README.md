@@ -8,11 +8,17 @@ This directory is **separate from the writer's narrative, memory, and agent pers
 - The shared `WRITER_HOME_BLUEPRINT` in urban-plan.js owns room dimensions, door/window anchors, exterior material palette and growth stages. **Do not duplicate these values in separate view files.**
 - `docs/CITY_LAYOUT_V2.md` is the existing long-form handoff.
 
+## Municipal expansion (2026-11-08)
+- `web/city-growth.js`: 432-place housing plan, school, police, screenplay office, film studio, northern ridgeline, eastern forest, ambient wildlife.
+- `city/TODO.md`: delivery log and pending QA; `city/URBAN_CODE.md`: municipal safety and design requirements.
+- Capacity is planned space, not an active population of 432 people.
+
 ## Skills (persistent)
 - `skills/road-parcel-access/SKILL.md`: roads, plots, entrances, pedestrian paths, parking, landscaping.
 - `skills/building-foundations/SKILL.md`: ground-level support, facades, clearance, neighbour isolation.
 - `skills/writer-home-consistency/SKILL.md`: single-room opening, interior/exterior identity, expansion and cutaway.
 - `skills/city-regression/SKILL.md`: browserless Three.js checks and deployment gates.
+- `skills/municipal-growth/SKILL.md`: municipal iteration, services, animation and safety.
 - Existing agent integration: `.agents/skills/city-layout-rebuild/SKILL.md`.
 
 ## Workflow

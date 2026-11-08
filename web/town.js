@@ -1,5 +1,8 @@
 import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
-import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v1";
+import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v3";
+import { buildCityGrowth } from "./city-growth.js?v=civic-growth-20261108-v1";
+import { ROAD_SEGMENTS } from "./urban-plan.js?v=urban-plan-20261108-v3";
+import { buildSeamlessRoadSurface, ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -17,6 +20,8 @@ export function nightLighting(day) {
 
 export function buildTown({ THREE, scene, clickable, canvasTex }) {
   const group = new THREE.Group(); group.name = "town"; scene.add(group);
+  const legacyShopLayer = new THREE.Group(); legacyShopLayer.name = "legacy-shopfront-interiors"; group.add(legacyShopLayer);
+  let meshParent = group;
   const materials = {};
   const material = (name, color, extra = {}) => materials[name] ||= new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
   const stone = material("stone", 0xa5a292), curb = material("curb", 0xd0c5ae);
@@ -29,7 +34,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   const bookMats = [0x9d584e, 0x5a747f, 0xd4ad67, 0x7d8464].map((c, i) => material(`book${i}`, c));
   function mesh(geometry, mat, x, y, z) {
     const m = new THREE.Mesh(geometry, mat); m.position.set(x, y, z);
-    m.castShadow = false; m.receiveShadow = true; group.add(m); return m;
+    m.castShadow = false; m.receiveShadow = true; meshParent.add(m); return m;
   }
   const box = (w, h, d, mat, x, y, z) => mesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z);
   function sign(text, x, y, z, width, background = "#30494b") {
@@ -50,10 +55,10 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       box(54, 0.1, 1.8, stone, 0, STREET_Y - 0.02, z + side * 2.8);
       box(54, 0.16, 0.14, curb, 0, STREET_Y + 0.01, z + side * 2.02);
     }
-    for (let x = -23; x <= 23; x += 3) box(1.25, 0.012, 0.07, curb, x, STREET_Y - 0.031, z);
+    for (let x = -23; x <= 23; x += 3) box(1.25, 0.012, 0.07, curb, x, STREET_Y + ROAD_PAINT_CENTER_OFFSET, z);
   }
   for (const x of [-25, 25]) box(4, 0.08, 21, asphalt, x, STREET_Y - 0.08, 0);
-  for (let z = 6.65; z < 10.5; z += 0.55) box(1.9, 0.014, 0.28, paper, 0, STREET_Y - 0.024, z);
+  for (let z = 6.65; z < 10.5; z += 0.55) box(1.9, 0.014, 0.28, paper, 0, STREET_Y + ROAD_PAINT_CENTER_OFFSET, z);
   box(46, 0.1, 5.2, stone, 0, STREET_Y - 0.025, 13.7);
   for (const b of TOWN_BUILDINGS) box(2, 0.08, 3, stone, b.x, STREET_Y - 0.015, 4.2);
 
@@ -92,6 +97,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   }
 
   const office = TOWN_BUILDINGS[0], store = TOWN_BUILDINGS[1];
+  meshParent = legacyShopLayer;
   for (const b of [office, store]) {
     const wall = b.key === "publisher" ? brick : teal;
     box(b.w, 0.16, b.d, curb, b.x, STREET_Y - 0.02, b.z);
@@ -119,7 +125,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
     clickable(hit, b.key === "publisher" ? "p-publish" : "p-books", b.label).userData.view = b.key;
     sign("نمای برش‌خورده", b.x, STREET_Y + 0.1, 3.2, 1.9);
     const glow = new THREE.PointLight(0xffe2b7, 4, 7, 1.3);
-    glow.position.set(b.x, STREET_Y + 2.8, 0.5); group.add(glow);
+    glow.position.set(b.x, STREET_Y + 2.8, 0.5); legacyShopLayer.add(glow);
   }
   table(-10, -0.5, 2.1);
   box(0.7, 0.12, 0.5, paper, -10.35, STREET_Y + 0.93, -0.5);
@@ -131,6 +137,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   for (let j = 0; j < 6; j++) box(0.25, 0.07, 0.35, bookMats[j % 4], 9.15 + j * 0.33, STREET_Y + 0.91, -0.3);
   table(12, 1.3, 1.2);
   sign("کتاب · تجربه · ایده", 10, STREET_Y + 2.4, -2.85, 3.2);
+  meshParent = group;
 
   for (const b of TOWN_BUILDINGS.slice(2)) {
     const wall = b.x < 0 ? material("home1", 0xb79b7c) : material("home2", 0x8b9b91);
@@ -156,6 +163,16 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
         box(1.22, 0.08, 0.06, metal, x, y - 0.50, b.z + 3.08);
       }
     }
+    // Private lots: side parking is off the continuous pavement, and each front door
+    // has a walkable approach rather than opening straight onto a road.
+    box(1.85,0.08,2.7,stone,b.x+2.0,STREET_Y+0.04,-4.15);
+    box(1.85,0.055,1.8,asphalt,b.x+2.0,STREET_Y-0.04,-6.2);
+    for(const dx of [-0.86,0.86])
+      box(0.065,0.015,2.5,paper,b.x+2.0+dx,STREET_Y+0.09,-4.15);
+    for(const dx of [-2.1,2.1]){
+      box(0.6,0.16,1.6,grass,b.x+dx,STREET_Y+0.10,3.75);
+      box(0.7,0.1,1.7,curb,b.x+dx,STREET_Y+0.015,3.75);
+    }
     sign(b.label, b.x, STREET_Y + 4.3, b.z + 2.75, 3);
   }
   bench(-3, 13); bench(3, 13); bench(9, 13);
@@ -173,12 +190,19 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   // public spaces and a publisher office on an upper floor. The author's
   // original home and the tested traffic/pedestrian routes are untouched.
   const districts = buildCityDistricts({ THREE, group, clickable, canvasTex, streetY: STREET_Y });
+  const growth = buildCityGrowth({ THREE, group, clickable, canvasTex, places:districts.catalog, streetY:STREET_Y });
+  // A single union mesh covers the old main streets and every district extension.
+  // It is ONE asphalt surface, not coplanar road patches glued together.
+  // Keep the original underneath as a collision/path reference for resident routes.
+  const cityRoadSurface=buildSeamlessRoadSurface(THREE,ROAD_SEGMENTS,{streetY:STREET_Y});
+  group.add(cityRoadSurface);
     const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
   const carLayer = buildTownCars({ THREE, city: group, streetY: STREET_Y });
   return {
     group,
     districts,
+    growth,
     trafficState(){return carLayer.trafficState();},
     update(day, elapsed, crossingDemand=false) {
       const lighting = nightLighting(day);
@@ -187,6 +211,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
       districts.update(day,elapsed);
+      growth.update(day,elapsed);
       carLayer.setCrossingDemand(crossingDemand===true);
       carLayer.update(day, elapsed);
     },

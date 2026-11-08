@@ -1,10 +1,12 @@
+import { auditUrbanPlan } from "./urban-plan.js?v=urban-plan-20261108-v3";
+import { ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
 /* THE WRITER — CITY DISTRICT KIT / v1
  * Architectural layer only. The author's house, room props, current pedestrian
  * graph, and moving traffic lanes are NEVER modified by this module.
  * Uses cached geometries/materials and instanced window facades to keep draw
  * calls affordable. These are designed fictional venues, not proof of visits.
  */
-export const DISTRICT_KIT_VERSION="district-kit-20261108-v1";
+export const DISTRICT_KIT_VERSION="district-kit-20261108-v3";
 export const CITY_BLOCKS=Object.freeze([
   {id:"west-arcade",x:-20,z:-18,w:5.4,d:5.6,floors:4,style:"brick",title:"رواق غربی",district:"محلهٔ قدیمی"},
   {id:"media-loft",x:-12,z:-18,w:5.2,d:5.4,floors:5,style:"loft",title:"استودیوهای شهر",district:"محلهٔ هنر"},
@@ -12,12 +14,12 @@ export const CITY_BLOCKS=Object.freeze([
   {id:"urban-flats",x:4,z:-18,w:5.2,d:5.4,floors:5,style:"modern",title:"خانه‌های باغ",district:"محلهٔ مسکونی"},
   {id:"teal-tower",x:12,z:-18,w:5.4,d:5.5,floors:7,style:"glass",title:"برج سپیدار",district:"مرکز نو"},
   {id:"north-hotel",x:20,z:-18,w:5.4,d:5.6,floors:5,style:"terrace",title:"مهمانسرای سپهر",district:"مرکز نو"},
-  {id:"old-post",x:-20,z:-28,w:5.3,d:5.4,floors:4,style:"civic",title:"ادارهٔ پست",district:"محلهٔ قدیمی"},
-  {id:"stone-row",x:-12,z:-28,w:5.6,d:5.6,floors:4,style:"mansard",title:"عمارت ساعت",district:"محلهٔ قدیمی"},
-  {id:"atelier",x:-4,z:-28,w:5.3,d:5.3,floors:5,style:"brick",title:"کارگاه هنرمندان",district:"محلهٔ هنر"},
-  {id:"community-house",x:4,z:-28,w:5.5,d:5.4,floors:4,style:"terrace",title:"باشگاه محله",district:"محلهٔ مسکونی"},
-  {id:"glass-office",x:12,z:-28,w:5.4,d:5.5,floors:6,style:"glass",title:"مرکز نوآوری",district:"مرکز نو"},
-  {id:"sky-residences",x:20,z:-28,w:5.3,d:5.3,floors:6,style:"modern",title:"خانه‌های آسمان",district:"مرکز نو"}
+  {id:"old-post",x:-20,z:-30,w:5.3,d:5.4,floors:4,style:"civic",title:"ادارهٔ پست",district:"محلهٔ قدیمی"},
+  {id:"stone-row",x:-12,z:-30,w:5.6,d:5.6,floors:4,style:"mansard",title:"عمارت ساعت",district:"محلهٔ قدیمی"},
+  {id:"atelier",x:-4,z:-30,w:5.3,d:5.3,floors:5,style:"brick",title:"کارگاه هنرمندان",district:"محلهٔ هنر"},
+  {id:"community-house",x:4,z:-30,w:5.5,d:5.4,floors:4,style:"terrace",title:"باشگاه محله",district:"محلهٔ مسکونی"},
+  {id:"glass-office",x:12,z:-30,w:5.4,d:5.5,floors:6,style:"glass",title:"مرکز نوآوری",district:"مرکز نو"},
+  {id:"sky-residences",x:20,z:-30,w:5.3,d:5.3,floors:6,style:"modern",title:"خانه‌های آسمان",district:"مرکز نو"}
 ]);
 export const CITY_PLACE_CATALOG=Object.freeze([
   {id:"publishing-tower",name:"برج نشر آفتاب",zone:"مرکز فرهنگی",kind:"اداری · نشر",x:-10,z:0,y:11,
@@ -46,7 +48,25 @@ export const CITY_PLACE_CATALOG=Object.freeze([
    activity:"نمایش و اجرا",access:"صحنه و تجهیزات آماده؛ محتوای نمایشی هنوز تعریف نشده"},
   {id:"market-passage",name:"گذر بازار",zone:"محلهٔ قدیمی",kind:"خرید و گذر",x:-36,z:-7,y:3,
    description:"رواقی با غرفه‌های کوچک، سایه‌بان‌ها و تابلوی راهنما در کنار خیابان فرعی.",
-   activity:"خرید روزانه و گشت شهری",access:"محیط سه‌بعدی؛ فروشگاه‌های مستقل هنوز فعال نیستند"}
+   activity:"خرید روزانه و گشت شهری",access:"محیط سه‌بعدی؛ فروشگاه‌های مستقل هنوز فعال نیستند"},
+  {id:"city-school",name:"دبستان شهر",zone:"خدمات عمومی",kind:"آموزشی",x:-52,z:-16,y:2,
+    description:"مدرسهٔ محله با محوطهٔ ورود و کلاس‌های نمایشی؛ بدون دادهٔ دانش‌آموزان واقعی.",
+    activity:"آموزش و فعالیت‌های فرهنگی",access:"ساختمان سه‌بعدی و قابل انتخاب؛ کلاس‌های داخلی در برنامهٔ توسعه"},
+  {id:"police-station",name:"کلانتری شهر",zone:"خدمات عمومی",kind:"امنیت شهری",x:-65,z:-16,y:2,
+    description:"کلانتری نمایشی برای خدمات شهری، ایمنی ترافیک و راهنمایی بازدیدکنندگان.",
+    activity:"نظم شهری و راهنمایی",access:"نمای بیرونی قابل انتخاب؛ بدون کنترل مستقل بر شهروندان"},
+  {id:"screenplay-office",name:"دفتر فیلم‌نامه و دکوپاژ",zone:"محلهٔ هنر",kind:"فرهنگی · سینمایی",x:-52,z:-33,y:2,
+    description:"دفتر مستقل طراحی صحنه و دکوپاژ؛ هیچ ارتباطی با منطق نگارش نویسنده ندارد.",
+    activity:"طراحی سکانس و استوری‌بورد",access:"ساختمان سه‌بعدی؛ فضای داخلی در مرحلهٔ بعد"},
+  {id:"film-studio",name:"استودیوی فیلم‌سازی",zone:"حومهٔ شرقی",kind:"سینما",x:99,z:-54,y:3,
+    description:"استودیوی خارج شهر با صحنهٔ تصویربرداری، دکل دوربین و راه دسترسی به جادهٔ جنگل.",
+    activity:"تصویربرداری و تولید فیلم نمایشی",access:"محوطهٔ سه‌بعدی قابل کاوش"},
+  {id:"eastern-neighborhood",name:"محلهٔ مسکونی شرقی",zone:"محلهٔ مسکونی",kind:"مسکونی",x:64,z:-33,y:2,
+    description:"دوازده بلوک چهارطبقه با ظرفیت برنامه‌ریزی‌شدهٔ ۴۳۲ نفر، نه جمعیت شبیه‌سازی‌شده.",
+    activity:"زندگی شهری و خدمات مجتمع‌ها",access:"نمای بیرونی قابل کاوش؛ فضای داخلی هنوز پیاده‌سازی نشده"},
+  {id:"forest-gate",name:"راه جنگل",zone:"حومهٔ شرقی",kind:"طبیعت",x:111,z:-40,y:2,
+    description:"جادهٔ ممتد شرقی که به جنگل سبک و استودیوی فیلم‌سازی می‌رسد.",
+    activity:"گشت در طبیعت و مشاهدهٔ پرندگان",access:"نمایش سه‌بعدی؛ ادامهٔ جهان خارج از نقشه هنوز طراحی نشده"}
 ]);
 const PALETTES={
  brick:{wall:0x9d6e63,accent:0xe2c9aa,trim:0x57433d,roof:0x554c49},
@@ -67,7 +87,7 @@ export function auditCityPlan(){
       intersections.push([a.id,b.id]);
   }
   return {blocks:CITY_BLOCKS.length,venues:CITY_PLACE_CATALOG.length,
-    styles:PALETTE_STYLES.length,intersections,writerRoomUntouched:true,
+    styles:PALETTE_STYLES.length,intersections,urban:auditUrbanPlan(),writerRoomUntouched:true,
     routesUnchanged:true,animatedVenueVisits:false};
 }
 export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3}){
@@ -247,6 +267,20 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   const pw=5.55,pd=5.58,level=3.1,base=3.28,top=base+5*level;
   const towerWall=mat("publisher-wall",0x605d67),towerTrim=mat("publisher-trim",0xd4b997),
     towerEdge=mat("publisher-edge",0x343e4c);
+  // Make a load-bearing ground floor below the upper apartment and editorial office.
+  // The old shop interior is deprecated, so the replacement cannot start midair.
+  B(pw+.25,.17,pd+.22,towerEdge,0,.075,0,tower);
+  B(pw,base-.12,pd,towerWall,0,(base-.12)/2+.16,0,tower);
+  B(pw+.18,.16,pd+.18,towerTrim,0,base,0,tower);
+  const publisherDoor=B(1.28,2.35,.11,door,0,1.23,pd/2+.10,tower);
+  publisherDoor.name="publisher-street-door";
+  B(1.55,.18,.48,towerEdge,0,2.50,pd/2+.25,tower);
+  for(const xx of [-1.83,1.83]){
+    B(.93,1.38,.08,glass,xx,1.65,pd/2+.11,tower);
+    B(1.10,.11,.23,towerTrim,xx,.91,pd/2+.16,tower);
+  }
+  B(1.58,.12,2.92,paving,-10,H(.06),4.18);
+  B(2.10,.08,1.45,stone,-10,H(.04),3.50);
   // Preserve the original lobby footprint and all old publisher click targets.
   for(let floor=0;floor<5;floor++){
     const low=base+floor*level,high=low+level;
@@ -298,6 +332,19 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
   // relocating the old bookstore floor, storefront, sign or reader navigation.
   const bookstore=new THREE.Group();bookstore.name="bookstore-lofts";bookstore.position.set(10,streetY,0);root.add(bookstore);
   const bookstoreWall=mat("bookstore-upper",0x788b82);
+  // Ground-floor retail volume aligns physically with the two upper floors.
+  const bookstoreBase=3.37;
+  B(6.06,.17,6.10,towerEdge,0,.07,0,bookstore);
+  B(5.75,bookstoreBase-.09,5.8,bookstoreWall,0,(bookstoreBase-.09)/2+.13,0,bookstore);
+  B(6.1,.17,6.1,towerEdge,0,bookstoreBase,0,bookstore);
+  const bookDoor=B(1.24,2.28,.12,door,0,1.18,2.97,bookstore);
+  bookDoor.name="bookstore-street-door";
+  for(const xx of [-1.95,1.95]){
+    B(1.06,1.55,.075,glass,xx,1.62,2.99,bookstore);
+    B(1.24,.11,.19,towerEdge,xx,.82,3.07,bookstore);
+  }
+  B(1.62,.12,2.92,paving,10,H(.06),4.18);
+  B(2.1,.08,1.45,stone,10,H(.04),3.50);
   for(let levelIndex=0;levelIndex<2;levelIndex++){
     const y=3.37+levelIndex*3.05;
     B(5.75,2.98,5.8,bookstoreWall,0,y+1.49,0,bookstore);
@@ -309,23 +356,52 @@ export function buildCityDistricts({THREE,group,clickable,canvasTex,streetY=-3})
     }
   }
   sign("خانهٔ کتاب · طبقهٔ بالا",10,streetY+7.95,3.22,3.9);
+  const bookLobby=sign("خانهٔ کتاب · ورودی",10,streetY+2.75,3.22,3.8);
+  clickable(bookLobby,"p-books","خانهٔ کتاب — ورودی");
+  bookLobby.userData.view="bookstore";
   // New streets make the expanded layout a block system instead of random
   // props. These side lanes are VISUAL ONLY, not part of the car simulator.
   const road=mat("new-road",0x404b50),roadStripe=mat("road-line",0xdfd9c0);
-  const newStreet=(x,z,w,d)=>{
-    B(w,.07,d,road,x,H(-.077),z);
+  const newStreet=(x,z,w,d,showMarkings=true)=>{
+    // The asphalt itself lives in ONE union mesh in town.js; adding another
+    // rectangle here would reintroduce the patchwork and z-fighting defect.
+    if(!showMarkings)return;
     if(w>d)for(let t=x-w/2+3;t<x+w/2-1;t+=4.4)
-      B(1.4,.018,.08,roadStripe,t,H(-.027),z);
+      B(1.4,.018,.08,roadStripe,t,H(ROAD_PAINT_CENTER_OFFSET),z);
     else for(let t=z-d/2+3;t<z+d/2-1;t+=4.4)
-      B(.08,.018,1.4,roadStripe,x,H(-.027),t);
+      B(.08,.018,1.4,roadStripe,x,H(ROAD_PAINT_CENTER_OFFSET),t);
   };
   newStreet(-29,-20,4.3,43);newStreet(29,-20,4.3,43);
+  // Both outer streets now connect to the existing east/west network.
+  newStreet(0,-8.5,63,4,false); // Original town already draws main-road markings.
+  // Street between the two southern rows of blocks: no disconnected facades.
+  newStreet(0,-24.5,63,4);
   newStreet(0,-40,63,4.4);
+  // Continuous accessible pavements on BOTH sides of the southern connector.
+  B(63,.10,1.05,sidewalk,0,H(.03),-21.95);
+  B(63,.10,1.05,sidewalk,0,H(.03),-26.72);
+  // Entrances must reach paved circulation, never terminate in grass.
+  for(const b of CITY_BLOCKS){
+    if(b.z===-18){
+      B(1.35,.09,4.35,paving,b.x,H(.045),-13.02);
+    }else if(b.z===-30){
+      B(1.35,.09,1.1,paving,b.x,H(.045),-26.75);
+    }
+  }
+  // Shared parking for dense residential/civic blocks, accessed from perimeter roads.
+  for(const side of [-1,1]){
+    const px=side*35, z=-32;
+    B(4.8,.09,8,road,px,H(-.01),z);
+    B(2.8,.07,2.25,road,side*31.9,H(-.018),z);
+    for(const dz of [-3.2,-.9,1.4,3.6])
+      B(3.65,.015,.08,roadStripe,px,H(.046),z+dz);
+    B(.55,.18,7.4,grassDeep,side*38.0,H(.08),z);
+  }
   // Keep the original operating cars on their current two tested traffic lanes.
   // Decorative side-street access and curb zones are explicitly not sim lanes.
   for(const x of [-29,29]){
     B(1.2,.12,42,sidewalk,x+(x<0?-3:3),H(.02),-20);
-    for(let z=-36;z<=-5;z+=6)B(.1,.07,.9,roadStripe,x,H(-.027),z);
+    for(let z=-36;z<=-5;z+=6)B(.1,.018,.9,roadStripe,x,H(ROAD_PAINT_CENTER_OFFSET),z);
   }
   for(const [x,z] of [[-26,-34],[26,-34],[-26,-10],[26,-10]]){
     C(.095,.13,3.6,dark,x,H(1.8),z,8);

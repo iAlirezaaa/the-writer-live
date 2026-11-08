@@ -12,18 +12,23 @@ const urban=await load(read("web/urban-plan.js"));
 const roads=await load(read("web/road-surface.js"));
 const districtSource=read("web/town-districts.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const districts=new Function("auditUrbanPlan","ROAD_PAINT_CENTER_OFFSET",districtSource+";return {buildCityDistricts,auditCityPlan,CITY_BLOCKS,CITY_PLACE_CATALOG};")(urban.auditUrbanPlan,roads.ROAD_PAINT_CENTER_OFFSET);
+const growthSource=read("web/city-growth.js").replace(/^export /gm,"");
+const growth=new Function(growthSource+";return {buildCityGrowth,auditCityGrowth,CITY_HOUSING_CAPACITY};")();
+const growthAudit=growth.auditCityGrowth(urban.ROAD_SEGMENTS);
+assert.equal(growthAudit.ok,true,JSON.stringify(growthAudit));
+assert.ok(growth.CITY_HOUSING_CAPACITY>=400);
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
-assert.equal(plan.venues,9);
+assert.equal(plan.venues,15);
 assert.equal(plan.intersections.length,0);
 assert.ok(plan.styles>=6);
 assert.equal(plan.writerRoomUntouched,true);
@@ -72,7 +77,14 @@ const district=scene.getObjectByName("city-districts");
 assert.ok(district,"Districts must actually be attached to the existing town");
 assert.equal(city.districts.group,district);
 assert.equal(city.districts.stats.blocks,12);
-assert.equal(city.districts.stats.venues,9);
+assert.equal(city.districts.stats.venues,15);
+assert.equal(city.growth.stats.capacity,432);
+assert.ok(scene.getObjectByName("civic-city-school"));
+assert.ok(scene.getObjectByName("civic-police-station"));
+assert.ok(scene.getObjectByName("civic-screenplay-office"));
+assert.ok(scene.getObjectByName("civic-film-studio"));
+assert.ok(scene.getObjectByName("shared-forest-canopies")?.isInstancedMesh);
+assert.ok(scene.getObjectByName("shared-residential-window-library")?.isInstancedMesh);
 assert.ok(city.districts.stats.dynamicLights>=3);
 const districtPaint=district.children.filter(obj=>obj.isMesh&&obj.geometry?.type==="BoxGeometry"&&
   obj.material?.color?.getHex()===0xdfd9c0 &&
@@ -215,7 +227,7 @@ assert.ok(objects.includes("mesh.userData.placeDetails"),"3D venue click card is
 assert.ok(world.includes('pos: [41, 53, 91]'),"City camera does not frame expanded layout");
 assert.ok(world.includes('target: [-10, 9.6, 0]'),"Publisher camera misses the upper floor");
 const stats={
-  blocks:plan.blocks,styles:plan.styles,places:plan.venues,
+  blocks:plan.blocks,styles:plan.styles,places:plan.venues,housingCapacity:growth.CITY_HOUSING_CAPACITY,
   facadeInstances:instanceCount,publisherDeskWorldY:deskPos.y,
   cityLights:darkIntensity.length,intersections:plan.intersections.length
 };

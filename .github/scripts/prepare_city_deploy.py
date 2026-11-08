@@ -19,7 +19,12 @@ def inspect(site: Path) -> None:
     index=(site/"index.html").read_text(encoding="utf-8")
     urban=(site/"web/urban-plan.js").read_text(encoding="utf-8")
     roads=(site/"web/road-surface.js").read_text(encoding="utf-8")
+    growth=(site/"web/city-growth.js").read_text(encoding="utf-8")
     expected=[
+        ("pin matches authored growth kit",growth==(ROOT/"city-growth.js").read_text(encoding="utf-8")),
+        ("new civic growth runtime", './city-growth.js?v=civic-growth-20261108-v1' in town),
+        ("housing capacity declared", 'CITY_HOUSING_CAPACITY' in growth and 'flatsPerFloor:3' in growth),
+        ("forest and municipal links present", 'eastern-forest-exit' in urban and 'west-civic-link' in urban),
         ("one unified road mesh module", "export function buildSeamlessRoadSurface" in roads),
         ("road paint elevation shared", "export const ROAD_PAINT_CENTER_OFFSET" in roads),
         ("one writer room root", "writerInteriorWorldRoot.add(baseWriterRoomShell)" in world),

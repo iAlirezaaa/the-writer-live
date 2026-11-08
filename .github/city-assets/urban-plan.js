@@ -22,7 +22,11 @@ export const ROAD_SEGMENTS=Object.freeze([
  {id:"outer-west",axis:"z",at:-29,min:-42,max:1.5,width:4.3},
  {id:"outer-east",axis:"z",at:29,min:-42,max:1.5,width:4.3},
  {id:"central-south",axis:"x",at:-24.5,min:-31.2,max:31.2,width:4},
- {id:"outer-south",axis:"x",at:-40,min:-31.2,max:31.2,width:4.4}
+ {id:"outer-south",axis:"x",at:-40,min:-31.2,max:31.2,width:4.4},
+ {id:"west-civic-link",axis:"x",at:-24.5,min:-72,max:-31.2,width:4},
+ {id:"east-housing-link",axis:"x",at:-24.5,min:31.2,max:91,width:4},
+ {id:"eastern-forest-exit",axis:"x",at:-40,min:31.2,max:116,width:4.4},
+ {id:"film-studio-drive",axis:"z",at:89,min:-58,max:-40,width:3.5}
 ]);
 export const BUILDING_PARCELS=Object.freeze([
  {id:"writer",x:0,z:0,w:9,d:11,buildingW:6,buildingD:6,entry:{x:0,z:3},parking:0,green:true},

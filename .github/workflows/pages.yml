@@ -31,6 +31,7 @@ jobs:
           cp .github/city-assets/town-districts.js _site/web/town-districts.js
           cp .github/city-assets/urban-plan.js _site/web/urban-plan.js
           cp .github/city-assets/road-surface.js _site/web/road-surface.js
+          cp .github/city-assets/city-growth.js _site/web/city-growth.js
           python3 .github/scripts/prepare_car_deploy.py _site
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
@@ -49,6 +50,8 @@ jobs:
           node --check /tmp/the-writer-town-districts.mjs
           cp _site/web/urban-plan.js /tmp/the-writer-urban-plan.mjs
           node --check /tmp/the-writer-urban-plan.mjs
+          cp _site/web/city-growth.js /tmp/the-writer-city-growth.mjs
+          node --check /tmp/the-writer-city-growth.mjs
           cp _site/web/road-surface.js /tmp/the-writer-road-surface.mjs
           node --check /tmp/the-writer-road-surface.mjs
           node tests/urban_plan_probe.mjs _site
