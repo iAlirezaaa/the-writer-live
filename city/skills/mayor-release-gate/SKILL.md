@@ -33,3 +33,11 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - Check the public Pages overlay before relying on the web-path copy; a matching SHA is a source check, not a browser execution or deployment check.
 - Require separate evidence for the Node weather probe, a real browser request to the provider, Tehran local midnight/day-night display, and public Pages status. If any are unverified, record them explicitly and do not claim live conditions work.
 - Do not expose API keys or add commercial usage without reviewing Open-Meteo licensing and attribution.
+
+## Tehran freshness and outage acceptance matrix (MAYOR-013)
+- Current implementation: `createTehranWeatherService` polls no more often than 15 minutes on success, retries after 75 seconds on failure, deduplicates concurrent requests, and hides weather after 45 minutes since last successful fetch or 100 minutes since provider observation. These are code-inspection findings, **not** executed assertions in this audit.
+- Provider `current.time` is parsed with an explicit `+03:30` offset when missing a zone; verify the provider still returns Tehran-local timestamps and test both explicit-offset and offset-free payloads. A malformed or >90-minute-old timestamp must not be labelled live.
+- Solar metadata is only accepted when `daily.time[0]` matches today's `Asia/Tehran` date. At Tehran midnight verify the previous day's sunrise/sunset is rejected and fallback remains visually consistent until fresh data arrives.
+- Required test cases: successful fetch; 15-minute no-repeat; simultaneous-call deduplication; failure retry; 44/45-minute cache boundary; 99/100-minute observation boundary; network offline; missing fields; malformed time; midnight; browser in non-Tehran timezone; daylight/night transition. Record test command, exit code and captured output.
+- A Git blob SHA parity check covers private `web/tehran-environment.js` and public `web/tehran-environment.js` plus `.github/city-assets/tehran-environment.js`; it does not prove real-time data, network access, visual QA or deployment. Never substitute an older successful Pages run.
+- Keep weather source attribution visible; verify provider commercial licensing separately before monetized release. No private credentials or city geometry are needed for this audit.
