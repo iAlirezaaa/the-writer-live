@@ -74,3 +74,16 @@ Iteration 004 evidence: six source/pin blobs matched via GitHub fetch_file (2026
 2. **Weather fallback visual snapshot**: compare dawn, noon, dusk and midnight lighting under fresh, unavailable and just-expired provider states without altering citizen clocks.
 
 Release: documentation only; no runtime assets changed or newly deployed; test execution and real-time Tehran weather in production NOT VERIFIED.
+
+## MAYOR-014 — weather regression evidence (2026-11-08)
+- [x] Register independent task before editing skills/backlog.
+- [x] Compare private/public `tests/tehran_environment_probe.mjs`: both blob SHA `6142e53403f29ae2ffcd61869c2fae07d7fc8ca5`.
+- [x] Inspect previous CI: private `tehran` job in run 42512547908 concluded **failure**; public `deploy` job in run 42512570666 concluded **success**.
+- [ ] Diagnose private failure: job log fetch returned 404 BlobNotFound; no assertion-level diagnosis available.
+- [ ] Run Node probe and browser visual/network QA for a new revision; not executed here.
+
+## Two new backlog proposals (MAYOR-014)
+1. **Weather CI artifact retention:** upload deterministic Tehran probe stdout/stderr and test result as short-lived GitHub Actions artifacts for reproducible diagnosis, without private state.
+2. **Clock/weather split-status badge:** city-only diagnostic badge displaying separately the last verified Tehran clock test and live provider-fetch age; never mislabel cached or unavailable weather as live.
+
+Release: documentation-only. Previous public deploy success is historical and does not validate new runtime behavior; private CI remains red.
