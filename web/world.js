@@ -1,12 +1,13 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { openBook, setTurnSpeed } from "./book.js";
+import { openBook, setTurnSpeed } from "./book.js?v=reader-20261108-v4";
 import { openExplorer } from "./explorer.js";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
 import { buildTown, nightLighting } from "./town.js?v=fleet-20261108-c";
-import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js";
+import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v1";
+import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v1";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
    also lives in the room. Click an object: the camera moves into it and its contents open inside it.
@@ -219,7 +220,7 @@ const box = (w, h, d, mat, x, y, z, opt) => mesh(new THREE.BoxGeometry(w, h, d),
 function clickable(m, panel, label) { m.userData.panel = panel; m.userData.label = label; clickables.push(m); return m; }
 
 const town = buildTown({ THREE, scene, clickable, canvasTex });
-const citizens = createCitizens({ THREE, scene, clickable });
+const citizens = createCitizens({ THREE, scene, clickable, motionArchive });
 let serverClockOffset = 0;
 let serverUtcOffset = -new Date().getTimezoneOffset();
 let previewHour = null;
@@ -1272,34 +1273,48 @@ function updateTownSummary() {
   $("town-summary").textContent = `${faNum(rows.length)} شهروند داستان‌دار · ${faNum(visible)} نفر بیدار · شغل ثابت، روتین روزانهٔ متغیر${previewHour === null ? "" : " · پیش‌نمایش ساعت"}`;
   for (const row of rows) {
     const summary = residentSummaries.get(row.id);
-    if (summary) summary.textContent = `${row.label} · ${ROLE_LABELS[row.role]} · ${ACTIVITY_LABELS[row.activity]} · ${PLACE_LABELS[row.destination]}`;
+    if (summary) summary.textContent = `${row.label} · ${ROLE_LABELS[row.role]||row.role} · ${ACTIVITY_LABELS[row.activity]||row.activity} · ${PLACE_LABELS[row.destination]||row.destination}`;
   }
 }
 async function loadTown() {
   try {
     const payload = await getJSON("/api/town");
     citizens.setRoster(payload);
+    // Private owner view may reveal the publisher's genuine persistent persona;
+    // Pages gets only the explicitly safe fictional proxy from /api/town.
+    const publicPublisher={name:"مدیر انتشارات محله",role:"publisher",public_proxy:true};
+    const publisherProfile=STATIC_PUBLIC
+      ? (payload.publisher||publicPublisher)
+      : (await getJSON("/api/publisher").catch(()=>null)) || payload.publisher || publicPublisher;
+    const publisherRow=citizens.setPublisherProfile(publisherProfile);
     const identities = new Map(citizens.status().map((resident) => [resident.id, resident]));
     serverClockOffset = Date.parse(payload.clock) - Date.now();
     const zone = payload.clock.match(/([+-])(\d{2}):(\d{2})$/);
     serverUtcOffset = zone ? (zone[1] === "-" ? -1 : 1) * (Number(zone[2]) * 60 + Number(zone[3])) : 0;
     const expanded = new Set([...$("town-residents").children].filter((el) => el.open).map((el) => el.dataset.id));
     residentSummaries.clear();
-    const rows = payload.citizens.map((resident) => {
+    const livingRows=[...payload.citizens,
+      ...(publisherRow?[{...publisherRow,agent:{id:"publisher-character",enabled:true,mode:"publisher-only",tools:[]}}]:[])];
+    const rows = livingRows.map((resident) => {
       const detail = document.createElement("details");
       detail.className = "resident-row"; detail.dataset.id = resident.id; detail.open = expanded.has(resident.id);
       const summary = document.createElement("summary");
       residentSummaries.set(resident.id, summary);
+      const meta=identities.get(resident.id)?.core?.core||resident.core?.core||{};
+      const essence=document.createElement("p");essence.className="small";
+      essence.textContent=`ارزش: ${meta.value||"—"} · نقص: ${meta.flaw||"—"} · هدف: ${meta.desire||"—"}`;
+      const social=document.createElement("p");social.className="time";
+      social.textContent="مکالمه و حافظه: طراحی‌شده، هنوز غیرفعال";
       const agent = document.createElement("p");
-      agent.className = "time"; agent.textContent = `ایجنت ${resident.agent.id} · غیرفعال · بدون ابزار`;
+      agent.className = "time"; agent.textContent = resident.role==="publisher" ? "ناشر مستقل: گفت‌وگوهای واقعی و پروندهٔ بازنویسی فعال؛ ایجنت شهریِ خودکار غیرفعال" : `ایجنت ${resident.agent.id} · غیرفعال · بدون ابزار`;
       const biography = document.createElement("p"); biography.className = "small"; biography.textContent = identities.get(resident.id)?.story || resident.story || "";
-      const occupation = document.createElement("p"); occupation.className = "time"; occupation.textContent = `پیشهٔ ثابت: ${ROLE_LABELS[resident.role]} · خانه: ${PLACE_LABELS[resident.home]}`;
+      const occupation = document.createElement("p"); occupation.className = "time"; occupation.textContent = resident.role==="publisher" ? `ناشر مستقل · ${publisherProfile?.house||"دفتر نشر محله"}` : `پیشهٔ ثابت: ${ROLE_LABELS[resident.role]} · خانه: ${PLACE_LABELS[resident.home]}`;
       const schedule = document.createElement("ol");
       for (const entry of resident.routine) {
         const time = `${String(Math.floor(entry.start / 60)).padStart(2, "0")}:${String(entry.start % 60).padStart(2, "0")}`;
         schedule.append(item(`${faNum(time)} · ${ACTIVITY_LABELS[entry.activity]} · ${PLACE_LABELS[entry.place]}`));
       }
-      detail.append(summary, biography, occupation, agent, schedule); return detail;
+      detail.append(summary, biography, essence, occupation, social, agent, schedule); return detail;
     });
     $("town-residents").replaceChildren(...rows);
     updateTownSummary();
@@ -2182,7 +2197,7 @@ $("idea-form").addEventListener("submit", async (ev) => {
 // start
 initObjects({
   THREE, camera, controls, stage, state: () => state, toast, selectTab, openStory, openExplorer,
-  setFocus, citizenStatus: () => citizens.status(), findMesh: (key) => clickables.find((c) => (c.userData.view || PANEL_TO_VIEW[c.userData.panel]) === key),
+  setFocus, citizenStatus: () => citizens.status(), citizenSelect: (id) => citizens.select(id), findMesh: (key) => clickables.find((c) => (c.userData.view || PANEL_TO_VIEW[c.userData.panel]) === key),
 });
 const PANEL_TO_VIEW = { "p-stories": "stories", "p-notebook": "notebook", "p-diary": "diary", "p-planner": "planner", "p-graph": "mind", "p-world": "world", "p-flaws": "flaws", "p-books": "library", "p-comments": "letters", "p-status": "status" };
 const panels = initPanels({
