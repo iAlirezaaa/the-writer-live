@@ -1,7 +1,7 @@
 import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
-import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v2";
+import { buildCityDistricts } from "./town-districts.js?v=city-districts-20261108-v3";
 import { ROAD_SEGMENTS } from "./urban-plan.js?v=urban-plan-20261108-v3";
-import { buildSeamlessRoadSurface } from "./road-surface.js?v=road-surface-20261108-v3";
+import { buildSeamlessRoadSurface, ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -54,10 +54,10 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
       box(54, 0.1, 1.8, stone, 0, STREET_Y - 0.02, z + side * 2.8);
       box(54, 0.16, 0.14, curb, 0, STREET_Y + 0.01, z + side * 2.02);
     }
-    for (let x = -23; x <= 23; x += 3) box(1.25, 0.012, 0.07, curb, x, STREET_Y - 0.031, z);
+    for (let x = -23; x <= 23; x += 3) box(1.25, 0.012, 0.07, curb, x, STREET_Y + ROAD_PAINT_CENTER_OFFSET, z);
   }
   for (const x of [-25, 25]) box(4, 0.08, 21, asphalt, x, STREET_Y - 0.08, 0);
-  for (let z = 6.65; z < 10.5; z += 0.55) box(1.9, 0.014, 0.28, paper, 0, STREET_Y - 0.024, z);
+  for (let z = 6.65; z < 10.5; z += 0.55) box(1.9, 0.014, 0.28, paper, 0, STREET_Y + ROAD_PAINT_CENTER_OFFSET, z);
   box(46, 0.1, 5.2, stone, 0, STREET_Y - 0.025, 13.7);
   for (const b of TOWN_BUILDINGS) box(2, 0.08, 3, stone, b.x, STREET_Y - 0.015, 4.2);
 
