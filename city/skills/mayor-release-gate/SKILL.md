@@ -27,3 +27,9 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - Assert UTC 20:29 and 20:30 on 2026-11-08 correspond to Tehran 23:59 and next-day 00:00 respectively; do not use browser-local time.
 - Invalidate yesterday's sunrise/sunset metadata at Tehran midnight and use explicit fallback until matching-day provider data arrives.
 - Regression-only edits do not prove real-browser API access or visual rendering; require independent Pages/CI evidence before any deployment claim.
+
+## Pinned Tehran source parity (MAYOR-012)
+- Compare the **Git blob SHA** of private `web/tehran-environment.js` with both public `web/tehran-environment.js` and `.github/city-assets/tehran-environment.js`; all three must match before treating the pinned weather module as synchronized.
+- Check the public Pages overlay before relying on the web-path copy; a matching SHA is a source check, not a browser execution or deployment check.
+- Require separate evidence for the Node weather probe, a real browser request to the provider, Tehran local midnight/day-night display, and public Pages status. If any are unverified, record them explicitly and do not claim live conditions work.
+- Do not expose API keys or add commercial usage without reviewing Open-Meteo licensing and attribution.
