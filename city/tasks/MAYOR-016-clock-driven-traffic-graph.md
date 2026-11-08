@@ -1,6 +1,6 @@
 # MAYOR-016 — Clock-driven traffic graph and real night headlights
 Date: 2026-11-09
-Status: IMPLEMENTED IN PRIVATE AND MIRRORED IN PUBLIC; city regression passed, full Pages deploy BLOCKED by unrelated world.js syntax error
+Status: IMPLEMENTED / synchronized; city regression and Pages deployment passed; live browser visual QA pending.
 
 ## Reported defects
 - Vehicles only follow straight lanes / short repeated loops.
@@ -33,6 +33,6 @@ Pending.
 - **Real Node/Three.js public CI run**: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42534337743
   - PASS `CITY-TRAFFIC-OK` with stopped cars, request frames, crossing frames and swept person gap.
   - PASS urban plan, road topology, city housing access, town-scene layout/paths/wiring, observatory and citizen probes.
-  - FAIL full release only at `node --check web/world.js`: Unexpected token `else` near the writer forearm animation (public `web/world.js` line ~1979). This code is outside city scope and remains **unmodified**.
+  - A prior deployment failed at an unrelated `web/world.js` syntax error (writer forearm animation). The public file was subsequently restored to match the private source by another repository update; this city task did not modify writer animation logic.
 - Public pinned vehicle modules and town module synced exactly with the private source. Public build guardians, version tokens and observer cache regression updated for the new fleet.
-- **Deployment not verified** because Pages workflow failed. Do not report a live release or visual nighttime QA. Coordinate an owner-authorized syntax fix in the unrelated writer animation module, then rerun the full deployment.
+- **Pages deployment verified** in successful workflow [42534627200](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42534627200). This certifies CI build/deploy, not real-browser nighttime lighting, GPU frame time or long-run intersection safety.
