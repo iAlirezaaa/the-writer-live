@@ -38,6 +38,14 @@ jobs:
           cp .github/reader-assets/read.html _site/read/index.html
           python3 .github/scripts/prepare_reader_deploy.py _site
           python3 .github/scripts/prepare_citizens_deploy.py _site
+          # Pin the complete observer shell AFTER legacy publishing safeguards.
+          # The authoring data/API snapshots remain unchanged.
+          python3 .github/scripts/prepare_observer_deploy.py _site
+          for name in observer-ui persian-display; do
+            cp "_site/web/$name.js" "/tmp/the-writer-observer-$name.mjs"
+            node --check "/tmp/the-writer-observer-$name.mjs"
+          done
+          node tests/observatory_probe.mjs _site
           for name in citizens citizen-motion-library objects; do
             cp "_site/web/$name.js" "/tmp/the-writer-city-$name.mjs"
             node --check "/tmp/the-writer-city-$name.mjs"
