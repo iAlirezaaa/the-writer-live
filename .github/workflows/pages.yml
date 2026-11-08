@@ -24,6 +24,18 @@ jobs:
           cp -a index.html web read snapshot _site/
           touch _site/.nojekyll
           python3 .github/scripts/prepare_car_deploy.py _site
+          # The snapshot exporter may copy stale reader files from a local checkout.
+          # Always ship the reviewed, versioned reading assets from this repository.
+          mkdir -p _site/read _site/web
+          for name in book.css book.js read.js book-cover.js; do
+            cp ".github/reader-assets/$name" "_site/web/$name"
+          done
+          cp .github/reader-assets/read.html _site/read/index.html
+          python3 .github/scripts/prepare_reader_deploy.py _site
+          for name in book read book-cover; do
+            cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
+            node --check "/tmp/the-writer-reader-$name.mjs"
+          done
           for name in town town-cars world; do
             cp "_site/web/$name.js" "/tmp/the-writer-$name.mjs"
             node --check "/tmp/the-writer-$name.mjs"
