@@ -231,9 +231,7 @@
       "task": "rest"
     }
   ],
-  "current": null,
-  "day": "2026-11-08",
-  "next": {
+  "current": {
     "attempts": null,
     "end": "2026-11-08T22:18",
     "id": "202611082133",
@@ -242,5 +240,16 @@
     "start": "2026-11-08T21:33",
     "status": "planned",
     "task": "research"
+  },
+  "day": "2026-11-08",
+  "next": {
+    "attempts": null,
+    "end": "2026-11-08T23:03",
+    "id": "202611082218",
+    "label": "چرت",
+    "next_retry_at": null,
+    "start": "2026-11-08T22:18",
+    "status": "planned",
+    "task": "nap"
   }
 }
