@@ -303,8 +303,10 @@ export function buildTownCars({ THREE, city, streetY }) {
   }
   // Separate pedestrian-request signals at the existing upper crosswalk.
   const crossingLights=[];
+  // Keep posts behind the public footpath at z=11.3; that route is reserved
+  // for citizens and must not intersect any traffic-signal furniture.
   for(const x of [-2.8,2.8]){
-    const g=new THREE.Group();g.position.set(x,streetY,11.12);fleet.add(g);
+    const g=new THREE.Group();g.position.set(x,streetY,13.25);fleet.add(g);
     addBox(g,frame,.12,2.65,.12,0,1.32,0);
     addBox(g,trim,.34,.8,.3,0,2.78,0);
     crossingLights.push({r:makeLight(g,0,2.95,.18),
