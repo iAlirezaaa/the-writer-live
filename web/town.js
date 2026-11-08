@@ -1,4 +1,4 @@
-import { buildTownCars } from "./town-cars.js?v=fleet-20261108-c";
+import { buildTownCars } from "./town-cars.js?v=fleet-20261108-e";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -180,12 +180,14 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   const carLayer = buildTownCars({ THREE, city: group, streetY: STREET_Y });
   return {
     group,
-    update(day, elapsed) {
+    trafficState(){return carLayer.trafficState();},
+    update(day, elapsed, crossingDemand=false) {
       const lighting = nightLighting(day);
       lamps.forEach((light) => { light.intensity = lighting.street; });
       glass.emissiveIntensity = 0.05 + (1 - day) * 0.8;
       bulbMat.emissiveIntensity = 0.3 + (1 - day) * 1.7;
       umbrella.rotation.y = Math.sin(elapsed * 0.15) * 0.012;
+      carLayer.setCrossingDemand(crossingDemand===true);
       carLayer.update(day, elapsed);
     },
   };
