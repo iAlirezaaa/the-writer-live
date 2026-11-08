@@ -50,3 +50,15 @@ Every session: mark new TODO first; change source; run the urban/city/scene prob
 2. **District ambience density cap**: per-district pooled bird, cat, foliage and weather budgets with a deterministic performance benchmark, without touching citizen paths.
 
 Status: documentation-only; runtime probes, visual QA and deployment for this iteration NOT VERIFIED.
+
+## Iteration 004 — pinned-source parity checklist (2026-11-08)
+- [x] Register this bounded, documentation-only task before modifying municipal skills.
+- [ ] Audit private-to-public city pin mapping using exact blob comparisons; record missing/unreadable files as blockers rather than assuming parity.
+- [ ] Execute geometry and scene probes in a runnable checkout before any runtime change; this iteration changes no runtime assets.
+- [ ] Record fresh Pages status separately from prior successful deployment.
+
+## Two new backlog ideas (iteration 004)
+1. **Pin drift sentinel**: compare a declared allowlist of private city source blobs with public pinned assets at each publication and block any mismatched runtime release.
+2. **Civic access evidence cards**: generate per-building school/police/studio entrance cards with coordinates, clearance, ground height and screenshot reference, without storing citizen routes.
+
+Iteration 004 status: documentation-only; no runtime publication authorized.
