@@ -2,7 +2,7 @@
 import { openBook } from "./book.js?v=reader-20261108-v4";
 import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
-import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v1";
+import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
 
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
 const $ = id => document.getElementById(id);
