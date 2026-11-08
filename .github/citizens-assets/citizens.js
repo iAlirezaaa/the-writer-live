@@ -571,13 +571,18 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
       place: resident.place, activity: resident.route.length ? "walk" : resident.goal.activity,
       destination: resident.goal.place, visible: resident.figure.root.visible,
       agent: { ...resident.agent, tools: [...resident.agent.tools] },
-      core:resident.core,
+      // Never leak mutable references into a UI or test status snapshot.
+      core:JSON.parse(JSON.stringify(resident.core)),
       route:resident.route.map(p=>({x:p.x,z:p.z})),
       position:{x:resident.figure.root.position.x,z:resident.figure.root.position.z},
-      conversation:{enabled:false,mode:"dormant",messages:0},
-      memory:{enabled:false,mode:"dormant",records:0},
+      conversation:resident.row.role==="publisher"
+        ?{enabled:true,mode:"publisher_meetings_only",messages:0}
+        :{enabled:false,mode:"dormant",messages:0},
+      memory:resident.row.role==="publisher"
+        ?{enabled:true,mode:"publisher_ledger_only",records:resident.publisher?.learning?.episodes||0}
+        :{enabled:false,mode:"dormant",records:0},
       animation_archive:motionArchive?.MOTION_LIBRARY_VERSION||CITIZEN_CORE_VERSION,
-      publisher:resident.publisher||null,
+      publisher:resident.publisher?JSON.parse(JSON.stringify(resident.publisher)):null,
     }));
   }
 
