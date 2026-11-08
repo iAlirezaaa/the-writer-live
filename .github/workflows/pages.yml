@@ -65,7 +65,7 @@ jobs:
           node tests/citizens_v2_probe.mjs _site _site/snapshot/town.json
           node tests/city_traffic_probe.mjs _site _site/snapshot/town.json
           node tests/citizens_probe.mjs _site < _site/snapshot/town.json
-          for name in book read book-cover; do
+          for name in book read book-cover feedback; do
             cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
             node --check "/tmp/the-writer-reader-$name.mjs"
           done
