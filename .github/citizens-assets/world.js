@@ -1242,6 +1242,16 @@ function paintClock(now) {
 
 // ============ small exterior writer house (independent from private interior) ============
 const interiorSceneObjects = scene.children.filter(node => !citySceneBaseline.has(node));
+// The original room was authored with floor Y=0, three units ABOVE the town.
+// Parent the entire authored room (including its animated writer and props) to
+// the actual street-level origin instead of supporting it with a fake lower floor.
+const writerInteriorWorldRoot = new THREE.Group();
+writerInteriorWorldRoot.name = "writer-interior-street-level";
+writerInteriorWorldRoot.position.y = STREET_Y;
+scene.add(writerInteriorWorldRoot);
+for (const node of interiorSceneObjects) writerInteriorWorldRoot.add(node);
+// Dynamic room props created later must use the same grounded coordinate frame.
+writerMeshParent = writerInteriorWorldRoot;
 const writerExterior = new THREE.Group();
 writerExterior.name = "writer-home-exterior-v2";
 scene.add(writerExterior);
@@ -1368,6 +1378,7 @@ function setWriterSceneMode(mode){
   currentWriterSceneMode=mode;
   const outdoors=["town","cars","publisher","bookstore"].includes(mode);
   writerExterior.visible=outdoors;
+  writerInteriorWorldRoot.visible=!outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
   legacyWriterArchitecture.visible=false;
   baseWriterRoomShell.visible=!outdoors && currentWriterHouseLevel===0;
@@ -1735,6 +1746,12 @@ function setView(name) {
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   if (name !== "follow") {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
+    // Room view coordinates describe the writer's local 6x6 floor.
+    // The entire live room is now grounded at STREET_Y, not above the city.
+    if (!["town","cars","publisher","bookstore"].includes(name)) {
+      camGoal.pos.y += STREET_Y;
+      camGoal.target.y += STREET_Y;
+    }
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
   }
   const names = { cars: "ماشین‌های شهر", town: "محلهٔ نویسنده", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
@@ -1906,6 +1923,9 @@ function animate() {
   blanket.position.y += ((sleepiness > 0.5 ? 0.66 : 0.54) - blanket.position.y) * Math.min(1, dt * 2);
 
   tmpV.set(0, 0, 0); skull.getWorldPosition(tmpV);
+  // Speech and sleeping sprites are children of the grounded room; convert
+  // the skull's world elevation back into its local coordinate frame.
+  tmpV.y -= STREET_Y;
   bubble.position.set(tmpV.x, tmpV.y + 0.55 + Math.sin(t * 2) * 0.015, tmpV.z);
   bubble.visible = !state.asleep && !lying && !rising;
   zzz.forEach((z) => {
@@ -1969,8 +1989,8 @@ function animate() {
 
   // --- camera
   if (view === "follow") {
-    camGoal.target.set(character.position.x, 1.1, character.position.z);
-    camGoal.pos.set(character.position.x + 1.8, 2.4, character.position.z + 3.2);
+    camGoal.target.set(character.position.x, 1.1 + STREET_Y, character.position.z);
+    camGoal.pos.set(character.position.x + 1.8, 2.4 + STREET_Y, character.position.z + 3.2);
     camMoving = true;
   }
   if (camMoving) {
