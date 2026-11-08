@@ -69,7 +69,7 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
     box(0.7, 0.12, 0.44, metal, x, STREET_Y + 3.43, z);
     box(0.48, 0.06, 0.3, bulbMat, x, STREET_Y + 3.35, z);
     const light = new THREE.PointLight(0xffd49a, 7, 10, 1.4);
-    light.position.set(x, STREET_Y + 3.2, z); group.add(light); lamps.push(light);
+    light.position.set(x, STREET_Y + 3.2, z); light.userData.cityStreetLamp = true; group.add(light); lamps.push(light);
     const pool = mesh(new THREE.CircleGeometry(2, 24), new THREE.MeshBasicMaterial({ color: 0xffd49a, transparent: true, opacity: 0.06, depthWrite: false }), x, STREET_Y + 0.04, z);
     pool.rotation.x = -Math.PI / 2;
   }
