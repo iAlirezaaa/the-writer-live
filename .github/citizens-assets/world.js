@@ -225,6 +225,10 @@ const box = (w, h, d, mat, x, y, z, opt) => mesh(new THREE.BoxGeometry(w, h, d),
 function clickable(m, panel, label) { m.userData.panel = panel; m.userData.label = label; clickables.push(m); return m; }
 
 const town = buildTown({ THREE, scene, clickable, canvasTex });
+// New district tower/lofts replace duplicated legacy shop volumes at identical lots.
+// Keep them in authoring source for navigation regression and compatibility.
+const obsoleteShops=town.group.getObjectByName("legacy-shopfront-interiors");
+if(obsoleteShops)obsoleteShops.visible=false;
 const citizens = createCitizens({ THREE, scene, clickable, motionArchive });
 // The original detailed dollhouse remains intact but is not the exterior facade.
 const citySceneBaseline = new Set(scene.children);
