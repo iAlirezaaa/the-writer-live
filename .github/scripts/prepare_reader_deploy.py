@@ -11,7 +11,7 @@ import re
 import sys
 
 
-VERSION = "reader-20261108-v2"
+VERSION = "reader-20261108-v3"
 
 
 def patch_site(root: Path) -> None:
@@ -54,6 +54,14 @@ def patch_site(root: Path) -> None:
     )
     if count != 1:
         raise RuntimeError("Cannot locate public reading stylesheet")
+    # The dashboard 3D book object shares this new reading engine. Force a
+    # new entrypoint URL so older browser caches cannot keep its old importer.
+    index, count = re.subn(
+        r'src="\\./web/world\\.js(?:\\?v=[^"]+)?"',
+        f'src="./web/world.js?v={VERSION}"', index, count=1
+    )
+    if count != 1:
+        raise RuntimeError("Cannot locate the dashboard world script")
     index_file.write_text(index, encoding="utf-8")
     print("Reader deployment: stable cover art, responsive reading room and fresh assets OK")
 
