@@ -28,3 +28,12 @@ Updated: 2026-11-08. Owner: City subsystem only. Private authoring repo is the s
 
 ## Safety and reporting
 Every session: mark new TODO first; change source; run the urban/city/scene probes; sync the public pin files; verify deployment, then mark done with commit/PR references. Mark visual inspection as pending until screenshots are actually examined. Do not publish private data or modify story archives, memory, resident roster, publisher logic or animation library identity.
+
+## Iteration 002 — city-only QA inventory (2026-11-08)
+- [ ] Before geometry changes, inventory pedestrian-access checks for school, police, housing and film studio; keep all scene geometry unchanged in this iteration.
+- [ ] Confirm public pinned-file mapping and current deployment status before any runtime publication.
+- [ ] Record verification status honestly; no browser visual inspection or runtime probes have been executed by this documentation-only update.
+
+## Two new backlog proposals (iteration 002)
+1. **Accessible civic wayfinding**: reusable tactile crossing markers and high-contrast wayfinding near school/police, gated by 1.5-unit unobstructed pedestrian width and door-landing probes.
+2. **Shared night-light budget inspector**: diagnostic overlay counting unique lights, draw calls and instanced emissive windows per district; no additional lights at runtime.
