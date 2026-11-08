@@ -17,11 +17,18 @@
       "pct": 6.0,
       "sessions": 1,
       "status": "learning"
+    },
+    {
+      "label_fa": "ویراستاری داستان و ساختار روایی",
+      "next": "مبانی را از سه منبع متفاوت بخوان",
+      "pct": 6.0,
+      "sessions": 1,
+      "status": "learning"
     }
   ],
   "stats": {
     "adopted": 0,
-    "learning": 2,
-    "sessions_total": 2
+    "learning": 3,
+    "sessions_total": 3
   }
 }
