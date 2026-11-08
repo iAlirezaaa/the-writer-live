@@ -1231,3 +1231,15 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
   .book-overlay .page,.book-overlay .leaf-face{padding:10px 14px 20px;}
   .book-overlay > .book-footer{min-height:33px;max-height:66px;}
 }
+
+/* Reader feedback: selected passage or full-story review, not on the collection page. */
+.book-overlay .note-pop .note-category,
+.book-overlay .note-pop .note-rating {
+  display:block;width:100%;max-width:100%;margin:8px 0;padding:9px 12px;
+  background:#f4f0e8;color:#26221d;border:1px solid #c8beb0;border-radius:8px;
+  font-family:"Vazirmatn",Tahoma,sans-serif;
+}
+.book-overlay .note-pop .note-rating[hidden] { display:none; }
+.book-overlay .note-pop .time {line-height:1.7;}
+.book-overlay .note-card a {display:inline-block;margin-top:8px;color:#81581f;text-decoration:underline;}
+.book-overlay .note-pop textarea {width:100%;max-width:100%;resize:vertical;}
