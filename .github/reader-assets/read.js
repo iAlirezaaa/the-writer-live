@@ -1,7 +1,8 @@
 // The Writer — editorial library. Covers are stable per story and rendered without remote images.
-import { openBook } from "./book.js?v=reader-20261108-v4";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
+import { openBook } from "./book.js?v=reader-20261108-v6";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v6";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
+import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
 
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
 const $ = id => document.getElementById(id);
@@ -97,13 +98,14 @@ async function showShelf(){
 window.addEventListener("hashchange",route);
 window.addEventListener("writer:reading-closed",renderShelf);
 if(isGitHubPages()){
-  $("reader-note").textContent="نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. مطالعه و نشانک در مرورگر شما ذخیره می‌شوند؛ حاشیه‌نویسی در نسخهٔ محلی فعال است.";
+  $("reader-note").textContent="نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. مطالعه و نشانک در مرورگر شما ذخیره می‌شوند؛ برای ثبت نظر کلی، کتاب را باز کنید؛ برای حاشیه‌نویسی بخشی از متن را انتخاب کنید.";
   $("story-status").querySelector('option[value="rejected"]')?.remove();
 }
 $("home-link").href=appHref("");
 $("story-search").addEventListener("input",renderShelf);
 $("story-status").addEventListener("change",renderShelf);
 $("story-sort").addEventListener("change",renderShelf);
+installPersianPresentation(document.body);
 showShelf().then(route).catch(()=>{
   $("shelf-count").textContent="اتصال برقرار نشد";
   $("covers").replaceChildren(make("p","reading-empty","کتابخانه در دسترس نیست. اتصال یا انتشار فایل‌های داستان را بررسی کنید."));

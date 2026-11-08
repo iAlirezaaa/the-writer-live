@@ -20,7 +20,8 @@ const MARGIN_STATE_FA = {
   suspect: "مردود: با متن نمی‌خواند",
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v4";
+import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261108-v6";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -46,6 +47,12 @@ function build() {
   const title = el("span", "book-bar-title");
   const tools = el("div", "book-tools");
   const marginBtn = el("button", "", "حاشیه‌ها");
+  const voteUp = el("button","reader-vote","پسندیدم");voteUp.type="button";
+  voteUp.setAttribute("aria-label","پسندیدن این داستان");
+  const voteDown = el("button","reader-vote","نپسندیدم");voteDown.type="button";
+  voteDown.setAttribute("aria-label","نپسندیدن این داستان");
+  const voteStatus = el("span","reader-vote-status","");
+  voteStatus.setAttribute("role","status");
   const smallerBtn = el("button", "reader-font", "A−"); smallerBtn.title = "کوچک‌تر کردن نوشته"; smallerBtn.setAttribute("aria-label", smallerBtn.title);
   const largerBtn = el("button", "reader-font", "A+"); largerBtn.title = "بزرگ‌تر کردن نوشته"; largerBtn.setAttribute("aria-label", largerBtn.title);
   const find = el("input", "reader-find"); find.type = "search"; find.placeholder = "جست‌وجو در کتاب"; find.setAttribute("aria-label", find.placeholder);
@@ -100,7 +107,7 @@ function build() {
   settingsPanel.append(syncBtn);
   settings.append(summary,settingsPanel);
   const closeBtn = el("button", "reader-close", "بستن");
-  tools.append(marginBtn, find, settings, focusBtn, closeBtn);
+  tools.append(marginBtn, voteUp, voteDown, voteStatus, find, settings, focusBtn, closeBtn);
   bar.append(title, tools);
   const shelf = el("div", "book-shelf");
   const bookEl = el("div", "book");
@@ -130,13 +137,17 @@ function build() {
   const pop = el("form", "note-pop"); pop.hidden = true;
   const popQuote = el("blockquote", "note-quote");
   const popName = el("input"); popName.placeholder = "نام (اختیاری)"; popName.maxLength = 40;
-  const popText = el("textarea"); popText.placeholder = "نظرتان درباره‌ی همین بخش"; popText.maxLength = 500; popText.rows = 3;
+  const popText = el("textarea"); popText.placeholder = "نظرتان درباره‌ی همین بخش"; popText.maxLength = 2500; popText.minLength = 10; popText.required = true; popText.rows = 3;
+  const popCategory = el("select", "note-category"); popCategory.setAttribute("aria-label","موضوع نظر");
+  for(const [value,label] of [["general","نظر کلی"],["plot","پیرنگ"],["character","شخصیت‌پردازی"],["language","نثر و دیالوگ"],["continuity","پیوستگی جهان"]]) { const opt=el("option","",label); opt.value=value;popCategory.append(opt); }
+  const popRating = el("select", "note-rating"); popRating.setAttribute("aria-label","امتیاز به داستان");
+  for(const [value,label] of [["","بدون امتیاز"],["1","۱ از ۵"],["2","۲ از ۵"],["3","۳ از ۵"],["4","۴ از ۵"],["5","۵ از ۵"]]) {const opt=el("option","",label);opt.value=value;popRating.append(opt);}
   const popRow = el("div", "note-row");
   const popSend = el("button", "", "ثبت نظر"); popSend.type = "submit";
   const popCancel = el("button", "", "انصراف"); popCancel.type = "button";
   const popStatus = el("span", "time");
   popRow.append(popSend, popCancel, popStatus);
-  pop.append(popQuote, popName, popText, popRow);
+  pop.append(popQuote, popName, popCategory, popRating, popText, popRow);
   // a hidden page used to measure how much text fits
   const measure = el("div", "page page-measure");
   overlay.append(bar, shelf, footer, margin, selBtn, pop, measure);
@@ -144,8 +155,8 @@ function build() {
 
   ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark,
     jump, syncStatus, syncBtn, settings, fontSelect, leadingSelect, alignSelect, modeSelect,
-    find, margin, marginBtn, closeBtn, themeSelect, focusBtn,
-    selBtn, pop, popQuote, popName, popText, popStatus, popCancel, measure };
+    find, margin, marginBtn, voteUp, voteDown, voteStatus, closeBtn, themeSelect, focusBtn,
+    selBtn, pop, popQuote, popName, popCategory, popRating, popText, popStatus, popCancel, measure };
 
   themeSelect.addEventListener("change",()=>setReaderOption("theme",themeSelect.value));
   fontSelect.addEventListener("change",()=>setReaderOption("fontFamily",fontSelect.value,true));
@@ -163,6 +174,8 @@ function build() {
   prev.addEventListener("click", () => turn(-1));
   next.addEventListener("click", () => turn(1));
   marginBtn.addEventListener("click", () => { margin.hidden = !margin.hidden; marginBtn.setAttribute("aria-pressed", String(!margin.hidden)); });
+  voteUp.addEventListener("click",()=>sendReaderVote(1));
+  voteDown.addEventListener("click",()=>sendReaderVote(-1));
   smallerBtn.addEventListener("click", () => adjustFont(-0.08));
   largerBtn.addEventListener("click", () => adjustFont(0.08));
   progress.addEventListener("change", () => { if(!book)return;const per=spread(),fraction=Number(progress.value)/100;book.index=Math.min(Math.floor(fraction*Math.max(0,book.pages.length-1)/per)*per,Math.max(0,book.pages.length-per));show(); });
@@ -382,9 +395,10 @@ async function connectReaderOwner(){
 export async function openBook(storyId) {
   if(!ui)build();
   if(syncTimer){clearTimeout(syncTimer);syncTimer=null;}
-  const [story,notes]=await Promise.all([
+  const [story,notes,publicNotes]=await Promise.all([
     getJSON(`/api/stories/${encodeURIComponent(storyId)}`),
-    getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(()=>[])
+    getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(()=>[]),
+    isGitHubPages()?loadPublicStoryNotes(storyId).catch(()=>[]):Promise.resolve([])
   ]);
   const stored=readProgress(storyId)||{};
   const prefs=readGlobalReadingOptions();
@@ -398,12 +412,15 @@ export async function openBook(storyId) {
   const saved=hasNewerServer?{...prefs,...stored,...remoteState}:{...prefs,...stored};
   const resumeProgress=Math.max(0,Math.min(1,Number(saved.progress)||0));
   book={
-    story,comments:Array.isArray(notes)?notes:[],pages:[],index:0,turning:null,
+    story,comments:[...(Array.isArray(notes)?notes:[]),...publicNotes],pages:[],index:0,turning:null,
     repaginateLater:false,bookmark:saved.bookmark??null,progress:0,
     ...READER_DEFAULTS,...saved,syncConnected:connected
   };
   ui.title.textContent=story.title;
+  ui.voteStatus.textContent=isGitHubPages()?"رأی با تأیید نهایی در GitHub ثبت می‌شود":"";
+  ui.voteUp.textContent="پسندیدم";ui.voteDown.textContent="نپسندیدم";
   ui.overlay.hidden=false;
+  if(!isGitHubPages())refreshReaderVotes(storyId);
   document.body.classList.add("book-open");
   applyReaderAppearance();
   storeGlobalReadingOptions();
@@ -417,6 +434,47 @@ export async function openBook(storyId) {
     show();
   }
   ensureReaderFont();
+}
+
+async function refreshReaderVotes(storyId){
+  if(isGitHubPages())return;
+  try{
+    const response=await fetch("/api/stories/"+encodeURIComponent(storyId)+"/votes",{cache:"no-store"});
+    if(!response.ok)return;
+    const counts=await response.json();
+    if(book?.story.id!==storyId)return;
+    ui.voteUp.textContent="پسندیدم ("+Number(counts.likes||0)+")";
+    ui.voteDown.textContent="نپسندیدم ("+Number(counts.dislikes||0)+")";
+  }catch{/* static/offline readers still work */}
+}
+async function sendReaderVote(value){
+  if(!book)return;
+  const sid=book.story.id;
+  ui.voteStatus.textContent="";
+  if(isGitHubPages()){
+    try{
+      const result=openPublicVote({story:book.story,value});
+      if(result.opened){
+        ui.voteStatus.textContent="برای ثبت نهایی، فرم GitHub را ارسال کنید.";
+      }else{
+        const link=el("a","","باز کردن فرم رأی در GitHub");
+        link.href=result.url;link.target="_blank";link.rel="noopener noreferrer";
+        ui.voteStatus.replaceChildren(link);
+      }
+    }catch(error){ui.voteStatus.textContent=String(error.message||error);}
+    return;
+  }
+  try{
+    const response=await fetch("/api/stories/"+encodeURIComponent(sid)+"/votes",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({value})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(String(data.error||"ثبت رأی ممکن نشد"));
+    if(book?.story.id!==sid)return;
+    ui.voteStatus.textContent=data.updated?"رأی شما ثبت شد.":"رأی شما از قبل ثبت شده بود.";
+    await refreshReaderVotes(sid);
+  }catch(error){ui.voteStatus.textContent=String(error.message||error);}
 }
 
 function adjustFont(delta){
@@ -750,14 +808,21 @@ function openNoteForm(quote) {
   ui.pop.hidden = false;
   ui.popQuote.textContent = q ? `«${q}»` : "نظر کلی درباره‌ی این داستان";
   ui.pop.dataset.quote = q || "";
-  ui.popStatus.textContent = "";
+  ui.popRating.hidden = !!q;
+  ui.popCategory.value = q ? "continuity" : "general";
+  ui.popStatus.textContent = isGitHubPages() ? "ثبت نهایی در GitHub انجام می‌شود و نیاز به حساب GitHub دارد." : "";
   ui.popText.value = "";
   ui.popText.focus();
 }
 async function sendNote(e) {
   e.preventDefault();
   if (isGitHubPages()) {
-    ui.popStatus.textContent = "نسخهٔ آنلاین فقط‌خواندنی است؛ نظرها را در نسخهٔ محلی ثبت کنید.";
+    try {
+      const result=openPublicFeedback({story:book.story,quote:ui.pop.dataset.quote,name:ui.popName.value,
+        text:ui.popText.value,rating:ui.popRating.value,category:ui.popCategory.value});
+      ui.popStatus.replaceChildren(document.createTextNode("پیش‌نویس آماده شد؛ برای ثبت نهایی روی Submit در GitHub بزنید. "));
+      if(!result.opened){const a=el("a","","باز کردن فرم GitHub");a.href=result.url;a.target="_blank";a.rel="noopener noreferrer";ui.popStatus.append(a);}
+    }catch(error){ui.popStatus.textContent=String(error.message||error);}
     return;
   }
   const r = await fetch(`/api/stories/${encodeURIComponent(book.story.id)}/comments`, {
@@ -790,6 +855,7 @@ function renderMargin() {
     if (c.state === "suspect") card.classList.add("suspect");
     if (c.quote) card.append(el("blockquote", "note-quote", `«${c.quote}»`));
     card.append(el("div", "", c.text), el("div", "time", `${c.name} · ${(c.time || "").replace("T", " ").slice(0, 16)}`));
+    if(c.source_url){const link=el("a","","مشاهدهٔ نظر در GitHub");link.href=c.source_url;link.target="_blank";link.rel="noopener noreferrer";card.append(link);}
     card.append(noteState(c));
     if (c.quote) card.addEventListener("click", () => goToQuote(c.quote));
     m.append(card);
@@ -805,7 +871,7 @@ function noteState(c) {
   if (chk.why) row.append(el("span", "state-why", chk.why));
   if (chk.via) row.append(el("span", "state-via", chk.via === "model" ? "سنجیده با ماشین نوشتن" : "سنجشِ مکانیکی (آفلاین)"));
   if (chk.evidence) row.append(el("span", "state-ev", chk.evidence));
-  if (ownerToken()) {
+  if (ownerToken() && !c.source_url) {
     const actions = el("div", "note-actions");
     const check = el("button", "", "بسنج");
     check.title = "گذاره را دوباره در متنِ امروزِ نوشته پیدا کنید و حرفِ این حاشیه را با آن بسنجید";

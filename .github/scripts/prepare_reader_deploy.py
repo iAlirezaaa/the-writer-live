@@ -11,7 +11,7 @@ import re
 import sys
 
 
-VERSION = "reader-20261108-v4"
+VERSION = "reader-20261108-v6"
 
 
 def patch_site(root: Path) -> None:
@@ -34,7 +34,8 @@ def patch_site(root: Path) -> None:
         '"vazir-classic"' in book,
         '"turn turn-prev", "→"' in book,
         '"turn turn-next", "←"' in book,
-        f"read.js?v={VERSION}" in html,
+        "read.js?v=observatory-20261108-v2" in html,
+        "persian-display.js?v=observatory-20261108-v2" in reader,
         "overlay.dataset.readerTheme" in book,
     ]):
         raise RuntimeError("Reader deployment assets are incomplete or stale")

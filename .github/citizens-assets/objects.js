@@ -916,9 +916,25 @@ export async function inspect(mesh, point) {
   if (!ctx) return;
   const citizenId=mesh.userData.citizenId;
   const citizen=citizenId?ctx.citizenStatus?.().find(p=>p.id===citizenId):null;
+  const civic=mesh.userData.placeDetails||null;
   ctx?.citizenSelect?.(citizenId||null);
-  const key = citizen ? "citizen:"+citizenId : (mesh.userData.view || PANEL_VIEW[mesh.userData.panel] || "status");
-  const src = citizen ? {
+  const key = citizen?"citizen:"+citizenId:civic?"place:"+civic.id:
+    (mesh.userData.view||PANEL_VIEW[mesh.userData.panel]||"status");
+  const src = civic ? {
+    title:civic.name,
+    hint:civic.zone+" · "+civic.kind+" · مکان طراحی‌شده در جهان نویسنده",
+    async render(){
+      return [
+        cell("h4","grp","شناخت این مکان"),
+        cell("p","small",civic.description),
+        kv([["محله",civic.zone],["کاربری",civic.kind],
+          ["فعالیت‌های پیش‌بینی‌شده",civic.activity],
+          ["وضعیت شبیه‌سازی",civic.access]]),
+        cell("p","time","این مکان یک محیط داستانی است؛ حضور یا رویداد واقعی برای نویسنده جعل نشده است."),
+        actions([["دیدن زندگی شهر",()=>ctx.selectTab?.("p-town")]])
+      ];
+    }
+  } : citizen ? {
     title:citizen.label,
     hint:"هویت داستانی این شهروند · شواهد و روتین، نه مکالمهٔ زنده",
     async render(){

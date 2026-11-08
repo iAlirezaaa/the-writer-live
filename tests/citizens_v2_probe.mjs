@@ -21,7 +21,7 @@ assert.equal(Motion.MOTION_CLIPS.talk.enabled,false);
 assert.equal(Motion.MOTION_CLIPS.listen.enabled,false);
 assert.equal(Object.keys(Motion.MOTION_CLIPS).length,10);
 
-function runAt(clock,frames=650){
+function runAt(clock,frames=450){
   const scene=new THREE.Scene(),pickables=[];
   const citizens=Citizens.createCitizens({
     THREE,scene,clickable:pickables,motionArchive:Motion
@@ -69,11 +69,53 @@ function runAt(clock,frames=650){
   return minGap;
 }
 const windows=[
+  "2026-11-08T00:15:00+03:30",
+  "2026-11-08T05:45:00+03:30",
   "2026-11-08T07:45:00+03:30",
+  "2026-11-08T09:45:00+03:30",
   "2026-11-08T11:45:00+03:30",
+  "2026-11-08T13:45:00+03:30",
+  "2026-11-08T15:45:00+03:30",
   "2026-11-08T17:45:00+03:30",
+  "2026-11-08T19:45:00+03:30",
+  "2026-11-08T22:45:00+03:30",
 ];
+// A route guide lives under a turning character, but its endpoint must stay
+// at the actual world-space destination (no spinning line when facing sideways).
+{
+  const scene=new THREE.Scene(),meshes=[];
+  const crowd=Citizens.createCitizens({THREE,scene,clickable:meshes,motionArchive:Motion});
+  const original=payload.citizens[0];
+  const row={...original,routine:[
+    {start:0,place:original.home,activity:"sleep"},
+    {start:60,place:"garden",activity:"read"},
+  ]};
+  crowd.setRoster({...payload,citizens:[row],clock:"2026-11-08T00:59:59+03:30"});
+  const first=Date.parse("2026-11-08T01:00:00+03:30");
+  let checked=false;
+  for(let frame=1;frame<=900;frame++){
+    crowd.update(.05,frame*.05,new Date(first+frame*50));
+    const state=crowd.status()[0];
+    const actor=scene.getObjectByName(row.id);
+    const guide=actor.getObjectByName("shared-sidewalk-route");
+    if(!state.route.length||!guide.visible||Math.abs(actor.rotation.y)<.6)continue;
+    scene.updateMatrixWorld(true);
+    const attr=guide.geometry.getAttribute("position");
+    const worldEndpoint=new THREE.Vector3(
+      attr.getX(attr.count-1),attr.getY(attr.count-1),attr.getZ(attr.count-1)
+    ).applyMatrix4(guide.matrixWorld);
+    const target=state.route.at(-1);
+    assert.ok(Math.hypot(worldEndpoint.x-target.x,worldEndpoint.z-target.z)<.012,
+      "The highlighted route was rotated away from its world-space destination");
+    const marker=actor.getObjectByName("route-destination");
+    const worldMarker=marker.getWorldPosition(new THREE.Vector3());
+    assert.ok(Math.hypot(worldMarker.x-target.x,worldMarker.z-target.z)<.012,
+      "The destination marker drifted after the citizen turned");
+    checked=true;break;
+  }
+  assert.ok(checked,"No rotated walking animation was sampled");
+}
 const distances=windows.map(clock=>runAt(clock));
 console.log("CITIZENS-V2-OK",JSON.stringify({residents:payload.citizens.length,
   publisher:1,uniqueCores:payload.citizens.length,archiveClips:10,
-  collisionSamples:windows.length*650,minimumSpacing:Math.min(...distances)}));
+  collisionSamples:windows.length*450,minimumSpacing:Math.min(...distances)}));
