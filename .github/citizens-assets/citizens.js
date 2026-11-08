@@ -451,11 +451,28 @@ export function createCitizens({ THREE, scene, clickable, motionArchive=null }) 
     // Dynamic, absolute route geometry transformed into local coordinates.
     // The current point and the remaining waypoints are always valid network
     // locations; no invented straight-line shortcut over a road.
+    // routeGuide is parented to a ROTATING actor. Express world-space
+    // waypoints in inverse-yaw local coordinates; otherwise the highlighted
+    // path spins off the sidewalk whenever the citizen turns a corner.
+    const yaw=figure.root.rotation.y,cos=Math.cos(yaw),sin=Math.sin(yaw);
+    const localPoint=(pt,height)=> {
+      const dx=pt.x-pos.x,dz=pt.z-pos.z;
+      return new THREE.Vector3(cos*dx-sin*dz,height,sin*dx+cos*dz);
+    };
     const points=[new THREE.Vector3(0,.045,0),
-      ...route.map(pt=>new THREE.Vector3(pt.x-pos.x,.045,pt.z-pos.z))];
-    routeGuide.geometry.setFromPoints(points);
+      ...route.map(pt=>localPoint(pt,.045))];
+    const geometry=routeGuide.geometry;
+    const attr=geometry.getAttribute("position");
+    if(attr?.count===points.length){
+      points.forEach((p,i)=>attr.setXYZ(i,p.x,p.y,p.z));
+      attr.needsUpdate=true;
+      geometry.computeBoundingSphere();
+    }else{
+      geometry.setFromPoints(points);
+    }
     const last=route[route.length-1];
-    destination.position.set(last.x-pos.x,.065,last.z-pos.z);
+    const end=localPoint(last,.065);
+    destination.position.set(end.x,end.y,end.z);
   }
 
   function setRoster(payload) {
