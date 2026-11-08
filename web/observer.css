@@ -427,3 +427,110 @@ body.app .observer-public-notice a{
   text-decoration:none;
 }
 body.app .observer-public-notice a:hover{background:var(--surface);}
+
+/* An observation should open on the writer, not a wall of controls. */
+body.app .observer-scene-date{
+  display:block;margin-top:2px;font-size:.7rem;color:#f2deb9;
+  letter-spacing:0;text-shadow:0 2px 14px rgba(0,0,0,.65);
+}
+body.app .observer-camera-drawer{
+  display:block;width:fit-content;max-width:min(100%,940px);
+  background:var(--obs-glass);border-radius:12px;
+  border:1px solid var(--obs-glass-line);
+  color:#f5eee0;pointer-events:auto;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+body.app .observer-camera-drawer>summary{
+  list-style:none;cursor:pointer;min-height:37px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:7px 13px;font-size:.75rem;font-weight:600;
+  white-space:nowrap;
+}
+body.app .observer-camera-drawer>summary::-webkit-details-marker{display:none;}
+body.app .observer-camera-drawer>summary>span{font-size:.92rem;opacity:.7;}
+body.app .observer-camera-drawer[open]>summary{border-bottom:1px solid var(--obs-glass-line);}
+body.app .observer-camera-drawer[open]>summary>span{transform:rotate(180deg);}
+body.app .observer-camera-drawer:not([open]) .stage-tools{display:none;}
+body.app .observer-camera-drawer .stage-tools{
+  max-height:min(28vh,190px);overflow-y:auto;
+  padding:8px 9px 10px;max-width:100%;
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+body.app .observer-camera-drawer .observer-camera-group{
+  background:rgba(4,17,18,.35);border-color:var(--obs-glass-line);
+  box-shadow:none;backdrop-filter:none;
+}
+@media(max-width:670px){
+  body.app .observer-camera-drawer{max-width:100%;}
+  body.app .observer-camera-drawer .stage-tools{
+    flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;max-height:150px;
+    width:100%;scroll-snap-type:x proximity;
+  }
+  body.app .observer-scene-date{font-size:.64rem;}
+}
+
+
+/* CITY GUIDE — compact, explicit destinations without hiding resident panels. */
+body.app .observer-city-directory{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  margin:12px 0 17px;
+}
+body.app .observer-city-directory-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:9px;
+}
+body.app .observer-city-directory-head h3{
+  font-size:.95rem;line-height:1.7;font-weight:700;margin:0;
+}
+body.app #city-places-count{
+  white-space:nowrap;color:var(--lamp);font-weight:700;
+  padding:4px 8px;border:1px solid var(--line);border-radius:8px;
+}
+body.app .observer-city-directory>p{
+  font-size:.72rem;line-height:1.95;color:var(--muted);margin-bottom:12px;
+}
+body.app .observer-city-grid{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:8px;
+  max-height:430px;overflow-y:auto;overflow-x:hidden;padding-inline-end:4px;
+}
+body.app .observer-city-zone{
+  font-size:.72rem;font-weight:700;color:var(--lamp);
+  margin:11px 0 2px;padding:0 4px;
+  border-inline-start:3px solid var(--lamp);padding-inline-start:8px;
+}
+body.app .observer-city-zone:first-child{margin-top:0;}
+body.app .observer-city-place{
+  display:grid;gap:7px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:11px;padding:10px 11px;
+}
+body.app .observer-city-place-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  gap:9px;flex-wrap:wrap;
+}
+body.app .observer-city-place-head strong{font-size:.79rem;line-height:1.6;}
+body.app .observer-city-place-head span{
+  font-size:.66rem;color:var(--muted);
+  border:1px solid var(--line);border-radius:7px;padding:2px 6px;
+}
+body.app .observer-city-place p{
+  font-size:.70rem;line-height:1.85;color:var(--muted);
+  overflow-wrap:break-word;margin:0;
+}
+body.app .observer-city-place-actions{display:flex;gap:6px;flex-wrap:wrap;}
+body.app .observer-city-place-actions button{
+  flex:1 1 85px;min-height:34px;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--ink);font-size:.72rem;
+}
+body.app .observer-city-place-actions button:first-child{
+  border-color:var(--lamp);color:var(--lamp);background:var(--lamp-soft);
+}
+body.app .observer-city-place-actions button:hover{filter:brightness(.97);border-color:var(--lamp);}
+@media(max-width:670px){
+ body.app .observer-city-directory{padding:10px;}
+ body.app .observer-city-grid{max-height:390px;}
+ body.app .observer-city-place-actions button{min-height:40px;}
+}
