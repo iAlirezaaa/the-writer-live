@@ -57,7 +57,7 @@ def patch_site(root: Path) -> None:
     # The dashboard 3D book object shares this new reading engine. Force a
     # new entrypoint URL so older browser caches cannot keep its old importer.
     index, count = re.subn(
-        r'src="\\./web/world\\.js(?:\\?v=[^"]+)?"',
+        r'src="\./web/world\.js(?:\?v=[^"]+)?"',
         f'src="./web/world.js?v={VERSION}"', index, count=1
     )
     if count != 1:
