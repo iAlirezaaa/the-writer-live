@@ -13,7 +13,7 @@ export const ROAD_SEGMENTS=Object.freeze([
  {id:"outer-south",axis:"x",at:-40,min:-31.2,max:31.2,width:4.4}
 ]);
 export const BUILDING_PARCELS=Object.freeze([
- {id:"writer",x:0,z:0,w:8,d:9,buildingW:4.8,buildingD:4.8,entry:{x:0,z:3},parking:0,green:true},
+ {id:"writer",x:0,z:0,w:9,d:11,buildingW:4.8,buildingD:4.8,entry:{x:0,z:3},parking:0,green:true},
  {id:"publisher",x:-10,z:0,w:7.5,d:8,buildingW:6,buildingD:6,entry:{x:-10,z:3.3},parking:1,green:true},
  {id:"bookstore",x:10,z:0,w:7.5,d:8,buildingW:6,buildingD:6,entry:{x:10,z:3.3},parking:1,green:true},
  {id:"home-west",x:-19,z:0,w:7,d:8,buildingW:6,buildingD:5,entry:{x:-19,z:2.7},parking:1,green:true},
