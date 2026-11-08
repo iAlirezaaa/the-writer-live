@@ -1,0 +1,38 @@
+name: Observatory UI contract
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/observer-ui.js"
+      - "web/observer.css"
+      - "web/persian-display.js"
+      - "web/world.js"
+      - "web/read.js"
+      - "web/index.html"
+      - "index.html"
+      - "tests/observatory_probe.mjs"
+      - ".github/observer-assets/observer-ui.js"
+      - ".github/workflows/observatory-regression.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  observer-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify pinned deployment copy when present
+        run: |
+          if [ -f .github/observer-assets/observer-ui.js ]; then
+            cmp web/observer-ui.js .github/observer-assets/observer-ui.js
+          fi
+      - name: Check browser module syntax
+        run: |
+          cp web/observer-ui.js /tmp/observer-ui.mjs
+          node --check /tmp/observer-ui.mjs
+      - name: Check fifteen panels, ten cameras and keyboard groups
+        run: node tests/observatory_probe.mjs .
