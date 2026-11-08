@@ -51,15 +51,28 @@ Status: source and live pinned assets synchronized and public staging + main Pag
 - Private author/publisher/memory changes: **NONE** in MAYOR-009 scope.
 
 ## MAYOR-010 — real Tehran sky and weather (2026-11-08)
-- [ ] Separate **city** sky/light clock from author/world simulation time: always compute from Asia/Tehran, without modifying citizen schedules, author date, publisher actions or stored data.
-- [ ] Consume current **Tehran-only** model weather, hourly refreshed within API limits, with explicit data source, timestamp and fail-closed unavailable state. Use actual sunrise/sunset when valid; display Tehran clock even offline.
-- [ ] Make the existing pooled 96-particle environment reflect **rain/snow only when reported**; eliminate the fictional automatic 90-second snow cycle. Use available cloud cover for sky/scene atmosphere.
-- [ ] Implement pure, deterministic Node probes for Tehran time, API parsing, daylight transitions, precipitation, stale/no-network behavior and source pin consistency.
-- [ ] Verify normal private testing and non-deploying public staging tests before changing the public pinned files; never copy private author or publisher content.
-- [ ] Record exact private/public commits and current live Pages success, sources, limitations and any uninspected screenshots.
+- [x] Separate **city** sky/light clock from author/world simulation time: always compute from Asia/Tehran, without modifying citizen schedules, author date, publisher actions or stored data.
+- [x] Consume current **Tehran-only** model weather, hourly refreshed within API limits, with explicit data source, timestamp and fail-closed unavailable state. Use actual sunrise/sunset when valid; display Tehran clock even offline.
+- [x] Make the existing pooled 96-particle environment reflect **rain/snow only when reported**; eliminate the fictional automatic 90-second snow cycle. Use available cloud cover for sky/scene atmosphere.
+- [x] Implement pure, deterministic Node probes for Tehran time, API parsing, daylight transitions, precipitation, stale/no-network behavior and source pin consistency.
+- [x] Run the **non-deploying public staging build** before public main promotion: [42504292543](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42504292543) PASS. Only reviewed city scene, UI cache pins, city test and skill files were copied; no author/publisher memory data. 
+- [ ] Private city CI [42503793671](https://github.com/iAlirezaaa/the-writer/actions/runs/42503793671) FAILED and its logs were not retrievable; investigate separately before calling private CI healthy.
+- [x] Record exact private/public commits and current live Pages success, sources, limitations and any uninspected screenshots.
 
 ### Two new municipal ideas (MAYOR-010)
 1. **Weather-aware cultural events:** read-only ambient market umbrellas and park seating cues sourced from the same Tehran weather snapshot; no real events or new citizens implied.
 2. **Accessible sky observatory:** optional rooftop viewpoint with a Tehran sunrise/sunset dial and an easter-egg star chart, requiring camera occlusion checks and reduced-motion support.
 
-Status: TODO recorded **before** runtime edits. Open-Meteo's public free endpoint is **non-commercial only**; if this public site is commercial a licensed endpoint or alternative provider must replace it before production use. Current sky/weather and direct API transport have not yet been verified on the production browser.
+Status: published city-only change, last full Pages run [42504481657](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42504481657) PASSED; runtime direct weather API and street/night/mobile appearance remain UNVERIFIED. Open-Meteo free endpoint is NON-COMMERCIAL ONLY and not acceptable for a commercial product without switching to a licensed option.
+
+### MAYOR-010 verified evidence
+- Private source: [f100cc9](https://github.com/iAlirezaaa/the-writer/commit/f100cc9f459f2d011b4044f692d7b1a487c1eb69); private index cache bump: [8cbdd1a](https://github.com/iAlirezaaa/the-writer/commit/8cbdd1a9ae4400ec88287670183d91c1d6cc9693); private regression pin bump: [bd65a8e](https://github.com/iAlirezaaa/the-writer/commit/bd65a8e01f1a046ae2114757e5036339ff435d44).
+- Public staging full pinned build: [42504292543](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42504292543) SUCCESS. Public production: [f8b1ee1](https://github.com/iAlirezaaa/the-writer-live/commit/f8b1ee10faf319947c91ede2fff179f9238cdcb1), Pages [42504481657](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42504481657) SUCCESS.
+- Unit test: TEHRAN-ENVIRONMENT-OK (20:00 Tehran from a UTC fixture; rain/snow/stale data/failure; duplicate API calls avoided). Layout: URBAN-PLAN-OK, ROAD-TOPOLOGY-OK, CITY-DISTRICTS-OK, HOUSING-ACCESS-OK and TOWN-SCENE-OK.
+- Verified blob SHA equality between private source and public pinned `web/world.js` → `.github/citizens-assets/world.js`, `web/town.js` → `.github/citizens-assets/town.js`, `web/city-growth.js` → `.github/city-assets/city-growth.js`, `web/tehran-environment.js` → `.github/city-assets/tehran-environment.js`.
+- Public unpinned `web/world.js` is a legacy exporter overwrite; the deployed _site correctly uses the matched pinned file. Preserve this protection instead of overwriting an unrelated exporter's copy.
+- Scope/performance: reuses 96 precipitation points; no new Three.js point lights or mesh allocation per animation frame. Actual GPU draw-call/frametime metrics NOT MEASURED. Clock formatting is limited to the existing periodic city update.
+- Weather transport: client request to Open-Meteo's `current` and daily sunrise/sunset Tehran endpoint, polled no more than once every 15min per open client. Data is weather-model "current conditions", not a verified ground-station observation. Provider can see client IP on direct requests. Current successful HTTPS/CORS from a real production browser NOT VERIFIED.
+- Failure: the weather panel clearly says unavailable and precipitation remains hidden; daylight uses Tehran timezone with 06:00–18:00 fallback if sunrise/sunset data unavailable. Never invent current rainfall.
+- Visual QA: desktop street-level, rain/snow imagery, day/night/sunrise and mobile screenshots NOT INSPECTED.
+
