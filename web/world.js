@@ -76,7 +76,7 @@ const rand = (() => { let s = 7; return () => ((s = (s * 16807) % 2147483647) / 
 // ============ renderer, scene, camera ============
 const stage = $("stage");
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
