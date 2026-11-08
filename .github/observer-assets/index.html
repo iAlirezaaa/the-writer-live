@@ -6,7 +6,7 @@
   <title>اتاق هادس</title>
   <link rel="stylesheet" href="./web/style.css">
   <link rel="stylesheet" href="./web/book.css?v=reader-20261108-v4">
-  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261108-v1">
+  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261108-v2">
   <script type="importmap">
   {
     "imports": {
@@ -155,6 +155,10 @@
             <button data-inspect="life">زندگی نویسنده</button>
           </div>
           <p id="town-summary" class="small" role="status">در حال بارگذاری محله</p>
+          <label class="observer-resident-search" for="town-search">پیدا کردن یک شهروند
+            <input id="town-search" type="search" placeholder="نام، شغل یا هدف شخصیت…" autocomplete="off">
+          </label>
+          <p class="observer-resident-help">روی نام هر شهروند بزنید تا برنامه و هستهٔ شخصیتش باز شود. از «دیدن در صحنه» برای رفتن مستقیم به همان کاراکتر استفاده کنید.</p>
           <div id="town-residents"></div>
         </section>
 
@@ -297,6 +301,6 @@
 
   <div class="toast" id="toast" hidden></div>
   <div class="drop-overlay" id="drop-overlay" hidden><div>فایل را رها کنید تا به جهان داستانی اضافه شود</div></div>
-  <script type="module" src="./web/world.js?v=observatory-20261108-v1"></script>
+  <script type="module" src="./web/world.js?v=observatory-20261108-v2"></script>
 </body>
 </html>
