@@ -9,7 +9,7 @@ import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-districts-2
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v1";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261108-v3";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261108-v3";
-import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v3";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v4";
 import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
