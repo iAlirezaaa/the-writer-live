@@ -25,7 +25,7 @@ jobs:
           touch _site/.nojekyll
           # Keep the reviewed city UI even if a local snapshot producer has an
           # outdated worktree. The next two scripts patch these exact assets.
-          for name in citizens.js citizen-motion-library.js objects.js world.js; do
+          for name in citizens.js citizen-motion-library.js objects.js world.js town.js town-cars.js; do
             cp ".github/citizens-assets/$name" "_site/web/$name"
           done
           python3 .github/scripts/prepare_car_deploy.py _site
@@ -43,6 +43,8 @@ jobs:
             node --check "/tmp/the-writer-city-$name.mjs"
           done
           node tests/citizens_v2_probe.mjs _site _site/snapshot/town.json
+          node tests/city_traffic_probe.mjs _site _site/snapshot/town.json
+          node tests/citizens_probe.mjs _site < _site/snapshot/town.json
           for name in book read book-cover; do
             cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
             node --check "/tmp/the-writer-reader-$name.mjs"
