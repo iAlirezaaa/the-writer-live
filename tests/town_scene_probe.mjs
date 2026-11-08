@@ -179,7 +179,16 @@ try {
         assert.ok(insideXZ(b.box, target, 0.5) && close(target.z, b.box.max.z, 0.5), `${key} click target is not on its building`);
         const ray = new THREE.Raycaster(target.clone().add(new THREE.Vector3(0, 0, 5)), new THREE.Vector3(0, 0, -1));
         const hits = ray.intersectObjects(clickables, false);
-        assert.ok(hits.length && hits[0].object.userData.view === key, `${key} cannot actually be picked`);
+        assert.ok(hits.length && hits[0].object.userData.view === key,
+          `${key} cannot actually be picked, target=${target.toArray().map(v=>v.toFixed(2)).join(",")},
+          first=${hits.slice(0,5).map(hit=>JSON.stringify({
+            view:hit.object.userData.view,
+            id:hit.object.userData.placeId,
+            mesh:hit.object.name,
+            distance:Math.round(hit.distance*100)/100,
+            visible:hit.object.visible,
+            materialVisible:hit.object.material?.visible
+          })).join("|")}`);
       }
     }
     assert.ok(!overlapsXZ(...buildingBounds), "Publisher and bookstore actual structures overlap");
