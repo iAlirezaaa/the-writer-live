@@ -1,6 +1,6 @@
 {
   "achievements": {
-    "done": 8,
+    "done": 3,
     "total": 43
   },
   "skills": [
@@ -10,25 +10,11 @@
       "pct": 6.0,
       "sessions": 1,
       "status": "learning"
-    },
-    {
-      "label_fa": "فیلمنامه‌نویسی",
-      "next": "مبانی را از سه منبع متفاوت بخوان",
-      "pct": 6.0,
-      "sessions": 1,
-      "status": "learning"
-    },
-    {
-      "label_fa": "ویراستاری داستان و ساختار روایی",
-      "next": "مبانی را از سه منبع متفاوت بخوان",
-      "pct": 6.0,
-      "sessions": 1,
-      "status": "learning"
     }
   ],
   "stats": {
     "adopted": 0,
-    "learning": 3,
-    "sessions_total": 3
+    "learning": 1,
+    "sessions_total": 1
   }
 }
