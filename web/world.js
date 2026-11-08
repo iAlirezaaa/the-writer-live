@@ -23,6 +23,7 @@ setTHREE(THREE);
 const $ = (id) => document.getElementById(id);
 let observerUI=null;
 const STATIC_PUBLIC = location.hostname.endsWith("github.io");
+let publicSnapshotAt = null;
 function item(text, sub, onClick) {
   const li = document.createElement("li");
   const main = document.createElement("div");
@@ -41,12 +42,16 @@ async function getJSON(url, opts) {
   if (STATIC_PUBLIC) {
     const pathname = new URL(url, location.href).pathname;
     const base = `/${location.pathname.split("/").filter(Boolean)[0] || ""}/snapshot/`;
-    if (pathname === "/api/town") return fetch(`${base}town.json`, { cache: "no-store" }).then((r) => r.json());
-    if (pathname === "/api/stories") return fetch(`${base}stories.json`, { cache: "no-store" }).then((r) => r.json());
-    if (pathname === "/api/status") return fetch(`${base}status.json`, { cache: "no-store" }).then((r) => r.json());
-    if (pathname === "/api/planner") return fetch(`${base}planner.json`, { cache: "no-store" }).then((r) => r.json());
+    const snapshotFetch = (file) => fetch(`${base}${file}?_=${Date.now()}`, { cache: "no-store" }).then((r) => {
+      if (!r.ok) throw new Error(`${file} -> ${r.status}`);
+      return r.json();
+    });
+    if (pathname === "/api/town") return snapshotFetch("town.json");
+    if (pathname === "/api/stories") return snapshotFetch("stories.json");
+    if (pathname === "/api/status") return snapshotFetch("status.json");
+    if (pathname === "/api/planner") return snapshotFetch("planner.json");
     const story = pathname.match(/^\/api\/stories\/([^/]+)$/);
-    if (story) return fetch(`${base}stories/${encodeURIComponent(decodeURIComponent(story[1]))}.json`, { cache: "no-store" }).then((r) => r.json());
+    if (story) return snapshotFetch(`stories/${encodeURIComponent(decodeURIComponent(story[1]))}.json`);
     throw new Error("این بخش در نسخهٔ عمومی در دسترس نیست.");
   }
   const r = await fetch(url, opts);
@@ -2652,9 +2657,10 @@ async function loadPublicRoutine() {
   const syncedAt = writer.snapshot_at ? new Date(writer.snapshot_at) : null;
   const syncLabel = $("sync-time");
   if (syncLabel && syncedAt && !Number.isNaN(syncedAt.getTime())) {
+    publicSnapshotAt = syncedAt;
     syncLabel.hidden = false;
-    syncLabel.textContent = `آخرین دریافت: ${syncedAt.toLocaleTimeString("fa-IR", {hour:"2-digit",minute:"2-digit"})}`;
-    syncLabel.title = syncedAt.toLocaleString("fa-IR");
+    updatePublicFreshness();
+    syncLabel.title = `آخرین snapshot: ${syncedAt.toLocaleString("fa-IR")}`;
   }
   observerUI?.updateStatus(writer);
   $("k-stories").textContent = String(writer.accepted_count);
@@ -2694,6 +2700,14 @@ async function loadPublicRoutine() {
     block.status === "planned" && block.attempts
       ? `در حال ادامه${block.next_retry_at ? ` · تلاش بعدی ${hm(block.next_retry_at)}` : ""}`
       : BLOCK_FA[block.status] || block.status)));
+}
+function updatePublicFreshness() {
+  const label = $("sync-time");
+  if (!label || !publicSnapshotAt) return;
+  const age = Math.max(0, Math.floor((Date.now() - publicSnapshotAt.getTime()) / 1000));
+  const relative = age < 60 ? `${faNum(age)} ثانیه پیش` : `${faNum(Math.floor(age / 60))} دقیقه پیش`;
+  label.textContent = `دادهٔ نویسنده: ${relative}`;
+  label.classList.toggle("is-stale", age > 600);
 }
 async function refreshAll() {
   if (STATIC_PUBLIC) {
@@ -2752,6 +2766,9 @@ observerUI=initObserverUI({
   getSceneHour:()=>wallTime(worldNow()).getHours()
 });
 refreshAll();
-if (STATIC_PUBLIC) setInterval(() => Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]), 30000);
+if (STATIC_PUBLIC) {
+  setInterval(() => Promise.allSettled([loadStories(), loadTown(), loadPublicRoutine()]), 10000);
+  setInterval(updatePublicFreshness, 1000);
+}
 else { setInterval(loadStatus, 5000); setInterval(refreshAll, 30000); setInterval(pollRoom, 20000); }
 animate();
