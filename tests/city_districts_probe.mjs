@@ -11,15 +11,15 @@ const THREE=await load(read("web/vendor/three.module.js"));
 const urban=await load(read("web/urban-plan.js"));
 const roads=await load(read("web/road-surface.js"));
 const districtSource=read("web/town-districts.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
-const districts=new Function("auditUrbanPlan",districtSource+";return {buildCityDistricts,auditCityPlan,CITY_BLOCKS,CITY_PLACE_CATALOG};")(urban.auditUrbanPlan);
+const districts=new Function("auditUrbanPlan","ROAD_PAINT_CENTER_OFFSET",districtSource+";return {buildCityDistricts,auditCityPlan,CITY_BLOCKS,CITY_PLACE_CATALOG};")(urban.auditUrbanPlan,roads.ROAD_PAINT_CENTER_OFFSET);
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
@@ -51,6 +51,28 @@ for(let i=0;i<roadPositions.count;i++){
  assert.ok(Math.abs(roadPositions.getY(i)-(STREET_Y-.02))<1e-6,
   "The unified asphalt is at an inconsistent road elevation");
 }
+// Original town-center markings are not hidden under the asphalt union.
+const mainPaint=city.group.children.filter(obj=>{
+ if(!obj.isMesh||obj.geometry?.type!=="BoxGeometry")return false;
+ const p=obj.geometry.parameters;
+ return Math.abs(p.width-1.25)<.0001&&Math.abs(p.depth-.07)<.0001;
+});
+assert.ok(mainPaint.length>=20,"Original town street dashes disappeared");
+for(const line of mainPaint){
+ const bottom=line.position.y-line.geometry.parameters.height/2;
+ assert.ok(bottom>STREET_Y+roads.ROAD_SURFACE_OFFSET,
+  "Main street paint was buried under the unified asphalt");
+}
+const districtPaint=district.children.filter(obj=>obj.isMesh&&obj.geometry?.type==="BoxGeometry"&&
+  obj.material?.color?.getHex()===0xdfd9c0 &&
+  obj.geometry.parameters.width>=.07&&obj.geometry.parameters.width<=1.5);
+assert.ok(districtPaint.length>=10,"District lane lines disappeared");
+for(const line of districtPaint){
+ if(line.geometry.parameters.height>.025)continue; // parking stalls are taller
+ const bottom=line.position.y-line.geometry.parameters.height/2;
+ assert.ok(bottom>STREET_Y+roads.ROAD_SURFACE_OFFSET,
+   "District lane paint was buried under the continuous asphalt");
+}
 const roadNormals=roadUnion.geometry.attributes.normal;
 for(let i=0;i<roadNormals.count;i++)
  assert.ok(roadNormals.getY(i)>.99,
@@ -73,7 +95,19 @@ const surfaceAt=(x,z,minWidth,minDepth)=>{
      &&box.min.y>=STREET_Y-.20&&box.max.y<=STREET_Y+.3;
  });
 };
-assert.ok(surfaceAt(0,-24.5,62,3.9),"Central connector road has no real asphalt mesh");
+const roadCells=roads.calculateRoadUnion(urban.ROAD_SEGMENTS).cells;
+function isPavedByUnion(x,z){
+ return roadCells.some(([x0,x1,z0,z1])=>
+   x>=x0-1e-6 && x<=x1+1e-6 && z>=z0-1e-6 && z<=z1+1e-6);
+}
+for(const [x,z] of [[0,-24.5],[-29,-20],[29,-20],[0,-40],[0,-8.5],
+  [-25,0],[25,0],[0,8.5]]){
+ assert.ok(isPavedByUnion(x,z),"Street absent from the unified asphalt: "+x+","+z);
+}
+const fakeRoadPatches=district.children.filter(obj=>obj.isMesh&&
+  obj.geometry?.type==="BoxGeometry"&&obj.material?.color?.getHex()===0x404b50&&
+  (obj.geometry.parameters.width>30||obj.geometry.parameters.depth>30));
+assert.equal(fakeRoadPatches.length,0,"Duplicate standalone asphalt street plates reintroduce patchwork");
 for(const x of [-35,35]){
  assert.ok(surfaceAt(x,-32,4.7,7.9),"Missing shared parking asphalt at "+x);
 }
