@@ -287,7 +287,10 @@ try {
     const elements = new Map();
     context.document = { createElement: element, querySelectorAll: () => [], addEventListener() {},
       getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); } };
-    context.window = { innerWidth: 1280, devicePixelRatio: 1, addEventListener() {} };
+    context.location = { href:"https://example.invalid/the-writer-live/",pathname:"/the-writer-live/" };
+    context.URL = URL;
+    context.window = { innerWidth: 1280, devicePixelRatio: 1, addEventListener() {},
+      location:context.location };
     context.requestAnimationFrame = () => 0;
     context.setInterval = context.setTimeout = () => 0;
     context.clearInterval = context.clearTimeout = () => {};
