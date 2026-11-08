@@ -16,3 +16,9 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - `web/town.js` already has a north mountain backdrop, and uses `buildSeamlessRoadSurface`; avoid duplicate roads/mountains.
 - Public `.github/workflows/pages.yml` overwrites `_site/web/town.js` from `.github/citizens-assets/town.js`, and `town-districts.js` from `.github/city-assets/town-districts.js`.
 - The live build validates city layout and scene path/wiring probes; documentation edits do not constitute a runtime validation.
+
+## Tehran environment audit addition (MAYOR-010)
+- Source of truth for the municipal display: `web/tehran-environment.js`; Tehran timezone is `Asia/Tehran`, independent of browser timezone. Never change writer or citizen clocks.
+- Check `tests/tehran_environment_probe.mjs` for local 20:00 night, sunrise/sunset, rain/snow, request deduplication, 15-minute caching and unavailable stale readings.
+- Check public pinned `.github/city-assets/tehran-environment.js` and deployment overlay before syncing; distinguish a passing unit probe from verified live network conditions.
+- Open-Meteo response is model-derived weather, not an in-situ station observation; retain attribution and confirm licensing for production usage.
