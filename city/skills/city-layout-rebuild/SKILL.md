@@ -39,3 +39,10 @@ Use whenever modifying the city, homes, writer exterior/interior, building footp
 - Authoring project: `iAlirezaaa/the-writer` (`web/`, `tests/`).
 - Public deployment: `iAlirezaaa/the-writer-live` (pinned `.github/*-assets/`).
 - External algorithms may inform implementation, not replace project-specific stable IDs or current navigation contracts.
+
+## Tehran neighborhood georeferencing (MAYOR-016)
+- Canonical anchor: `TEHRAN_GEO_ORIGIN` in `web/urban-plan.js`; WGS84 writer home at latitude 35.715361987616696, longitude 51.3642455031707.
+- Scene convention: local +X east, local +Z south; convert geographic coordinates with `geoToCityLocal` and `cityLocalToGeo`. The approximation is for neighborhood-scale visualization, not survey-grade measurement.
+- This anchor does not make existing procedural roads geographically authentic. Obtain attributed street/building/terrain sources and verify orientation, parcel geometry, walkability, clearance and traffic probes before moving meshes.
+- Run `node tests/tehran_georeference_probe.mjs .` and existing `tests/urban_plan_probe.mjs` before copying the canonical urban-plan file to public `web/` and pinned `.github/city-assets/`.
+- Keep the Tehran timezone for lighting/weather independent of the viewer's local timezone.
