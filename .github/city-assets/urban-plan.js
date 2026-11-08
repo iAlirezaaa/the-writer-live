@@ -1,7 +1,19 @@
 /* City Layout V2 — deterministic planning contracts, independent of Three.js.
  * Keep actual circulation and building footprints separate from decoration.
  */
-export const CITY_LAYOUT_VERSION="urban-plan-20261108-v2";
+export const CITY_LAYOUT_VERSION="urban-plan-20261108-v3";
+export const WRITER_HOME_BLUEPRINT=Object.freeze({
+  // Shared spatial contract for both rendered modes. Local interior floor is Y=0;
+  // street exterior uses STREET_Y as its identical plan origin.
+  room:{width:6,depth:6,height:3.2},
+  facade:{door:{x:-1.2,width:.86,height:2.10,zSide:"front"},
+          frontWindow:{x:1.45,width:1.08,height:1.04,sill:1.05},
+          rearWindow:{x0:-1.6,x1:.4,y0:1.0,y1:2.5},
+          roof:{rise:.96,color:0x56616a}},
+  colors:{plaster:0xd8c8b0,timber:0x563b29,slate:0x56616a,glass:0xbfd4e6},
+  floorStages:Object.freeze([[6,6],[6.2,6.05],[6.4,6.1],[6.7,6.15],[7,6.2]])
+});
+
 export const ROAD_SEGMENTS=Object.freeze([
  {id:"east-west-north",axis:"x",at:-8.5,min:-31.2,max:31.2,width:4},
  {id:"east-west-south",axis:"x",at:8.5,min:-27,max:27,width:4},
@@ -13,7 +25,7 @@ export const ROAD_SEGMENTS=Object.freeze([
  {id:"outer-south",axis:"x",at:-40,min:-31.2,max:31.2,width:4.4}
 ]);
 export const BUILDING_PARCELS=Object.freeze([
- {id:"writer",x:0,z:0,w:9,d:11,buildingW:4.8,buildingD:4.8,entry:{x:0,z:3},parking:0,green:true},
+ {id:"writer",x:0,z:0,w:9,d:11,buildingW:6,buildingD:6,entry:{x:0,z:3},parking:0,green:true},
  {id:"publisher",x:-10,z:0,w:7.5,d:8,buildingW:6,buildingD:6,entry:{x:-10,z:3.3},parking:1,green:true},
  {id:"bookstore",x:10,z:0,w:7.5,d:8,buildingW:6,buildingD:6,entry:{x:10,z:3.3},parking:1,green:true},
  {id:"home-west",x:-19,z:0,w:7,d:8,buildingW:6,buildingD:5,entry:{x:-19,z:2.7},parking:1,green:true},
@@ -67,6 +79,6 @@ export function writerHouseLevel(accepted=0){
  return n>=40?4:n>=20?3:n>=10?2:n>=4?1:0;
 }
 export function writerHouseDimensions(level=0){
- const sizes=[[4.8,4.8],[5.4,5.1],[5.9,5.5],[6.5,5.9],[7,6.2]];
+ const sizes=WRITER_HOME_BLUEPRINT.floorStages;
  return sizes[Math.max(0,Math.min(4,Math.floor(level)))]||sizes[0];
 }
