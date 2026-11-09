@@ -59,3 +59,5 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-044 P1:** cross-tab consistency for local favorites, theme and catalog view preference via `storage` event, with no server-side telemetry.
 - [ ] **RDR-045 P2:** rights-cleared category/genre filtering based exclusively on published metadata. Do not reveal unpublished or unlicensed content.
 - UX references: [Apple HIG](https://developer.apple.com/design/human-interface-guidelines/), [Readwise Reader](https://docs.readwise.io/reader/docs/faqs/appearance) and [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features).
+
+- **Release confirmation (after QA):** [GitHub Pages deployment 42624010484](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42624010484) completed successfully at 2026-11-09T13:17:25Z. Its deploy job validated pinned reader assets and uploaded/deployed the public site at https://ialirezaaa.github.io/the-writer-live/ . Catalog route: https://ialirezaaa.github.io/the-writer-live/read/ . Actual desktop/mobile visual checks and manual screen-reader QA remain unverified.
