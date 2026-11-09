@@ -21,6 +21,8 @@ def prepare(site: Path) -> None:
     site.mkdir(parents=True,exist_ok=True)
     web=site/"web"
     web.mkdir(exist_ok=True)
+    if (web/"observer.css").read_bytes() != (ROOT/"observer.css").read_bytes():
+        raise RuntimeError("Observer CSS drift: checked-in source and pinned Pages asset differ")
     for name in ("observer-ui.js","observer.css","persian-display.js"):
         source=ROOT/name
         if not source.is_file():

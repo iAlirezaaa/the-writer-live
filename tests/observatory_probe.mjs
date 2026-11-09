@@ -32,6 +32,10 @@ assert.equal(JSON.stringify(model),snapshot,
 const ui=text("web/observer-ui.js");
 const html=text(existsSync(resolve(root,"index.html"))?"index.html":"web/index.html");
 const css=text("web/observer.css");
+const pinnedCss=".github/observer-assets/observer.css";
+if(existsSync(resolve(root,pinnedCss))){
+  assert.equal(text(pinnedCss),css,"Pinned public CSS must match reviewed source");
+}
 const world=text("web/world.js");
 const actions=text("web/read.js");
 const script=ui.replace(/^import .*;$/gm,"").replace(/^export /gm,"");
@@ -88,7 +92,13 @@ assert.ok(ui.includes('event.key==="ArrowRight"')&&ui.includes('event.key==="Arr
   "RTL tab groups need arrow-key access");
 assert.ok(html.includes('id="scene-data-link"'));
 assert.ok(html.includes('id="panel-scene-link"'));
-assert.ok(css.includes("body.app.side-collapsed .side{display:none;}"));
+assert.ok(/body\.app\.side-collapsed \.side\s*(?:,|\{)/.test(css) &&
+  css.includes('html[data-observer-side-boot="collapsed"] body.app:not(.side-collapsed) .side{display:none;}'));
+assert.ok(css.includes('html[data-observer-boot-theme="light"] body.app:not([data-observer-theme])') &&
+  css.includes('html[data-observer-boot-theme="dark"] body.app:not([data-observer-theme])'));
+assert.ok(html.indexOf('root.dataset.theme = value;')>=0 &&
+  html.indexOf('root.dataset.theme = value;')<html.indexOf('rel="stylesheet"')),
+  "Stored theme must be selected before CSS loads");
 assert.ok(css.includes("@media(max-width:670px)"));
 assert.ok(css.includes('body.app[data-observer-theme="light"]'));
 assert.ok(css.includes('body.app[data-observer-theme="dark"]'));

@@ -4,9 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>اتاق هادس</title>
+  <script>
+    // Read stored appearance before the first stylesheet is applied to avoid startup flicker.
+    (() => {
+      const root = document.documentElement;
+      let mode = "auto";
+      try {
+        const saved = localStorage.getItem("the-writer-observer-theme-v1");
+        if (["auto", "light", "dark"].includes(saved)) mode = saved;
+        if (localStorage.getItem("the-writer-side-collapsed") === "1")
+          root.dataset.observerSideBoot = "collapsed";
+      } catch {}
+      const hour = new Date().getHours(); // Matches the initial client scene clock.
+      const value = mode === "auto" ? (hour < 7 || hour >= 18 ? "dark" : "light") : mode;
+      root.dataset.theme = value;
+      root.dataset.observerBootTheme = value;
+    })();
+  </script>
   <link rel="stylesheet" href="./web/style.css?v=20261109-three-mind-layers-v1">
   <link rel="stylesheet" href="./web/book.css?v=reader-20261109-graph-v1">
-  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261108-v4">
+  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261109-first-paint-v1">
   <script type="importmap">
   {
     "imports": {
@@ -45,6 +62,24 @@
       <button id="toggle-side" aria-controls="side" aria-expanded="true">بستن منو</button>
     </nav>
   </header>
+  <script>
+    // Keep header controls aligned with the already-bootstrapped first-paint state.
+    (() => {
+      const selector = document.getElementById("observer-theme");
+      try {
+        const saved = localStorage.getItem("the-writer-observer-theme-v1");
+        if (selector && ["auto", "light", "dark"].includes(saved)) selector.value = saved;
+      } catch {}
+      const collapsed = document.documentElement.dataset.observerSideBoot === "collapsed";
+      document.getElementById("observer-watch").setAttribute("aria-pressed", String(collapsed));
+      if (collapsed) {
+        document.body.classList.add("side-collapsed");
+        document.getElementById("toggle-side").textContent = "باز کردن دفتر مشاهده";
+        document.getElementById("toggle-side").setAttribute("aria-expanded", "false");
+        document.getElementById("observer-watch").textContent = "باز کردن دفتر";
+      }
+    })();
+  </script>
 
   <main class="layout">
     <section class="stage-wrap" aria-label="محله و خانهٔ نویسنده">

@@ -12,6 +12,7 @@ on:
       - "index.html"
       - "tests/observatory_probe.mjs"
       - ".github/observer-assets/observer-ui.js"
+      - ".github/observer-assets/observer.css"
       - ".github/workflows/observatory-regression.yml"
   workflow_dispatch:
 permissions:
@@ -30,6 +31,8 @@ jobs:
           if [ -f .github/observer-assets/observer-ui.js ]; then
             cmp web/observer-ui.js .github/observer-assets/observer-ui.js
           fi
+      - name: Verify pinned CSS matches reviewed source
+        run: cmp web/observer.css .github/observer-assets/observer.css
       - name: Check browser module syntax
         run: |
           cp web/observer-ui.js /tmp/observer-ui.mjs
