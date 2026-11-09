@@ -201,3 +201,16 @@ test("RDR-041: public and protected catalog entry points preserve one named sear
     }
   }
 });
+
+test("RDR-048: deployed protected search normalizer executes Persian/Arabic equivalence fixtures", () => {
+  const pinnedPath = path.join(__dirname, "../.github/reader-assets/read.js");
+  if (!fs.existsSync(pinnedPath)) return; // private repo has no protected public assets
+  const pinned = fs.readFileSync(pinnedPath, "utf8");
+  const expression = /^const searchKey\\s*=\\s*value\\s*=>[^\\n]+;/m;
+  const implementation = pinned.match(expression)?.[0];
+  assert.ok(implementation, "protected catalog must expose searchKey");
+  const normalize = new Function(implementation + "\\nreturn searchKey;")();
+  for (const [query, title] of [
+    ["عَلِي", "علی"], ["كـِتاب", "کتاب"], ["ﻛﺘﺎﺏ", "کتاب"], ["TEST", "test"]
+  ]) assert.equal(normalize(query), normalize(title), query + " must match " + title);
+});
