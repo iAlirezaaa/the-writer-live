@@ -347,3 +347,16 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Two new backlog ideas (MAYOR-045)
 1. **Dated road-rule change ledger:** poll only on demand for OSM `oneway`, `maxspeed`, `surface`, `width`, `sidewalk` and matched municipality traffic records, with confidence and license.
 2. **LOD2-building evidence ingestion:** verify one Overture `building_part`, floor/height and one independently licensed photo/entrance per source building ID before modifying actual roof, units or shops.
+
+## MAYOR-046 — owner-defined writer apartment third floor and park corridor research (2026-11-09)
+- [x] Register independent task before changes; verify both exact backup refs and mandatory city/3Dviz skills.
+- [x] Search Iranian city records, permit/urban planning portals, regional apartments and Iranian map of Park Sattarkhan, separating nearby examples from proven parcel details.
+- [x] Author a dedicated 4-level proxy apartment at original writer WGS84 anchor, moving original room and lights/props together to third floor with updated cameras, keeping access click and base writer shell.
+- [x] Run direct vendored Three.js geometry check: three lower floor slabs, lobby and stair shaft, ground contact ~-3.035, upper support ~6.595, finite scene bounds.
+- [ ] Full Node/Three.js and legacy CI including camera/room test; real browser street/aerial/night/day captures.
+- [ ] Public Pages pin/mirror and actual CI conclusion; if failed hold public success claim.
+- [ ] Acquire OSM polygon for Park Sattarkhan way 448551081 and the intervening real streets before building corridor geometry.
+
+### Two new backlog ideas — MAYOR-046
+1. **Satarkhan Park geospatial corridor** with park polygon, named road way IDs, routing topology, no invented junctions, and owner-approved outer boundary.
+2. **Official per-parcel floor registry** using verified municipal permit identifiers; separately distinguish approved floors, physical built floors, unit counts, roof/entrance proof and confidence.
