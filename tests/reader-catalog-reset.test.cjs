@@ -179,3 +179,25 @@ test("catalog entry points share the protected script cache version and reset co
     assert.match(pinnedHtml, /id="story-reset"/);
   }
 });
+
+test("RDR-041: public and protected catalog entry points preserve one named search landmark and unique controls", () => {
+  const entries = ["../read/index.html", "../.github/reader-assets/read.html"]
+    .map(relative => path.join(__dirname, relative)).filter(fs.existsSync);
+  if (!entries.length) return; // private repository may not include public entry points
+  for (const entry of entries) {
+    const html = fs.readFileSync(entry, "utf8");
+    const regions = html.match(/role="search"\s+aria-label="[^"]+"/g) || [];
+    assert.equal(regions.length, 1, entry + ": expected exactly one named search region");
+    for (const id of ["story-search", "story-status", "story-sort", "story-reset"]) {
+      const occurrences = html.match(new RegExp('id="' + id + '"', "g")) || [];
+      assert.equal(occurrences.length, 1, entry + ": " + id + " must be unique");
+    }
+    const regionStart = html.indexOf('role="search"');
+    const regionEnd = html.indexOf('</div>', html.indexOf('id="story-reset"'));
+    assert.ok(regionStart >= 0 && regionEnd > regionStart, entry + ": missing search toolbar boundary");
+    for (const id of ["story-search", "story-status", "story-sort", "story-reset"]) {
+      const position = html.indexOf('id="' + id + '"');
+      assert.ok(position > regionStart && position < regionEnd, entry + ": " + id + " outside search region");
+    }
+  }
+});
