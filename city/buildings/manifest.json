@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-09",
+  "projectGoal": "Geographically accurate Tehran real-city digital twin building-by-building; writer block scope first",
+  "scope": "single-OSM-road-bounded-writer-block",
+  "homeAnchorWGS84": {
+    "lat": 35.715361987616696,
+    "lon": 51.3642455031707
+  },
+  "primarySource": {
+    "file": "city/survey/output/writer-block-overture-buildings.json",
+    "license": "ODbL-1.0",
+    "capturedAt": "2026-11-09T12:18:12.627338+00:00",
+    "underlyingReleaseVerified": false,
+    "producer": "Overture Maps Foundation; Microsoft ML Buildings"
+  },
+  "limitations": "These 4 polygons may include multiple buildings; neither facade, height, floors, entrances nor legal parcel lines are verified; no actual real building count inferred",
+  "buildings": [
+    {
+      "sourceId": "3d2290d6-c533-4c11-b2c0-079f0ee2e29e",
+      "areaSquareMeters": 1035.58,
+      "geometryTier": "T0",
+      "visualStatus": "transparent-proxy",
+      "heightMetersSource": null,
+      "heightMetersDisplayProxy": 6,
+      "writerRoomIntersect": false,
+      "individuallyResolvedBuilding": false
+    },
+    {
+      "sourceId": "3d7b8239-b1e0-48bc-8868-ae4a4d392586",
+      "areaSquareMeters": 965.73,
+      "geometryTier": "T1-plan-proxy",
+      "visualStatus": "individual-geolocated-solid-mesh-added; public CI pending",
+      "heightMetersSource": null,
+      "heightMetersDisplayProxy": 6,
+      "writerRoomIntersect": false,
+      "individuallyResolvedBuilding": false,
+      "modelSource": "web/writer-block-building-01.js",
+      "footprintPlanAreaComputedSqm": 965.7373205,
+      "actualRoofKnown": false,
+      "actualHeightKnown": false,
+      "collisionsChanged": false,
+      "writerRoomPreserved": true,
+      "qualityLimitation": "One Overture ML-derived roofprint may aggregate multiple real buildings; model height and flat cap are symbolic"
+    },
+    {
+      "sourceId": "75edb751-8810-4f84-97b5-a53b58dbbf03",
+      "areaSquareMeters": 1954.26,
+      "geometryTier": "T0",
+      "visualStatus": "outline-only-room-protected",
+      "heightMetersSource": null,
+      "heightMetersDisplayProxy": null,
+      "writerRoomIntersect": true,
+      "individuallyResolvedBuilding": false
+    },
+    {
+      "sourceId": "76931a07-c621-4e37-9241-c41ee59d4248",
+      "areaSquareMeters": 2505.89,
+      "geometryTier": "T0",
+      "visualStatus": "transparent-proxy",
+      "heightMetersSource": null,
+      "heightMetersDisplayProxy": 6,
+      "writerRoomIntersect": false,
+      "individuallyResolvedBuilding": false
+    }
+  ],
+  "nextRequiredSources": [
+    "licensed higher-resolution aerial roofprint building segmentation",
+    "actual building heights/floors",
+    "street setbacks and entrances",
+    "terrain/curb survey"
+  ],
+  "explicitPreservation": {
+    "writerRoomNeverDelete": true,
+    "writerPublisherStateUntouched": true,
+    "citizenRouteChanges": false,
+    "physicalCollisionChanges": false
+  },
+  "validation": {
+    "jsSourceAreaCheck": "pass",
+    "nodeThreeJsCi": "pending",
+    "publicPagesDeploy": "pending",
+    "aerialScreenshotComparison": "not performed",
+    "verifiedHeight": false,
+    "roomIntegrityExpected": true
+  }
+}

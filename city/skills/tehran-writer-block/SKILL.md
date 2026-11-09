@@ -105,3 +105,40 @@ Read in this order:
 ## MAYOR-035 — Roofprint height evidence gate (2026-11-09)
 - Read `city/tasks/MAYOR-035-overture-height-evidence-gate.md` before attempting any 3D roofprint-to-building replacement. The four Overture candidates do not establish building heights, entrances, floor counts or street-level contact. The author-room intersecting candidate remains outline-only.
 - Apply 3Dviz silhouette, assembly, material and LOD checks only after licensed object-specific evidence; label symbolic 6m masses as proxies and do not promote them to colliders. Require actual screenshots and executable city regression results for runtime work. Two new evidence/visual review ideas are tracked in MAYOR-035.
+
+## Core objective change: MAYOR-037 (2026-11-09)
+The user explicitly prioritizes a faithful **building-by-building 3D digital twin of REAL
+Tehran from licensed, top-down geospatial mapping**, not an imagined city. This is
+the project's long-term primary goal; read `city/GOAL.md` and the per-feature
+`city/buildings/manifest.json` every run. The immediate physical AOI is still
+only the real writer block bounded by sourced OSM centerlines.
+
+### First building: source footprint is the real part, height/facade are not
+- `web/writer-block-building-01.js` is independent, source-ID keyed to Overture
+  `3d7b8239-b1e0-48bc-8868-ae4a4d392586` (the western 965.73 m²
+  ML-derived candidate roofprint; 6 nonclosing XZ vertices). Geometry copies
+  the **original exact local metric polygon** with no rescaling, axis drift,
+  unwarranted subdivision, rotation or invented setbacks. Its distinctive
+  silhouette is the truthful part of the model, not its room/floor configuration.
+- The first stand-alone Three.js `ExtrudeGeometry` intentionally uses a **6m
+  illustrative height**, flat cap and neutral wall/roof appearance. Overture
+  supplies NO verified height, floors, facade, entrance or roof style. Keep
+  `measuredHeightMeters:null`, `roofTypeProven:false` and `T1-PLAN-EVIDENCED`
+  in its runtime metadata. A source polygon may represent MULTIPLE joined
+  structures; do not call it an individual legal property without stronger data.
+- Avoid spatial duplicates: skip this exact source ID in the earlier combined
+  translucent anonymous volume mesh, retaining other 2 proxies and the single
+  writer-room protected outline. The current live writer's room, routes,
+  buildings' physical collision and weather/clock are all unchanged.
+- Use 3Dviz Pro Max `recipe.citygml-stable-id-scenario-diff` for stable ID,
+  feature version/CRS identity and source separation; `recipe.historical-diorama`
+  for visibly distinguishing evidence-grade geometry from conjecture. Use
+  `TWIN-WORLD` for a physically connected single extrusion with ground contact.
+  Never invent windows/balconies/entrances for this source roofprint.
+- Geometry test `tests/tehran_writer_block_building_01_probe.mjs` must check
+  6 source edges, source polygon area, absolute map registration, room-exclusion,
+  unknown height flag, no duplicate bulk proxy, parent mesh count and finite
+  vertices. Keep older scene/traffic/district/baseline probes mandatory.
+- A passing static/CI Three.js model test is not a screenshot, true photograph
+  match or confirmation of a Google Maps-like 1:1 reconstruction. Requires
+  a documented licensed aerial view and independent roof/facade survey.

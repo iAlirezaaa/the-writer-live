@@ -263,3 +263,12 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [x] Real public GitHub Pages tests and deployment verified: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42617301697 ; Overture mapped footprints: 4, generated transparent symbolic-height volumes: 3, writer room preserved. Browser screenshots, actual building heights, performance and 1:1 map parity remain unverified.
 - Backlog idea 1: build real-road-to-building topological clearance ledger for mapped OSM centerlines vs Overture ML roofprints; reject any volume crossing known road lines.
 - Backlog idea 2: stepwise **writer-room-preserving** replacement of procedurally placed town buildings with source-backed real building footprints, waiting on licensed verified height/entrance and safe navigation updates.
+
+## MAYOR-037 — Real Tehran, one geolocated building at a time (2026-11-09)
+- [x] User promoted exact real-city geography to persistent highest priority: see `city/GOAL.md`, `city/buildings/manifest.json`; hourly mayor automation prompt updated without changing cadence.
+- [x] Verified private/public frozen backups and common manifest before any city mesh edit; read 3Dviz SKILL/TWIN-WORLD, source-ID/evidence-layer recipes.
+- [x] Rebuilt source roofprint `3d7b8239-b1e0-48bc-8868-ae4a4d392586` as an independent city 3D object with identical source six-point boundary (965.737 m²), illustrative 6m height, neutral non-surveyed facade, no collision. Removed only its duplicated transparent bulk ghost; 2 other ghost masses and the room-protected outline remain.
+- [x] Added code-level map/area/room validation and real Three.js Node probe, updated district and source probes; copied matching city module/test/pins to public repo.
+- [ ] Public Pages build and real-world site screenshots still need explicit successful evidence; do not claim near-photographic match from a sourced roofprint alone.
+- Next idea 1: compare Microsoft ML / Overture roof clusters with independent higher-resolution licensed data for building-by-building segmentation; do not invent legal parcels.
+- Next idea 2: add a per-building calibrated WGS84-ground-contact and aerial-screenshot similarity review, recording source footprint IoU, confidence and screenshot provenance.
