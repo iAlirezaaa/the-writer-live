@@ -142,125 +142,174 @@
     },
     {
       "attempts": null,
-      "end": "2026-11-09T14:54:54",
+      "end": "2026-11-09T14:54:57",
       "id": "202611091645",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T14:14:54",
-      "status": "planned",
+      "start": "2026-11-09T14:14:57",
+      "status": "done",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T15:34:54",
-      "id": "202611091725",
-      "label": "مطالعهٔ متن کلاسیک فارسی",
-      "next_retry_at": null,
-      "start": "2026-11-09T14:54:54",
-      "status": "planned",
-      "task": "persian_reading"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-09T16:14:54",
-      "id": "202611091805",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-09T15:34:54",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-09T16:54:54",
-      "id": "202611091845",
+      "end": "2026-11-09T14:54:00",
+      "id": "202611091454",
       "label": "نوشتن داستان",
       "next_retry_at": null,
-      "start": "2026-11-09T16:14:54",
+      "start": "2026-11-09T14:14:00",
       "status": "planned",
       "task": "write"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T17:34:54",
-      "id": "202611091925",
-      "label": "چرت",
-      "next_retry_at": null,
-      "start": "2026-11-09T16:54:54",
-      "status": "planned",
-      "task": "nap"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-09T18:14:54",
-      "id": "202611092005",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-09T17:34:54",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-09T18:54:54",
-      "id": "202611092045",
+      "end": "2026-11-09T15:34:00",
+      "id": "202611091534",
       "label": "پرسش از خودم",
       "next_retry_at": null,
-      "start": "2026-11-09T18:14:54",
+      "start": "2026-11-09T14:54:00",
       "status": "planned",
       "task": "question"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T19:34:54",
-      "id": "202611092125",
+      "end": "2026-11-09T16:14:00",
+      "id": "202611091614",
+      "label": "دفترچه‌ی ایده‌ها",
+      "next_retry_at": null,
+      "start": "2026-11-09T15:34:00",
+      "status": "planned",
+      "task": "notebook"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T16:54:00",
+      "id": "202611091654",
+      "label": "آرزو و باور",
+      "next_retry_at": null,
+      "start": "2026-11-09T16:14:00",
+      "status": "planned",
+      "task": "wish"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T17:34:00",
+      "id": "202611091734",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T18:54:54",
+      "start": "2026-11-09T16:54:00",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T20:14:54",
-      "id": "202611092205",
-      "label": "تحقیق",
+      "end": "2026-11-09T18:14:00",
+      "id": "202611091814",
+      "label": "پاسخ به نامه‌ها",
       "next_retry_at": null,
-      "start": "2026-11-09T19:34:54",
+      "start": "2026-11-09T17:34:00",
       "status": "planned",
-      "task": "research"
+      "task": "letter"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T20:54:54",
-      "id": "202611092245",
-      "label": "چرت",
-      "next_retry_at": null,
-      "start": "2026-11-09T20:14:54",
-      "status": "planned",
-      "task": "nap"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-09T21:34:54",
-      "id": "202611092325",
+      "end": "2026-11-09T18:54:00",
+      "id": "202611091854",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T20:54:54",
+      "start": "2026-11-09T18:14:00",
       "status": "planned",
       "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T19:34:00",
+      "id": "202611091934",
+      "label": "مطالعهٔ متن کلاسیک فارسی",
+      "next_retry_at": null,
+      "start": "2026-11-09T18:54:00",
+      "status": "planned",
+      "task": "persian_reading"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T20:14:00",
+      "id": "202611092014",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-09T19:34:00",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T20:54:00",
+      "id": "202611092054",
+      "label": "دفترچه‌ی ایده‌ها",
+      "next_retry_at": null,
+      "start": "2026-11-09T20:14:00",
+      "status": "planned",
+      "task": "notebook"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T21:34:00",
+      "id": "202611092134",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-09T20:54:00",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T22:14:00",
+      "id": "202611092214",
+      "label": "دفترچه‌ی ایده‌ها",
+      "next_retry_at": null,
+      "start": "2026-11-09T21:34:00",
+      "status": "planned",
+      "task": "notebook"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T22:54:00",
+      "id": "202611092254",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-09T22:14:00",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-09T23:34:00",
+      "id": "202611092334",
+      "label": "دفترچه‌ی ایده‌ها",
+      "next_retry_at": null,
+      "start": "2026-11-09T22:54:00",
+      "status": "planned",
+      "task": "notebook"
     }
   ],
-  "current": null,
+  "current": {
+    "attempts": null,
+    "end": "2026-11-09T14:54:00",
+    "id": "202611091454",
+    "label": "نوشتن داستان",
+    "next_retry_at": null,
+    "start": "2026-11-09T14:14:00",
+    "status": "planned",
+    "task": "write"
+  },
   "day": "2026-11-09",
   "next": {
     "attempts": null,
-    "end": "2026-11-09T14:54:54",
-    "id": "202611091645",
-    "label": "استراحت",
+    "end": "2026-11-09T15:34:00",
+    "id": "202611091534",
+    "label": "پرسش از خودم",
     "next_retry_at": null,
-    "start": "2026-11-09T14:14:54",
+    "start": "2026-11-09T14:54:00",
     "status": "planned",
-    "task": "rest"
+    "task": "question"
   }
 }
