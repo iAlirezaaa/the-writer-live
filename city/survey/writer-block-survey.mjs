@@ -75,3 +75,24 @@ export function compileSurvey(osm,{area=writerArea(),sourceUrl='https://overpass
       reason:'A road-bounded containing block has not yet been topologically measured and visually checked.'},
     features:{type:'FeatureCollection',features},totals};
 }
+
+/**
+ * Official OSM Editing API (GET /api/0.6/map.json) supplies node references
+ * instead of the Overpass way.geometry array. Resolve only complete ways;
+ * missing nodes remain invalid rather than inventing vertices.
+ */
+export function normalizeOsmApiMap(osm){
+  if(!osm||!Array.isArray(osm.elements)||Number(osm.version)!==0.6)
+    throw new TypeError('Invalid OSM API JSON');
+  const nodes=new Map(osm.elements.filter(e=>e.type==='node'&&
+    Number.isSafeInteger(e.id)&&validPoint(e)).map(e=>[e.id,{lat:e.lat,lon:e.lon}]));
+  const elements=[];
+  for(const way of osm.elements){
+    if(way.type!=='way'||!way.tags||!('highway' in way.tags||'building' in way.tags))continue;
+    if(!Array.isArray(way.nodes)||way.nodes.length<2)continue;
+    const geometry=way.nodes.map(id=>nodes.get(id));
+    if(geometry.some(p=>!p))continue;
+    elements.push({type:'way',id:way.id,tags:way.tags,geometry});
+  }
+  return {version:0.6,generator:osm.generator||'OpenStreetMap API',elements};
+}
