@@ -71,8 +71,9 @@ export function compileSurvey(osm,{area=writerArea(),sourceUrl='https://overpass
   return {schemaVersion:1,geoSource:'OpenStreetMap Overpass',license:'ODbL-1.0',attribution:OSM_ATTRIBUTION,
     endpoint:sourceUrl,capturedAt,osmBaseTimestamp:osm.osm3s?.timestamp_osm_base||null,
     homeAnchor:{...WRITER_HOME,crs:'EPSG:4326',localX:'east',localZ:'south'},
-    surveyArea:area,blockBoundary:{status:'UNVERIFIED',geometry:null,
-      reason:'A road-bounded containing block has not yet been topologically measured and visually checked.'},
+    surveyArea:area,blockBoundary:deriveContainingRoadFace(features)||
+      {status:'UNVERIFIED',geometry:null,
+       reason:'No containing road-centerline face was found; block boundaries require verification.'},
     features:{type:'FeatureCollection',features},totals};
 }
 
@@ -95,4 +96,72 @@ export function normalizeOsmApiMap(osm){
     elements.push({type:'way',id:way.id,tags:way.tags,geometry});
   }
   return {version:0.6,generator:osm.generator||'OpenStreetMap API',elements};
+}
+
+/** A map-derived *candidate*, not a cadastral or roadway-edge footprint.
+ * Construct planar faces from shared OSM road nodes, then select the smallest
+ * bounded positive-area face containing the WGS84 writer-home anchor.
+ */
+export function deriveContainingRoadFace(features){
+  const highwayTypes=new Set(['residential','tertiary','secondary','primary',
+    'unclassified','living_street','service','road']);
+  const nodes=new Map(),halfEdges=[];
+  const key=p=>p[0].toFixed(2)+','+p[1].toFixed(2);
+  for(const f of features){
+    if(f.properties?.kind!=='road'||!highwayTypes.has(f.properties.tags.highway))continue;
+    const points=f.properties.localXZ;
+    if(!Array.isArray(points))continue;
+    for(let i=1;i<points.length;i++){
+      const from=key(points[i-1]),to=key(points[i]);
+      if(from===to)continue;
+      if(!nodes.has(from))nodes.set(from,{p:points[i-1],out:[]});
+      if(!nodes.has(to))nodes.set(to,{p:points[i],out:[]});
+      const a=nodes.get(from).p,b=nodes.get(to).p;
+      const ab={from,to,id:f.id,angle:Math.atan2(b[1]-a[1],b[0]-a[0])};
+      const ba={from:to,to:from,id:f.id,angle:Math.atan2(a[1]-b[1],a[0]-b[0])};
+      nodes.get(from).out.push(ab);nodes.get(to).out.push(ba);
+      halfEdges.push(ab,ba);
+    }
+  }
+  for(const n of nodes.values())n.out.sort((a,b)=>a.angle-b.angle);
+  const seen=new Set(),candidates=[],sig=e=>e.from+'>'+e.to;
+  const enclosesOrigin=poly=>{
+    let yes=false;
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const a=poly[i],b=poly[j];
+      if((a[1]>0)!==(b[1]>0)&&0<(b[0]-a[0])*(-a[1])/(b[1]-a[1])+a[0])yes=!yes;
+    }
+    return yes;
+  };
+  for(const start of halfEdges){
+    if(seen.has(sig(start)))continue;
+    let curr=start,closed=false;
+    const polygon=[],sourceIds=new Set();
+    for(let i=0;i<Math.min(2500,halfEdges.length+1);i++){
+      const mark=sig(curr);
+      if(seen.has(mark)){closed=mark===sig(start);break;}
+      seen.add(mark);polygon.push(nodes.get(curr.from).p);sourceIds.add(curr.id);
+      const adjacent=nodes.get(curr.to).out;
+      const back=adjacent.findIndex(e=>e.to===curr.from);
+      if(back<0)break;
+      curr=adjacent[(back-1+adjacent.length)%adjacent.length];
+    }
+    if(!closed||polygon.length<3||!enclosesOrigin(polygon))continue;
+    const area=polygon.reduce((sum,p,i)=>{
+      const q=polygon[(i+1)%polygon.length];return sum+p[0]*q[1]-q[0]*p[1];
+    },0)/2;
+    if(area>1&&area<250000)candidates.push({area,polygon,sourceIds:[...sourceIds]});
+  }
+  if(!candidates.length)return null;
+  candidates.sort((a,b)=>a.area-b.area);
+  const chosen=candidates[0];
+  return {status:'OSM_CENTERLINE_CANDIDATE',geometry:{type:'Polygon',
+      coordinates:[[...chosen.polygon,chosen.polygon[0]].map(([x,z])=>{
+        const p=toGeo(x,z);return [p.lon,p.lat];
+      })]},
+    localXZ:[...chosen.polygon,chosen.polygon[0]],
+    areaSquareMeters:Math.round(chosen.area),
+    roadWayIds:chosen.sourceIds,
+    confidence:'topology-only; road centers, not curbs or cadastral plot edges',
+    requiresSurvey:true};
 }
