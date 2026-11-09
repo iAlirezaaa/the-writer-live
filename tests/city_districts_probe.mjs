@@ -81,8 +81,8 @@ assert.equal(balconyRail.userData.cityConstructionEvidence.surveyedTehranBuildin
 const mapBuildings=scene.getObjectByName("writer-block-overture-building-reconstruction");
 assert.ok(mapBuildings,"Real geographic 2D building footprints must appear in scene");
 assert.equal(mapBuildings.userData.citySurvey.originalRoofprints,4);
-assert.equal(mapBuildings.userData.citySurvey.generatedVolumeCount,2);
-assert.equal(mapBuildings.userData.citySurvey.independentlyModeledCount,1);
+assert.equal(mapBuildings.userData.citySurvey.generatedVolumeCount,1);
+assert.equal(mapBuildings.userData.citySurvey.independentlyModeledCount,2);
 const singleBuilding=scene.getObjectByName("writer-block-building-01-georeferenced");
 assert.ok(singleBuilding,"First individual roofprint model must exist in town");
 assert.equal(singleBuilding.userData.cityBuildingEvidence.physicalCollider,false);

@@ -169,3 +169,10 @@ only the real writer block bounded by sourced OSM centerlines.
   passes to claim the new default scene looks authentic. Capture actual
   before/after aerial, street, day/night visual images and FPS if available;
   otherwise report missing visual proof.
+
+## MAYOR-039 — Known vs unknown floor and shop evidence on polygon 02
+- Built `web/writer-block-building-02.js` from **unaltered** Overture source feature `3d2290d6-c533-4c11-b2c0-079f0ee2e29e` (1035.58 sqm; 15 polygon vertices). Read 3Dviz Pro Max `citygml-stable-id-scenario-diff` and `historical-diorama`: preserve stable feature ID, ODbL/ML provenance, reproducible 2D polygon/area, and visibly separate speculative volumes/rooflines from evidenced plans.
+- Mass is **one ExtrudeGeometry Mesh** with cap/wall materials and no unnecessary random details. Two horizontal polygon outlines share one LineSegments draw: illustrative 6m envelope cap and 3m metric-level ruler. The 3m line **is not proof the real property has two floors**, nor is the 6m cap roof elevation.
+- Real `heightMetersSource`, `numberFloorsSource`, shop tags, shop owners/signs and door locations are `null`. Do not infer commercial use from the neighborhood or blindly label the ground level a store. Aerial ML roofprints may span multiple actual buildings: preserve polygon even if architectural segmentation seems obvious.
+- The new group lives only under `web/town-tehran-rebuild.js` source-only map. `web/writer-block-buildings.js` excludes the identical map ID from its anonymous proxy, leaving exactly 1 bulk mass, 2 sourced individual mesh groups, and 1 writer-room outline. Physical colliders, legacy citizens routes, author room and publisher logic are not touched.
+- Verify map-to-Three.js vertex/area exactness, closed silhouette, extents and noncolliding above-flat-ground proxy with `tests/tehran_writer_block_building_02_probe.mjs` and `tests/tehran_source_only_rebuild_probe.mjs`. Also verify actual aerial/street/day/night captures and LOD performance later, if a browser/screenshot runner is genuinely available.

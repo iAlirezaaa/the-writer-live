@@ -39,6 +39,7 @@ jobs:
           cp .github/city-assets/writer-block-building-data.js _site/web/writer-block-building-data.js
           cp .github/city-assets/writer-block-buildings.js _site/web/writer-block-buildings.js
           cp .github/city-assets/writer-block-building-01.js _site/web/writer-block-building-01.js
+          cp .github/city-assets/writer-block-building-02.js _site/web/writer-block-building-02.js
           cp .github/city-assets/town-tehran-rebuild.js _site/web/town-tehran-rebuild.js
           mkdir -p _site/city/survey/output
           cp city/survey/output/writer-block-overture-buildings.json _site/city/survey/output/writer-block-overture-buildings.json
@@ -74,6 +75,7 @@ jobs:
           node tests/tehran_writer_block_balcony_probe.mjs _site
           node tests/tehran_writer_block_buildings_probe.mjs _site
           node tests/tehran_writer_block_building_01_probe.mjs _site
+          node tests/tehran_writer_block_building_02_probe.mjs _site
           node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs _site
           node tests/urban_plan_probe.mjs _site
           node tests/road_topology_probe.mjs _site

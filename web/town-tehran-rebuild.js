@@ -17,6 +17,7 @@ import { buildWriterBlockStreetFrame } from "./writer-block-street-frame.js?v=wr
 import { buildWriterBlockTerrain } from "./writer-block-terrain.js?v=writer-block-dem-contours-20261109-v1";
 import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v1";
 import { buildWriterBlockBuilding01 } from "./writer-block-building-01.js?v=tehran-building-by-building-01-20261109-v1";
+import { buildWriterBlockBuilding02 } from "./writer-block-building-02.js?v=tehran-source-building-02-20261109-v1";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
@@ -62,14 +63,16 @@ export function buildTehranReconstructionTown({
   // outside licensed footprints. Terrain contours remain a coarse DEM overlay.
   const footprintMasses=buildWriterBlockBuildingMasses(THREE,group,{streetY});
   const building01=buildWriterBlockBuilding01(THREE,group,{streetY});
+  const building02=buildWriterBlockBuilding02(THREE,group,{streetY});
   if(footprintMasses.plan.length!==4||
-     footprintMasses.group.userData.citySurvey.generatedVolumeCount!==2||
-     footprintMasses.group.userData.citySurvey.independentlyModeledCount!==1||
+     footprintMasses.group.userData.citySurvey.generatedVolumeCount!==1||
+     footprintMasses.group.userData.citySurvey.independentlyModeledCount!==2||
      footprintMasses.group.userData.citySurvey.ignoredRoomCollisionCount!==1||
      building01.plan.measuredHeightMeters!==null||
+     building02.plan.measuredHeightMeters!==null||
      !streets.group.getObjectByName("writer-block-osm-4-street-pavement"))
     throw new Error("Sourced city evidence changed; stop rather than invent replacement buildings");
-  if(group.children.length!==4)
+  if(group.children.length!==5)
     throw new Error("Unexpected old fictional objects attached to source-only map");
   scene.add(group);
   return {

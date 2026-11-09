@@ -79,9 +79,9 @@ for(let i=0;i<result.roofOutline.geometry.attributes.position.count;i++){
 }
 // Old merged translucent ghost must not duplicate the new physically connected shell.
 const oldGroup=new THREE.Group(),ghost=preview.buildWriterBlockBuildingMasses(THREE,oldGroup,{streetY:-3});
-assert.equal(ghost.group.userData.citySurvey.generatedVolumeCount,2);
-assert.equal(ghost.group.userData.citySurvey.independentlyModeledCount,1);
-assert.deepEqual(ghost.group.userData.citySurvey.individuallyModeledSourceIds,[sourceId]);
+assert.equal(ghost.group.userData.citySurvey.generatedVolumeCount,1);
+assert.equal(ghost.group.userData.citySurvey.independentlyModeledCount,2);
+assert.deepEqual(ghost.group.userData.citySurvey.individuallyModeledSourceIds,["3d2290d6-c533-4c11-b2c0-079f0ee2e29e",sourceId]);
 assert.equal(ghost.group.userData.citySurvey.totalDistinctSourceVolumeCount,3);
 assert.ok(!ghost.volume.userData.modeledSourceIds.includes(sourceId));
 assert.equal(ghost.group.userData.citySurvey.ignoredRoomCollisionCount,1);

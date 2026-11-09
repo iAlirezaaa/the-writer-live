@@ -291,3 +291,12 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
   surveyed real sidewalk/crosswalk geometry with strict identity/clock protection.
 - Backlog B: licensed roofprint segmentation and height/elevation survey for
   current four potentially merged ML polygons before claiming building counts.
+
+## MAYOR-039 — Second mapped building and floor/store evidence (2026-11-09)
+- [x] Created independent task BEFORE edits and verified private/public frozen recovery refs and identical manifest; read required 3Dviz Pro Max, twin-world, source-ID and evidence-layer recipes.
+- [x] Audited 54 OSM nearby features (7 buildings, 47 roads), **no recorded shop/commercial tags and no building:levels** in this snapshot; mapped OSM alley service ways are outside the approved block. The 4 Overture within-block candidate roofprints also lack real heights/floor counts.
+- [x] Reconstructed the exact 15-vertex aerial polygon for Overture ID `3d2290d6-c533-4c11-b2c0-079f0ee2e29e`, 1035.58 sqm, in an independent one-mesh 3D shell with a symbolic 6m envelope and single 3m metric guide; no invented shop names/doors/windows.
+- [x] Retired duplicate translucent Overture volume; updated default sourced town from four to five groups, two independently modeled footprints plus one bulk anonymous mass and one writer-room-protected outline.
+- [ ] Actual Node/Three.js test and public Pages deployment verdict: pending GitHub Actions. Do not claim screenshots, real measured floors or verified shop tenants.
+- New backlog A: query licensed commercial/shop/POI addresses inside the block and verify frontage alignment before creating any real storefront.
+- New backlog B: collect legally reusable building heights, `building:levels`, entrances and interior access/service alleys per source polygon; only then replace schematic floor guides and roads with surveyed 3D shapes.

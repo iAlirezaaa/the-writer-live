@@ -19,12 +19,25 @@
     {
       "sourceId": "3d2290d6-c533-4c11-b2c0-079f0ee2e29e",
       "areaSquareMeters": 1035.58,
-      "geometryTier": "T0",
-      "visualStatus": "transparent-proxy",
+      "geometryTier": "T1-plan-proxy",
+      "visualStatus": "built-independent-map-footprint-building-02; current CI pending",
       "heightMetersSource": null,
       "heightMetersDisplayProxy": 6,
       "writerRoomIntersect": false,
-      "individuallyResolvedBuilding": false
+      "individuallyResolvedBuilding": false,
+      "modelSource": "web/writer-block-building-02.js",
+      "actualRoofKnown": false,
+      "actualHeightKnown": false,
+      "actualFloorCountKnown": false,
+      "floorCountSource": null,
+      "horizontalScaleGuideMeters": 3,
+      "scaleGuideIsActualFloorEvidence": false,
+      "commercialUseKnown": false,
+      "shopNamesSource": null,
+      "sourcedDoorLocations": null,
+      "writerRoomPreserved": true,
+      "collisionsChanged": false,
+      "qualityLimitation": "15 mapped planar source vertices preserved; source ML roofprint may merge real buildings; 6m visual envelope and 3m guide are not measured floors; no sourced shops"
     },
     {
       "sourceId": "3d7b8239-b1e0-48bc-8868-ae4a4d392586",
@@ -87,6 +100,7 @@
     "roomIntegrityExpected": true,
     "writerHouseConsistency": "success",
     "traffic": "success",
-    "district": "success"
+    "district": "success",
+    "mayor039": "new independent mapped shell and source contracts committed; public deployment/tests not yet verified"
   }
 }

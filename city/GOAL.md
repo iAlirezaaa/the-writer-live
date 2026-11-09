@@ -78,3 +78,6 @@ Overture polygons may each represent groups of actual buildings; they are *not*
 proof there are only four buildings in that block. All heights remain unverified
 display proxies; a complete Tehran replica is an objective, not a completed
 state. Expand the block only upon new owner authorization and new licensed data.
+
+## Construction milestone — MAYOR-039
+A second sourced 2D roofprint (`3d2290d6-c533-4c11-b2c0-079f0ee2e29e`, 1035.58 sqm) now has its own 3D proxy, so **2 of 4 mapped roofprint candidates** are modeled independently while the writer-room-overlapping footprint stays outline-only. An unverified 3m reference line is a scale guide, not a floor plan. No actual stores or building:levels are supported by the current OSM/Overture snapshots; accurate storefront/level modeling requires properly licensed ground-floor POI and height records. Never populate fictional shops just to make the map look finished.
