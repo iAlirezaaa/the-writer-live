@@ -244,3 +244,22 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [ ] Real street/aerial/day/night screenshots and performance comparison not captured; no claim of 1:1 elevation reconstruction.
 - Backlog idea 1: graded access ledger checking building door, pavement and zebra crossing heights against finer licensed/surveyed terrain.
 - Backlog idea 2: interactive inspection mode for DEM ghost relief versus contour map and OSM way centers, without modifying physical simulation until certified.
+
+## MAYOR-033 — One city-side balcony construction detail (2026-11-09)
+- [x] Created independent task before edits; verified both immutable 2026-11-09 recovery refs and shared manifest.
+- [x] Implemented a single 22-member railing on `home-east` upper-left procedural balcony, snapped to existing slab/wall; one draw call with 792 vertices and no traffic or pedestrian edits.
+- [x] Preliminary JavaScript geometry preflight: home/rail inside OSM writer-block candidate, exact slab contact, no collider, existing plan audit passes.
+- [ ] Real Three.js CI, scene layout, housing access, traffic, public Pages and visually captured day/night screenshots: pending explicit run evidence.
+- [ ] No building footprint/height evidence inside block; do not call the improved home a true Tehran building.
+- Backlog 1: per-building documented/inferred/procedural facade ledger, licensed OSM/survey reference per component before claiming a real Tehran facade.
+- Backlog 2: reusable close-up LOD balcony/rail kit with slab/wall attachment probes and no nav-collision regression; require photo/licensing gate for any specific property.
+
+## MAYOR-034 — Overture writer-block sourced building layer (2026-11-09)
+- [x] Registered independently before edits; frozen private/public backup branches and matching manifest verified unchanged.
+- [x] Consulted 3Dviz Pro Max SKILL/TWIN-WORLD, historical-diorama and CityGML source/ID recipes; inspected existing room, city and path tests.
+- [x] Acquired and clipped 4 actual public Overture building roofprint candidates inside OSM road-bounded writer block. Capture 2026-11-09T12:18:12Z; 0 verified heights, 1 source footprint intersects writer-room reserve. External public acquisition was necessary because private Actions runner did not start; resulting source imported to private canonical repository before coding renderer.
+- [x] Created one source-grounded 3D city building layer: 3 transparent symbolic-height 6.0m masses plus a 4th **outline-only** preserved around the writer room; no sources claim real height, no physical colliders, no citizen routing edits.
+- [x] Added source/geometry unit tests and registered the renderer through `web/town.js` in private; copied necessary visual assets and test harness to public pinned city modules.
+- [x] Real public GitHub Pages tests and deployment verified: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42617301697 ; Overture mapped footprints: 4, generated transparent symbolic-height volumes: 3, writer room preserved. Browser screenshots, actual building heights, performance and 1:1 map parity remain unverified.
+- Backlog idea 1: build real-road-to-building topological clearance ledger for mapped OSM centerlines vs Overture ML roofprints; reject any volume crossing known road lines.
+- Backlog idea 2: stepwise **writer-room-preserving** replacement of procedurally placed town buildings with source-backed real building footprints, waiting on licensed verified height/entrance and safe navigation updates.
