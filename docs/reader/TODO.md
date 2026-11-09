@@ -61,3 +61,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - UX references: [Apple HIG](https://developer.apple.com/design/human-interface-guidelines/), [Readwise Reader](https://docs.readwise.io/reader/docs/faqs/appearance) and [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features).
 
 - **Release confirmation (after QA):** [GitHub Pages deployment 42624010484](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42624010484) completed successfully at 2026-11-09T13:17:25Z. Its deploy job validated pinned reader assets and uploaded/deployed the public site at https://ialirezaaa.github.io/the-writer-live/ . Catalog route: https://ialirezaaa.github.io/the-writer-live/read/ . Actual desktop/mobile visual checks and manual screen-reader QA remain unverified.
+
+## RDR-041 — 2026-11-09 — catalog search landmark parity regression
+- [x] Add one Node regression checking exactly one named search region and unique search/status/sort/reset IDs inside it in each available public and protected HTML entry point. Production behavior unchanged.
+- [ ] Confirm focused Node CI run and pass/fail totals; do not confuse CI with Pages deployment or real-browser accessibility QA.
+- [ ] **RDR-046 P1 new:** test live-region announcements when filtering quickly, requiring one settled result count rather than one announcement per keystroke.
+- [ ] **RDR-047 P2 new:** verify public-only book preview links use an explicit rights allowlist and never construct links for unpublished editions.
+- Benchmark: Kobo Web Reader documents keyboard navigation, table of contents, search, bookmarks and reading settings: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
+- Only a generic Node test is synchronized publicly; no unpublished writer data, secrets or payment functionality.
