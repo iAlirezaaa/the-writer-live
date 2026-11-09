@@ -214,3 +214,26 @@ test("RDR-048: deployed protected search normalizer executes Persian/Arabic equi
     ["عَلِي", "علی"], ["كـِتاب", "کتاب"], ["ﻛﺘﺎﺏ", "کتاب"], ["TEST", "test"]
   ]) assert.equal(normalize(query), normalize(title), query + " must match " + title);
 });
+
+
+test("RDR-059: source and protected Persian search preserve distinct words", () => {
+  const pinnedPath = path.join(__dirname, "../.github/reader-assets/read.js");
+  const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
+  const sourceImplementation = source.match(expression)?.[0];
+  assert.ok(sourceImplementation, "missing source search normalizer");
+  const implementations = [sourceImplementation];
+  if (fs.existsSync(pinnedPath)) {
+    const pinnedImplementation = fs.readFileSync(pinnedPath, "utf8").match(expression)?.[0];
+    assert.equal(pinnedImplementation, sourceImplementation, "protected normalizer differs");
+    implementations.push(pinnedImplementation);
+  }
+  for (const implementation of implementations) {
+    const normalize = new Function(implementation + "\nreturn searchKey;")();
+    for (const [query, title] of [
+      ["كتاب", "کتاب"], ["عَلِي", "علی"], ["ﻛﺘﺎﺏ", "کتاب"]
+    ]) assert.equal(normalize(query), normalize(title));
+    for (const [query, title] of [
+      ["کتاب", "کباب"], ["علی", "عالی"], ["گل", "کل"], ["کتاب", "کتابخانه"]
+    ]) assert.notEqual(normalize(query), normalize(title), query + " must remain distinct from " + title);
+  }
+});
