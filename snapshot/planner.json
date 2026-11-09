@@ -261,9 +261,7 @@
       "task": "nap"
     }
   ],
-  "current": null,
-  "day": "2026-11-09",
-  "next": {
+  "current": {
     "attempts": null,
     "end": "2026-11-09T09:00",
     "id": "202611090820",
@@ -272,5 +270,16 @@
     "start": "2026-11-09T08:20",
     "status": "planned",
     "task": "write"
+  },
+  "day": "2026-11-09",
+  "next": {
+    "attempts": null,
+    "end": "2026-11-09T09:40",
+    "id": "202611090900",
+    "label": "استراحت",
+    "next_retry_at": null,
+    "start": "2026-11-09T09:00",
+    "status": "planned",
+    "task": "rest"
   }
 }
