@@ -22,3 +22,6 @@ The vendored 3Dviz SKILL and TWIN-WORLD guide require evidence-first silhouettes
 
 ## Verification / release
 This is documentation-only: no source-only geometry, citizen route, writer room, publisher, or runtime behavior changed. No Node tests or browser screenshots run. No deployment asserted. Geometric rebuild remains gated until backup integrity, licensed source and relevant QA are verified.
+
+## Follow-up verification — 2026-11-10, MAYOR-054
+The unchecked backup-ref gate above is now independently RESOLVED by MAYOR-054. Direct GitHub `git/ref/heads/backup/writer-block-pre-tehran-rebuild-2026-11-09` reads returned both immutable branch refs at their exact expected snapshot commit SHA values. Both main-branch backup manifests are present and match by Git blob SHA. The historical `city/GOAL.md` lookup returned 404 because the file was absent at that old ref, not because the backup branch had disappeared. Use `city/survey/verify-backup-refs.mjs` and `city/tests/writer-block-backup-refs.test.mjs`; 6 mock tests passed in local Node. This does not authorize scene or road geometry changes without their own evidence and regression gates.
