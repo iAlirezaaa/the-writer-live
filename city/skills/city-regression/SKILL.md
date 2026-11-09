@@ -49,3 +49,10 @@ Before a city runtime release, compare Git blob SHA (not filename, timestamp, or
 | `web/world.js` | `.github/citizens-assets/world.js` |
 
 Only compare `town.js` and `world.js`; do not modify citizen logic. A matched blob proves source parity only, **not** runtime tests, scene correctness, browser visual QA, or successful Pages deployment. Record all six SHAs and both revisions, and re-check after any new source commit. For geometry edits require the Node probes, foundation/collision/clearance checks, day/night screenshots, and a new green deployment before claiming release acceptance. Missing tests or missing files are blockers, never implicit passes.
+
+## MAYOR-019: Tehran live environment gate
+- The WGS84 anchor is 35.715361987616696, 51.3642455031707; `Asia/Tehran` must be used with IANA timezone conversion, never browser local time or hard-coded UTC offset.
+- Separate three independently verified claims: georeference anchor, solar/time-driven lighting, and **observed** weather. A valid anchor does not establish the latter two.
+- Weather observation must include provenance, observed timestamp, fetch timestamp, and stale/unavailable fallback (older than 30 minutes); no fictional weather may be labeled live.
+- Fetch weather outside the render loop at intervals >=10 minutes; test network failures, delayed replies, midnight, sunrise, sunset, and mobile rendering before publishing.
+- Do not alter road geometry or resident routes for a weather/time fix. Require the established Node/scene probes, six pin SHA checks, visual QA and fresh Pages verification for runtime edits.
