@@ -123,7 +123,8 @@
     "mayor044": "Private direct Three.js scene integration PASS (34 finite-bound render objects, 9 facade meshes, 7 unchanged top-level groups, room preserved); CI/Pages and real visual renders still unverified.",
     "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches.",
     "mayor047": "Vendored Three.js full source-only assembly PASS: 9 groups and 40 rendered objects with finite bounds, 6 OSM way subranges, 5 shared source junctions, no traffic changes; Node/legacy Pages CI and screenshots not yet confirmed.",
-    "mayor048": "Private direct Three.js source-only PASS: 9 groups, 41 finite-bounds renderables, floor-3 room intact; public Pages deployment success at run 42680523167 / SHA 68d78aca2a21e04a406a055d71fbbcb7259bc57f. Newer root index run 42680802013 FAILS legacy route probe at X=0 Z=7.3; not bypassed or altered."
+    "mayor048": "Private direct Three.js source-only PASS: 9 groups, 41 finite-bounds renderables, floor-3 room intact; public Pages deployment success at run 42680523167 / SHA 68d78aca2a21e04a406a055d71fbbcb7259bc57f. Newer root index run 42680802013 FAILS legacy route probe at X=0 Z=7.3; not bypassed or altered.",
+    "mayor049": "Direct real Three.js section builder PASS (5 additional drawables, 7 bays, 5 stationary car proxies, 5.6m moving envelope, 1.5m per-side sidewalks, finite geometry, non-overlap with four known Overture source polygons); actual road width and house count UNKNOWN. Public Pages and legacy tests pending."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
@@ -244,5 +245,56 @@
       "browserScreenshotCaptured": false
     },
     "totalDistinctSourceWayCount": 7
+  },
+  "writerBlockRoofprintOrientationAudit": {
+    "file": "city/buildings/writer-block-orientation-audit.json",
+    "sourceCandidateCount": 4,
+    "actualDistinctHousesVerified": null,
+    "actualApartmentUnitCountVerified": null,
+    "actualDoorFacingDirectionsVerified": null,
+    "directionDefinition": "longest source roofprint edge, modulo 180°; NOT actual frontage"
+  },
+  "sixthDaryanUrbanSection": {
+    "sourceOSMWayId": 92200441,
+    "sourceCapturedAt": "2026-11-09T09:22:58.743Z",
+    "sourceLicense": "ODbL-1.0",
+    "actualWidthMeters": null,
+    "actualSidewalkWidthsMeters": null,
+    "actualParkingPermissionVerified": false,
+    "trafficDirectionSourceTag": null,
+    "reference": "Iran Urban Streets Design 1399 vol5 table4-3 p56; exam clarification Aban 1403 question30",
+    "referenceUrl": "https://iranestekhdam.ir/storage/medias/2025-02-22/1740226341_%D8%AA%D8%B1%D8%A7%D9%81%DB%8C%DA%A9-aban1403.pdf",
+    "guidelineMinimums": {
+      "movingLaneM": 2.5,
+      "parkingLaneM": 1.8,
+      "clearSidewalkEachM": 1.2
+    },
+    "proposedUnmeasuredCrossSection": {
+      "twoPassingEnvelopesM": [
+        2.8,
+        2.8
+      ],
+      "movingZoneM": 5.6,
+      "parallelParkingBandM": 2.1,
+      "sidewalkWidthsM": [
+        1.5,
+        1.5
+      ],
+      "totalM": 10.7,
+      "carEndJunctionClearanceM": 15,
+      "illustrativeParkingBays": 7,
+      "illustrativeParkedCars": 5,
+      "parkingToTrafficAndSidewalkClearanceM": 0.2
+    },
+    "osmLineGeometryOriginal": true,
+    "sourceParcelsCrosschecked": 4,
+    "layoutIntersectsOriginalMappedRoofs": false,
+    "geometryNotYetComparedToActualPropertyBounds": true,
+    "collisionsAdded": false,
+    "carMovementChanged": false,
+    "peopleRoutesChanged": false,
+    "originalWriterRoomY": 6.6,
+    "sourceRealityClaim": "DESIGN_HYPOTHESIS_NOT_SURVEY",
+    "releaseVerified": false
   }
 }
