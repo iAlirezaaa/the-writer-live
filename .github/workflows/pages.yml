@@ -43,9 +43,11 @@ jobs:
           cp .github/city-assets/writer-block-building-03.js _site/web/writer-block-building-03.js
           cp .github/city-assets/writer-block-illustrative-context.js _site/web/writer-block-illustrative-context.js
           cp .github/city-assets/writer-block-facade-preview.js _site/web/writer-block-facade-preview.js
+          cp .github/city-assets/writer-block-road-regulations.js _site/web/writer-block-road-regulations.js
           cp .github/city-assets/town-tehran-rebuild.js _site/web/town-tehran-rebuild.js
           mkdir -p _site/city/survey/output
           cp city/survey/output/writer-block-overture-buildings.json _site/city/survey/output/writer-block-overture-buildings.json
+          cp city/survey/output/writer-block-survey.json _site/city/survey/output/writer-block-survey.json
           cp .github/city-assets/city-growth.js _site/web/city-growth.js
           cp .github/city-assets/tehran-environment.js _site/web/tehran-environment.js
           python3 .github/scripts/prepare_car_deploy.py _site
@@ -82,6 +84,7 @@ jobs:
           node tests/tehran_writer_block_building_03_probe.mjs _site
           node --experimental-vm-modules tests/tehran_writer_block_context_probe.mjs _site
           node --experimental-vm-modules tests/tehran_writer_block_facade_probe.mjs _site
+          node --experimental-vm-modules tests/tehran_writer_block_regulations_probe.mjs _site
           node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs _site
           node tests/urban_plan_probe.mjs _site
           node tests/road_topology_probe.mjs _site
