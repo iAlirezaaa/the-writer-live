@@ -1,6 +1,6 @@
 # MAYOR-056 — Curbsiding the source-only illustrative parking (geometry gate)
 Date: 2026-11-10
-Status: IMPLEMENTED PRIVATE; independent geometry QA PASS; public CI pending
+Status: COMPLETE FOR THIS ONE NONPHYSICAL VISUAL EDIT; source-only, legacy, traffic and public Pages CI PASS
 
 ## Concrete small edit
 Correct the existing block-only parking proxy group in `web/writer-block-illustrative-context.js` to sit next to the modeled curb, not near the middle of the *illustrative* asphalt band, while retaining all 9 cars, the licensed OSM road centerline ring, the Overture building geometry, the writer's room, all citizens' routes and source-only map mode. Never add unsurveyed buildings or move a real road.
@@ -40,3 +40,10 @@ Add explicit non-colliding 4-corner safety checks for each illustrative car agai
 - Geometry comparison executed directly against the **current private GitHub modules** and prior public baseline: PASS. Nine car proxy bodies remained, 72 oriented body samples clear (not merely centers); mean center shift 0.412m; minimum separation from Overture candidate outlines 2.295m; protected home-anchor separation 39.835m; proxy curb clearance 0.115m; central free proxy half-road width 1.335m. Trees/lamps/shrubs preserved; six one-way car directions preserved. All actual site curb widths/parking restrictions remain UNKNOWN.
 - Source-only Three.js Node, legacy tests, public pinned SHA equality, browser screenshots, Pages deployment and legal parking compliance are not yet claimed as done. Record separate CI evidence when completed.
 
+
+## Final public verification — 2026-11-10
+- Public visual-code release commit: `8ebe6732f1d9ea5a41aa623d50850e86c153f29b` https://github.com/iAlirezaaa/the-writer-live/commit/8ebe6732f1d9ea5a41aa623d50850e86c153f29b
+- Private/public source and test Git blob parity checked on all six source files; three deploy-pinned JS copies were committed in the same atomic Git tree (9 total paths).
+- **Actual GitHub Actions** https://github.com/iAlirezaaa/the-writer-live/actions/runs/42705112418 completed with `success` on exact source code release SHA. Its logs show `TEHRAN-ENVIRONMENT-OK` (mocked provider/timezone), `TEHRAN-SOURCE-ONLY-REBUILD-OK`, `ROAD-TOPOLOGY-OK`, `CITY-DISTRICTS-OK`, `TOWN-SCENE-OK layout`, `TOWN-SCENE-OK paths`, `TOWN-SCENE-OK wiring`, `CITY-TRAFFIC-OK` and `actions/deploy-pages@v4` success. The legacy scene's 432 residents are a proxy/test design capacity, NOT documented 400 actual residents of this Tehran block.
+- Ground-truth survey **not acquired**: municipal parcel/height geometry requires licence verification, no roofprint may be split on assumptions; no real curb width or parking law established. Browser screenshots/day-night comparisons **NOT CAPTURED**. This is a curbside adjustment inside the schematic model, not certification of physical parking or exact Tehran reconstruction.
+- Protected writer room, all narrative/publisher data, citizen routes, map extent, existing OSM source geometry, and actual network physics remain untouched.
