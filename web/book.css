@@ -1291,10 +1291,3 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
 .book-overlay[data-reader-margins="wide"] .leaf-face {
   padding-inline:clamp(18px,4vw,64px);
 }
-
-/* Reader accessibility: keep keyboard focus visible on all interactive book controls. */
-.book-overlay :is(button, input, select, summary):focus-visible {
-  outline: 3px solid #f3c57d;
-  outline-offset: 3px;
-}
-.book-overlay .book-progress:focus-visible { outline-offset: 5px; }

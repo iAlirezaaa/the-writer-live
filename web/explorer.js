@@ -16,7 +16,8 @@ const REL_FA = {
   resolved_in: "حل شد در", inspired_by: "الهام از", reflects_on: "تأمل درباره‌ی", open_in: "باز در", defined_in: "تعریف شده در",
   tried_in: "امتحان شده در", woven_into: "بافته شد در",
 };
-const domainLabel = (key) => DOMAIN_FA[key] || (key.startsWith("skill:") ? `مهارت · ${key.slice(6).replaceAll("-", " ")}` : key);
+const domainLabel = (key) => DOMAIN_FA[key] || (key.startsWith("skill:")
+  ? `مهارت · ${data.domain_labels?.[key] || key.slice(6).replaceAll("-", " ")}` : key);
 const domainColor = (key) => DOMAIN_COLOR[key] || (key.startsWith("skill:") ? DOMAIN_COLOR.craft : "#888");
 const nodeShape = (kind) => kind === "idea" || kind === "thread" ? "◇" :
   kind === "skill" || kind === "skillnode" ? "⬡" : kind === "flaw" ? "△" : "●";
@@ -26,7 +27,7 @@ let data = { nodes: [], edges: [] };
 let pos = new Map();
 let cam = { x: 0, y: 0, k: 1 };
 let selected = null, hovered = null, neighbours = new Set(), searchMatches = new Set();
-  let domain = "craft";
+let domain = "craft";
 let raf = 0, ticks = 0;
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -109,9 +110,12 @@ export async function openExplorer(startId) {
     if (startId) focusId(startId);
     else showOverview();
   } catch {
-    ui.side.replaceChildren(el("h3", "", "گراف بارگذاری نشد"),
-      el("p", "muted small", "داده‌ی گراف از حافظه دریافت نشد. اتصال را بررسی کنید و دوباره باز کنید."));
+    showGraphError("گراف بارگذاری نشد", "داده‌ی گراف از حافظه دریافت نشد. اتصال را بررسی کنید و دوباره باز کنید.");
   }
+}
+
+function showGraphError(title, message) {
+  ui.side.replaceChildren(el("h3", "", title), el("p", "muted small", message));
 }
 
 function closeExplorer() {
@@ -124,16 +128,21 @@ async function load() {
   const q = domain === "all" ? "?limit=300" : `?domain=${domain}&limit=300`;
   data = await getJSON(`/api/graph${q}`);
   renderChips(data.counts);
-  const old = pos; pos = new Map();
-  const domainOrder=Object.keys(DOMAIN_COLOR);
+  pos = new Map();
+  const domainOrder=[...DOMAIN_ORDER.filter((key)=>data.nodes.some((node)=>node.domain===key)),
+    ...[...new Set(data.nodes.map((node)=>node.domain).filter((key)=>!DOMAIN_ORDER.includes(key)))].sort()];
   const hashId=(s)=>{let h=2166136261;for(const ch of String(s)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
-  data.nodes.forEach((node, i) => {
-    const p = old.get(node.id);
-    const h=hashId(node.id),sectorIndex=Math.max(0,domainOrder.indexOf(node.domain));
-    const sector=(sectorIndex+.5)/domainOrder.length*Math.PI*2;
-    const a=sector+((h%1000)/1000-.5)*Math.min(.9,Math.PI/domainOrder.length),r=56+((h>>>10)%76);
-    pos.set(node.id, p ? { ...p } : { x: Math.cos(a) * r, y: Math.sin(a) * r, vx: 0, vy: 0 });
-  });
+  for(const [sectorIndex,key] of domainOrder.entries()){
+    const members=data.nodes.filter((node)=>node.domain===key).slice().sort((a,b)=>a.id.localeCompare(b.id));
+    const center=(sectorIndex+.5)/domainOrder.length*Math.PI*2;
+    const span=domainOrder.length===1?Math.PI*2:Math.PI*2/domainOrder.length*.78;
+    members.forEach((node,i)=>{
+      const h=hashId(node.id),a=center+(i/Math.max(1,members.length-1)-.5)*span+((h%1000)/1000-.5)*.08;
+      const r=48+Math.floor(i/12)*26+((h>>>10)%10);
+      const x=Math.cos(a)*r,y=Math.sin(a)*r;
+      pos.set(node.id,{x,y,homeX:x,homeY:y,vx:0,vy:0});
+    });
+  }
   resize();
   const r = ui.canvas.getBoundingClientRect();
   cam = { x: r.width / 2, y: r.height / 2, k: 1 };
@@ -149,7 +158,11 @@ function renderChips(counts) {
     const n = d === "all" ? Object.values(counts).reduce((a, c) => a + c, 0) : counts[d] || 0;
     const b = el("button", "", `${domainLabel(d)} (${n})`);
     b.setAttribute("aria-pressed", String(domain === d));
-    b.addEventListener("click", async () => { domain = d; selected = null; await load(); showOverview(); });
+    b.addEventListener("click", async () => {
+      domain = d; selected = null;
+      try { await load(); showOverview(); }
+      catch { showGraphError("فیلتر بارگذاری نشد", "داده‌ی این حوزه در دسترس نیست؛ دوباره تلاش کنید."); }
+    });
     ui.chips.append(b);
   }
 }
@@ -157,14 +170,14 @@ function renderChips(counts) {
 // a light force simulation that settles over a few hundred frames
 function simulate() {
   const nodes = data.nodes, edges = data.edges;
-  for (let it = 0; it < 2; it++) {
+  for (let it = 0; it < 1; it++) {
     for (let i = 0; i < nodes.length; i++) {
       const a = pos.get(nodes[i].id);
       for (let j = i + 1; j < nodes.length; j++) {
         const b = pos.get(nodes[j].id);
         let dx = a.x - b.x, dy = a.y - b.y; const d2 = dx * dx + dy * dy + 0.01;
-        if (d2 > 90000) continue;
-        const f = 900 / d2; dx *= f; dy *= f;
+        if (d2 > 32400) continue;
+        const f = 70 / d2; dx *= f; dy *= f;
         a.vx += dx; a.vy += dy; b.vx -= dx; b.vy -= dy;
       }
     }
@@ -176,13 +189,14 @@ function simulate() {
       b.vx -= (dx / d) * f * d * 0.05; b.vy -= (dy / d) * f * d * 0.05;
     }
     for (const p of pos.values()) {
-      p.vx -= p.x * 0.002; p.vy -= p.y * 0.002;
+      p.vx += (p.homeX - p.x) * 0.015; p.vy += (p.homeY - p.y) * 0.015;
+      p.vx -= p.x * 0.001; p.vy -= p.y * 0.001;
       p.x += Math.max(-8, Math.min(8, p.vx)); p.y += Math.max(-8, Math.min(8, p.vy));
       p.vx *= 0.55; p.vy *= 0.55;
     }
   }
   draw();
-  if (++ticks < 260) raf = requestAnimationFrame(simulate);
+  if (++ticks < 90) raf = requestAnimationFrame(simulate);
 }
 
 function resize() {
@@ -260,7 +274,8 @@ async function select(n) {
   neighbours = new Set(data.edges.filter((e) => e.a === n.id || e.b === n.id).map((e) => (e.a === n.id ? e.b : e.a)));
   draw();
   let d;
-  try { d = await getJSON(`/api/graph/node?id=${encodeURIComponent(n.id)}`); } catch { return; }
+  try { d = await getJSON(`/api/graph/node?id=${encodeURIComponent(n.id)}`); }
+  catch { showGraphError("جزئیات دریافت نشد", "اتصال به حافظه قطع شد؛ دوباره روی نود بزنید."); return; }
   renderDetail(d);
 }
 
@@ -316,7 +331,9 @@ function focusId(id, hint) {
 
 async function runSearch(q) {
   if (!q.trim()) { searchMatches.clear();draw();if (!selected) showOverview(); return; }
-  const rows = await getJSON(`/api/graph/search?q=${encodeURIComponent(q)}`).catch(() => []);
+  let rows;
+  try { rows = await getJSON(`/api/graph/search?q=${encodeURIComponent(q)}`); }
+  catch { showGraphError("جست‌وجو در دسترس نیست", "پاسخی از حافظه دریافت نشد؛ دوباره تلاش کنید."); return; }
   searchMatches=new Set(rows.map(r=>r.id));draw();
   const s = ui.side; s.replaceChildren();
   s.append(el("h3", "", `نتیجه‌ها (${rows.length})`));
@@ -336,7 +353,7 @@ function showOverview() {
   s.append(el("h3", "", "حافظه‌ی نویسنده"));
   s.append(el("p", "muted small", "قاعده‌ی خواندن: رنگ حوزه را نشان می‌دهد، شکل نوع نود را؛ عنوان، مفهوم است و شناسه فقط کلید داخلی. پیوند جهت‌دار از فاعل به مقصد می‌رود. هر نود یک مفهوم کوتاه دارد و جزئیات در پرونده‌ی کناری است."));
   const counts = el("dl", "facts");
-  for (const [d, n] of Object.entries(data.counts || {})) counts.append(el("dt", "", DOMAIN_FA[d] || d), el("dd", "", String(n)));
+  for (const [d, n] of Object.entries(data.counts || {})) counts.append(el("dt", "", domainLabel(d)), el("dd", "", String(n)));
   counts.append(el("dt", "", "پیوندها"), el("dd", "", String(data.edge_count || 0)));
   s.append(counts);
   const strong = [...data.nodes].sort((a, b) => b.strength * (1 + b.uses / 5) - a.strength * (1 + a.uses / 5)).slice(0, 12);

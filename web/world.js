@@ -2545,7 +2545,8 @@ const DOMAIN_COLOR = { craft: "#b7791f", flaw: "#9a3412", world: "#8a6e5c", rese
 const DOMAIN_LABEL = { all: "همه", craft: "داستان و مهارت", flaw: "ایرادها", world: "جهان", research: "تحقیق", audience: "مخاطب", self: "درون" };
 const DOMAIN_ORDER = ["craft", "flaw", "world", "research", "audience", "self"];
 const GRAPH_SYMMETRIC = new Set(["related", "co_occurs"]);
-const graphDomainLabel = (key) => DOMAIN_LABEL[key] || (key.startsWith("skill:") ? `مهارت · ${key.slice(6).replaceAll("-", " ")}` : key);
+const graphDomainLabel = (key) => DOMAIN_LABEL[key] || (key.startsWith("skill:")
+  ? `مهارت · ${graphData.domain_labels?.[key] || key.slice(6).replaceAll("-", " ")}` : key);
 const graphDomainColor = (key) => DOMAIN_COLOR[key] || (key.startsWith("skill:") ? DOMAIN_COLOR.craft : "#888");
 const graphNodeShape = (kind) => kind === "idea" || kind === "thread" ? "diamond" :
   kind === "skill" || kind === "skillnode" ? "hexagon" : kind === "flaw" ? "triangle" : "circle";
@@ -2609,7 +2610,7 @@ function drawGraph() {
     const p = layout.get(node.id); if (!p) continue;
     const [x, y] = toXY(p), r = 3 + Math.min(6, node.strength * 6);
     paintGraphNode(node,x,y,r,graphDomainColor(node.domain));
-    if (graphData.nodes.length <= 42 || ["episode", "skill", "flaw", "source"].includes(node.kind)) {
+    if (graphData.nodes.length <= 24 || ["episode", "skill", "flaw", "source"].includes(node.kind)) {
       gCtx.fillStyle = ink; gCtx.font = "11px Vazirmatn, Tahoma, sans-serif";
       gCtx.fillText(node.label.slice(0, 22), x - r - 4, y + 4);
     }
