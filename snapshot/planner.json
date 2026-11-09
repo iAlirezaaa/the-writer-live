@@ -17,7 +17,7 @@
       "label": "تمرین عملی نویسندگی",
       "next_retry_at": null,
       "start": "2026-11-09T07:40",
-      "status": "planned",
+      "status": "done",
       "task": "craft_practice"
     },
     {
@@ -261,16 +261,7 @@
       "task": "nap"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-09T08:20",
-    "id": "202611090740",
-    "label": "تمرین عملی نویسندگی",
-    "next_retry_at": null,
-    "start": "2026-11-09T07:40",
-    "status": "planned",
-    "task": "craft_practice"
-  },
+  "current": null,
   "day": "2026-11-09",
   "next": {
     "attempts": null,
