@@ -9,7 +9,7 @@
    the Web Animations API around the spine. Single-page layouts and reduced-motion preferences get an instant
    swap instead. */
 
-const STATUS_FA = { accepted: "پذیرفته", rejected: "رد شده" };
+const STATUS_FA = { accepted: "پذیرفته", rejected: "رد شده", owner_shared: "انتشار با اجازهٔ صاحب اثر · نقد در انتظار" };
 /* A margin note is a claim about a passage, so the writer is allowed to distrust it. The four states come
    straight from comments.state_of() and say honestly how far the note may be trusted — "unverified" means the
    passage was looked for in the real page but no model was awake to judge the claim, and the panel says so. */
