@@ -7,6 +7,8 @@ import { installPersianPresentation } from "./persian-display.js?v=observatory-2
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
 const $ = id => document.getElementById(id);
 const nfa = number => new Intl.NumberFormat("fa-IR").format(number);
+// Normalize Persian/Arabic keyboard variants without changing visible book titles.
+const searchKey = value => String(value ?? "").normalize("NFKC").replace(/[\u0640\u064B-\u065F\u0670]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
 let stories = [];
 
 function savedProgress(id) {
@@ -65,13 +67,14 @@ function makeCover(story) {
 function renderShelf() {
   const shelf=$("covers");
   if(!shelf)return;
-  const query=$("story-search").value.trim().toLocaleLowerCase("fa");
+  const query=searchKey($("story-search").value.trim());
   const status=$("story-status").value;
   const list=stories.filter(story=>
     (status==="all"||story.status===status) &&
-    (!query||`${story.title||""} ${story.stage||""}`.toLocaleLowerCase("fa").includes(query))
+    (!query||searchKey(`${story.title||""} ${story.stage||""}`).includes(query))
   );
   const sort=$("story-sort").value;
+  $("story-reset").hidden=!(query||status!=="all"||sort!=="newest");
   list.sort((a,b)=>{
     if(sort==="title")return String(a.title||"").localeCompare(String(b.title||""),"fa");
     if(sort==="score")return (Number(b.score)||0)-(Number(a.score)||0);
@@ -82,6 +85,13 @@ function renderShelf() {
   shelf.replaceChildren(...cards);
   $("shelf-count").textContent=`${nfa(list.length)} اثر از ${nfa(stories.length)}`;
   if(!list.length)shelf.append(make("p","reading-empty",stories.length?"اثری با این جست‌وجو یا فیلتر پیدا نشد.":"هنوز داستانی در کتابخانه نیست."));
+}
+function resetShelfFilters(){
+  $("story-search").value="";
+  $("story-status").value="all";
+  $("story-sort").value="newest";
+  renderShelf();
+  $("story-search").focus();
 }
 async function route(){
   let id="";
@@ -105,6 +115,13 @@ $("home-link").href=appHref("");
 $("story-search").addEventListener("input",renderShelf);
 $("story-status").addEventListener("change",renderShelf);
 $("story-sort").addEventListener("change",renderShelf);
+$("story-reset").addEventListener("click",resetShelfFilters);
+$("story-search").addEventListener("keydown",event=>{
+  if(event.key==="Escape"){
+    event.preventDefault();
+    resetShelfFilters();
+  }
+});
 installPersianPresentation(document.body);
 showShelf().then(route).catch(()=>{
   $("shelf-count").textContent="اتصال برقرار نشد";
