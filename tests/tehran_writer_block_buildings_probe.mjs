@@ -35,13 +35,13 @@ assert.ok(plan.reduce((sum,b)=>sum+b.surfaceAreaMeters2,0)>5000);
 
 const parent=new THREE.Group(),result=survey.buildWriterBlockBuildingMasses(THREE,parent,{streetY:-3});
 assert.equal(parent.children.length,1);
-assert.equal(result.group.children.length,1,"Retired empty bulk volume must not occupy the scene graph");
+assert.equal(result.group.children.length,2);
 assert.equal(result.group.name,"writer-block-overture-building-reconstruction");
 assert.equal(result.group.userData.citySurvey.originalRoofprints,4);
-assert.equal(result.group.userData.citySurvey.generatedVolumeCount,0);
-assert.equal(result.group.userData.citySurvey.independentlyModeledCount,3);
+assert.equal(result.group.userData.citySurvey.generatedVolumeCount,1);
+assert.equal(result.group.userData.citySurvey.independentlyModeledCount,2);
 assert.equal(result.group.userData.citySurvey.totalDistinctSourceVolumeCount,3);
-assert.deepEqual(result.group.userData.citySurvey.individuallyModeledSourceIds,["3d2290d6-c533-4c11-b2c0-079f0ee2e29e","3d7b8239-b1e0-48bc-8868-ae4a4d392586","76931a07-c621-4e37-9241-c41ee59d4248"]);
+assert.deepEqual(result.group.userData.citySurvey.individuallyModeledSourceIds,["3d2290d6-c533-4c11-b2c0-079f0ee2e29e","3d7b8239-b1e0-48bc-8868-ae4a4d392586"]);
 assert.equal(result.group.userData.citySurvey.ignoredRoomCollisionCount,1);
 assert.equal(result.group.userData.citySurvey.protectedWriterRoom,true);
 assert.equal(result.group.userData.citySurvey.physicalCollider,false);
@@ -51,14 +51,13 @@ assert.equal(result.volume.userData.physicalCollider,false);
 assert.equal(result.volume.geometry.getAttribute("position").count%3,0);
 assert.equal(result.volume.material.transparent,true);
 assert.equal(result.volume.castShadow,false);
-assert.equal(result.volume.geometry.getAttribute("position").count,0,"All three legal masses moved to individual builders");
+assert.ok(result.volume.geometry.getAttribute("position").count>100);
 assert.ok(result.volume.geometry.getAttribute("position").count<30000);
 assert.equal(result.outline.isLineSegments,true);
 assert.equal(result.outline.userData.protectedSourceIds.length,1);
 assert.equal(result.outline.geometry.attributes.position.count%2,0);
-const b=new THREE.Box3().setFromObject(result.outline);
-assert.ok([...b.min,...b.max].every(Number.isFinite),"All four source outlines must have finite world-space bounds");
-assert.equal(result.volume.parent,null,"Zero-vertex bulk mesh must not be rendered");
+const b=new THREE.Box3().setFromObject(result.volume);
+assert.ok(b.min.y>=-3.01&&b.max.y<=3.01,"Unknown heights are only 6m display proxies");
 for(const a of [result.volume.geometry.attributes.position,result.outline.geometry.attributes.position]){
   for(let i=0;i<a.count;i++){
     const x=a.getX(i),y=a.getY(i),z=a.getZ(i);
@@ -77,10 +76,10 @@ result.volume.material.dispose();
 result.outline.geometry.dispose();
 result.outline.material.dispose();
 console.log("TEHRAN-REAL-BUILDING-ROOFPRINTS-OK",JSON.stringify({
-  footprints:source.counts.inBlock,symbolic3DMasses:0,individuallyReconstructedPlans:3,writerRoomProtected:true,
-  unknownHeights:4,renderMeshes:0,renderOutlines:1,
+  footprints:source.counts.inBlock,symbolic3DMasses:1,individuallyReconstructedPlans:2,writerRoomProtected:true,
+  unknownHeights:4,renderMeshes:1,renderOutlines:1,
   inputSourceBlobBytes:read("city/survey/output/writer-block-overture-buildings.json").length,
   vertices:result.volume.geometry.attributes.position.count,
-  bulkGeometryExcludedFromScene:true,
+  boundHeightMeters:b.max.y-b.min.y,
   areaSquareMeters:plan.reduce((s,b)=>s+b.surfaceAreaMeters2,0)
 }));

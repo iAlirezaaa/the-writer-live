@@ -15,7 +15,7 @@
  */
 import { buildWriterBlockStreetFrame } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
 import { buildWriterBlockTerrain } from "./writer-block-terrain.js?v=writer-block-dem-contours-20261109-v1";
-import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v2";
+import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v3";
 import { buildWriterBlockBuilding01 } from "./writer-block-building-01.js?v=tehran-building-by-building-01-20261109-v1";
 import { buildWriterBlockBuilding02 } from "./writer-block-building-02.js?v=tehran-source-building-02-20261109-v1";
 
@@ -63,7 +63,7 @@ export function buildTehranReconstructionTown({
   const terrain=buildWriterBlockTerrain(THREE,group,{streetY,reliefVisible:false});
   // True aerial plan lines, as opposed to residential architecture invented
   // outside licensed footprints. Terrain contours remain a coarse DEM overlay.
-  const footprintMasses=buildWriterBlockBuildingMasses(THREE,group,{streetY});
+  const footprintMasses=buildWriterBlockBuildingMasses(THREE,group,{streetY,independentBuilding03:true});
   const building01=buildWriterBlockBuilding01(THREE,group,{streetY});
   const building02=buildWriterBlockBuilding02(THREE,group,{streetY});
   const building03=buildWriterBlockBuilding03(THREE,group,{streetY});
