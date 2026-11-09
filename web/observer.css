@@ -161,7 +161,7 @@ body.app .scene-settings{
   backdrop-filter:blur(12px);max-width:min(100%,440px);
   font-size:.72rem;
 }
-body.app .scene-settings summary{font-weight:600;min-height:22px;}
+body.app .scene-settings summary{font-weight:600;min-height:36px;display:flex;align-items:center;}
 body.app .scene-settings select{font-family:inherit;background:#23302e;border-radius:7px;min-height:36px;padding:2px 5px;}
 body.app .stage-caption{
   position:absolute;z-index:3;bottom:clamp(10px,1.7vw,22px);
