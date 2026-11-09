@@ -49,6 +49,8 @@ jobs:
           mkdir -p _site/city/survey/output
           cp city/survey/output/writer-block-overture-buildings.json _site/city/survey/output/writer-block-overture-buildings.json
           cp city/survey/output/writer-block-survey.json _site/city/survey/output/writer-block-survey.json
+          mkdir -p _site/city/buildings
+          cp city/buildings/manifest.json _site/city/buildings/manifest.json
           cp .github/city-assets/city-growth.js _site/web/city-growth.js
           cp .github/city-assets/tehran-environment.js _site/web/tehran-environment.js
           python3 .github/scripts/prepare_car_deploy.py _site
