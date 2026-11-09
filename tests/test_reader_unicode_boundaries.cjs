@@ -71,3 +71,20 @@ if (fs.existsSync(protectedPath)) {
   }
 }
 console.log('PASS RDR-068: ' + boundaryPairs.length + ' numeric/punctuation boundaries and protected parity');
+
+// RDR-069: absent catalog metadata must not become the literal title "null".
+// Primitive values and protected Pages normalizer must preserve the same behavior.
+const missingMetadata = [[null, ''], [undefined, ''], [0, '0'], [false, 'false']];
+for (const [input, expected] of missingMetadata) {
+  assert.equal(key(input), expected, 'source metadata: ' + String(input));
+}
+if (fs.existsSync(protectedPath)) {
+  const deployedSource = fs.readFileSync(protectedPath, 'utf8');
+  const deployedMatch = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(deployedMatch, 'protected normalizer required');
+  const deployedKey = vm.runInNewContext(deployedMatch[0] + '\nsearchKey');
+  for (const [input, expected] of missingMetadata) {
+    assert.equal(deployedKey(input), expected, 'protected metadata: ' + String(input));
+  }
+}
+console.log('PASS RDR-069: ' + missingMetadata.length + ' metadata fixtures and protected parity');
