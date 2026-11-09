@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {WRITER_HOME,writerArea,toScene,toGeo,overpassQuery,compileSurvey,OSM_ATTRIBUTION}
+  from '../survey/writer-block-survey.mjs';
+const area=writerArea(230);
+const t=(x,z)=>{const p=toGeo(x,z);return {lat:p.lat,lon:p.lon};};
+const ring=[t(-12,-14),t(12,-14),t(12,14),t(-12,14),t(-12,-14)];
+const mock={version:0.6,osm3s:{timestamp_osm_base:'2026-11-09T09:00:00Z'},elements:[
+  {type:'way',id:5,tags:{highway:'residential',name:'Test Street','addr:housenumber':'HIDDEN'},geometry:[t(-30,0),t(30,0)]},
+  {type:'way',id:6,tags:{building:'yes','addr:housenumber':'SECRET'},geometry:ring},
+  {type:'way',id:7,tags:{building:'yes',height:'11'},geometry:[t(-240,0),t(-180,0),t(-180,8),t(-240,8),t(-240,0)]},
+  {type:'way',id:8,tags:{building:'yes'},geometry:[t(-5,0),t(10,0)]},
+  {type:'way',id:5,tags:{highway:'residential'},geometry:[t(1,0),t(3,0)]}
+]};
+test('anchor roundtrip uses local metric east and south',()=>{
+  assert.deepEqual(toScene(WRITER_HOME.lat,WRITER_HOME.lon),{x:0,z:0});
+  const loc=toGeo(87,-65),again=toScene(loc.lat,loc.lon);
+  assert.ok(Math.abs(again.x-87)<1e-7&&Math.abs(again.z+65)<1e-7);
+  assert.ok(area.south<WRITER_HOME.lat&&area.north>WRITER_HOME.lat);
+  assert.throws(()=>writerArea(1000),RangeError);
+});
+test('query is geographically bounded, read-only',()=>{
+  const q=overpassQuery(area);
+  assert.match(q,/way\["highway"\]/);
+  assert.match(q,/way\["building"\]/);
+  assert.match(q,/out geom/);
+  assert.ok(!q.includes('node('));
+});
+test('survey retains real OSM source, not invented block, heights or private addresses',()=>{
+  const x=compileSurvey(mock,{area,capturedAt:'2026-11-09T09:08:00Z'});
+  assert.equal(x.blockBoundary.status,'UNVERIFIED');
+  assert.equal(x.blockBoundary.geometry,null);
+  assert.equal(x.totals.roads,1);
+  assert.equal(x.totals.buildings,2);
+  assert.equal(x.totals.incompleteWays,1);
+  assert.equal(x.totals.missingHeights,1);
+  assert.equal(x.totals.crossesSurveyBoundary,1);
+  assert.equal(x.attribution,OSM_ATTRIBUTION);
+  assert.equal(x.features.features[0].properties.kind,'building');
+  assert.equal(x.features.features[0].properties.heightEvidence,'unknown');
+  assert.ok(!JSON.stringify(x).includes('SECRET'));
+  assert.ok(!JSON.stringify(x).includes('HIDDEN'));
+  assert.equal(x.features.features.filter(f=>f.id==='osm:way:5').length,1);
+  assert.deepEqual(x.features.features[0].geometry.coordinates[0][0],[ring[0].lon,ring[0].lat]);
+});
+test('bad source and timestamp rejected',()=>{
+  assert.throws(()=>compileSurvey({elements:[]},{capturedAt:'2026-11-09T09:08:00Z'}),TypeError);
+  assert.throws(()=>compileSurvey(mock,{capturedAt:'nonsense'}),TypeError);
+});
