@@ -21,6 +21,7 @@ import { buildWriterBlockBuilding02 } from "./writer-block-building-02.js?v=tehr
 
 import { buildWriterBlockBuilding03 } from "./writer-block-building-03.js?v=tehran-source-building-03-20261109-v1";
 import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261109-v1";
+import { attachIllustrativeFacades } from "./writer-block-facade-preview.js?v=writer-block-facade-illustration-20261109-v1";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
@@ -70,6 +71,7 @@ export function buildTehranReconstructionTown({
   const building03=buildWriterBlockBuilding03(THREE,group,{streetY});
   // Optional-to-replace, always labeled interpretive context: no surveyed tree/parking/lamps.
   const context=buildWriterBlockContext(THREE,group,{streetY});
+  const facadePreview=attachIllustrativeFacades(THREE,[building01,building02,building03],{streetY});
   if(footprintMasses.plan.length!==4||
      footprintMasses.group.userData.citySurvey.generatedVolumeCount!==0||
      footprintMasses.group.userData.citySurvey.independentlyModeledCount!==3||
@@ -93,6 +95,7 @@ export function buildTehranReconstructionTown({
       // Interpretive lamp emission follows the existing daylight input, not a separate clock.
       // No traffic, route, citizen, building or writer state is updated here.
       context.update(day);
+      facadePreview.update(day);
       return undefined;
     }
   };
