@@ -51,3 +51,10 @@ not regressed. Check actual OSM evidence vintage, display ownership, pinned
 public assets and daytime/nighttime imagery when capture is available. The
 3Dviz `accessible-clearance-study` recipe is a **geometric envelope technique**,
 not Iranian urban-code or parking permit certification.
+
+## MAYOR-056 — Curbside parked vehicle geometry without false street certification
+When displaying illustrative parked cars inside a road-centerline candidate block, compute the *visible body footprint* as an oriented rectangle and verify the four corners plus each edge midpoint against the source polygon, protected writer room and Overture roofprints. Checking only the car's centerpoint does not detect a bumper or door overlapping a building or pavement band. Reuse the same heading for body/windows/wheels and preserve the existing single Three.js `InstancedMesh` per part class.
+
+The source-only street module uses an UNMEASURED 3.05m in-block half-road offset, a symbolic curb and a symbolic 2.02m sidewalk. With the existing 1.60m vehicle body, the updated 0.70 lateral fraction (formerly 0.58) leaves a modeled 0.115m gap between body and proxy curb (formerly 0.481m), and the geometric clearance from *road centerline* to closest body edge increases to 1.335m (formerly 0.969m). None of these dimensions describe real Tehran street capacity, legally permitted parking, loading/door clearance or emergency access. Actual sidewalk width, curb location and oneway parking-side law require independently verified measurements and local review. This is a small **reversible, nonphysical scene-layout improvement**.
+
+Read `cognition/skills/3dviz-pro-max/references/physical-interaction.md` and `data/recipes/accessible-clearance-study.json` for volume/sweep checks, then run actual `tests/tehran_source_only_rebuild_probe.mjs` and public pinned CI before release. Never claim screenshot or real-world compatibility unless actually verified.

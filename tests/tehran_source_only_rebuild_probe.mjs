@@ -110,6 +110,13 @@ assert.ok(context.userData.cityContextEvidence.instances.parkedVehicleProxies>=3
 // This does not assert that parking is lawful or that street widths are known.
 assert.equal(context.userData.cityContextEvidence.parkedCarHeadingsFollowOsmOneway,true);
 assert.equal(context.userData.cityContextEvidence.actualParkingLegalityKnown,false);
+// MAYOR-056: existing nine nonphysical parked-car proxies are inset next to the
+// modeled curb, not through the modeled pedestrian sidewalk. All dimensions
+// here are SCHEMATIC; this is not real Tehran parking approval.
+assert.equal(context.userData.cityContextEvidence.parkingCurbsideGeometryValidated,true);
+assert.equal(context.userData.cityContextEvidence.actualClearTrafficWidthMeters,null);
+assert.equal(context.userData.cityContextEvidence.localPositions.parkingClearancesAreProxyOnly,true);
+
 const displayCars=context.userData.cityContextEvidence.localPositions.cars;
 assert.equal(displayCars.length,9,"Source-only illustrative car inventory changed");
 const sourceWayVectors=new Map([
@@ -118,6 +125,13 @@ const sourceWayVectors=new Map([
 ]);
 const actualSourceOnewayCars=displayCars.filter(car=>car.mappedOneway==="yes");
 assert.ok(actualSourceOnewayCars.length>=3,"Missing cars on mapped one-way edges");
+for(const car of displayCars){
+  assert.ok(car.proxyCurbGapMeters>=.10 && car.proxyCurbGapMeters<.20,
+    "Illustrative car body is not curbside without overlapping modeled sidewalk");
+  assert.ok(car.proxyCentralClearanceMeters>=1.33,
+    "Illustrative car blocks proxy central travel band");
+  assert.equal(car.realParkingLegalityKnown,false);
+}
 for(const car of actualSourceOnewayCars){
   const dir=sourceWayVectors.get(car.sourceWayId);
   assert.ok(dir,"One-way car attached to unexpected map feature: "+car.sourceWayId);

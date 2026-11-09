@@ -4,13 +4,31 @@
  * No routes, citizens, facades, building floors, colliders or writer room mutations.
  */
 import { writerBlockLocalRing, writerBlockContainsLocalPoint } from "./writer-block-road-preview.js?v=writer-block-osm-preview-20261109-v1";
-import { buildStreetFramePlan } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
+import { buildStreetFramePlan, WRITER_BLOCK_STREET_SPEC } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
 import { WRITER_BLOCK_BUILDING_SOURCE } from "./writer-block-building-data.js?v=writer-block-overture-20261109-v1";
 import { WRITER_BLOCK_OSM_REGULATIONS } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
 
-export const CONTEXT_VERSION="writer-block-illustrative-context-20261110-v2";
+export const CONTEXT_VERSION="writer-block-illustrative-context-20261110-v3";
 export const CONTEXT_SCOPE="INTERPRETIVE_NOT_SURVEYED";
 const MAX=Object.freeze({trees:24,shrubs:36,lamps:18,cars:9});
+export const ILLUSTRATIVE_PARKING=Object.freeze({
+  bodyLengthMeters:3.55,bodyWidthMeters:1.60,
+  insetAcrossUnmeasuredRoadHalf:.70,
+  minCurbGapProxyMeters:.10,
+  minSourceBuildingFootprintGapMeters:.65,
+  minWriterRoomCenterDistanceMeters:9,
+  realParkingPermissionsKnown:false,
+  actualCurbWidthMeters:null,
+  actualClearTravelWidthMeters:null
+});
+export function illustrativeParkingClearances(){
+  const width=WRITER_BLOCK_STREET_SPEC.roadHalfWidthProxyMeters;
+  const center=width*ILLUSTRATIVE_PARKING.insetAcrossUnmeasuredRoadHalf;
+  return {
+    centerToProxyCurbMeters:width-center-ILLUSTRATIVE_PARKING.bodyWidthMeters/2,
+    clearFromCenterlineToBodyMeters:center-ILLUSTRATIVE_PARKING.bodyWidthMeters/2
+  };
+}
 // MAYOR-055: reuse the source way's start/end from the OSM regulation overlay.
 // Polygon ring traversal may oppose real mapped one-way traffic direction.
 // This ONLY turns schematic parked cars, never certifies parking permission.
@@ -69,6 +87,18 @@ function safe(p,buildingClear=3,roomMargin=9){
     writerBlockContainsLocalPoint(p.x,p.z)&&roomClear(p,roomMargin)&&
     distanceToBuildings(p)>buildingClear;
 }
+function parkedCarSamplePoints(p,heading){
+  const a=ILLUSTRATIVE_PARKING.bodyLengthMeters/2;
+  const b=ILLUSTRATIVE_PARKING.bodyWidthMeters/2;
+  const cosine=Math.cos(heading),sine=Math.sin(heading);
+  const sample=(dx,dz)=>({
+    x:p.x+dx*cosine-dz*sine,z:p.z+dx*sine+dz*cosine
+  });
+  return [
+    sample(-a,-b),sample(-a,b),sample(a,-b),sample(a,b),
+    sample(-a,0),sample(a,0),sample(0,-b),sample(0,b)
+  ];
+}
 function separated(p,points,minDist){
   return points.every(q=>Math.hypot(q.x-p.x,q.z-p.z)>=minDist);
 }
@@ -81,6 +111,9 @@ export function planWriterBlockContext(){
   const sign=Math.sign(doubleArea);
   if(sign===0)throw new Error("Writer block polygon collapsed");
   const trees=[],shrubs=[],lamps=[],cars=[];
+  const parkedClearances=illustrativeParkingClearances();
+  if(parkedClearances.centerToProxyCurbMeters<ILLUSTRATIVE_PARKING.minCurbGapProxyMeters)
+    throw new RangeError("Illustrative car body would intrude into modeled curb and sidewalk");
   for(let i=0;i<site.length;i++){
     const next=(i+1)%site.length,a=site[i],b=site[next];
     const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);
@@ -101,13 +134,21 @@ export function planWriterBlockContext(){
     for(const t of [.18,.38,.59,.79]){
       if(length*t<8||length*(1-t)<8)continue;
       const inner=lerp(lerp(rings[0][i],rings[0][next],t),
-                       lerp(rings[1][i],rings[1][next],t),.58);
+                       lerp(rings[1][i],rings[1][next],t),
+                       ILLUSTRATIVE_PARKING.insetAcrossUnmeasuredRoadHalf);
       const heading=sourceAlignedParkedCarHeading(i,dx,dz);
       const clearance={x:inner.x,z:inner.z};
-      if(safe(clearance,2,9)&&separated(inner,cars,14)&&cars.length<MAX.cars)
-        cars.push({...inner,heading,sourceRoadEdge:i,
-          sourceWayId:ROAD_BY_SOURCE_EDGE.get(i).wayId,
-          mappedOneway:ROAD_BY_SOURCE_EDGE.get(i).oneway});
+      if(safe(clearance,2,9)&&separated(inner,cars,14)&&cars.length<MAX.cars){
+        const footprintIsClear=parkedCarSamplePoints(inner,heading)
+          .every(p=>safe(p,ILLUSTRATIVE_PARKING.minSourceBuildingFootprintGapMeters,
+            ILLUSTRATIVE_PARKING.minWriterRoomCenterDistanceMeters));
+        if(footprintIsClear)cars.push({...inner,heading,sourceRoadEdge:i,
+          sourceT:t,sourceWayId:ROAD_BY_SOURCE_EDGE.get(i).wayId,
+          mappedOneway:ROAD_BY_SOURCE_EDGE.get(i).oneway,
+          proxyCurbGapMeters:parkedClearances.centerToProxyCurbMeters,
+          proxyCentralClearanceMeters:parkedClearances.clearFromCenterlineToBodyMeters,
+          realParkingLegalityKnown:false});
+      }
     }
   }
   // Add trees and low shrubs where open space remains, without asserting an
@@ -140,6 +181,7 @@ export function planWriterBlockContext(){
   return {trees,shrubs,lamps,cars,bounds,
     evidence:"OSM/Overture boundary only; all object locations are illustrative",
     actualObjectPositionsVerified:false,actualRoadWidthsVerified:false,
+    parkingCurbsideGeometryValidated:true,parkingClearancesAreProxyOnly:true,
     physicalCollider:false,routesUnchanged:true,writerRoomPreserved:true};
 }
 export function buildWriterBlockContext(THREE,parent,{streetY=-3}={}){
@@ -152,6 +194,8 @@ export function buildWriterBlockContext(THREE,parent,{streetY=-3}={}){
     sourceAttribution:"© OpenStreetMap contributors; © Overture Maps Foundation",
     actualObjectLocationsKnown:false,realParkedCarsObserved:false,
     actualParkingAndStreetWidthsKnown:false,actualTreeSpeciesKnown:false,
+    parkingCurbsideGeometryValidated:plan.parkingCurbsideGeometryValidated,
+    actualClearTrafficWidthMeters:null,
     parkedCarHeadingsFollowOsmOneway:true,actualParkingLegalityKnown:false,
     physicalCollider:false,interactive:false,
     writerRoomPreserved:true,routesUnchanged:true,
@@ -218,7 +262,8 @@ export function buildWriterBlockContext(THREE,parent,{streetY=-3}={}){
   const carMats=[];
   for(const p of plan.cars)for(const x of [-1.08,1.08])for(const z of [-.83,.83])
     carMats.push({p,x,z});
-  addInstances("illustrative-parked-car-bodies",new THREE.BoxGeometry(3.55,.57,1.60),
+  addInstances("illustrative-parked-car-bodies",new THREE.BoxGeometry(ILLUSTRATIVE_PARKING.bodyLengthMeters,.57,
+      ILLUSTRATIVE_PARKING.bodyWidthMeters),
     body,plan.cars,(p,i,m)=>positionCar(p,m,.62));
   addInstances("illustrative-parked-car-glass",new THREE.BoxGeometry(1.94,.60,1.25),
     roof,plan.cars,(p,i,m)=>positionCar(p,m,1.16,.25));
