@@ -10,7 +10,7 @@ import re
 import sys
 
 VERSION = "citizens-20261109-v1"
-WORLD_VERSION = "city-world-20261109-live-v1"
+WORLD_VERSION = "city-world-20261109-tehran-rebuild-v1"
 
 
 def patch_site(root: Path) -> None:
