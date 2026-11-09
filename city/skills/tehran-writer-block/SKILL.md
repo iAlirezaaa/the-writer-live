@@ -1,0 +1,40 @@
+---
+name: tehran-writer-block-digital-twin
+description: Plan verifiable Tehran block geometry and improve existing 3D city objects with the vendored 3Dviz Pro Max skill, without moving protected writer/citizen data.
+---
+
+# Tehran writer-block digital twin / 3Dviz Pro Max
+
+## Activation and priority
+Run this skill on **every** municipal/city visual, architectural, road, terrain, vegetation, prop, lighting or asset review. The latest user mandate replaces the former goal of a fictional/procedural Tehran-inspired map: the geographically faithful neighborhood is the target. Only the **single block containing the writer's home** is in geographic modeling scope for now. Existing distant scenery may remain as legacy placeholders but must be marked *not surveyed*, not silently treated as real Tehran.
+
+Read in this order:
+1. `city/tasks/MAYOR-026-tehran-writer-block-3dviz-contract.md`
+2. `web/urban-plan.js` / `TEHRAN_GEO_ORIGIN`, `city/skills/tehran-georeference.md`
+3. `cognition/skills/3dviz-pro-max/SKILL.md` and `cognition/skills/3dviz-pro-max/TWIN-WORLD.md` (already vendored; read from the private project checkout)
+4. Owning Three.js builder: `web/town.js`, `web/town-districts.js`, `web/city-growth.js`, `web/objects.js`, etc.
+5. `city/skills/mayor-release-gate/SKILL.md`, city regressions, public pinned deployment mapping.
+
+## Ground truth and exact spatial frame
+- Verified **home-anchor coordinate** (WGS84): `35.715361987616696, 51.3642455031707`; keep scene X east and Z south (north is -Z). Use a consistent metric projection/control points for precise small-block data; `geoToCityLocal` is a tangent approximation, not a measured survey.
+- Do **not** assume a Google Maps view/pin is permission to scrape, trace or embed proprietary tiles/imagery. Record terms/attribution for any independently licensed basemap, OSM extracts, public cadastral/elevation records or photographs. Preserve source timestamp, accuracy, and coverage for every feature.
+- Do **not** invent a precise rectangular block boundary, house/building footprints, street width, orientation, floors, rooftops, elevation or facade. A 1:1 claim requires real measurements, explicit correspondences and screenshot/camera ground-truth checks. If a feature is unsupported, tag as `unknown/proxy`.
+- Work only inside a georeferenced `writer-block` area-of-interest polygon. Determine its road-bounded polygon from sourced geometry before altering scene parcels. Hold outside-block additions until the owner expands the area.
+- Each future real-world object needs `id`, WGS84 geometry/transform, local metric transform, original feature/source ID, license, capture date, positional/height confidence, representation tier, and evidence link. Avoid storing person- or household-specific sensitive detail.
+
+## 3Dviz Pro Max mandatory object workflow
+- Use the already vendored `cognition/skills/3dviz-pro-max/` rather than an unreviewed install or another renderer. Search `scripts/search.py` for a shape/roof/furniture/traffic topic; resolve useful records; use `design-context.py` and `host-probe.py` where available. Lexical retrieval is a suggestion, not proof of object quality.
+- Inventory current objects first; rank improvements by visibly wrong silhouette, proportions, joins, ground contact, roof/window/door consistency, texture/material scale, lighting and camera performance. Rebuild **one representative object per iteration**, then propagate only after tests and visual review.
+- Decide `reuse-kit`, `adapt-kit`, `custom mesh` or `licensed external asset` per object. Keep stable Three.js scene, IDs, object picking, current texture/material ownership and one renderer.
+- Shape first, then supports/assemblies, materials, light behavior, animation, LOD/InstancedMesh reuse. Use real browser captures at street-level, overhead, close and night/day where accessible. Never report images rendered or performance measured without actual capture.
+- Check third-party kit/texture license. Upstream 3Dviz's authored code is MIT but some included asset families have other licenses. Never copy restricted samples wholesale.
+
+## Safety / release
+- Before every change write a unique `city/tasks/` TODO. Do one safe, measurable modification privately; run georeference, layout, road topology, housing access, house/citizen paths and public build tests as relevant. Verify street/ground collision, door accessibility and draw-call budget. Do not touch writer's stories/memory, publisher logic, citizen schedules/routes, or external modules.
+- Mirror only reviewed city assets or instruction files to their public pinned counterparts. If geometry QA or map evidence is missing, commit only the documentation/plan and report no visual or geographic reconstruction was deployed.
+- Distinguish **planned**, **modeled**, **observed visually**, **tested**, and **deployed** statuses; include commit/CI evidence and two distinct city backlog ideas.
+
+## First concrete tasks
+- Inventory a licensed OSM/other open data extract around the exact coordinate, identify road-bounded area-of-interest and document datum, bounds, feature coverage, discrepancy and attribution. Do not state exact block edges until measured.
+- Build a neutral ground-survey overlay/metadata contract, not unsourced final architecture.
+- Pilot a sidewalk fixture or single surveyed facade using 3Dviz, then evaluate old-vs-new silhouette, contact shadow, collisions, materials and frame cost.
