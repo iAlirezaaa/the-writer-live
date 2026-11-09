@@ -1,6 +1,6 @@
 # MAYOR-049 — Sixth Daryan-e Now: usable, separated sidewalk, parking and passable lane geometry
 Date: 2026-11-09
-Status: PRIVATE GEOMETRY AND FULL VENDORED THREE.JS PASS; PUBLIC CI PENDING
+Status: PUBLISHED AND FULL GITHUB PAGES CI PASS; ACTUAL STREET SURVEY AND BUILDING COUNT PENDING
 
 ## Task boundaries
 The user requests realistic and correctly passable alley widths, pedestrian sidewalks, parallel parked cars and the true number/orientation of houses. Only a small verifiable change in this run: replace the uniform, too-narrow authored **visual cross-section for ONE confirmed OSM alley** with a bounded, non-colliding, distinctly separated illustrative example. Preserve actual OSM road centerline coordinates, original 7 source ways and 5 source junctions. No fake legal width, entrance/real house segmentation, property unit counts or sidewalk availability.
@@ -19,7 +19,7 @@ The user requests realistic and correctly passable alley widths, pedestrian side
 - [x] Add **one sourced road section sample** for way 92200441: two continuous clear travel envelopes, one separated parallel parking strip and both unobstructed continuous footpaths; generic parked static vehicle positions.
 - [x] Add a source-tied geometric probe verifying centerline endpoints, minimum clear design widths, car-to-lane and car-to-sidewalk clearances, junction end setbacks, segment bounds, zero colliders and writer room preservation.
 - [x] Record four already-known Overture roofprint candidates and their footprint direction separately from true house count, which remains unverified, avoiding the claim that four polygons are four registered houses.
-- [ ] Test with real Three.js and existing source-only, legacy and Pages CI; mirror private → public pinned city assets only after safe tests, inspect GitHub deploy and Observatory regression status.
+- [x] Actual vendored Three.js source-only test and full public GitHub Pages CI including legacy safety passed; private→public pinned city files mirrored. Observatory contract run 42685175885 passed for cache version update.
 
 ## Two backlog tasks
 1. Obtain independent legally usable actual *ROW/curb/sidewalk* surveys and municipal parcel offsets per OSM street way, then adjust profiles/clipping rather than expanding into building polygons; verify real parking permissions/signs.
@@ -36,3 +36,10 @@ Third-floor original writer room stays at source WGS84 anchor and room-parent Y 
 - Separate `city/buildings/writer-block-orientation-audit.json` records 4 ML polygon axis azimuths (165.8°, 76.9°, 76.1°, 78.8°) with actual house/unit count and entry facing UNKNOWN. Do not convert these into four individual houses.
 - Added standalone Node probe `tests/tehran_sixth_daryan_street_section_probe.mjs`; extended corridor existing source test for 10 renderables. Added private MAYOR CI verification. Await public test and Pages conclusion.
 - Browser screenshots and actual FPS, cadastral right-of-way and city as-built building counts NOT obtained.
+
+## Verified publication
+- GitHub Pages run: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42685813611
+- Published code SHA: `62316f6897efd9610227d92554a074b18b77108d`.
+- `Prepare public site with correct vehicle imports`, artifact upload and `actions/deploy-pages@v4` concluded **success**.
+- Source-only/road/citizen/author geometry regression suite passed; `tests/tehran_sixth_daryan_street_section_probe.mjs` and `tests/tehran_building_orientation_source_audit_probe.mjs` were included.
+- Dated OSM source remains unchanged. There is NO verified measured 10.7m curb-to-curb ROW, NO verified parking permit, NO exact count of houses/units/floor frontages; study photos, browser snapshots and FPS still not captured.
