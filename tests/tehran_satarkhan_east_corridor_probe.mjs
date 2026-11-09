@@ -94,7 +94,9 @@ group.traverse(obj=>{
  if(!obj.isMesh)return;count++;
  const b=new THREE.Box3().setFromObject(obj);
  assert.ok([...b.min,...b.max].every(Number.isFinite));
- assert.equal(obj.userData.cityCorridorEvidence?.physicalCollider,false);
+ assert.equal(obj.userData.cityCorridorEvidence?.physicalCollider ??
+    obj.userData.cityStreetEvidence?.physicalCollider,false,
+    "All sourced roads and illustrative street-section objects must be non-colliding");
 });
 assert.equal(count,10,"Five old drawables and five instanced/surface cross-section drawables");
 const laneOverlay=group.getObjectByName("satarkhan-osm-4-lanes-artistic-markings");
