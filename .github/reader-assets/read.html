@@ -7,23 +7,33 @@
   <title>کتابخانهٔ آثار | The Writer</title>
   <meta name="description" content="کتابخانهٔ آثار نویسنده؛ جلدهای اختصاصی، مطالعهٔ آرام و ادامه از آخرین صفحه.">
   <link rel="stylesheet" href="../web/style.css">
-  <link rel="stylesheet" href="../web/book.css?v=reader-20261109-v7">
+  <link rel="stylesheet" href="../web/book.css?v=reader-20261109-library-v2">
 </head>
 <body class="reader-page">
   <header class="top reading-top">
     <div class="reading-heading">
       <span class="reading-eyebrow">THE WRITER <span aria-hidden="true">/</span> LIBRARY</span>
-      <h1>کتابخانهٔ داستان‌ها</h1>
+      <h1>جهانی برای <em>خواندن</em> و کشف داستان‌ها</h1>
       <p id="reader-note" class="muted small">هر داستان یک کتاب است. از جلد انتخاب کنید، ورق بزنید و هر زمان خواستید از همان صفحه ادامه دهید.</p>
+      <div class="library-hero-actions">
+        <button id="library-explore" class="library-explore" type="button">کشف کتاب‌ها <span aria-hidden="true">↙</span></button>
+        <button id="library-theme" class="library-theme-toggle" type="button" aria-pressed="false">حالت شب</button>
+      </div>
+      <div class="library-statbar" aria-label="نمای کلی کتابخانه">
+        <div class="library-stat"><strong id="library-stories-count">—</strong><span>کتاب منتشرشده</span></div>
+        <div class="library-stat"><strong id="library-progress-count">—</strong><span>در حال مطالعه</span></div>
+        <div class="library-stat"><strong id="library-saved-count">—</strong><span>در علاقه‌مندی‌ها</span></div>
+      </div>
     </div>
     <a id="home-link" class="reading-home" href="../">بازگشت به جهان نویسنده <span aria-hidden="true">↗</span></a>
   </header>
   <main class="grid reading-main">
-    <section class="card reading-collection" aria-label="مجموعهٔ داستان‌ها">
+    <section class="card reading-collection" id="library-collection" aria-label="مجموعهٔ داستان‌ها">
       <div class="reading-collection-head">
         <div>
           <span class="reading-section-kicker">COLLECTION / 01</span>
-          <h2>آثار روی قفسه</h2>
+          <h2>قفسهٔ داستان‌ها</h2>
+          <p class="library-section-description">جست‌وجو، انتخاب نما و ادامه از آخرین صفحهٔ مطالعه</p>
         </div>
         <span id="shelf-count" class="reading-total" role="status" aria-live="polite">در حال بارگذاری</span>
       </div>
@@ -37,12 +47,20 @@
         <label>مرتب‌سازی
           <select id="story-sort"><option value="newest">تازه‌ترین</option><option value="oldest">قدیمی‌ترین</option><option value="title">نام اثر</option><option value="score">امتیاز منتقد</option></select>
         </label>
+        <label>پیشرفت مطالعه
+          <select id="reading-filter"><option value="all">همهٔ کتاب‌ها</option><option value="unread">خوانده‌نشده</option><option value="reading">در حال مطالعه</option><option value="finished">تمام‌شده</option></select>
+        </label>
+        <button id="story-favorites" class="story-favorites" type="button" aria-pressed="false" aria-label="نمایش فقط کتاب‌های علاقه‌مندی">☆ علاقه‌مندی‌های من · ۰</button>
+        <div class="library-view-switch" role="group" aria-label="شیوهٔ نمایش کتاب‌ها">
+          <button id="library-grid" type="button" aria-pressed="true">جلدی</button>
+          <button id="library-list" type="button" aria-pressed="false">فهرستی</button>
+        </div>
         <button id="story-reset" class="reader-reset" type="button" hidden>پاک‌کردن فیلترها</button>
       </div>
       <div class="covers" id="covers" aria-label="جلد کتاب‌ها"></div>
       <p class="reading-endnote">هر جلد از شناسهٔ خود داستان ساخته می‌شود؛ رنگ و طراحی آن با مرتب‌سازی تغییر نمی‌کند.</p>
     </section>
   </main>
-  <script type="module" src="../web/read.js?v=reader-20261109-catalog-v8"></script>
+  <script type="module" src="../web/read.js?v=reader-20261109-library-v2"></script>
 </body>
 </html>
