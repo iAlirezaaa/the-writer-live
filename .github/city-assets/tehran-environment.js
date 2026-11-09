@@ -4,7 +4,7 @@
  */
 export const TEHRAN_TIMEZONE="Asia/Tehran";
 export const TEHRAN_WEATHER_SOURCE="Open-Meteo";
-export const TEHRAN_WEATHER_URL="https://api.open-meteo.com/v1/forecast?latitude=35.6892&longitude=51.3890&current=temperature_2m,weather_code,cloud_cover,precipitation,rain,snowfall,wind_speed_10m,is_day&daily=sunrise,sunset&forecast_days=1&timezone=Asia%2FTehran";
+export const TEHRAN_WEATHER_URL="https://api.open-meteo.com/v1/forecast?latitude=35.715361987616696&longitude=51.3642455031707&current=temperature_2m,weather_code,cloud_cover,precipitation,rain,snowfall,wind_speed_10m,is_day&daily=sunrise,sunset&forecast_days=1&timezone=Asia%2FTehran";
 const timeFmt=new Intl.DateTimeFormat("en-GB",{
  timeZone:TEHRAN_TIMEZONE,hourCycle:"h23",
  year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"
