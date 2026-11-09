@@ -121,7 +121,8 @@
     "mayor041": "Private geometry and targeted probe authored; execution and screenshot comparison not yet verified; public mirror gated on tests",
     "mayor043": "Private direct execution against vendored Three.js: 7 groups, 25 render objects, 0 nonfinite bounds, 0 new physical colliders; full Node/legacy CI and actual browser screenshots not yet confirmed; pinned public release pending.",
     "mayor044": "Private direct Three.js scene integration PASS (34 finite-bound render objects, 9 facade meshes, 7 unchanged top-level groups, room preserved); CI/Pages and real visual renders still unverified.",
-    "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches."
+    "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches.",
+    "mayor047": "Vendored Three.js full source-only assembly PASS: 9 groups and 40 rendered objects with finite bounds, 6 OSM way subranges, 5 shared source junctions, no traffic changes; Node/legacy Pages CI and screenshots not yet confirmed."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
@@ -191,5 +192,30 @@
     "parkPolygonFetched": false,
     "streetGeometryOutsideInitialBlockApproved": true,
     "outsideBlockGeometryBuilt": false
+  },
+  "outerSatarkhanCorridor": {
+    "source": "city/survey/output/writer-block-survey.json",
+    "capturedAt": "2026-11-09T09:22:58.743Z",
+    "license": "ODbL-1.0",
+    "renderer": "web/writer-satarkhan-osm-corridor.js",
+    "sourceWayIds": [
+      36697706,
+      92200441,
+      481439240,
+      471546873,
+      207742970,
+      36697711
+    ],
+    "sourcedAdjacentStreetParts": 6,
+    "verifiedJunctionCount": 5,
+    "actualRoadWidthsKnown": false,
+    "parkOsmWayCandidate": 448551081,
+    "parkGeometryDownloaded": false,
+    "actualRoadsRenderedToSattarkhanMain": true,
+    "realParkPathFullyMapped": false,
+    "physicalCollider": false,
+    "writerRoomThirdFloorPreserved": true,
+    "existingCitizenPathsModified": false,
+    "visualScreenshotCaptured": false
   }
 }
