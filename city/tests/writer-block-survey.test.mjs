@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WRITER_HOME,writerArea,toScene,toGeo,overpassQuery,compileSurvey,OSM_ATTRIBUTION}
+import {WRITER_HOME,writerArea,toScene,toGeo,overpassQuery,compileSurvey,normalizeOsmApiMap,OSM_ATTRIBUTION}
   from '../survey/writer-block-survey.mjs';
 const area=writerArea(230);
 const t=(x,z)=>{const p=toGeo(x,z);return {lat:p.lat,lon:p.lon};};
@@ -46,4 +46,21 @@ test('survey retains real OSM source, not invented block, heights or private add
 test('bad source and timestamp rejected',()=>{
   assert.throws(()=>compileSurvey({elements:[]},{capturedAt:'2026-11-09T09:08:00Z'}),TypeError);
   assert.throws(()=>compileSurvey(mock,{capturedAt:'nonsense'}),TypeError);
+});
+
+test('official OSM map.json nodes resolve to only complete roads/buildings',()=>{
+  const g=toGeo(15,10);
+  const raw={version:'0.6',generator:'OpenStreetMap server',elements:[
+    {type:'node',id:100,lat:WRITER_HOME.lat,lon:WRITER_HOME.lon},
+    {type:'node',id:101,lat:g.lat,lon:g.lon},
+    {type:'way',id:300,tags:{highway:'residential'},nodes:[100,101]},
+    {type:'way',id:301,tags:{building:'yes'},nodes:[100,999]},
+    {type:'way',id:302,tags:{landuse:'residential'},nodes:[100,101]}
+  ]};
+  const normalized=normalizeOsmApiMap(raw);
+  assert.equal(normalized.elements.length,1);
+  assert.deepEqual(normalized.elements[0].geometry[1],{lat:g.lat,lon:g.lon});
+  const result=compileSurvey(normalized,{area,capturedAt:'2026-11-09T09:08:00Z'});
+  assert.equal(result.totals.roads,1);
+  assert.equal(result.blockBoundary.status,'UNVERIFIED');
 });
