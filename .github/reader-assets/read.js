@@ -4,7 +4,7 @@ import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
 
-const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
+const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان", owner_shared:"انتشار با اجازهٔ صاحب اثر" };
 const $ = id => document.getElementById(id);
 const nfa = number => new Intl.NumberFormat("fa-IR").format(number);
 // Match Persian and Arabic keyboard variants without changing displayed titles.
