@@ -180,3 +180,9 @@ only the real writer block bounded by sourced OSM centerlines.
 
 ## MAYOR-040 evidence-first checkpoint (2026-11-09)
 Before introducing a new facade, floor, entrance, shop or mesh, correlate OSM tags and Overture feature IDs with license, capture date, geometry and uncertainty. Missing building:levels, entrance or shop data must remain null; 3m guides and 6m envelopes are explicitly non-surveyed proxies. Preserve the writer room and source-only default; do not suppress the legacy path regression at X=0,Z=8.7. Consult 3Dviz catalog/recipes/kits for the particular object before implementation, and demand actual screenshots plus source-only and legacy smoke probes before any visual release. See city/tasks/MAYOR-040-source-evidence-gate.md.
+
+## MAYOR-041: sourced independent building envelope lesson
+- Before modeling a third Overture footprint, exclude its source ID from the shared translucent volume renderer; the source outline remains. This prevents z-fighting and duplicate buildings without changing street or citizen colliders.
+- Treat a source polygon as an **envelope candidate**: it may cover joined buildings. Preserve all source ring vertices and measured plan area; a neutral 6m volume and 3m line are scale cues only, not a measured storey or unit count.
+- Keep the writer-room exclusion and source-only invariants explicit in dedicated Node/Three.js probes. A newly written probe is **not** a passed test. Do not mirror runtime geometry to public Pages until source-only and legacy regression checks execute and pass or failures are isolated as pre-existing and reviewed.
+- Prefer one extruded shell and one combined line buffer (two draw calls) over fabricated windows, entrances, shops, rooflines or facade textures. Follow 3Dviz object-craft and architecture-interiors recipe guidance for joins, ground contact, material restraint and inspectable uncertainty.
