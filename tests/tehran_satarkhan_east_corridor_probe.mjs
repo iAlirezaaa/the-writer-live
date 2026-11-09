@@ -79,7 +79,7 @@ assert.equal(group.userData.cityCorridorEvidence.physicalCollider,false);
 assert.equal(mesh.userData.cityCorridorEvidence.vehiclePathModified,false);
 assert.equal(mesh.userData.cityCorridorEvidence.citizenRoutesModified,false);
 assert.equal(mesh.userData.cityCorridorEvidence.writerRoomPreserved,true);
-assert.equal(group.children.length,5,"One batched road mesh, one illustrative lane overlay and three map labels");
+assert.equal(group.children.length,6,"Sourced road/markings, one bounded cross-section group and three street labels");
 assert.ok(mesh.isMesh&&mesh.geometry.groups.length===3);
 const position=mesh.geometry.getAttribute("position");
 assert.ok(position.count>=100&&position.count<2000,"Bounded sourced polyline strip geometry");
@@ -96,7 +96,7 @@ group.traverse(obj=>{
  assert.ok([...b.min,...b.max].every(Number.isFinite));
  assert.equal(obj.userData.cityCorridorEvidence?.physicalCollider,false);
 });
-assert.equal(count,5);
+assert.equal(count,10,"Five old drawables and five instanced/surface cross-section drawables");
 const laneOverlay=group.getObjectByName("satarkhan-osm-4-lanes-artistic-markings");
 assert.ok(laneOverlay?.isMesh);
 assert.equal(laneOverlay.userData.cityCorridorEvidence.sourceWayId,1232461345);
@@ -107,6 +107,16 @@ assert.equal(laneOverlay.userData.cityCorridorEvidence.laneMarkingsSurveyed,fals
 assert.equal(laneOverlay.userData.cityCorridorEvidence.physicalCollider,false);
 assert.equal(group.userData.cityCorridorEvidence.totalDistinctSourcedWayIds,7);
 assert.equal(group.userData.cityCorridorEvidence.primaryLaneWidthSurveyed,false);
+const cross=group.getObjectByName("sixth-daryan-concept-pedestrian-parking-cross-section");
+assert.ok(cross,"Sourced Sixth Daryan urban-design profile must render");
+assert.equal(cross.userData.cityStreetEvidence.sourceOSMWay,92200441);
+assert.equal(cross.userData.cityStreetEvidence.physicalCollider,false);
+assert.equal(cross.userData.cityStreetEvidence.actualOnewayKnown,false);
+assert.equal(cross.userData.cityStreetEvidence.unverifiedRightOfWay,true);
+assert.equal(cross.userData.cityStreetEvidence.illustrativeParkingBays,7);
+assert.equal(cross.userData.cityStreetEvidence.illustrativeParkedCars,5);
+assert.equal(cross.getObjectByName("parked-car-bodies").count,5);
+
 assert.equal(group.userData.cityCorridorEvidence.oppositeCarriagewayModeled,true);
 assert.ok(laneOverlay.geometry.getAttribute("position").count>100);
 
