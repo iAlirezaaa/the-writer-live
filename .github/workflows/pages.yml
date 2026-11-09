@@ -97,6 +97,7 @@ jobs:
           node --experimental-vm-modules tests/tehran_writer_apartment_third_floor_probe.mjs _site
           node tests/tehran_satarkhan_east_corridor_probe.mjs _site
           node tests/tehran_sixth_daryan_street_section_probe.mjs _site
+          node tests/tehran_building_orientation_source_audit_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           node tests/city_housing_access_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
