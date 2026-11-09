@@ -211,7 +211,22 @@ try {
     assert.ok(stripes.length >= 4, "No real zebra crossing connects the sidewalks");
     const crossingX = center(stripes[0].box).x;
     for (const { box } of stripes) assert.ok(close(center(box).x, crossingX, 0.05), "Crosswalk stripes are misaligned");
+    // Static-route obstruction must not treat clock-driven moving cars as permanent
+    // walls. Car/crosswalk clearance is asserted separately by city_traffic_probe;
+    // do not change pedestrian ROUTE_SEGMENTS or skip any static geometry.
+    const isMovingVehicleMesh = mesh => {
+      for(let obj=mesh;obj;obj=obj.parent)
+        if(obj.userData?.vehicleType && obj.name.startsWith("town-car-"))return true;
+      return false;
+    };
+    // Verify the moving-car identity contract before excluding any vehicle from
+    // this STATIC-only check. Vehicle/pedestrian timing is tested separately.
+    const movingVehicleBoxes = meshes.filter(({mesh}) =>
+      mesh.geometry.type === "BoxGeometry" && isMovingVehicleMesh(mesh));
+    assert.ok(movingVehicleBoxes.length >= 12,
+      "Missing tagged moving-car boxes; refuse an ineffective static/dynamic route split");
     const blockers = meshes.filter(({ mesh, box }) => visible(mesh) && mesh.geometry.type === "BoxGeometry"
+      && !isMovingVehicleMesh(mesh)
       && size(box).y >= 0.35 && box.min.y < FEET_Y + 1.6 && box.max.y > FEET_Y + 0.2);
     let samples = 0;
     function checkPoint(p) {
@@ -221,7 +236,7 @@ try {
       const road = roads.find(({ box }) => insideXZ(box, p));
       if (road) assert.ok(Math.abs(p.x - crossingX) <= 0.65, `Route crosses asphalt away from zebra crossing: ${JSON.stringify(p)}`);
       assert.ok(surfaces.some(({ box }) => insideXZ(box, p, 0.08)), `Route has no physical paving beneath it: ${JSON.stringify(p)}`);
-      for (const { box } of blockers) assert.ok(!insideXZ(box, p, 0.15), `Route walks through furniture/wall at ${JSON.stringify(p)}`);
+      for (const { box, mesh } of blockers) assert.ok(!insideXZ(box, p, 0.15), `Route walks through furniture/wall at ${JSON.stringify(p)}; mesh=${mesh.name||"(unnamed)"} geom=${mesh.geometry.type} box=${JSON.stringify({min:[...box.min],max:[...box.max]})} parent=${mesh.parent?.name||"(unnamed)"}`);
       assert.ok(!(Math.abs(p.x) < 3.2 && Math.abs(p.z) < 3.2), "Town route enters the writer's house");
     }
     function segment(a, b) {
