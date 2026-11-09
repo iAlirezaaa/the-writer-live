@@ -32,6 +32,28 @@ const main=code.SATARKHAN_CORRIDOR_WAYS.find(w=>w.wayId===207742970);
 assert.equal(main.highway,"primary");
 assert.equal(main.name,"ستارخان");
 assert.equal(main.maxspeed,"50");
+// MAYOR-048: extra opposite-direction Sattarkhan carriageway is a distinct
+// source OSM way. Lane count is sourced, lane width/marking positions are not.
+const opposing=code.SATARKHAN_OPPOSING_PRIMARY;
+const opposingSource=roads.get(opposing.wayId);
+assert.ok(opposingSource,"Opposing carriageway OSM source missing");
+assert.equal(opposing.wayId,1232461345);
+assert.equal(opposingSource.properties.tags.name,opposing.name);
+assert.equal(opposingSource.properties.tags.highway,"primary");
+assert.equal(opposingSource.properties.tags.oneway,"yes");
+assert.equal(opposingSource.properties.tags.lanes,"4");
+assert.equal(opposingSource.properties.tags.maxspeed,"50");
+assert.equal(opposingSource.properties.tags.sidewalk,"right");
+assert.equal(opposing.measuredWidthMeters,null);
+assert.equal(opposing.realLineMarkingsObserved,false);
+assert.deepEqual(opposing.localXZ,
+  opposingSource.properties.localXZ.slice(opposing.sourceStart,opposing.sourceEnd+1),
+  "Opposite carriageway vertices are not exact OSM coordinates");
+const a=main.localXZ,b=opposing.localXZ;
+const mainDx=a.at(-1)[0]-a[0][0],mainDz=a.at(-1)[1]-a[0][1];
+const oppDx=b.at(-1)[0]-b[0][0],oppDz=b.at(-1)[1]-b[0][1];
+assert.ok(mainDx*oppDx+mainDz*oppDz<0,
+  "The two mapped one-way Sattarkhan carriageways must oppose");
 const topology=code.inspectSatarkhanCorridorTopology();
 assert.equal(topology.mainStreetConnected,true);
 assert.equal(topology.parkPolygonPresent,false);
@@ -57,14 +79,14 @@ assert.equal(group.userData.cityCorridorEvidence.physicalCollider,false);
 assert.equal(mesh.userData.cityCorridorEvidence.vehiclePathModified,false);
 assert.equal(mesh.userData.cityCorridorEvidence.citizenRoutesModified,false);
 assert.equal(mesh.userData.cityCorridorEvidence.writerRoomPreserved,true);
-assert.equal(group.children.length,4,"One cheap multi-material road mesh plus three graphic street labels");
+assert.equal(group.children.length,5,"One batched road mesh, one illustrative lane overlay and three map labels");
 assert.ok(mesh.isMesh&&mesh.geometry.groups.length===3);
 const position=mesh.geometry.getAttribute("position");
 assert.ok(position.count>=100&&position.count<2000,"Bounded sourced polyline strip geometry");
 for(let i=0;i<position.count;i++){
  const x=position.getX(i),y=position.getY(i),z=position.getZ(i);
  assert.ok([x,y,z].every(Number.isFinite));
- assert.ok(x>12&&x<230&&z>-150&&z<61,"Road outside verified east-side phase");
+ assert.ok(x>12&&x<285&&z>-150&&z<61,"Road outside verified east-side phase");
  assert.ok(y>=-3&&y<=-2.65,"Road visual float or underground");
 }
 let count=0;
@@ -74,12 +96,27 @@ group.traverse(obj=>{
  assert.ok([...b.min,...b.max].every(Number.isFinite));
  assert.equal(obj.userData.cityCorridorEvidence?.physicalCollider,false);
 });
-assert.equal(count,4);
+assert.equal(count,5);
+const laneOverlay=group.getObjectByName("satarkhan-osm-4-lanes-artistic-markings");
+assert.ok(laneOverlay?.isMesh);
+assert.equal(laneOverlay.userData.cityCorridorEvidence.sourceWayId,1232461345);
+assert.equal(laneOverlay.userData.cityCorridorEvidence.actualLaneCountTagged,4);
+assert.equal(laneOverlay.userData.cityCorridorEvidence.sourceCenterlineVerified,true);
+assert.equal(laneOverlay.userData.cityCorridorEvidence.laneSpacingSurveyed,false);
+assert.equal(laneOverlay.userData.cityCorridorEvidence.laneMarkingsSurveyed,false);
+assert.equal(laneOverlay.userData.cityCorridorEvidence.physicalCollider,false);
+assert.equal(group.userData.cityCorridorEvidence.totalDistinctSourcedWayIds,7);
+assert.equal(group.userData.cityCorridorEvidence.primaryLaneWidthSurveyed,false);
+assert.equal(group.userData.cityCorridorEvidence.oppositeCarriagewayModeled,true);
+assert.ok(laneOverlay.geometry.getAttribute("position").count>100);
+
 console.log("TEHRAN-SATARKHAN-OSM-EAST-CORRIDOR-OK",JSON.stringify({
- sourceWays:6,roadNames:code.SATARKHAN_CORRIDOR_WAYS.map(w=>w.name),
+ sourceWays:7,roadNames:code.SATARKHAN_CORRIDOR_WAYS.map(w=>w.name),
  sourceJunctions:topology.joints,confirmedMainStreetWay:207742970,
  sourceSpeedKmh:50,visualRoadTriangles:position.count/3,
- drawableMeshes:count,writerThirdFloorUnchanged:true,
+ drawableMeshes:count,oppositeWayId:opposing.wayId,
+ sourceLaneCount:opposing.lanes,sourceDirectionsOppose:true,
+ laneWidthMeasured:false,writerThirdFloorUnchanged:true,
  actualWidthsMeasured:false,trafficCollisionChanged:false,
  parkSattarkhanPolygonFetched:false
 }));
