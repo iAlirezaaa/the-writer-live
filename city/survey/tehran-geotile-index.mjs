@@ -58,7 +58,7 @@ export function makeTehranTileIndex(snapshot,{zoom=17,maxTilesPerFeature=64}={})
   assert(Number.isInteger(zoom)&&zoom>=8&&zoom<=19,"Unsupported tile zoom");
   assert(Number.isInteger(maxTilesPerFeature)&&maxTilesPerFeature>=1,
     "Invalid maxTilesPerFeature");
-  const ids=new Set(),tiles=new Map(),global={west:Infinity,south:Infinity,east:-Infinity,north:-Infinity};
+  const ids=new Set(),tiles=new Map(),featureMetadata={},global={west:Infinity,south:Infinity,east:-Infinity,north:-Infinity};
   for(const feature of snapshot.features.features){
     assert(feature?.type==="Feature"&&
       (typeof feature.id==="string"&&feature.id.trim()||Number.isSafeInteger(feature.id)),
@@ -66,6 +66,7 @@ export function makeTehranTileIndex(snapshot,{zoom=17,maxTilesPerFeature=64}={})
     const id=String(feature.id);
     assert(!ids.has(id),"Duplicate feature ID: "+id);ids.add(id);
     const b=featureBounds(feature);
+    featureMetadata[id]={geometryType:feature.geometry.type,bbox:b};
     for(const edge of ["west","south"])global[edge]=Math.min(global[edge],b[edge]);
     for(const edge of ["east","north"])global[edge]=Math.max(global[edge],b[edge]);
     const a=lonLatTile(b.west,b.north,zoom),c=lonLatTile(b.east,b.south,zoom);
@@ -85,6 +86,7 @@ export function makeTehranTileIndex(snapshot,{zoom=17,maxTilesPerFeature=64}={})
     zoom,source:snapshot.geoSource,license:snapshot.license,attribution:snapshot.attribution,
     capturedAt:snapshot.capturedAt,featureCount:ids.size,tileCount:tiles.size,
     bbox:ids.size?global:null,tiles:ordered,
+    features:Object.fromEntries(Object.entries(featureMetadata).sort(([a],[b])=>a.localeCompare(b))),
     limitations:[
       "Whole unsplit features are indexed by bounding-box overlap (not geometric clipping).",
       "Feature IDs may occur in multiple tiles; any renderer must deduplicate by original source ID.",
