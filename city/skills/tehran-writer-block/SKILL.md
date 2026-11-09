@@ -261,3 +261,11 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 - Keep `tests/city_traffic_probe.mjs` as the independent moving vehicle / pedestrian crosswalk safety gate. Never remove city traffic checks, move citizen routes to hide the symptom, or switch production back to legacy mode.
 - Public verified evidence at https://github.com/iAlirezaaa/the-writer-live/actions/runs/42722376545: static route/layout/wiring + source-only + traffic probes and Pages deploy passed. This test correction is **not** evidence of actual Tehran street or parked-car clearance; it required no scene asset change and no browser screenshots were taken.
 
+
+## MAYOR-058 — citywide geotile provenance and streaming handoff (2026-11-10)
+- The goal now explicitly includes **all Tehran**, but build/validate one licensed, evidence-backed feature or tile at a time; the writer block is the baseline acceptance scene. Older single-block geographic scope statements above are superseded by MAYOR-057; do not use them to invent entire city meshes.
+- `city/survey/tehran-geotile-index.mjs` now records `features[id]={geometryType,bbox}` in original WGS84, alongside tile-to-ID memberships. This is metadata, **not** a Three.js scene, clipped geometry, source survey, validated height, or performance claim.
+- A feature crossing multiple tiles retains **one source ID**. Future renderers must deduplicate by that ID and dispose resources when the final tile reference is released. Never treat a bbox as the actual polygon; retain the licensed source geometry for mesh creation.
+- Consult 3Dviz `references/object-craft.md` and `data/recipes/courtyard-house-cutaway.json` for shape/join/contact/LOD principles; these are not proof of actual Tehran roof shapes or facades. No visual assets were changed in MAYOR-058.
+- Verify `node --test city/tests/tehran-geotile-index.test.mjs`, source-only/legacy safety probes, and public Pages build before any claim of validated runtime; commit parity alone does not establish browser rendering.
+- Next backlog: (1) reference-counted tile cache with feature-ID deduplication and GPU disposal; (2) licensed, measured building-height and entry survey for a single Overture source ID, with overhead/street/night capture.
