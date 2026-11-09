@@ -105,6 +105,26 @@ assert.equal(context.userData.cityContextEvidence.writerRoomPreserved,true);
 assert.ok(context.userData.cityContextEvidence.instances.trees>=8,"Visible trees must be placed");
 assert.ok(context.userData.cityContextEvidence.instances.lamps>=6,"Visible lamps must be placed");
 assert.ok(context.userData.cityContextEvidence.instances.parkedVehicleProxies>=3,"Static illustrative cars must be placed");
+// MAYOR-055: visible proxy vehicles on documented one-way OSM ways must
+// face the source way's direction, not the polygon boundary ring direction.
+// This does not assert that parking is lawful or that street widths are known.
+assert.equal(context.userData.cityContextEvidence.parkedCarHeadingsFollowOsmOneway,true);
+assert.equal(context.userData.cityContextEvidence.actualParkingLegalityKnown,false);
+const displayCars=context.userData.cityContextEvidence.localPositions.cars;
+assert.equal(displayCars.length,9,"Source-only illustrative car inventory changed");
+const sourceWayVectors=new Map([
+  [481657106,{x:58.789-(-333.715),z:50.483-155.944}],
+  [36697711,{x:-366.679-193.596,z:87.286-(-77.159)}]
+]);
+const actualSourceOnewayCars=displayCars.filter(car=>car.mappedOneway==="yes");
+assert.ok(actualSourceOnewayCars.length>=3,"Missing cars on mapped one-way edges");
+for(const car of actualSourceOnewayCars){
+  const dir=sourceWayVectors.get(car.sourceWayId);
+  assert.ok(dir,"One-way car attached to unexpected map feature: "+car.sourceWayId);
+  const forward=Math.cos(car.heading)*dir.x+Math.sin(car.heading)*dir.z;
+  assert.ok(forward>0,"Parked-car visual heading opposes OSM one-way "+car.sourceWayId);
+}
+
 assert.ok(context.children.length>=6 && context.children.length<=15,"Instanced context should stay affordable");
 for(const name of [
  "legacy-shopfront-interiors","city-road-union","city-districts",

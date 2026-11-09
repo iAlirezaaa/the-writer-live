@@ -20,7 +20,7 @@ import { buildWriterBlockBuilding01 } from "./writer-block-building-01.js?v=tehr
 import { buildWriterBlockBuilding02 } from "./writer-block-building-02.js?v=tehran-source-building-02-20261109-v1";
 
 import { buildWriterBlockBuilding03 } from "./writer-block-building-03.js?v=tehran-source-building-03-20261109-v1";
-import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261109-v1";
+import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261110-v2";
 import { attachIllustrativeFacades } from "./writer-block-facade-preview.js?v=writer-block-facade-illustration-20261109-v1";
 import { buildWriterBlockRoadRegulations } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
 import { buildSatarkhanEastRoadCorridor } from "./writer-satarkhan-osm-corridor.js?v=writer-satarkhan-east-osm-20261109-v3";

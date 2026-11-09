@@ -6,10 +6,32 @@
 import { writerBlockLocalRing, writerBlockContainsLocalPoint } from "./writer-block-road-preview.js?v=writer-block-osm-preview-20261109-v1";
 import { buildStreetFramePlan } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
 import { WRITER_BLOCK_BUILDING_SOURCE } from "./writer-block-building-data.js?v=writer-block-overture-20261109-v1";
+import { WRITER_BLOCK_OSM_REGULATIONS } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
 
-export const CONTEXT_VERSION="writer-block-illustrative-context-20261109-v1";
+export const CONTEXT_VERSION="writer-block-illustrative-context-20261110-v2";
 export const CONTEXT_SCOPE="INTERPRETIVE_NOT_SURVEYED";
 const MAX=Object.freeze({trees:24,shrubs:36,lamps:18,cars:9});
+// MAYOR-055: reuse the source way's start/end from the OSM regulation overlay.
+// Polygon ring traversal may oppose real mapped one-way traffic direction.
+// This ONLY turns schematic parked cars, never certifies parking permission.
+const ROAD_BY_SOURCE_EDGE=new Map(
+  WRITER_BLOCK_OSM_REGULATIONS.flatMap(way=>way.segments.map(edge=>[edge,way]))
+);
+export function sourceAlignedParkedCarHeading(edge,dx,dz){
+  if(!Number.isInteger(edge)||!Number.isFinite(dx)||!Number.isFinite(dz)||
+     Math.hypot(dx,dz)<.01)
+    throw new TypeError("Invalid sourced street direction");
+  const road=ROAD_BY_SOURCE_EDGE.get(edge);
+  if(!road)throw new Error("Missing source way for parked-car edge "+edge);
+  const ringHeading=Math.atan2(dz,dx);
+  if(road.oneway!=="yes")return ringHeading; // bidirectional or unknown: unchanged
+  const wayX=road.wayEnd[0]-road.wayStart[0];
+  const wayZ=road.wayEnd[1]-road.wayStart[1];
+  const alignment=dx*wayX+dz*wayZ;
+  if(!Number.isFinite(alignment)||Math.abs(alignment)<1e-4)
+    throw new Error("Ambiguous one-way direction from OSM source");
+  return ringHeading+(alignment<0?Math.PI:0);
+}
 const dot=(a,b)=>a.x*b.x+a.z*b.z;
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t});
 const area2=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);
@@ -80,10 +102,12 @@ export function planWriterBlockContext(){
       if(length*t<8||length*(1-t)<8)continue;
       const inner=lerp(lerp(rings[0][i],rings[0][next],t),
                        lerp(rings[1][i],rings[1][next],t),.58);
-      const heading=Math.atan2(dz,dx);
+      const heading=sourceAlignedParkedCarHeading(i,dx,dz);
       const clearance={x:inner.x,z:inner.z};
       if(safe(clearance,2,9)&&separated(inner,cars,14)&&cars.length<MAX.cars)
-        cars.push({...inner,heading,sourceRoadEdge:i});
+        cars.push({...inner,heading,sourceRoadEdge:i,
+          sourceWayId:ROAD_BY_SOURCE_EDGE.get(i).wayId,
+          mappedOneway:ROAD_BY_SOURCE_EDGE.get(i).oneway});
     }
   }
   // Add trees and low shrubs where open space remains, without asserting an
@@ -128,6 +152,7 @@ export function buildWriterBlockContext(THREE,parent,{streetY=-3}={}){
     sourceAttribution:"© OpenStreetMap contributors; © Overture Maps Foundation",
     actualObjectLocationsKnown:false,realParkedCarsObserved:false,
     actualParkingAndStreetWidthsKnown:false,actualTreeSpeciesKnown:false,
+    parkedCarHeadingsFollowOsmOneway:true,actualParkingLegalityKnown:false,
     physicalCollider:false,interactive:false,
     writerRoomPreserved:true,routesUnchanged:true,
     instances:{trees:plan.trees.length,shrubs:plan.shrubs.length,

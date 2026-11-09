@@ -26,3 +26,28 @@ Classify street candidates using OSM way IDs and road-centered coordinates, not 
 - Check both frozen backup refs before changing any mesh.
 - Confirm room/no-overlap, road clearance, accessible footpaths, collision envelopes and height/ground contact using existing tests; screenshot aerial and street, daytime and night-time if available.
 - No public geometry or asset pins without runtime QA and verified source. A read-only audit may be mirrored separately.
+
+## MAYOR-055 — Source-direction versus closed-ring direction (2026-11-10)
+An OSM road-bounded polygon ring is a geometric boundary, not a one-way travel graph.
+Its path direction is reversed relative to the original ordered OSM way nodes on
+`osm:way:481657106` (پنجم دریان نو) and `osm:way:36697711` (خلیل میکائیلی).
+When instanced static vehicle illustrations are aligned to one-way traffic, reuse
+`WRITER_BLOCK_OSM_REGULATIONS` from `web/writer-block-road-regulations.js` and
+the source way start/end orientation. Never copy a screen-space angle from a
+boundary ring into traffic semantics. If `oneway=no` or missing, do not claim
+any authoritative driving direction.
+
+The current `web/writer-block-illustrative-context.js` only applies the sourced
+one-way direction to **display heading**, not to parking location, lawfulness,
+curbs, measured streets, road widths, traffic plans or vehicle/citizen routes.
+Place the entire car body, cab, lamps and wheels under the **same world heading**,
+using existing Three.js `InstancedMesh` geometry and materials. A directional
+proxy is not a locally observed parking space. Count any parked cars only as
+*illustrative instances*, not actual parking capacity.
+
+Before release, assert car-center positions and number of instances unchanged,
+OSM-tagged one-way facing correct, and current source-only/legacy scene tests
+not regressed. Check actual OSM evidence vintage, display ownership, pinned
+public assets and daytime/nighttime imagery when capture is available. The
+3Dviz `accessible-clearance-study` recipe is a **geometric envelope technique**,
+not Iranian urban-code or parking permit certification.
