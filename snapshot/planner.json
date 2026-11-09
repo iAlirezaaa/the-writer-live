@@ -287,20 +287,11 @@
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
       "start": "2026-11-09T14:49:16",
-      "status": "planned",
+      "status": "done",
       "task": "notebook"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-09T15:29:16",
-    "id": "202611092334",
-    "label": "دفترچه‌ی ایده‌ها",
-    "next_retry_at": null,
-    "start": "2026-11-09T14:49:16",
-    "status": "planned",
-    "task": "notebook"
-  },
+  "current": null,
   "day": "2026-11-09",
   "next": null
 }
