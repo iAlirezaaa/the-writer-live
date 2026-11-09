@@ -167,7 +167,7 @@ test("catalog entry points share the protected script cache version and reset co
   const entry = fs.existsSync(publicEntry) ? publicEntry : privateEntry;
   const html = fs.readFileSync(entry, "utf8");
   const extractVersion = value => {
-    const match = value.match(/<script\\b[^>]*src="[^"]*\\/read\\.js\\?v=([^"&]+)"[^>]*><\\/script>/);
+    const match = value.match(/src="[^"]*read[.]js[?]v=([^"&]+)"/);
     assert.ok(match, "missing versioned catalog script");
     return match[1];
   };
