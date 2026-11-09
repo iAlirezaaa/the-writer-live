@@ -22,3 +22,14 @@ Acceptance: automated Node tests of deterministic tile identities, duplicate pre
 
 ## Result and safety report
 Pending. Record actual unit tests, snapshot audit, private/public commits and any CI/Pages results after execution; no screenshot/deployment claims without evidence.
+
+## Verified execution — 2026-11-10
+- Implemented `city/survey/tehran-geotile-index.mjs` with deterministic z/x/y WebMercator metadata indexes over preserved WGS84 licensed feature geometry. Neither geometry, collisions nor runtime Three.js modules changed.
+- Created `city/tests/tehran-geotile-index.test.mjs` (5 tests covering stable tiles, duplicate IDs, provenance, invalid coordinates/CRS, oversize uncut features), and new dedicated GitHub Actions workflow.
+- Actual public Actions run: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42719740430 — **SUCCESS**; 5 unit tests PASS, zero fail, actual previously acquired snapshot indexes **54 sourced features (47 lines, 7 footprint polygons) into 28 z17 tile keys**. This is source coverage only, not 28 rendered tiles.
+- Private counterpart workflow https://github.com/iAlirezaaa/the-writer/actions/runs/42719308742 concluded FAILURE, with job log retrieval returning BlobNotFound; no private test success claimed.
+- Public Pages https://github.com/iAlirezaaa/the-writer-live/actions/runs/42719740286 FAILED on pre-existing legacy town paths safety regression at local X=0, Z=7.3. Source-only and writer apartment/road checks in log PASS, but deploy stages skipped; no new live deployment claimed.
+- The backup branches were confirmed unchanged at the requested SHA values and backup manifest read. No screenshots, browser captures, GPU/FPS tests or new real facades performed.
+- Public repo mirrors the new source, test, workflow, documentation, GOAL and city skill; public pinned runtime assets were not modified, because this is a nonvisual offline indexing tool.
+- 3Dviz: SKILL, TWIN-WORLD and `recipe.citygml-stable-id-scenario-diff` inspected; stable ID / CRS / epoch guidance recorded. No existing kit, mesh or material was copied or modified.
+- Two backlog proposals remain open above. NEXT: license-check/import one additional real feature area, then single sourced 3D tile with deduplicated IDs and real visual/legacy gates. The user authorized citywide goal, not invented detail or unrestricted one-shot city deploy.
