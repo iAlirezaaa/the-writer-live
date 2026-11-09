@@ -69,12 +69,26 @@
     {
       "sourceId": "76931a07-c621-4e37-9241-c41ee59d4248",
       "areaSquareMeters": 2505.89,
-      "geometryTier": "T0",
-      "visualStatus": "transparent-proxy",
+      "geometryTier": "T1-plan-proxy",
+      "visualStatus": "third independently authored Three.js sourced envelope; runtime tests pending, not deployed",
       "heightMetersSource": null,
       "heightMetersDisplayProxy": 6,
       "writerRoomIntersect": false,
-      "individuallyResolvedBuilding": false
+      "individuallyResolvedBuilding": false,
+      "modelSource": "web/writer-block-building-03.js",
+      "actualRoofKnown": false,
+      "actualHeightKnown": false,
+      "actualFloorCountKnown": false,
+      "floorCountSource": null,
+      "verifiedUnitCount": null,
+      "commercialUseKnown": false,
+      "shopNamesSource": null,
+      "sourcedDoorLocations": null,
+      "horizontalScaleGuideMeters": 3,
+      "scaleGuideIsActualFloorEvidence": false,
+      "writerRoomPreserved": true,
+      "collisionsChanged": false,
+      "qualityLimitation": "31 Overture source vertices retained; 6m volume and 3m guide illustrative only; source may merge several buildings; no actual floors, units, doors, roof or facade"
     }
   ],
   "nextRequiredSources": [
@@ -103,6 +117,7 @@
     "district": "success",
     "mayor039": "2026-11-09 public Pages CI run 42642944967: source-only and independent-building-02 Node/Three.js tests pass; build/deploy overall fails due pre-existing legacy town_scene_probe.mjs paths obstacle at X=0 Z=8.7, also present in earlier run 42641786729; no new live deployment",
     "mayor039RealPhotos": "not captured",
-    "mayor039ActualFloorsAndStores": "unverified; source has no building:levels or shop nodes within writer block"
+    "mayor039ActualFloorsAndStores": "unverified; source has no building:levels or shop nodes within writer block",
+    "mayor041": "Private geometry and targeted probe authored; execution and screenshot comparison not yet verified; public mirror gated on tests"
   }
 }

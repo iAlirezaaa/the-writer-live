@@ -302,3 +302,14 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [ ] Actual screenshots, surveyed storeys/shop names and real alley topology remain unavailable; do not claim verification.
 - New backlog A: query licensed commercial/shop/POI addresses inside the block and verify frontage alignment before creating any real storefront.
 - New backlog B: collect legally reusable building heights, `building:levels`, entrances and interior access/service alleys per source polygon; only then replace schematic floor guides and roads with surveyed 3D shapes.
+
+## MAYOR-042 — finish the real-source building 03 and ensure render bounds (2026-11-09)
+- [x] Create an independent TODO in `city/tasks/MAYOR-042-complete-third-building-validation.md` before any code changes.
+- [x] Retire empty bulk mesh from the displayed source-only scene; preserve all four mapped Overture outlines.
+- [x] Align `town-tehran-rebuild.js` evidence guard and geometric regression expectations with third independent source plan.
+- [ ] Execute real Node/Three.js and legacy probes, capture street/overhead/day/night frames, then publish private→public only if release gates pass.
+- [ ] Verify any eventual Pages deployment by run ID, not historical success.
+
+### Two NEW backlog ideas (MAYOR-042)
+1. **Licensed facade confidence index:** each source-backed building side records independently verified windows, entrances, shop POIs and levels with dates/rights/uncertainties before detailed modeling.
+2. **Camera-anchored evidence diff:** reusable aerial and street cameras with georeferenced source outlines, screenshot hashes and bounded FPS counters to quantify each visible city revision.

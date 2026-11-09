@@ -57,13 +57,14 @@ assert.equal(town.group.userData.cityBuild.retainedLegacyCityMeshes,0);
 assert.equal(town.group.userData.cityBuild.imaginaryMountainOrForestMeshes,0);
 assert.equal(town.group.userData.cityBuild.realBuildingHeightsMeasured,false);
 assert.equal(town.group.userData.cityBuild.authorRoomProtected,true);
-assert.equal(town.group.children.length,5,"Exactly five licensed-map groups including two individually reconstructed building envelopes expected");
+assert.equal(town.group.children.length,6,"Exactly six licensed-map groups including three individually reconstructed building envelopes expected");
 assert.deepEqual(town.group.children.map(c=>c.name),[
   "writer-block-source-aligned-streets",
   "writer-block-srtm30-topology",
   "writer-block-overture-building-reconstruction",
   "writer-block-building-01-georeferenced",
-  "writer-block-building-02-georeferenced"
+  "writer-block-building-02-georeferenced",
+  "writer-block-building-03-georeferenced"
 ]);
 assert.ok(scene.getObjectByName("writer-interior-street-level")===originalRoom,
   "Original author's room must survive rebuilt town");
@@ -90,8 +91,8 @@ assert.equal(street.userData.cityStreetEvidence.actualPavementWidthKnown,false);
 const masses=town.group.getObjectByName("writer-block-overture-building-reconstruction");
 assert.ok(masses);
 assert.equal(masses.userData.citySurvey.originalRoofprints,4);
-assert.equal(masses.userData.citySurvey.generatedVolumeCount,1);
-assert.equal(masses.userData.citySurvey.independentlyModeledCount,2);
+assert.equal(masses.userData.citySurvey.generatedVolumeCount,0);
+assert.equal(masses.userData.citySurvey.independentlyModeledCount,3);
 assert.equal(masses.userData.citySurvey.ignoredRoomCollisionCount,1);
 const individuallyModeled=town.group.getObjectByName("writer-block-building-01-georeferenced");
 assert.ok(individuallyModeled);
@@ -103,12 +104,17 @@ assert.equal(building02.userData.cityBuildingEvidence.measuredFloors,null);
 assert.equal(building02.userData.cityBuildingEvidence.verifiedShopUnits,null);
 assert.equal(building02.userData.cityBuildingEvidence.guideRepresentsRealFloorCount,false);
 assert.equal(building02.userData.cityBuildingEvidence.physicalCollider,false);
+const building03=town.group.getObjectByName("writer-block-building-03-georeferenced");
+assert.ok(building03,"Third sourced footprint must have its own mesh");
+assert.equal(building03.userData.cityBuildingEvidence.measuredFloors,null);
+assert.equal(building03.userData.cityBuildingEvidence.verifiedUnits,null);
+assert.equal(building03.userData.cityBuildingEvidence.physicalCollider,false);
 const terrain=town.group.getObjectByName("writer-block-srtm30-topology");
 assert.ok(terrain);
 assert.equal(terrain.getObjectByName("writer-block-srtm30-relief-inspection-only").visible,false);
 const geometry=[];
 town.group.traverse(o=>{if(o.isMesh||o.isLineSegments)geometry.push(o);});
-assert.ok(geometry.length>=4 && geometry.length<17,
+assert.ok(geometry.length>=4 && geometry.length<19,
   "Build must be bounded by sourced geometry, not hundreds of old meshes");
 for(const obj of geometry){
   const bb=new THREE.Box3().setFromObject(obj);

@@ -1,0 +1,51 @@
+name: Mayor Tehran writer-block geometry gate
+on:
+  push:
+    branches: [city/mayor042-third-building-geometry]
+    paths:
+      - 'web/writer-block-*.js'
+      - 'web/town.js'
+      - 'web/town-tehran-rebuild.js'
+      - 'tests/tehran_*'
+      - 'city/tasks/MAYOR-042*'
+      - '.github/workflows/mayor-tehran-writer-block-verify.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-geometry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source-only geographic and writer-room probes
+        run: |
+          set -eu
+          node tests/tehran_georeference_probe.mjs
+          node tests/tehran_writer_block_buildings_probe.mjs
+          node tests/tehran_writer_block_building_01_probe.mjs
+          node tests/tehran_writer_block_building_02_probe.mjs
+          node tests/tehran_writer_block_building_03_probe.mjs
+          node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs
+          node tests/tehran_writer_block_streets_probe.mjs
+          node tests/writer_house_consistency_probe.mjs
+  legacy-city-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Protected historical city paths (no bypass)
+        run: |
+          set -eu
+          for check in layout paths wiring; do
+            node --experimental-vm-modules tests/town_scene_probe.mjs . "$check" < snapshot/town.json
+          done
+          node tests/road_topology_probe.mjs
+          node tests/city_housing_access_probe.mjs
+          node tests/city_traffic_probe.mjs
