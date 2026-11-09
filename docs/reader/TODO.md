@@ -94,3 +94,10 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-057a P1 new:** prevent duplicate in-flight comment submissions on rapid double click; preserve typed feedback and show an accessible retry action on network/429 errors. Acceptance: one request per submission attempt and no lost form text.
 - [ ] **RDR-058 P2 new:** add a clear on-page transport status (GitHub confirmation vs direct API connected), announced accessibly when it changes; no misleading success toast, no persistent health polling, no exposed API keys.
 - Security: do not expose admin credentials, unpublished writer data, private `data/index/` comment queue, or a guessed external API endpoint in public assets. Actual backend deployment and anti-abuse controls remain RDR-055.
+
+## RDR-069 — 2026-11-09 — missing catalog metadata regression
+- [x] **P1 test only:** four executable Node fixtures for null, undefined, zero and false in production searchKey; protected Pages replacement is checked when present. Private commit `3a019b64577667457dc7f9860cbc05b999e20e10`; public commit `ccbbf7ce109dc047c118a02d6ad2cbf279919775`. Source and public test blob SHA match: `87c5783c001b795f308c245de5ab08e397eaa348`.
+- [ ] **P0 verification:** retrieve actual focused CI run status and exact Node pass/fail totals. Workflow includes this test but successful commit is not proof of CI success. Browser QA and Pages deployment are separate.
+- [ ] **RDR-070 P1 NEW:** add a catalog regression for malformed Unicode surrogate input and verify safe search without crashes, identical in protected and public scripts.
+- [ ] **RDR-071 P2 NEW:** test accessible empty cover fallback labels for rights-cleared books with no cover URL, without publishing private book metadata.
+- Priority remains reliable public search and accessibility before storefront checkout. No production runtime or payment changes.
