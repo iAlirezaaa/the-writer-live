@@ -101,3 +101,9 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-070 P1 NEW:** add a catalog regression for malformed Unicode surrogate input and verify safe search without crashes, identical in protected and public scripts.
 - [ ] **RDR-071 P2 NEW:** test accessible empty cover fallback labels for rights-cleared books with no cover URL, without publishing private book metadata.
 - Priority remains reliable public search and accessibility before storefront checkout. No production runtime or payment changes.
+
+## RDR-072 — 2026-11-10 — control-input search parity regression
+- [x] Added six deterministic Unicode/control-input fixtures to `tests/test_reader_unicode_boundaries.cjs`; protected Pages normalizer is compared when present. No runtime UI or private data changed.
+- [ ] **RDR-073 P1 new:** make the protected asset's existence mandatory in public CI instead of silently skipping parity checks. Acceptance: missing `.github/reader-assets/read.js` fails public workflow, while private source tests remain usable.
+- [ ] **RDR-074 P2 new:** add an explicit catalog empty-state action to clear only search text while preserving selected status/sort; acceptance: keyboard focus remains on search and protected/public implementations agree.
+- Test status: GitHub Actions push-run outcome not yet verified; Node execution and browser QA not claimed. Benchmark: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
