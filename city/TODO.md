@@ -198,3 +198,22 @@ Status: instruction changes and automation updated; geographic capture, real mod
 2. Store a fixed camera baseline comparison set for the legacy map and each audited Tehran-block replacement, with source-attribution and frame-time notes.
 
 Backup branches preserve exact source revisions. Runtime tests and Pages redeployment were not needed for branch creation and are not claimed here.
+
+
+## MAYOR-028 — sourced Tehran writer block (2026-11-09)
+- [x] Verify immutable recovery branches from 2026-11-09 (private cfdac995 / public ececf9ff) before any new mapped objects.
+- [x] Write city-only task first: `city/tasks/MAYOR-028-osm-writer-block-basemap.md`.
+- [x] Develop source-aware WGS84 local transformation, read-only official OSM / Overpass fallback, way/node compiler, boundary-face extraction and data-provenance guards.
+- [x] Export ODbL-attributed actual OSM data for a 230 m survey around 35.715361987616696, 51.3642455031707. 47 road ways, 7 footprint ways, no surveyed building heights.
+- [x] Derive the containing **OSM roadway-centerline candidate** polygon (~12,265 m²; four named source ways), labelled provisional not parcel-accurate. Do not replace the legacy town from the source alone.
+- [x] Six source/regression tests passed on [public CI run 42592983509](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42592983509), which also acquired the real map JSON. Private workflow failed and logs unavailable; no claim of successful private CI.
+- [x] Persist map data under `city/survey/output/writer-block-survey.json`; city-only docs/scripts/tests are mirrored privately/publicly. View `city/survey/README.md` for provenance and exact limitations.
+- [ ] Build isolated source-backed Three.js 3D survey preview with measured street *centerlines* and available plan outlines only. Do not invent building height or road width.
+- [ ] Collect licensable accurate facades/ground elevations/curb widths, compare screenshots and replace only one proven object using 3Dviz Pro Max and existing city safety/LOD gates.
+- [ ] Full real Tehran scene reconstruction and visual/throughput acceptance: **NOT DONE**; no existing town roads, houses or car/citizen routes changed.
+
+### Two new backlog ideas — MAYOR-028
+1. **Street alignment uncertainty overlay** — georeferenced before/after distance and confidence comparisons between fictional and OSM road centerlines, protected author scene IDs.
+2. **Licensed asset provenance + 3Dviz proof gate** — asset catalog of verified real Tehran street fixtures, photos and geometric constraints with one-object safe replacement checks and LOD review.
+
+Status: one source-backed GIS baseline completed and archived, no premature runtime city-map publication.
