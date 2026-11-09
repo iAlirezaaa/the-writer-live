@@ -4,7 +4,7 @@
   "license": "ODbL-1.0",
   "attribution": "© OpenStreetMap contributors — Open Database License (ODbL) 1.0",
   "endpoint": "https://api.openstreetmap.org/api/0.6/map.json?bbox=51.36170369,35.71328905,51.36678731,35.71743492",
-  "capturedAt": "2026-11-09T09:16:11.901Z",
+  "capturedAt": "2026-11-09T09:22:58.743Z",
   "osmBaseTimestamp": null,
   "homeAnchor": {
     "lat": 35.715361987616696,
@@ -21,9 +21,73 @@
     "radiusMeters": 230
   },
   "blockBoundary": {
-    "status": "UNVERIFIED",
-    "geometry": null,
-    "reason": "A road-bounded containing block has not yet been topologically measured and visually checked."
+    "status": "OSM_CENTERLINE_CANDIDATE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            51.36466829476369,
+            35.7155564020295
+          ],
+          [
+            51.36477219957999,
+            35.71525899871979
+          ],
+          [
+            51.36489520113343,
+            35.71490699606315
+          ],
+          [
+            51.363146799806835,
+            35.71452419677916
+          ],
+          [
+            51.362926502145896,
+            35.71517719883983
+          ],
+          [
+            51.36466829476369,
+            35.7155564020295
+          ]
+        ]
+      ]
+    },
+    "localXZ": [
+      [
+        38.257,
+        -21.571
+      ],
+      [
+        47.659,
+        11.427
+      ],
+      [
+        58.789,
+        50.483
+      ],
+      [
+        -99.418,
+        92.956
+      ],
+      [
+        -119.352,
+        20.503
+      ],
+      [
+        38.257,
+        -21.571
+      ]
+    ],
+    "areaSquareMeters": 12265,
+    "roadWayIds": [
+      "osm:way:4292858",
+      "osm:way:481657106",
+      "osm:way:36697708",
+      "osm:way:36697711"
+    ],
+    "confidence": "topology-only; road centers, not curbs or cadastral plot edges",
+    "requiresSurvey": true
   },
   "features": {
     "type": "FeatureCollection",
