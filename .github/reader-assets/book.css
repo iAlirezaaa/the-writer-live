@@ -1290,3 +1290,20 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
 .book-overlay[data-reader-margins="wide"] .leaf-face {
   padding-inline:clamp(18px,4vw,64px);
 }
+
+/* Reader catalog: reset filters, visible only when the shelf is filtered. */
+.reader-page .reader-reset {
+  grid-column:1 / -1;
+  justify-self:start;
+  min-height:42px;
+  padding:9px 16px;
+  border:1px solid #b8cfc5;
+  border-radius:11px;
+  background:#eef5f0;
+  color:#294d42;
+  font:600 .82rem "Vazirmatn",Tahoma,sans-serif;
+  cursor:pointer;
+}
+.reader-page .reader-reset:hover {background:#e2eee6;border-color:#7fa798;}
+.reader-page .reader-reset:focus-visible {outline:2px solid #467e69;outline-offset:3px;}
+.reader-page .reader-reset[hidden] {display:none;}
