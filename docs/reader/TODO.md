@@ -34,3 +34,11 @@ Public code contains no keys, private reader-state database, owner tokens, or un
 - [ ] **RDR-037 P2:** rights-aware collection of book series and editions with stable volume order and explicit publication eligibility; no checkout or private story text.
 
 References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features), [Google Play Books library organization](https://support.google.com/googleplay/answer/9402600?hl=en).
+
+## RDR-038 — 2026-11-09 — protected/public catalog parity regression
+
+- [x] Restore public `web/read.js` reset/filter behavior from the already-tested private implementation; previously public root lacked reset while protected Pages assets had it.
+- [x] Extend Node catalog test to compare actual `renderShelf` and `resetShelfFilters` implementations between public root and protected Pages assets, not just symbol presence; test authored in private first.
+- [ ] **RDR-039 P1 new:** fail CI when the public HTML entry point references a stale catalog script cache key compared with the protected Pages HTML. Acceptance: matching version keys and a passing Node regression.
+- [ ] **RDR-040 P2 new:** add a rights-safe catalog loading retry control with an accessible error status when a public snapshot request fails. Acceptance: retry without reload, no unpublished data exposure.
+- CI and browser status must be recorded separately; protected assets replace root files at deployment, so root/protected parity is a release gate.
