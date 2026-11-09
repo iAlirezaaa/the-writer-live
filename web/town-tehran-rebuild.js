@@ -22,6 +22,7 @@ import { buildWriterBlockBuilding02 } from "./writer-block-building-02.js?v=tehr
 import { buildWriterBlockBuilding03 } from "./writer-block-building-03.js?v=tehran-source-building-03-20261109-v1";
 import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261109-v1";
 import { attachIllustrativeFacades } from "./writer-block-facade-preview.js?v=writer-block-facade-illustration-20261109-v1";
+import { buildWriterBlockRoadRegulations } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
@@ -56,12 +57,16 @@ export function buildTehranReconstructionTown({
     sourceSnapshotDate:"2026-11-09",
     sourceLicenses:["ODbL-1.0","NASA/USGS SRTM"],
     noPhysicsOrCitizenPathMigration:true,
+    sourcedSpeedLimitWayCount:4,
+    realRoadSignLocationsKnown:false,
     authorRoomProtected:true,
     urbanLayout:"clean-source-only-from-scratch"
   };
   // Only true OSM four road centerline frame; the translucent upper ledges
   // and inward sidewalk widths are schematic, not topographic road surveys.
   const streets=buildWriterBlockStreetFrame(THREE,group,{streetY,canvasTex});
+  // OSM 30 km/h and oneway TAG evidence; glyph locations are map annotations, not surveyed signs.
+  const roadRegulations=buildWriterBlockRoadRegulations(THREE,group,{streetY,canvasTex});
   const terrain=buildWriterBlockTerrain(THREE,group,{streetY,reliefVisible:false});
   // True aerial plan lines, as opposed to residential architecture invented
   // outside licensed footprints. Terrain contours remain a coarse DEM overlay.
@@ -79,9 +84,11 @@ export function buildTehranReconstructionTown({
      building01.plan.measuredHeightMeters!==null||
      building02.plan.measuredHeightMeters!==null||
      building03.plan.measuredHeightMeters!==null||
+     roadRegulations.plan.facts.length!==4||
+     roadRegulations.group.userData.cityRoadEvidence.physicalCollider!==false||
      !streets.group.getObjectByName("writer-block-osm-4-street-pavement"))
     throw new Error("Sourced city evidence changed; stop rather than invent replacement buildings");
-  if(group.children.length!==7||context.group.userData.cityContextEvidence.physicalCollider!==false)
+  if(group.children.length!==8||context.group.userData.cityContextEvidence.physicalCollider!==false)
     throw new Error("Unexpected old fictional objects attached to source-only map");
   scene.add(group);
   return {
