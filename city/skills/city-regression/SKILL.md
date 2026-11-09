@@ -62,3 +62,9 @@ Only compare `town.js` and `world.js`; do not modify citizen logic. A matched bl
 - The current `/v1/forecast` endpoint is model-derived weather; distinguish estimated current conditions from a physical station observation in all public labels and diagnostics.
 - Assert requested coordinates, timezone, provider attribution, payload timestamp and stale/offline behavior in a deterministic city-only probe before a runtime change.
 - Weather coordinate fixes must not affect city roads, author/citizen clocks or publisher logic. No runtime release without Node, visual and pinned-source gates.
+
+## MAYOR-024: implemented freshness semantics (audit, not a new guarantee)
+- The current module accepts a response timestamp within **90 minutes** of `now()` at parse time, then `snapshot()` exposes cached data only while both fetch age is **<45 minutes** and provider timestamp age is **<100 minutes**. Refresh is due every **15 minutes**, with a **75-second** retry after failure. These are current code facts, not verified production service-level objectives.
+- The earlier MAYOR-019 **30-minute** cutoff is a proposed stricter acceptance criterion, **not** current behavior. Do not report it as implemented. Changing it requires a separate runtime task, deterministic boundary tests, and verified CI/browser gates.
+- The `status: "live"` string currently means *fresh-enough cached model data*, not a direct station observation or successful live network request at the instant of display. Keep UI attribution explicit.
+- Boundary test backlog: parse at 89/90/91 minutes, cached fetch at 44/45 minutes, source at 99/100 minutes, failure retry at 74/75 seconds, and Tehran midnight rollover. No assertion passes until actually executed.
