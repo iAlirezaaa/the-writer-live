@@ -183,3 +183,18 @@ Status: documentation-only. No geometry, traffic, author/publisher/citizen data,
 2. **Old-vs-new 3D prop proof gate** — reproducible 3Dviz workflow using silhouette/ground contact/material/LOD assessments, close + wide screenshot comparisons and frame-budget tests before replacing low-fidelity objects.
 
 Status: instruction changes and automation updated; geographic capture, real modeling and performance verification remain pending.
+
+
+## MAYOR-027 — Freeze current map before accurate Tehran rebuild (2026-11-09)
+- [x] Snapshot the entire private source repository at `cfdac995b6e070d472627b484c93d8fbf5f6ed2b` on `backup/writer-block-pre-tehran-rebuild-2026-11-09`.
+- [x] Snapshot the entire public deploy repository at `ececf9ffc041b1666b0425f4f1746d162b9dcf67` on the identically named backup branch, including pinned city overlays and public town snapshot.
+- [x] Add `city/backups/writer-block-pre-tehran-rebuild-2026-11-09.md` with exact Git blob checksums, recovery links and **selective, city-only** rollback instructions.
+- [x] Update `city/skills/tehran-writer-block/SKILL.md` and `city/skills/mayor-release-gate/SKILL.md` to require snapshot verification before future geometry changes.
+- [ ] Capture comparable overhead/street-level/night/day baseline visuals before the first real-world mesh replacement; none claimed by this Git backup.
+- [ ] Implement real Tehran block geometry only after verified map source and license; **no geometry edited by this backup task**.
+
+### Two ideas (MAYOR-027)
+1. Run a test-only map rollback to a temporary branch using the restricted city-file allowlist, then verify urban/traffic/citizen compatibility without affecting live production.
+2. Store a fixed camera baseline comparison set for the legacy map and each audited Tehran-block replacement, with source-attribution and frame-time notes.
+
+Backup branches preserve exact source revisions. Runtime tests and Pages redeployment were not needed for branch creation and are not claimed here.
