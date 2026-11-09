@@ -69,3 +69,8 @@ description: Safe, auditable city-only planning and private-to-live synchronizat
 - The required visual-production workflow now includes the vendored `cognition/skills/3dviz-pro-max/` for every 3D prop review/addition/reconstruction; existing Three.js builders remain authoritative. Inspect skill record, chosen recipe/asset route, real screenshot proof, bounds and runtime cost before approving object changes.
 - The only *new* surveyed/copy-exact geographic scope is the writer's block containing WGS84 anchor (35.715361987616696, 51.3642455031707). AOI boundaries must come from licensed real-world street geometry. Treat current geometry as procedural, not a 1:1 Tehran map. Do not expand world coverage or move residents outside this scoped phase.
 - Without legally reusable ground-truth street/parcel/height evidence and clearance/scene tests, release **documentation only**; never assert accurate reconstruction of the physical Tehran block. Detailed process: `city/skills/tehran-writer-block/SKILL.md`.
+
+## Pre-Tehran map-backup proof (MAYOR-027)
+- The user's current scene is saved in both GitHub repositories under `backup/writer-block-pre-tehran-rebuild-2026-11-09`; see `city/backups/writer-block-pre-tehran-rebuild-2026-11-09.md` for exact full commit SHAs and selective restore commands.
+- Confirm both backup refs and their recorded SHA before any map replacement. Never edit or delete snapshot refs, replace the canonical author/publisher history, or revert the whole repository just to restore city geometry.
+- Keep camera/lighting/street-level baseline evidence in future rebuild tasks so before/after can be compared against the saved map, and keep restore instructions pinned and public-safe.
