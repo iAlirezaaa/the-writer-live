@@ -8,6 +8,7 @@ description: Route all The Writer city/house/road changes to the canonical city-
 The source of truth for this skill is **`city/skills/city-layout-rebuild/SKILL.md`**. Read that complete file before modifying geometry, road layout, house interiors, surroundings, camera views or resident travel.
 
 Then load the relevant specialized instructions from `city/skills/`:
+- `tehran-writer-block/SKILL.md` — mandatory geographic truth and 3Dviz Pro Max object-quality process for the single writer block (WGS84 35.715361987616696, 51.3642455031707).
 - `road-parcel-access/SKILL.md` — one connected road surface, markings, plots, parking, trees and access.
 - `building-foundations/SKILL.md` — real street-level structural support and neighbour spacing.
 - `writer-home-consistency/SKILL.md` — one 6×6 stage-zero writer room, grounded walls and synced interior/exterior.
