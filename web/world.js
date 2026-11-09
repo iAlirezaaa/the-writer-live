@@ -1432,7 +1432,7 @@ function updateWriterHouse(acceptedCount){
 }
 function setWriterSceneMode(mode){
   currentWriterSceneMode=mode;
-  const outdoors=["town","cars","publisher","bookstore"].includes(mode);
+  const outdoors=["town","tehran","cars","publisher","bookstore"].includes(mode);
   writerExterior.visible=outdoors;
   writerInteriorWorldRoot.visible=!outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
@@ -1784,6 +1784,7 @@ async function loadWardrobe() {
 }
 const VIEWS = {
   town:     { pos: [41, 53, 91], target: [0, 2.0, -7] },
+  tehran:   { pos: [-30, 175, 64], target: [-30, -1.2, 35] }, // full sourced block, not fictional city grid
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
@@ -1804,23 +1805,31 @@ function setView(name) {
   closeInspect(false);
   view = name;
   setWriterSceneMode(name);
+  // Aerial geographic inspection only; other cameras retain their original contract.
+  controls.maxDistance = name === "tehran" ? 600 : 140;
+  camera.far = name === "tehran" ? 950 : 200;
+  camera.updateProjectionMatrix();
+  sky.scale.setScalar(name === "tehran" ? 5 : 1);
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
+  document.getElementById("writer-block-map-view")?.setAttribute("aria-pressed",String(name==="tehran"));
   if (name !== "follow") {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
     // Room view coordinates describe the writer's local 6x6 floor.
     // The entire live room is now grounded at STREET_Y, not above the city.
-    if (!["town","cars","publisher","bookstore"].includes(name)) {
+    if (!["town","tehran","cars","publisher","bookstore"].includes(name)) {
       camGoal.pos.y += STREET_Y;
       camGoal.target.y += STREET_Y;
     }
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
+    if (name === "tehran") camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1,1.45/Math.max(.68,camera.aspect))).add(camGoal.target);
   }
-  const names = { cars: "ماشین‌های شهر", town: "محلهٔ نویسنده", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
+  const names = { cars: "ماشین‌های شهر", town: "محلهٔ نویسنده", tehran: "نقشهٔ واقعی بلوک تهران (عرض‌ها نمایشی)", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
   $("location-label").textContent = names[name] || "اتاق نویسنده";
   observerUI?.syncView(name);
   camMoving = true;
 }
 document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+document.getElementById("writer-block-map-view")?.addEventListener("click",()=>setView("tehran"));
 document.querySelectorAll("[data-inspect]").forEach((b) => b.addEventListener("click", () => {
   const object = clickables.find((c) => c.userData.view === b.dataset.inspect);
   if (object) inspect(object);
@@ -2119,7 +2128,7 @@ function animate() {
   if (view !== "follow" && !focus && camera.position.distanceTo(camGoal.pos) < 0.02) camMoving = false;
   }
   controls.update();
-  scene.fog.near = view === "town" ? camera.position.distanceTo(controls.target) + 8 : 38;
+  scene.fog.near = (view === "town" || view === "tehran") ? camera.position.distanceTo(controls.target) + 8 : 38;
   scene.fog.far = scene.fog.near + 85;
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
