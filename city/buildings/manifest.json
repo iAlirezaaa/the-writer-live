@@ -122,7 +122,8 @@
     "mayor043": "Private direct execution against vendored Three.js: 7 groups, 25 render objects, 0 nonfinite bounds, 0 new physical colliders; full Node/legacy CI and actual browser screenshots not yet confirmed; pinned public release pending.",
     "mayor044": "Private direct Three.js scene integration PASS (34 finite-bound render objects, 9 facade meshes, 7 unchanged top-level groups, room preserved); CI/Pages and real visual renders still unverified.",
     "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches.",
-    "mayor047": "Vendored Three.js full source-only assembly PASS: 9 groups and 40 rendered objects with finite bounds, 6 OSM way subranges, 5 shared source junctions, no traffic changes; Node/legacy Pages CI and screenshots not yet confirmed."
+    "mayor047": "Vendored Three.js full source-only assembly PASS: 9 groups and 40 rendered objects with finite bounds, 6 OSM way subranges, 5 shared source junctions, no traffic changes; Node/legacy Pages CI and screenshots not yet confirmed.",
+    "mayor048": "2026-11-09: standalone real Three.js corridor assembly PASS: opposing OSM 1232461345 source segment 3..6, 80 road-band + 90 schematic stripe triangles, five corridor renderable meshes, finite bounds. CI/Pages unverified pending run."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
@@ -216,6 +217,27 @@
     "physicalCollider": false,
     "writerRoomThirdFloorPreserved": true,
     "existingCitizenPathsModified": false,
-    "visualScreenshotCaptured": false
+    "visualScreenshotCaptured": false,
+    "additionalOpposingPrimaryOSM": {
+      "wayId": 1232461345,
+      "wayFragmentSourceIndices": [
+        3,
+        6
+      ],
+      "taggedLanes": 4,
+      "oneway": "yes",
+      "taggedMaxspeedKmh": 50,
+      "taggedSidewalk": "right",
+      "capturedAt": "2026-11-09T09:22:58.743Z",
+      "license": "ODbL-1.0",
+      "sourceCoordinatesKept": true,
+      "widthMetersMeasured": false,
+      "dashedLanePaintMeasured": false,
+      "renderedGeometry": "single batched road mesh + one non-colliding schematic lane-stripe mesh",
+      "originalTrafficRoutesModified": false,
+      "writerApartmentMovedOrRemoved": false,
+      "publicReleaseVerified": false
+    },
+    "totalDistinctSourceWayCount": 7
   }
 }
