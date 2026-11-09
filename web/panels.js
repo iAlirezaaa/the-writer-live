@@ -24,6 +24,127 @@ function meter(label, v) {
   const box = document.createElement("div"); box.append(row, bar);
   return box;
 }
+const LAYER_FA = { mind: "ذهن", knowledge: "دانش", works: "آثار" };
+function layerCard(key, layer, openLayers) {
+  const d = document.createElement("details");
+  d.className = `mind-layer mind-layer-${key}`;
+  d.open = openLayers.has(key);
+  d.addEventListener("toggle", () => {
+    if (d.open) openLayers.add(key); else openLayers.delete(key);
+  });
+  const summary = document.createElement("summary");
+  const title = document.createElement("strong"); title.textContent = LAYER_FA[key];
+  const count = document.createElement("span");
+  count.className = "mind-layer-count";
+  count.textContent = `${Number(layer.count || 0).toLocaleString("fa-IR")} مورد`;
+  summary.append(title, count); d.append(summary);
+
+  const stats = document.createElement("div"); stats.className = "mind-stats";
+  const trend = Number(layer.trend) || 0;
+  const values = key === "works"
+    ? [["پذیرفته", layer.accepted], ["ردشده", layer.rejected], ["واژهٔ پذیرفته", layer.words]]
+    : [[trend >= 0 ? "اثر ورودی" : "اثر خروجی", `${trend > 0 ? "+" : ""}${Math.round(trend * 100).toLocaleString("fa-IR")}٪`]];
+  for (const [label, value] of values) {
+    const cell = document.createElement("div"); cell.className = "mind-stat";
+    const name = document.createElement("span"); name.textContent = label;
+    const number = document.createElement("strong");
+    number.textContent = value == null ? "—" : typeof value === "number" ? value.toLocaleString("fa-IR") : String(value);
+    cell.append(name, number); stats.append(cell);
+  }
+  d.append(stats);
+
+  const list = document.createElement("ul"); list.className = "mind-items";
+  const items = Array.isArray(layer.items) ? layer.items : [];
+  for (const row of items) {
+    const li = document.createElement("li");
+    const label = document.createElement("strong"); label.textContent = String(row.label || "بدون عنوان");
+    const detail = document.createElement("span"); detail.textContent = String(row.detail || "");
+    li.append(label, detail);
+    if (row.time) { const time = document.createElement("time"); time.textContent = String(row.time).replace("T", " ").slice(0, 16); li.append(time); }
+    list.append(li);
+  }
+  if (!items.length) {
+    const empty = document.createElement("li"); empty.className = "mind-empty";
+    empty.textContent = key === "mind" ? "هنوز باوری یا پرسش بازی ثبت نشده." : key === "knowledge" ? "هنوز منبع دانشی ثبت نشده." : "هنوز اثری روی قفسه نیست.";
+    list.append(empty);
+  }
+  d.append(list);
+  return d;
+}
+const EVIDENCE_FA = { voice: "ادعای ذهن", ratio: "سهم بندهای گفت‌وگو", paragraphs: "تعداد بندهای بررسی‌شده",
+  skill: "مهارت", lessons: "دفعات یادگیری", strength: "قدرت مهارت", sources: "منابع دانش", accepted: "آثار پذیرفته" };
+function renderMind(data, host, openLayers) {
+  host.replaceChildren();
+  const summary = document.createElement("p"); summary.className = "mind-summary";
+  summary.textContent = data.summary || "سه لایه از منبع‌های واقعی ذهن، دانش و نوشته‌ها خوانده می‌شوند.";
+  const controls = document.createElement("div"); controls.className = "mind-controls";
+  const stamp = document.createElement("time"); stamp.className = "mind-updated";
+  stamp.textContent = data.snapshot_at ? `آخرین بررسی: ${String(data.snapshot_at).replace("T", " ").slice(0, 16)}` : "زمان بررسی در دسترس نیست";
+  const refresh = document.createElement("button"); refresh.type = "button"; refresh.textContent = "بازخوانی سه لایه";
+  refresh.addEventListener("click", () => loadMind(true));
+  controls.append(stamp, refresh); host.append(summary, controls);
+
+  const grid = document.createElement("div"); grid.className = "mind-grid";
+  const layers = data.layers || {};
+  for (const key of ["mind", "knowledge", "works"]) grid.append(layerCard(key, layers[key] || {}, openLayers));
+  host.append(grid);
+
+  const contradictions = Array.isArray(data.contradictions) ? data.contradictions : [];
+  const issues = document.createElement("details"); issues.className = "mind-relations"; issues.open = contradictions.length > 0;
+  const issueHead = document.createElement("summary"); issueHead.textContent = `ناهماهنگی‌های دیده‌شده (${contradictions.length.toLocaleString("fa-IR")})`;
+  issues.append(issueHead);
+  if (!contradictions.length) {
+    const ok = document.createElement("p"); ok.className = "small"; ok.textContent = "فعلاً تناقضی میان آنچه ذهن می‌گوید، آنچه آموخته و آنچه نوشته پیدا نشده."; issues.append(ok);
+  } else for (const row of contradictions) {
+    const article = document.createElement("article"); article.className = "mind-issue";
+    const text = document.createElement("p"); text.textContent = row.what || "ناهماهنگی بدون توضیح";
+    const pair = document.createElement("span"); pair.className = "mind-layer-count";
+    pair.textContent = `${row.pair || "سه لایه"} · شدت ${Math.round((Number(row.severity) || 0) * 100).toLocaleString("fa-IR")}٪`;
+    article.append(text, pair);
+    const evidence = row.evidence && typeof row.evidence === "object" ? Object.entries(row.evidence) : [];
+    if (evidence.length) {
+      const more = document.createElement("details");
+      const moreTitle = document.createElement("summary"); moreTitle.textContent = "دیدن شواهد"; more.append(moreTitle);
+      const evidenceList = document.createElement("ul"); evidenceList.className = "mind-evidence";
+      for (const [key, value] of evidence) {
+        const li = document.createElement("li"); li.textContent = `${EVIDENCE_FA[key] || key}: ${String(value)}`; evidenceList.append(li);
+      }
+      more.append(evidenceList); article.append(more);
+    }
+    issues.append(article);
+  }
+  host.append(issues);
+
+  const influences = Array.isArray(data.influences) ? data.influences : [];
+  const influencePanel = document.createElement("details"); influencePanel.className = "mind-relations";
+  const influenceHead = document.createElement("summary"); influenceHead.textContent = `اثرگذاری بین لایه‌ها (${influences.length.toLocaleString("fa-IR")})`;
+  influencePanel.append(influenceHead);
+  const influenceList = document.createElement("ul"); influenceList.className = "mind-items mind-influences";
+  for (const row of influences) {
+    const li = document.createElement("li");
+    const direction = document.createElement("strong");
+    direction.textContent = `از ${LAYER_FA[row.from] || row.from} به ${LAYER_FA[row.to] || row.to}`;
+    const what = document.createElement("span"); what.textContent = row.what || "اثر ثبت‌شده";
+    li.append(direction, what);
+    if (row.time) { const time = document.createElement("time"); time.textContent = String(row.time).replace("T", " ").slice(0, 16); li.append(time); }
+    influenceList.append(li);
+  }
+  if (!influences.length) { const empty = document.createElement("li"); empty.className = "mind-empty"; empty.textContent = "هنوز اثری بین لایه‌ها ثبت نشده."; influenceList.append(empty); }
+  influencePanel.append(influenceList); host.append(influencePanel);
+}
+let mindOpenLayers = new Set(["mind", "knowledge", "works"]);
+let mindLoading = false;
+async function loadMind(manual = false) {
+  const host = H?.$("mind-box"); if (!host || mindLoading) return;
+  mindLoading = true;
+  const oldButton = host.querySelector(".mind-controls button");
+  if (oldButton) { oldButton.disabled = true; oldButton.textContent = "در حال بررسی…"; }
+  try { renderMind(await H.getJSON("/api/mind"), host, mindOpenLayers); }
+  catch {
+    if (!host.childElementCount) { const message = para("دادهٔ سه لایه دریافت نشد؛ اتصال را بررسی و دوباره تلاش کنید.", "warn small"); host.append(message); }
+    else if (manual) H.toast?.("بازخوانی سه لایه ناموفق بود؛ دادهٔ قبلی حفظ شد.");
+  } finally { mindLoading = false; }
+}
 async function section(id, url, build) {
   const host = H.$(id);
   if (!host) return null;
@@ -85,15 +206,7 @@ async function loadSelf() {
     out.push(para(`نسخه‌ها: ${(d.stats || {}).versions ?? vs.length}`));
     return out;
   });
-  await section("mind-box", "/api/mind", (d) => {
-    const L = d.layers || {};
-    return [para("ذهن، دانش و آثار یکی نیستند؛ هر سه یکدیگر را هل می‌دهند."),
-      H.item(`ذهن — ${(L.mind || {}).count ?? 0}`, ((L.mind || {}).items || []).slice(0, 3).join(" · ")),
-      H.item(`دانش — ${(L.knowledge || {}).count ?? 0}`, ((L.knowledge || {}).items || []).slice(0, 3).join(" · ")),
-      H.item(`آثار — ${(L.works || {}).accepted ?? 0} پذیرفته`, `${(L.works || {}).count ?? 0} نوشته`),
-      heading("تناقض‌هایی که خودش دیده"),
-      rows((d.contradictions || []).slice(0, 6).map((c) => [c.what, c.pair]), "هیچ تناقضی ثبت نشده.")];
-  });
+  await loadMind();
   return p;
 }
 
@@ -294,6 +407,6 @@ async function loadCare() {
 
 export function initPanels(helpers) {
   H = helpers;
-  return { loadSelf, loadInner, loadPublish, loadCare,
+  return { loadSelf, loadInner, loadPublish, loadCare, loadMind,
     async loadAll() { await Promise.allSettled([loadSelf(), loadInner(), loadPublish(), loadCare()]); } };
 }
