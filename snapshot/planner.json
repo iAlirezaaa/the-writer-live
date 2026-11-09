@@ -67,7 +67,7 @@
       "label": "استراحت",
       "next_retry_at": null,
       "start": "2026-11-09T11:25:22",
-      "status": "planned",
+      "status": "done",
       "task": "rest"
     },
     {
@@ -261,16 +261,7 @@
       "task": "nap"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-09T12:05:22",
-    "id": "202611091100",
-    "label": "استراحت",
-    "next_retry_at": null,
-    "start": "2026-11-09T11:25:22",
-    "status": "planned",
-    "task": "rest"
-  },
+  "current": null,
   "day": "2026-11-09",
   "next": {
     "attempts": null,
