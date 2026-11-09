@@ -47,7 +47,7 @@
       "label": "مطالعهٔ متن کلاسیک فارسی",
       "next_retry_at": null,
       "start": "2026-11-09T09:40",
-      "status": "planned",
+      "status": "done",
       "task": "persian_reading"
     },
     {
@@ -261,16 +261,7 @@
       "task": "nap"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-09T10:20",
-    "id": "202611090940",
-    "label": "مطالعهٔ متن کلاسیک فارسی",
-    "next_retry_at": null,
-    "start": "2026-11-09T09:40",
-    "status": "planned",
-    "task": "persian_reading"
-  },
+  "current": null,
   "day": "2026-11-09",
   "next": {
     "attempts": null,
