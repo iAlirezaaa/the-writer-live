@@ -30,7 +30,7 @@
       "sourceId": "3d7b8239-b1e0-48bc-8868-ae4a4d392586",
       "areaSquareMeters": 965.73,
       "geometryTier": "T1-plan-proxy",
-      "visualStatus": "individual-geolocated-solid-mesh-added; public CI pending",
+      "visualStatus": "built-individual-3d-map-plan; public Node Three.js + Pages success",
       "heightMetersSource": null,
       "heightMetersDisplayProxy": 6,
       "writerRoomIntersect": false,
@@ -41,7 +41,7 @@
       "actualHeightKnown": false,
       "collisionsChanged": false,
       "writerRoomPreserved": true,
-      "qualityLimitation": "One Overture ML-derived roofprint may aggregate multiple real buildings; model height and flat cap are symbolic"
+      "qualityLimitation": "Roofprint six source vertices preserved; unknown height/floors/roof/facade/entrance; Overture ML source may merge adjacent real buildings"
     },
     {
       "sourceId": "75edb751-8810-4f84-97b5-a53b58dbbf03",
@@ -78,10 +78,15 @@
   },
   "validation": {
     "jsSourceAreaCheck": "pass",
-    "nodeThreeJsCi": "pending",
-    "publicPagesDeploy": "pending",
+    "nodeThreeJsCi": "success",
+    "publicPagesDeploy": "success",
+    "publicCIURL": "https://github.com/iAlirezaaa/the-writer-live/actions/runs/42626660016",
+    "verifiedPublicCommit": "b99ac761b892ffc9ebcfb2c4296659f7aa0aa0a2",
     "aerialScreenshotComparison": "not performed",
     "verifiedHeight": false,
-    "roomIntegrityExpected": true
+    "roomIntegrityExpected": true,
+    "writerHouseConsistency": "success",
+    "traffic": "success",
+    "district": "success"
   }
 }

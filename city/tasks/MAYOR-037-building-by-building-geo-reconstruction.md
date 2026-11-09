@@ -1,6 +1,6 @@
 # MAYOR-037 — Geographically faithful Tehran building-by-building reconstruction
 Date: 2026-11-09
-Status: MODEL CREATED AND MIRRORED TO PUBLIC SOURCE; separate full Node/Three.js CI and Pages deployment verification pending.
+Status: REAL NODE THREE.JS CI + PUBLIC GITHUB PAGES DEPLOYMENT SUCCESS; real browser/aerial screenshot comparison still pending.
 
 ## New top-level project objective (user directive)
 Build a source-backed **digital twin of the real Tehran neighborhood**, one real map footprint at a time, making aerial topology, geometry, orientation and building placement match licensed geographic mapping as closely as the available evidence permits. This is **not** another city inspired by Tehran. Present scope remains the single OSM writer block; do not expand without separate explicit area authorization. Writer's room is never deleted or silently replaced; its local placement may move only with verified access/continuity.
@@ -35,3 +35,10 @@ Build a source-backed **digital twin of the real Tehran neighborhood**, one real
 - First V8 JS constructor + source validation: 6 source vertices, area 965.7373 m², all vertices inside the OSM writer block, writer-room exclusion true. This is NOT equivalent to completed GitHub Actions/real browser screenshot.
 - New real Three.js Node probe: `tests/tehran_writer_block_building_01_probe.mjs`. Updated existing `tests/tehran_writer_block_buildings_probe.mjs` and `tests/city_districts_probe.mjs`. Public Pages workflow pins `.github/city-assets/writer-block-building-01.js` and runs the new probe.
 - At reporting time public GitHub Actions run https://github.com/iAlirezaaa/the-writer-live/actions/runs/42625877331 was pending; do not report success until complete. Screenshots, side-by-side aerial image comparison, live-site and device FPS remain unverified.
+
+## Verified public release
+- Actual GitHub Pages run https://github.com/iAlirezaaa/the-writer-live/actions/runs/42626660016 at public SHA `b99ac761b892ffc9ebcfb2c4296659f7aa0aa0a2`: **success**, including prepare/build, Pages upload and deploy.
+- `TEHRAN-BUILDING-BY-BUILDING-01-OK`: 965.7373205m², 6 sourced polygon vertices, 60 geometry vertices, 2 render objects, one symbolic 6m height, no duplicated bulk proxy and writer-room preservation.
+- `TEHRAN-REAL-BUILDING-ROOFPRINTS-OK`: four candidate map footprints, two remaining translucent bulk models, one independent model, one room-protected outline, all four source heights unknown.
+- `WRITER-HOME-CONSISTENCY-OK`, `CITY-DISTRICTS-OK`, `HOUSING-ACCESS-OK`, `TOWN-SCENE-OK layout/paths/wiring`, `CITY-TRAFFIC-OK` passed. No physical footprint/traffic migration was performed.
+- **NOT verified:** actual browser screenshot, exact real building height/roof/facade or photo-to-render registration; cannot claim faithful 1:1 vertical/visual replica.
