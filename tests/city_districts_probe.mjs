@@ -18,15 +18,21 @@ const growthAudit=growth.auditCityGrowth(urban.ROAD_SEGMENTS);
 assert.equal(growthAudit.ok,true,JSON.stringify(growthAudit));
 assert.ok(growth.CITY_HOUSING_CAPACITY>=400);
 const previewSource=read("web/writer-block-road-preview.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
-const preview=new Function("geoToCityLocal",previewSource+";return {buildWriterBlockRoadPreview};")(urban.geoToCityLocal);
+const preview=new Function("geoToCityLocal",previewSource+
+  ";return {buildWriterBlockRoadPreview,writerBlockLocalRing,writerBlockContainsLocalPoint};")(urban.geoToCityLocal);
+const terrainDataSource=read("web/writer-block-terrain-data.js").replace(/^export /gm,"");
+const terrainData=new Function(terrainDataSource+";return WRITER_BLOCK_DEM_SOURCE;")();
+const terrainSource=read("web/writer-block-terrain.js").replace(/^import [\s\S]*?;$/gm,"").replace(/^export /gm,"");
+const terrain=new Function("writerBlockLocalRing","writerBlockContainsLocalPoint","WRITER_BLOCK_DEM_SOURCE",terrainSource+
+  ";return {buildWriterBlockTerrain};")(preview.writerBlockLocalRing,preview.writerBlockContainsLocalPoint,terrainData);
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
@@ -50,6 +56,11 @@ assert.ok(scene.getObjectByName("town"));
 const osmPreview=scene.getObjectByName("writer-block-osm-centerline-preview");
 assert.ok(osmPreview&&osmPreview.userData.cityMapEvidence.physicalCollider===false,
   "Sourced OSM ground trace must be visible without adding a physics obstacle");
+const realTerrain=scene.getObjectByName("writer-block-srtm30-topology");
+assert.ok(realTerrain&&realTerrain.userData.cityTerrainEvidence?.noPhysicalCollision,
+  "Real DEM topography overlay must remain noncolliding");
+assert.equal(scene.getObjectByName("writer-block-srtm30-relief-inspection-only")?.visible,false);
+assert.equal(scene.getObjectByName("writer-block-srtm30-contours")?.visible,true);
 const roadUnion=scene.getObjectByName("city-road-union");
 assert.ok(roadUnion&&roadUnion.isMesh,"The town lost its unified asphalt road surface");
 assert.equal(roadUnion.userData.urbanSurface.segments,urban.ROAD_SEGMENTS.length,
