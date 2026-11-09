@@ -217,3 +217,13 @@ Backup branches preserve exact source revisions. Runtime tests and Pages redeplo
 2. **Licensed asset provenance + 3Dviz proof gate** — asset catalog of verified real Tehran street fixtures, photos and geometric constraints with one-object safe replacement checks and LOD review.
 
 Status: one source-backed GIS baseline completed and archived, no premature runtime city-map publication.
+
+
+## MAYOR-030 — Visible OSM road-centerline preview (2026-11-09)
+- [x] Registered independent city task before runtime edits and checked exact frozen backup refs in both repos.
+- [x] Created one source-backed, non-colliding overlay in `web/writer-block-road-preview.js` and wired it into the existing town scene. This is **visual geography**, not surveyed roadway surfaces.
+- [x] Lightweight in-process JS geometry check: source coordinates match survey polygon, area ≈12,264.69 m², writer home contained, one mesh and finite ground coordinates, existing urban plan audit still valid.
+- [ ] GitHub Actions executable test and browser street/day/night screenshots: blocked/unverified; runner did not start jobs. Do not claim website deployment or measured GPU/visual performance.
+- [ ] Public pinned-city source parity and Pages deployment: record only after attempting public sync.
+- Backlog idea A: OSM source-versus-procedural map layer switcher with license/source attribution.
+- Backlog idea B: geographic difference heatmap clipped to the writer block, showing mismatch without automatic street replacement.
