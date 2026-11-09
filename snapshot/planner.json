@@ -251,9 +251,7 @@
       "task": "rest"
     }
   ],
-  "current": null,
-  "day": "2026-11-09",
-  "next": {
+  "current": {
     "attempts": null,
     "end": "2026-11-09T12:45:22",
     "id": "202611091140",
@@ -262,5 +260,16 @@
     "start": "2026-11-09T12:05:22",
     "status": "planned",
     "task": "research"
+  },
+  "day": "2026-11-09",
+  "next": {
+    "attempts": null,
+    "end": "2026-11-09T13:25",
+    "id": "202611091245",
+    "label": "نوشتن داستان",
+    "next_retry_at": null,
+    "start": "2026-11-09T12:45",
+    "status": "planned",
+    "task": "write"
   }
 }
