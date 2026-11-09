@@ -85,7 +85,7 @@ export function writerBlockBuildingPlan(data=WRITER_BLOCK_BUILDING_SOURCE){
     };
   });
 }
-export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
+export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3,independentBuilding03=false}={}){
   if(!Number.isFinite(streetY))throw new TypeError("Invalid ground datum");
   const plan=writerBlockBuildingPlan();
   const masses=[],outlines=[],modeledIds=[],roomProtectedIds=[],individualIds=[];
@@ -99,7 +99,7 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
       if(building.protectedWriterRoom)continue; // do not cover or replace the room
       // Retire this exact footprint from the old translucent bulk-ghost layer.
       // MAYOR-037 now draws it as its own georeferenced, opaque building shell.
-      if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID||building.id===INDIVIDUAL_BUILDING_03_ID)continue;
+      if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID||(independentBuilding03&&building.id===INDIVIDUAL_BUILDING_03_ID))continue;
       const shape=new THREE.Shape();
       shape.moveTo(ring[0][0],-ring[0][1]);
       for(let i=1;i<ring.length-1;i++)shape.lineTo(ring[i][0],-ring[i][1]);
@@ -122,7 +122,7 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
       }
       geometry.dispose();
     }
-    if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID||building.id===INDIVIDUAL_BUILDING_03_ID)individualIds.push(building.id);
+    if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID||(independentBuilding03&&building.id===INDIVIDUAL_BUILDING_03_ID))individualIds.push(building.id);
     else if(!building.protectedWriterRoom)modeledIds.push(building.id);
   }
   const group=new THREE.Group();
