@@ -63,7 +63,7 @@ const fakeCanvas=(w,h,draw)=>{
   draw(g,w,h);
   return new THREE.Texture({width:w,height:h});
 };
-const city=buildTown({THREE,scene,clickable,canvasTex:fakeCanvas});
+const city=buildTown({THREE,scene,clickable,canvasTex:fakeCanvas,mapMode:"legacy"});
 scene.updateMatrixWorld(true);
 assert.ok(scene.getObjectByName("town"));
 const osmPreview=scene.getObjectByName("writer-block-osm-centerline-preview");
