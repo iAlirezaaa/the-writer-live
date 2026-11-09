@@ -119,7 +119,8 @@
     "mayor039RealPhotos": "not captured",
     "mayor039ActualFloorsAndStores": "unverified; source has no building:levels or shop nodes within writer block",
     "mayor041": "Private geometry and targeted probe authored; execution and screenshot comparison not yet verified; public mirror gated on tests",
-    "mayor043": "Private direct execution against vendored Three.js: 7 groups, 25 render objects, 0 nonfinite bounds, 0 new physical colliders; full Node/legacy CI and actual browser screenshots not yet confirmed; pinned public release pending."
+    "mayor043": "Private direct execution against vendored Three.js: 7 groups, 25 render objects, 0 nonfinite bounds, 0 new physical colliders; full Node/legacy CI and actual browser screenshots not yet confirmed; pinned public release pending.",
+    "mayor044": "Private direct Three.js scene integration PASS (34 finite-bound render objects, 9 facade meshes, 7 unchanged top-level groups, room preserved); CI/Pages and real visual renders still unverified."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
@@ -139,5 +140,22 @@
     "buildingHeightsEvidence": "UNKNOWN",
     "gpuBenchmarked": false,
     "dayNightScreenshotCaptured": false
+  },
+  "architecturalPreview": {
+    "source": "web/writer-block-facade-preview.js",
+    "status": "PRIVATE_THREE_SCENE_CHECKED_PUBLIC_DEPLOY_PENDING",
+    "sourceGeometryUnchanged": true,
+    "realWindowsVerified": false,
+    "realStoreysVerified": false,
+    "actualShopUnitsVerified": false,
+    "physicalCollider": false,
+    "detachable": true,
+    "instancesByMappedPolygon": {
+      "3d7b8239-b1e0-48bc-8868-ae4a4d392586": 40,
+      "3d2290d6-c533-4c11-b2c0-079f0ee2e29e": 47,
+      "76931a07-c621-4e37-9241-c41ee59d4248": 70
+    },
+    "sceneRenderObjects": 34,
+    "browserScreenshotCaptured": false
   }
 }
