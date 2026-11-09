@@ -78,7 +78,7 @@ for(let i=0;i<result.roofOutline.geometry.attributes.position.count;i++){
  assert.ok(osm.writerBlockContainsLocalPoint(p.getX(i),p.getZ(i)));
 }
 // Old merged translucent ghost must not duplicate the new physically connected shell.
-const oldGroup=new THREE.Group(),ghost=preview.buildWriterBlockBuildingMasses(THREE,oldGroup,{streetY:-3});
+const oldGroup=new THREE.Group(),ghost=preview.buildWriterBlockBuildingMasses(THREE,oldGroup,{streetY:-3,independentBuilding03:true});
 assert.equal(ghost.group.userData.citySurvey.generatedVolumeCount,0);
 assert.equal(ghost.group.userData.citySurvey.independentlyModeledCount,3);
 assert.deepEqual(ghost.group.userData.citySurvey.individuallyModeledSourceIds,["3d2290d6-c533-4c11-b2c0-079f0ee2e29e",sourceId,"76931a07-c621-4e37-9241-c41ee59d4248"]);
