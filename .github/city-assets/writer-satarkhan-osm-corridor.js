@@ -171,6 +171,13 @@ export const SATARKHAN_CORRIDOR_WAYS = Object.freeze([
     ]
   }
 ]);
+export const SATARKHAN_OPPOSING_PRIMARY=Object.freeze({
+  wayId:1232461345,name:"ستارخان",highway:"primary",oneway:"yes",
+  lanes:4,sidewalk:"right",maxspeed:"50",surface:"asphalt",
+  sourceStart:3,sourceEnd:6,localXZ:Object.freeze([[276.817,-1.588],[266.13,-15.036],[238.269,-49.942],[194.781,-100.159]]),
+  sourceCapture:"2026-11-09T09:22:58.743Z",license:"ODbL-1.0",
+  measuredWidthMeters:null,realLineMarkingsObserved:false
+});
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 export function inspectSatarkhanCorridorTopology(ways=SATARKHAN_CORRIDOR_WAYS){
   const byId=new Map(ways.map(w=>[w.wayId,w]));
@@ -208,7 +215,26 @@ export function buildSatarkhanEastRoadCorridor(THREE,parent,{
       c=[p[0]-nx,y,p[1]-nz],d=[q[0]-nx,y,q[1]-nz];
     list.push(...a,...c,...b,...c,...d,...b);
   };
-  const ground=[],residential=[],main=[];
+  const ground=[],residential=[],main=[],primaryLaneSketch=[];
+  // One *additional sourced carriageway* alongside existing way 207742970;
+  // no invented segment endpoints and NO measured road / lane widths.
+  // lanes=4 is source-tagged, whereas the 10.8m visual ribbon is illustrative.
+  const opposing=SATARKHAN_OPPOSING_PRIMARY;
+  const derivedWay=opposing.localXZ;
+  const laneSpan=10.8,laneUnit=laneSpan/opposing.lanes;
+  const addDashedLines=(start,end)=>{
+    const dx=end[0]-start[0],dz=end[1]-start[1],len=Math.hypot(dx,dz);
+    if(!(len>.01))throw new Error("Degenerate Sattarkhan opposing OSM edge");
+    const nx=-dz/len,nz=dx/len,ux=dx/len,uz=dz/len;
+    for(const laneOfs of [-laneUnit,0,laneUnit]){
+      for(let t=2.4;t<len-1.2;t+=8.8){
+        const run=Math.min(3.0,len-t-1.2);if(run<=.2)break;
+        const a=[start[0]+ux*t+nx*laneOfs,start[1]+uz*t+nz*laneOfs];
+        const b=[start[0]+ux*(t+run)+nx*laneOfs,start[1]+uz*(t+run)+nz*laneOfs];
+        addStrip(primaryLaneSketch,a,b,.09,streetY+.165);
+      }
+    }
+  };
   for(const way of SATARKHAN_CORRIDOR_WAYS){
     if(way.localXZ.length<2||!["residential","primary"].includes(way.highway))
       throw new Error("Road-way source type needs review");
@@ -219,6 +245,12 @@ export function buildSatarkhanEastRoadCorridor(THREE,parent,{
       addStrip(way.highway==="primary"?main:residential,
         a,b,width,streetY+.125);
     }
+  }
+  for(let j=0;j<derivedWay.length-1;j++){
+    const start=derivedWay[j],end=derivedWay[j+1];
+    addStrip(ground,start,end,laneSpan+1.0,streetY+.075);
+    addStrip(main,start,end,laneSpan,streetY+.125);
+    addDashedLines(start,end);
   }
   const materialTriples=[
     {data:ground,materialIndex:0},{data:residential,materialIndex:1},
@@ -251,6 +283,21 @@ export function buildSatarkhanEastRoadCorridor(THREE,parent,{
     widthIsActualEvidence:false,provenMainRoadConnections:proof.joints,
     sourceWayIds:SATARKHAN_CORRIDOR_WAYS.map(w=>w.wayId)};
   group.add(mesh);
+  const stripeGeo=new THREE.BufferGeometry();
+  stripeGeo.setAttribute("position",new THREE.Float32BufferAttribute(primaryLaneSketch,3));
+  stripeGeo.computeVertexNormals();stripeGeo.computeBoundingBox();
+  const laneSketch=new THREE.Mesh(stripeGeo,new THREE.MeshBasicMaterial({
+    color:0xdddcd1,side:THREE.DoubleSide,transparent:true,opacity:.65,
+    depthWrite:false
+  }));
+  laneSketch.name="satarkhan-osm-4-lanes-artistic-markings";
+  laneSketch.castShadow=false;laneSketch.receiveShadow=false;laneSketch.renderOrder=5;
+  laneSketch.userData.cityCorridorEvidence={
+    sourceWayId:opposing.wayId,actualLaneCountTagged:opposing.lanes,
+    sourceCenterlineVerified:true,laneSpacingSurveyed:false,
+    laneMarkingsSurveyed:false,physicalCollider:false,citizenPathsChanged:false
+  };
+  group.add(laneSketch);
   // A few clearly graphic street-map labels, not municipal street signs.
   if(typeof canvasTex==="function"){
     for(const way of SATARKHAN_CORRIDOR_WAYS){
@@ -281,6 +328,10 @@ export function buildSatarkhanEastRoadCorridor(THREE,parent,{
     ...SATARKHAN_CORRIDOR_SOURCE,physicalCollider:false,
     visualWidthGeometryAuthored:true,sourceWayIds:SATARKHAN_CORRIDOR_WAYS.map(w=>w.wayId),
     streetCount:SATARKHAN_CORRIDOR_WAYS.length,junctionsVerified:proof.joints,
+    oppositePrimaryWayId:opposing.wayId,oppositePrimarySourceLanes:opposing.lanes,
+    totalDistinctSourcedWayIds:7,oppositeCarriagewayModeled:true,
+    primaryLaneWidthSurveyed:false,actualPaintPositionsSurveyed:false,
+    protectedFloor3Unchanged:true,
     streetNames:SATARKHAN_CORRIDOR_WAYS.map(w=>w.name),
     userApprovedExpansion:true,roomThirdFloorPreserved:true,
     mainStreetReached:true,parkReached:false
