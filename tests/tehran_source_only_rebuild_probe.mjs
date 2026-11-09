@@ -57,10 +57,11 @@ assert.equal(town.group.userData.cityBuild.retainedLegacyCityMeshes,0);
 assert.equal(town.group.userData.cityBuild.imaginaryMountainOrForestMeshes,0);
 assert.equal(town.group.userData.cityBuild.realBuildingHeightsMeasured,false);
 assert.equal(town.group.userData.cityBuild.authorRoomProtected,true);
-assert.equal(town.group.children.length,8,"Six source-backed groups plus one explicitly interpretive, non-colliding streetscape");
+assert.equal(town.group.children.length,9,"Eight sourced/proxy groups and one documented OSM-to-main-street expansion");
 assert.deepEqual(town.group.children.map(c=>c.name),[
   "writer-block-source-aligned-streets",
   "writer-block-osm-road-regulation-overlay",
+  "writer-satarkhan-east-osm-road-corridor",
   "writer-block-srtm30-topology",
   "writer-block-overture-building-reconstruction",
   "writer-block-building-01-georeferenced",
@@ -86,6 +87,13 @@ assert.equal(regulation.userData.cityRoadEvidence.taggedOneWay,2);
 assert.equal(regulation.userData.cityRoadEvidence.taggedBidirectional,1);
 assert.equal(regulation.userData.cityRoadEvidence.unknownOneWay,1);
 assert.equal(regulation.userData.cityRoadEvidence.physicalCollider,false);
+const corridor=town.group.getObjectByName("writer-satarkhan-east-osm-road-corridor");
+assert.ok(corridor,"Verified real OSM alleys must reach Sattarkhan main");
+assert.equal(corridor.userData.cityCorridorEvidence.mainStreetReached,true);
+assert.equal(corridor.userData.cityCorridorEvidence.parkReached,false);
+assert.equal(corridor.userData.cityCorridorEvidence.physicalCollider,false);
+assert.equal(corridor.userData.cityCorridorEvidence.streetCount,6);
+assert.equal(corridor.userData.cityCorridorEvidence.realRoadWidthsMeasured,false);
 assert.equal(regulation.userData.cityRoadEvidence.paintedSignLocationsSurveyed,false);
 assert.equal(clicks.length,0,"No fake old-city clickable objects should survive");
 const context=town.group.getObjectByName("writer-block-illustrative-streetscape");
@@ -134,7 +142,7 @@ assert.ok(terrain);
 assert.equal(terrain.getObjectByName("writer-block-srtm30-relief-inspection-only").visible,false);
 const geometry=[];
 town.group.traverse(o=>{if(o.isMesh||o.isLineSegments)geometry.push(o);});
-assert.ok(geometry.length>=15 && geometry.length<40,
+assert.ok(geometry.length>=18 && geometry.length<48,
   "Build must be bounded by sourced geometry, not hundreds of old meshes");
 for(const obj of geometry){
   const bb=new THREE.Box3().setFromObject(obj);
