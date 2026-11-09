@@ -35,3 +35,10 @@ Actually executed: direct in-isolate execution of **the current GitHub JavaScrip
 
 This direct geometry-planner check is NOT a full Three.js render, collision sweep, legal parking certification, browser capture or CI. No photo/screenshot captured. No citizen route, room, actual street width, height, parking location, collision shape or published geometry outside this display-only orientation changed. Public Actions and pinned sync to be recorded separately.
 
+
+## Public synchronization and CI result (verified)
+- All six distinct private sources were mirrored to public in one atomic public commit, including three **paired pinned deploy files**; total nine public paths. Private/public Git blob SHA parity was verified for `web/writer-block-illustrative-context.js`, `web/town-tehran-rebuild.js`, `web/town.js`, city TODO, city skill and the source-only test. Pinned town.js, town-tehran-rebuild.js and illustrative-context.js use the same blobs as their respective web sources.
+- Public release commit: `1334602ab45afc367ddcebaa67b75916b0ef2691` at https://github.com/iAlirezaaa/the-writer-live/commit/1334602ab45afc367ddcebaa67b75916b0ef2691
+- **REAL GitHub Actions deploy PASS:** https://github.com/iAlirezaaa/the-writer-live/actions/runs/42700735582, head SHA above; `actions/deploy-pages@v4` completed successfully.
+- Verified CI log output on that SHA: `TEHRAN-SOURCE-ONLY-REBUILD-OK`, `ROAD-TOPOLOGY-OK`, `CITY-DISTRICTS-OK`, `TOWN-SCENE-OK layout`, `TOWN-SCENE-OK paths`, `TOWN-SCENE-OK wiring` and `CITY-TRAFFIC-OK` (crossing minimum clearance 22.835 in the legacy scenario). Source-only mode remains the public default. This proves automated builds and specified regressions, NOT measured curb widths or true urban traffic certification.
+- Screenshots, visual day/night review, licensed measured local curb/parking/sidewalk data, true house count and real-world building heights: **NOT VERIFIED**. Do not treat nine illustrated parked-car meshes as actual parking capacity.
