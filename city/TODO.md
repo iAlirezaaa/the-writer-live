@@ -141,3 +141,28 @@ Status: documentation-only; no runtime files, roads, citizen paths or author/pub
 2. **Model-versus-station provenance switch**: show weather source type, sample location, observation/model timestamp and freshness in a compact city-only diagnostics badge.
 
 Status: documentation-only; no runtime files changed, no executable tests run, no deployment claimed.
+
+## MAYOR-022 — stale weather regression assertion (2026-11-09)
+- [x] Register independent `city/tasks/MAYOR-022-weather-probe-anchor-regression.md` before code edits.
+- [x] Replace outdated latitude 35.6892 assertion in private `tests/tehran_environment_probe.mjs` with exact home latitude/longitude and `Asia/Tehran` checks.
+- [x] Mirror only the test to public `tests/tehran_environment_probe.mjs`.
+- [ ] Execute Node probes and browser/Pages verification; not confirmed in this run.
+
+### Two backlog ideas (MAYOR-022)
+1. **Shared anchor test import:** read `TEHRAN_GEO_ORIGIN` directly from the city plan in the probe, eliminating duplicated numeric coordinates in test assertions.
+2. **Weather source parity CI:** block city-only releases when the public pinned environment source differs from the private source or when a test references obsolete Tehran-center coordinates.
+
+Status: test-only source correction; no runtime assets, city geometry, traffic, citizens, writer/publisher state or live deployment changed. Node/browser test execution NOT VERIFIED.
+
+## MAYOR-024 — weather freshness contract reconciliation (2026-11-09)
+- [x] Register independent task before skill edits: `city/tasks/MAYOR-024-weather-freshness-contract.md`.
+- [x] Read current environment module and probe: parse rejects timestamp difference >90 min; snapshot cache needs fetch age <45 min and source age <100 min; poll interval 15 min; failure retry 75 sec.
+- [x] Correct regression guidance: earlier 30-min freshness limit is aspirational, not implemented. Provider `current` is model-derived, not station-observed.
+- [ ] Run deterministic boundary tests, live API fetch, Tehran night/day browser snapshots and full urban/road/scene probes: NOT RUN.
+- [ ] Verify public documentation parity and fresh Pages deployment separately; no runtime release in this iteration.
+
+### Two backlog ideas (MAYOR-024)
+1. **Forecast freshness boundary harness**: deterministic fake-clock cases for 44/45-min fetch age, 89/90/91-min parse age, 99/100-min provider age, and 74/75-second retry, without external network calls.
+2. **Forecast attribution micro-panel**: show model-estimate label, provider timestamp, cache age and unavailable status, without claiming station observations or altering writer/citizen clocks.
+
+Status: documentation-only. No geometry, traffic, author/publisher/citizen data, runtime weather source or deployment modified. Existing Node/visual acceptance tests NOT EXECUTED.
