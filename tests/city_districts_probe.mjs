@@ -278,7 +278,16 @@ assert.ok(world.includes("renderCityPlaces()"),"City guide never gets rendered")
 assert.ok(world.includes('import { buildTown, nightLighting, STREET_Y }'),"Canonical city elevation import is missing");
 assert.ok(html.includes('id="town-places"'),"City locations cannot be discovered");
 assert.ok(objects.includes("mesh.userData.placeDetails"),"3D venue click card is missing");
-assert.ok(world.includes('pos: [41, 53, 91]'),"City camera does not frame expanded layout");
+// MAYOR-059: the old imaginary-district camera must not force the REAL OSM
+// city to stay outside the visible frustum. Verify geographic coverage instead.
+const cityCamera=world.match(/town:\\s*\\{\\s*pos:\\s*\\[([^\\]]+)\\],\\s*target:\\s*\\[([^\\]]+)\\]/);
+assert.ok(cityCamera,"Default town overview camera missing");
+const coords=cityCamera.slice(1).map(group=>group.split(",").map(Number));
+const [cameraXZ,targetXZ]=coords;
+assert.ok(cameraXZ.length===3&&targetXZ.length===3&&
+  coords.flat().every(Number.isFinite)&&cameraXZ[1]>80&&cameraXZ[2]>130&&
+  targetXZ[0]>=-55&&targetXZ[0]<=0&&targetXZ[2]>=0&&targetXZ[2]<=60,
+  "City camera must show the sourced Tehran block instead of an obsolete city grid");
 assert.ok(world.includes('target: [-10, 9.6, 0]'),"Publisher camera misses the upper floor");
 const stats={
   blocks:plan.blocks,styles:plan.styles,places:plan.venues,housingCapacity:growth.CITY_HOUSING_CAPACITY,
