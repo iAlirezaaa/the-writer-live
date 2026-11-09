@@ -74,3 +74,8 @@ Read in this order:
 - Consult `city/tasks/MAYOR-031-road-centerline-evidence-audit.md` before any sidewalk fixture. The OSM candidate is road **centerline** only: curb offsets, sidewalk clear width and fixture support heights are unknown, so no physically placed prop is approved from these lines alone.
 - Require a licensed, dated reference and independent scale/position evidence for a single Tehran prop; record ground contact, walkway clearance, support joints, silhouette, material response and Three.js LOD budget before replacement.
 - This iteration did not verify recovery branch refs via GitHub file lookup (404); manifests exist in both repos. Recheck refs before visual modification. No screenshots, tests, kit implementation or deployment are claimed.
+
+## MAYOR-030/031 — Public release lessons (2026-11-09)
+- A public Pages build **first failed** because a public pinned Tehran weather module did not match approved private/public `web/`. The failure manifested as `35.6892` vs the WGS84 writer-home anchor. Always confirm pinned parity before running new feature probes.
+- A second Pages build reached `tests/city_districts_probe.mjs`, whose old `new Function` test harness strips imports. Any new city import must be injected into this harness as a real builder dependency; the standalone real-Three preview probe alone does not prove legacy harness compatibility.
+- The corrected public Pages run 42604022465 passed Three.js source geometry, roads, districts, street-level navigation, vehicle and scene wiring checks; real screenshot capture/visual accuracy remains separate and unverified. Scope stays inside the single writer-home OSM candidate face.
