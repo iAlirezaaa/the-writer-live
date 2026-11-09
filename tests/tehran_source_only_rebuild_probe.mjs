@@ -176,8 +176,11 @@ assert.ok(terrain);
 assert.equal(terrain.getObjectByName("writer-block-srtm30-relief-inspection-only").visible,false);
 const geometry=[];
 town.group.traverse(o=>{if(o.isMesh||o.isLineSegments)geometry.push(o);});
-assert.ok(geometry.length>=18 && geometry.length<48,
-  "Build must be bounded by sourced geometry, not hundreds of old meshes");
+assert.ok(geometry.length>=55 && geometry.length<85,
+  "City must have bounded sourced-envelope architecture and instanced walkers, not hundreds of old meshes");
+assert.equal(town.group.userData.cityBuild.visibleProxyUpperBuildings,3);
+assert.ok(town.group.userData.cityBuild.illustrativeWalkerCount>=12);
+assert.equal(town.group.userData.cityBuild.realBuildingHeightsMeasured,false);
 for(const obj of geometry){
   const bb=new THREE.Box3().setFromObject(obj);
   assert.ok([...bb.min,...bb.max].every(Number.isFinite),obj.name+" NaN geometry");

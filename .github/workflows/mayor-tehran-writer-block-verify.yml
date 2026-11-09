@@ -30,6 +30,7 @@ jobs:
           node tests/tehran_writer_block_building_01_probe.mjs
           node tests/tehran_writer_block_building_02_probe.mjs
           node tests/tehran_writer_block_building_03_probe.mjs
+          node --experimental-vm-modules tests/tehran_writer_block_neighborhood_life_probe.mjs
           node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs
           node tests/tehran_writer_block_streets_probe.mjs
           node tests/writer_house_consistency_probe.mjs

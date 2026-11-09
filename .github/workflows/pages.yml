@@ -42,6 +42,7 @@ jobs:
           cp .github/city-assets/writer-block-building-02.js _site/web/writer-block-building-02.js
           cp .github/city-assets/writer-block-building-03.js _site/web/writer-block-building-03.js
           cp .github/city-assets/writer-block-illustrative-context.js _site/web/writer-block-illustrative-context.js
+          cp .github/city-assets/writer-block-neighborhood-life.js _site/web/writer-block-neighborhood-life.js
           cp .github/city-assets/writer-block-facade-preview.js _site/web/writer-block-facade-preview.js
           cp .github/city-assets/writer-block-road-regulations.js _site/web/writer-block-road-regulations.js
           cp .github/city-assets/writer-apartment-third-floor.js _site/web/writer-apartment-third-floor.js
@@ -90,6 +91,7 @@ jobs:
           node --experimental-vm-modules tests/tehran_writer_block_context_probe.mjs _site
           node --experimental-vm-modules tests/tehran_writer_block_facade_probe.mjs _site
           node --experimental-vm-modules tests/tehran_writer_block_regulations_probe.mjs _site
+          node --experimental-vm-modules tests/tehran_writer_block_neighborhood_life_probe.mjs _site
           node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs _site
           node tests/urban_plan_probe.mjs _site
           node tests/road_topology_probe.mjs _site

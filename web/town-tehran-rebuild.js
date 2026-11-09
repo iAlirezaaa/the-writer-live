@@ -24,6 +24,7 @@ import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?
 import { attachIllustrativeFacades } from "./writer-block-facade-preview.js?v=writer-block-facade-illustration-20261109-v1";
 import { buildWriterBlockRoadRegulations } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
 import { buildSatarkhanEastRoadCorridor } from "./writer-satarkhan-osm-corridor.js?v=writer-satarkhan-east-osm-20261109-v3";
+import { activateWriterBlockCity } from "./writer-block-neighborhood-life.js?v=tehran-visible-block-20261110-v1";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
@@ -84,6 +85,13 @@ export function buildTehranReconstructionTown({
   // Optional-to-replace, always labeled interpretive context: no surveyed tree/parking/lamps.
   const context=buildWriterBlockContext(THREE,group,{streetY});
   const facadePreview=attachIllustrativeFacades(THREE,[building01,building02,building03],{streetY});
+  // Reversible interpretive city life: source-aligned roofprint massing and
+  // anonymous sidewalk walkers. No observed height, real crowd data or collisions.
+  const livedIn=activateWriterBlockCity(THREE,{buildings:[building01,building02,building03],context,streetY});
+  context.group.userData.cityContextEvidence.instances.animatedPedestrianProxies=livedIn.people.length;
+  group.userData.cityBuild.visibleProxyUpperBuildings=livedIn.evidence.visualEnvelopeCount;
+  group.userData.cityBuild.illustrativeWalkerCount=livedIn.evidence.walkingProxyCount;
+  group.userData.cityBuild.cityLifeTruthLevel="ILLUSTRATIVE_NOT_SURVEYED";
   if(footprintMasses.plan.length!==4||
      footprintMasses.group.userData.citySurvey.generatedVolumeCount!==0||
      footprintMasses.group.userData.citySurvey.independentlyModeledCount!==3||
@@ -112,6 +120,7 @@ export function buildTehranReconstructionTown({
       // No traffic, route, citizen, building or writer state is updated here.
       context.update(day);
       facadePreview.update(day);
+      livedIn.update(day,elapsed);
       return undefined;
     }
   };

@@ -1780,7 +1780,7 @@ async function loadWardrobe() {
   applyWardrobe(w);
 }
 const VIEWS = {
-  town:     { pos: [41, 53, 91], target: [0, 2.0, -7] },
+  town:     { pos: [-14, 104, 165], target: [-27, -1, 30] }, // show entire sourced writer block, not the former 20m imaginary village
   tehran:   { pos: [-30, 175, 64], target: [-30, -1.2, 35] }, // full sourced block, not fictional city grid
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
@@ -1794,7 +1794,9 @@ const VIEWS = {
 };
 let view = "town";
 let camGoal = { pos: new THREE.Vector3(...VIEWS.town.pos), target: new THREE.Vector3(...VIEWS.town.target) };
-camera.position.copy(camGoal.pos);controls.target.copy(camGoal.target);setWriterSceneMode("town");controls.update();
+camera.position.copy(camGoal.pos);controls.target.copy(camGoal.target);setWriterSceneMode("town");
+scene.fog.near=56;scene.fog.far=270;camera.far=500;camera.updateProjectionMatrix();
+controls.maxDistance=350;controls.update();
 let camMoving = false;
 function setView(name) {
   if (name !== "follow" && !VIEWS[name]) return;
@@ -1803,8 +1805,12 @@ function setView(name) {
   view = name;
   setWriterSceneMode(name);
   // Aerial geographic inspection only; other cameras retain their original contract.
-  controls.maxDistance = name === "tehran" ? 600 : 140;
-  camera.far = name === "tehran" ? 950 : 200;
+  controls.maxDistance = name === "tehran" ? 600 : name === "town" ? 350 : 140;
+  camera.far = name === "tehran" ? 950 : name === "town" ? 500 : 200;
+  // Only outdoor geographic views need city-scale visibility. Restore the
+  // original interior fog without touching author-room geometry or content.
+  scene.fog.near = name === "tehran" ? 95 : name === "town" ? 56 : 38;
+  scene.fog.far = name === "tehran" ? 680 : name === "town" ? 270 : 115;
   camera.updateProjectionMatrix();
   sky.scale.setScalar(name === "tehran" ? 5 : 1);
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
