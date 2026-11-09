@@ -94,6 +94,7 @@ const controlInputs = ['کتاب\u0000', '\u200fکتاب', 'کتاب\u200e', '\u
 const protectedKeyForControls = fs.existsSync(protectedPath)
   ? vm.runInNewContext(match[0] + '\nsearchKey')
   : null;
+if (protectedKeyForControls) assert.ok(fs.readFileSync(protectedPath, 'utf8').includes(match[0]), 'protected normalizer must match public');
 for (const input of controlInputs) {
   const output = key(input);
   assert.equal(typeof output, 'string');
