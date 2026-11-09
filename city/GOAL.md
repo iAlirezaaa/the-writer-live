@@ -8,6 +8,11 @@ by appropriately licensed top-down mapping and legal aerial/parcel sources, with
 parcel setbacks, ground topology, planting, urban equipment, night/day and weather synchronized
 to Tehran. This is a **long-term accuracy target**; current data do not certify a 1:1 replica.
 
+## Owner-approved corridor extension (2026-11-09, MAYOR-046)
+The owner has now **explicitly authorized gradual, source-backed expansion** from the writer's block along real side streets to the principal Sattarkhan street and **بوستان ستارخان** (OSM park candidate way 448551081). This supersedes the earlier absolute prohibition on crossing the original single block, but does **not** authorize arbitrary districts or invented street grids. Acquire and clip OSM legal way topology/park boundary and test junction connectivity before drawing out-of-block physical roads. Continue one safe, well-evidenced feature per mayor iteration.
+
+The owner's authoring choice places the protected writer room in a **third-floor apartment** at the original WGS84 home coordinate. The model's +9.6m floor offset, depicted storeys and stairs are **OWNER_AUTHORED_SCENARIO / generic proxy**, not a verified real building height, registered floors, units or facade. Real-building identity and permit/as-built data remain unknown and must not be inferred from nearby classified ads or land-use allowances.
+
 ## Currently authorized geographic scope
 **One single real Tehran writer block only**, bounded by actual mapped OSM centerline candidates
 (Khalil Mikaeili, Falahat Pour, Fifth and Eighth Daryan-e Now), with the writer's house WGS84
