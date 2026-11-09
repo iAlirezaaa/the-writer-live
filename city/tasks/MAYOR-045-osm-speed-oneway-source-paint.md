@@ -16,10 +16,10 @@ Note: these are dated OSM contributor-tag assertions; no official municipal regu
 ## Required sequence
 - [x] Read `city/skills/tehran-writer-block/SKILL.md`, `city/tasks/MAYOR-026-tehran-writer-block-3dviz-contract.md`, vendored 3Dviz Pro Max `SKILL.md`, `TWIN-WORLD.md` and architectural/object craft. Confirm both immutable backup refs and manifests.
 - [x] Research OSM's official API capture and Overture schema (height, floors, parts); distinguish ODbL licensed baseline from illustrative facades.
-- [ ] Add one self-contained non-colliding OSM traffic evidence paint group, one map glyph per supported segment/known tag, no physical sign or invented entry.
-- [ ] Reject future source tag drift via targeted test comparing registry to exact official OSM snapshot. Assert sign/arrow orientation, topology, ground clearance, writer room and one-block scope; preserve source-only and legacy probes.
-- [ ] Run Node/Three.js, source-only and legacy tests; sync private→public pinned city assets only after passes.
-- [ ] Record commit SHAs, actual CI and Pages status, and explicit blocker(s). No false claim of browser capture or live traffic.
+- [x] Add one self-contained non-colliding OSM traffic evidence paint group, one map glyph per supported segment/known tag, no physical sign or invented entry.
+- [x] Reject future source tag drift via targeted test comparing registry to exact official OSM snapshot. Assert sign/arrow orientation, topology, ground clearance, writer room and one-block scope; preserve source-only and legacy probes.
+- [ ] Run all Node/source-only and legacy CI tests; direct vendored Three.js assembly passed, but Actions workflow is queued/pending. Pinned public city assets and test files mirrored; no public deployment success asserted.
+- [ ] Confirm public Pages run and record its final conclusion separately; no visual screenshot captured. No false claim of browser capture or live traffic.
 
 ## Backlog additions
 1. A provenance-checked per-way Overpass/official OSM refresh pipeline for roadway `oneway`, `maxspeed`, `lanes`, `width`, `sidewalk` and speed restrictions, with drift review, dates and rights.
@@ -27,3 +27,11 @@ Note: these are dated OSM contributor-tag assertions; no official municipal regu
 
 ## Visual contract
 Use small source-aligned road diagram arrows (not real physical signage), 30-speed inspection discs, and status metadata. No cars or resident routes changed. Scene root `source-only` remains the default, with the writer room independent under `web/world.js`; geometry can be turned off by removing one group.
+
+## Implementation evidence, captured in this execution
+- New module: `web/writer-block-road-regulations.js`; source-matched registry: `city/roads/writer-block-regulations.json`; separate source availability report: `city/buildings/source-availability-2026-11-09.md`.
+- Direct vendored Three.js invocation completed: 8 town groups; 36 renderable objects with all finite bounding boxes; 4 speed diagram positions and 4 directed glyphs; 0 physical traffic changes, protected room intact.
+- Original OSM centerline direction was compared against each target source feature. Ring traversal is reversed for the two one-way road segments; positive dots validate each arrow follows the OSM way direction, not the polygon winding.
+- External current data research: official Overture Building/BuildingPart schema, ODbL attribution and Overpass query guidance. Four Overture building candidates still have NO surveyed height or floor count; seven tagged OSM building ways from original query do not intersect the actual enclosed block. No actual signs/shops/doors/facades measured.
+- Public integration/Pages pin commit: `476b5fa2fcbd3becdf515c9cf093bbba7b643f7c`; publication workflow `42671056633` was queued on last verified check, not a successful deployment or visual review.
+- No direct Google Maps/Google 3D data extracted or traced. No rooftop geometry, writer/publisher/citizen routes, physical car system or outside-block map edits.
