@@ -43,3 +43,11 @@ Validation actually executed: JavaScript recomputation using live GitHub source 
 The four longest-edge axes clockwise from +X east toward +Z south are 75.793°, 166.860°, 166.145°, 168.828°. They are derived roofprint boundary geometry, NOT facade bearings. No road widths, parking, curbs, physical navigation, city scene, writers or citizens changed.
 
 Next gate: run `node --test city/tests/roofprint-axis-audit.test.mjs` in repo CI, verify asset parity before any physical geometry change. Public mirror status is tracked separately; do not claim deployment.
+
+
+## Public mirror, road-source check and CI gate (verified)
+- All five MAYOR-053 files mirrored private-to-public; fetched blob hashes match on both sides. The last public mirror SHA was `f73a741ff0a7a81b95cf758c9957d9331cdaa179`.
+- Road source snapshot contains 47 OSM road ways. None carries a measured `width` or `est_width` tag. The four actual block perimeter way tags are: `4292858` Falahat Pour (residential, maxspeed=30, direction not mapped); `36697708` Eighth Daryan-e Now (oneway=no, maxspeed=30); `36697711` Khalil Mikaeili (oneway=yes, maxspeed=30); `481657106` Fifth Daryan-e Now (oneway=yes, maxspeed=30). No source curb, sidewalk or parking bay measurements for those four ways.
+- Latest public GitHub Pages workflow: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42695713358 (FAIL, no deployment). It reached TOWN-SCENE-OK, OBSERVATORY-OK and CITIZENS-V2-OK, but `tests/city_traffic_probe.mjs:110` failed with vehicle/pedestrian crosswalk collision at frame 581, car x=-3.1559328, gap=1.836. This pre-existing traffic test is NOT bypassed and routes/physics remain untouched.
+- OSM acquisition run https://github.com/iAlirezaaa/the-writer-live/actions/runs/42695694642: source download/provenance validation and artifact upload SUCCEEDED; final job FAIL because snapshot `git push` was non-fast-forward (parallel public commits), not because OSM data download failed.
+- This audit's generated JSON was recomputed independently from the fetched source via JavaScript with PASS for all four; project Node test, Three.js screenshot/camera and new public deployment NOT CONFIRMED.
