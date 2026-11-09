@@ -46,3 +46,9 @@ Use whenever modifying the city, homes, writer exterior/interior, building footp
 - This anchor does not make existing procedural roads geographically authentic. Obtain attributed street/building/terrain sources and verify orientation, parcel geometry, walkability, clearance and traffic probes before moving meshes.
 - Run `node tests/tehran_georeference_probe.mjs .` and existing `tests/urban_plan_probe.mjs` before copying the canonical urban-plan file to public `web/` and pinned `.github/city-assets/`.
 - Keep the Tehran timezone for lighting/weather independent of the viewer's local timezone.
+
+
+## New project priority — Tehran writer-block / 3Dviz Pro Max (MAYOR-026)
+- Before any new city/prop edit, first read `city/skills/tehran-writer-block/SKILL.md`, then `cognition/skills/3dviz-pro-max/SKILL.md` and `cognition/skills/3dviz-pro-max/TWIN-WORLD.md` in the authoritative private checkout. Use object catalog/kits to improve existing and new 3D shapes; preserve the current renderer and valid object IDs.
+- For geographically reconstructed meshes the first AOI is **only the street-bounded block containing** the writer home at WGS84 **35.715361987616696, 51.3642455031707**. The existing `ROAD_SEGMENTS` are procedural and must not be represented as surveyed Tehran. Only measured/licensed road lines, footprints, topography and photographs can certify accurate real-world placement.
+- Build and validate street/sidewalk boundaries, foundations, facades, props and foliage of this block in small gated steps. Continue to maintain existing city functionality, but defer unrelated expansion beyond the block until the user authorizes it. Never adjust citizen routes or writer/publisher state to force a map fit.
