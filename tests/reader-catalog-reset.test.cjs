@@ -140,6 +140,11 @@ test("public protected assets retain catalog behavior and semantic HTML", () => 
   const html = fs.readFileSync(pinnedHTML, "utf8");
   const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
   assert.equal(pinned.match(expression)?.[0], source.match(expression)?.[0], "deployed Persian search must match source");
+  // Prevent the protected Pages replacement from silently diverging from tested catalog behavior.
+  for (const name of ["renderShelf", "resetShelfFilters"]) {
+    const pattern = new RegExp(`^function ${name}\\(\\)\\s*\\{[\\s\\S]*?^\\}`, "m");
+    assert.equal(pinned.match(pattern)?.[0], source.match(pattern)?.[0], `protected ${name} differs from public source`);
+  }
   for (const symbol of ["function renderShelf()", "function resetShelfFilters()", "story-reset", "const query=searchKey("]) {
     assert.ok(pinned.includes(symbol), "missing from public pinned reader: " + symbol);
   }
