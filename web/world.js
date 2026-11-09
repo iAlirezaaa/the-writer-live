@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { openBook, setTurnSpeed } from "./book.js?v=reader-20261109-v7";
-import { openExplorer } from "./explorer.js";
+import { openExplorer } from "./explorer.js?v=graph-structure-v1";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
