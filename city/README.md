@@ -37,3 +37,10 @@ This directory is **separate from the writer's narrative, memory, and agent pers
 - Town remains exterior-first; clicking author's house enters the room. The room door can return to the town.
 - Landmarks must not block sidewalks; neighboring houses maintain breathing room.
 - No modification to author memories, stories, resident identities or movement archive.
+
+## New controlling brief — MAYOR-026 (2026-11-09)
+- Geographic target: a **faithful real-world reconstruction of Tehran**, not the current imaginary street/plot scheme. Begin with **only the block containing the writer's home**. Do not expand coverage until explicitly requested.
+- Real-world anchor already in `web/urban-plan.js`: WGS84 **35.715361987616696, 51.3642455031707**; local +X east, local -Z north. This anchor is real; **present road and building meshes are procedural and not a surveyed Tehran copy**.
+- New mandatory entrypoint for every city visual/asset task: `city/skills/tehran-writer-block/SKILL.md`. Use the preinstalled **`cognition/skills/3dviz-pro-max/SKILL.md`** and `TWIN-WORLD.md` to plan/author or upgrade existing 3D houses, facades, street furniture, cars, terrain and other scene props, one testable representative item at a time. Keep the same Three.js renderer and stable scene/picking IDs.
+- Build real topography, street contours, parcels/footprints and facade massing from licensed and attributed geographic measurements and image references; capture provenance/uncertainty and validate ground support, public access, traffic, writer room and camera states. Treat unsurveyed details as provisional proxies, not geographic truth.
+- Protect author/publisher narrative, memory, citizen paths/identities and outside-city app code. Release only verified city changes; record separate source/visual/test/deployment status.
