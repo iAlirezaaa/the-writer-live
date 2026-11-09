@@ -25,14 +25,16 @@ const terrainData=new Function(terrainDataSource+";return WRITER_BLOCK_DEM_SOURC
 const terrainSource=read("web/writer-block-terrain.js").replace(/^import [\s\S]*?;$/gm,"").replace(/^export /gm,"");
 const terrain=new Function("writerBlockLocalRing","writerBlockContainsLocalPoint","WRITER_BLOCK_DEM_SOURCE",terrainSource+
   ";return {buildWriterBlockTerrain};")(preview.writerBlockLocalRing,preview.writerBlockContainsLocalPoint,terrainData);
+const balconySource=read("web/writer-block-balcony.js").replace(/^export /gm,"");
+const balcony=new Function(balconySource+";return {buildWriterBlockBalcony};")();
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain","buildWriterBlockBalcony",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain,balcony.buildWriterBlockBalcony
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
@@ -61,6 +63,10 @@ assert.ok(realTerrain&&realTerrain.userData.cityTerrainEvidence?.noPhysicalColli
   "Real DEM topography overlay must remain noncolliding");
 assert.equal(scene.getObjectByName("writer-block-srtm30-relief-inspection-only")?.visible,false);
 assert.equal(scene.getObjectByName("writer-block-srtm30-contours")?.visible,true);
+const balconyRail=scene.getObjectByName("writer-block-home-east-balcony-rail-v1");
+assert.ok(balconyRail&&balconyRail.userData.cityConstructionEvidence.physicalCollider===false,
+  "Single supported east-home balcony must remain noncolliding");
+assert.equal(balconyRail.userData.cityConstructionEvidence.surveyedTehranBuilding,false);
 const roadUnion=scene.getObjectByName("city-road-union");
 assert.ok(roadUnion&&roadUnion.isMesh,"The town lost its unified asphalt road surface");
 assert.equal(roadUnion.userData.urbanSurface.segments,urban.ROAD_SEGMENTS.length,
