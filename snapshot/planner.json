@@ -277,39 +277,30 @@
       "label": "استراحت",
       "next_retry_at": null,
       "start": "2026-11-09T14:48:16",
-      "status": "planned",
+      "status": "done",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T16:08:16",
+      "end": "2026-11-09T15:29:16",
       "id": "202611092334",
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
-      "start": "2026-11-09T15:28:16",
+      "start": "2026-11-09T14:49:16",
       "status": "planned",
       "task": "notebook"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-09T15:28:16",
-    "id": "202611092254",
-    "label": "استراحت",
-    "next_retry_at": null,
-    "start": "2026-11-09T14:48:16",
-    "status": "planned",
-    "task": "rest"
-  },
-  "day": "2026-11-09",
-  "next": {
-    "attempts": null,
-    "end": "2026-11-09T16:08:16",
+    "end": "2026-11-09T15:29:16",
     "id": "202611092334",
     "label": "دفترچه‌ی ایده‌ها",
     "next_retry_at": null,
-    "start": "2026-11-09T15:28:16",
+    "start": "2026-11-09T14:49:16",
     "status": "planned",
     "task": "notebook"
-  }
+  },
+  "day": "2026-11-09",
+  "next": null
 }
