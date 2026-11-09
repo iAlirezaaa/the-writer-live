@@ -50,3 +50,12 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-041 P1:** assert both public entry HTML and protected replacement preserve exactly one named search landmark and all search/status/sort/reset IDs, with one Node test. Acceptance: no entry-point semantic drift.
 - [ ] **RDR-042 P2:** test RTL keyboard arrow page-turn behavior with an explicit language-direction fixture, including reduced-motion mode. Acceptance: deterministic navigation without scroll hijacking.
 - Benchmark: Kobo Web Reader supports keyboard page navigation, bookmarks, annotations, search and reading settings: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
+
+## RDR-043 — 2026-11-09 — premium public library release
+- [x] Functional, visible catalog update: editorial jade/gold hero, dynamic stats, responsive covers, grid/list views, light/dark theme, favorites and reading-progress filters, and estimated reading minutes. All preferences are browser-local; no private writer data or payment integration.
+- [x] Reviewed public `web/read.js`, `read/index.html`, `web/book.css` and protected `.github/reader-assets/` copies; Pages build guard checks catalog version `reader-20261109-library-v2`.
+- [x] [Node 22 CI](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42623444113): 11 catalog + 10 library UX + 6 resume tests = **27 passing / 0 failing**, plus Unicode checks and JS syntax verification.
+- [ ] [GitHub Pages deployment](https://github.com/iAlirezaaa/the-writer-live/actions/runs/42623444479) pending at time of report; real browser and responsive visual QA not verified yet.
+- [ ] **RDR-044 P1:** cross-tab consistency for local favorites, theme and catalog view preference via `storage` event, with no server-side telemetry.
+- [ ] **RDR-045 P2:** rights-cleared category/genre filtering based exclusively on published metadata. Do not reveal unpublished or unlicensed content.
+- UX references: [Apple HIG](https://developer.apple.com/design/human-interface-guidelines/), [Readwise Reader](https://docs.readwise.io/reader/docs/faqs/appearance) and [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features).
