@@ -1,6 +1,6 @@
 # MAYOR-026 — Tehran writer-block digital twin and 3Dviz Pro Max adoption
 Date: 2026-11-09
-Status: planned before editing project instructions; DOCUMENTATION / AUTOMATION ONLY.
+Status: INSTRUCTIONS AND HOURLY AUTOMATION UPDATED; DOCUMENTATION-ONLY — physical Tehran block geometry pending licensed map survey.
 
 ## User mandate
 1. Treat the place as a faithful reconstruction of Tehran, *not* a fictional Tehran-inspired city. Build only the **writer's block** first; expand the physical survey perimeter only when explicitly authorized.
@@ -30,3 +30,10 @@ Before any runtime change: `tests/tehran_georeference_probe.mjs`, `tests/urban_p
 - Geometry/runtime tests: NOT RUN in this documentation-only change.
 - Map ground survey: NOT DONE; map perimeter beyond the writer anchor NOT SURVEYED.
 - Physical reconstruction and object redesign: NOT STARTED by this task.
+
+## Completed changes and safety status
+- New persistent skill `city/skills/tehran-writer-block/SKILL.md` created. Canonical `city/skills/city-layout-rebuild/SKILL.md`, mayor release gate, municipal growth, `city/README.md`, `city/URBAN_CODE.md`, `city/TODO.md` and `.agents/skills/city-layout-rebuild/SKILL.md` were updated to point at the same mandatory workflow.
+- Hourly automation **شهردار شهر نویسنده** (`Automation_8340214e4cac8191bc4c90b2cfbff91e`) updated in place, enabled; existing hourly schedule retained. New instruction: 3Dviz mandatory, real Tehran digital twin, only writer block, preserve all safety gates.
+- Review verified the vendored private upstream skill and project-specific `TWIN-WORLD.md` exist. Canonical georeference anchor already exists in `web/urban-plan.js`.
+- Documentation and agent discovery mirrored to public repo with matching Git blobs; no new objects, imagery, routes or heights generated.
+- Tests: **not executed**, because no runtime geometry/code change. Pages runtime deployment not asserted. Actual block boundary/parcel survey and screenshot reconstruction remain open.
