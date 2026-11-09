@@ -40,3 +40,14 @@ description: City-only roadmap, 400-person capacity planning, low-cost ambient m
 - Check current conditions age (<90 minutes at intake), cache lifetime (15 min request interval, 45 min display freshness), retry delay, provider attribution, and provider-free fallback. No per-frame HTTP calls or network resources in the simulation update.
 - The free Open-Meteo endpoint is **non-commercial only**, with CC BY 4.0 attribution. A commercial site must switch to a licensed endpoint or suitable alternative before relying on it in production. Confirm browser CORS/CSP and record real weather HTTP success, not merely a mock fixture.
 - Test `node tests/tehran_environment_probe.mjs .` plus old city road/district/house probes, then ensure the public pinned `world.js`, `town.js`, `city-growth.js` and `tehran-environment.js` match the canonical private versions.
+
+## Tehran georeferencing discipline — MAYOR-017
+- Treat `TEHRAN_GEO_ORIGIN` in `web/urban-plan.js` as the sole WGS84 anchor (35.715361987616696, 51.3642455031707), not as a completed real-world Tehran map. Local +X is east and local -Z is north.
+- Before claiming a reconstructed neighborhood, obtain licensed road/building footprints and elevation references, record date, attribution, projection, and measured positional error. Keep the simulated writer-home anchor stable.
+- Test both coordinate conversions at origin and 100m cardinal offsets, road connectivity, building overlap, street-height foundations and doorway accessibility; do not move parcels or citizen paths merely to match imagery.
+- Tehran wall-clock and weather provider freshness are separate from geographic accuracy. Neither proves real-world street alignment.
+
+## Mandatory real Tehran block and 3Dviz gate (MAYOR-026)
+- Every city iteration must first read `city/skills/tehran-writer-block/SKILL.md` and the already-vendored `cognition/skills/3dviz-pro-max/SKILL.md`, `TWIN-WORLD.md`. Run the 3Dviz object catalog/recipe search on each new prop and existing low-fidelity prop slated for reconstruction; keep its advice optional and test final geometry.
+- The only currently permitted real-geography modeling AOI is the road-bounded writer block around 35.715361987616696, 51.3642455031707. Plan physical boundaries from verifiable licensed map data, not guessed rectangles. Real Tehran street networks/footprints/heights take priority over fictional shapes, but never overwrite procedural meshes before safe replacement and all legacy path regressions.
+- Preserve outside-block areas untouched as historical placeholders until an explicit scope expansion. Use GitHub private→pinned public city-only source sync and honest visual/CI reporting. No citizen/writer/publisher edits.
