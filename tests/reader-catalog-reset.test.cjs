@@ -152,3 +152,23 @@ test("public protected assets retain catalog behavior and semantic HTML", () => 
   assert.match(html, /id="story-reset"/);
   assert.match(html, /read\.js\?v=reader-20261109-catalog-v8/);
 });
+
+test("catalog entry points share the protected script cache version and reset controls", () => {
+  const privateEntry = path.join(__dirname, "../web/read.html");
+  const publicEntry = path.join(__dirname, "../read/index.html");
+  const protectedEntry = path.join(__dirname, "../.github/reader-assets/read.html");
+  const entry = fs.existsSync(publicEntry) ? publicEntry : privateEntry;
+  const html = fs.readFileSync(entry, "utf8");
+  const extractVersion = value => {
+    const match = value.match(/<script\\b[^>]*src="[^"]*\\/read\\.js\\?v=([^"&]+)"[^>]*><\\/script>/);
+    assert.ok(match, "missing versioned catalog script");
+    return match[1];
+  };
+  const version = extractVersion(html);
+  assert.match(html, /id="story-reset"/, "entry point must expose reset");
+  if (fs.existsSync(protectedEntry)) {
+    const pinnedHtml = fs.readFileSync(protectedEntry, "utf8");
+    assert.equal(version, extractVersion(pinnedHtml), "root and protected catalog versions diverge");
+    assert.match(pinnedHtml, /id="story-reset"/);
+  }
+});
