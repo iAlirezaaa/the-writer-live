@@ -33,8 +33,15 @@ for(const contract of [
  assert.ok(world.includes(contract),"Missing matched home contract: "+contract);
 }
 assert.ok(world.includes('let view = "town"'),"City should open on exteriors");
-assert.ok(world.includes('writerInteriorWorldRoot.position.y = STREET_Y'),
-  "Writer interior does not use city street elevation");
+assert.ok(world.includes('writerInteriorWorldRoot.position.y = apartmentFloorElevation(STREET_Y)'),
+  "Writer room was not relocated to owner-defined third floor");
+assert.ok(world.includes('writerExterior.position.y = WRITER_APARTMENT_LEVEL_OFFSET'),
+  "Apartment exterior not vertically aligned to protected writer floor");
+assert.ok(world.includes('buildWriterApartmentLowerStoreys(THREE,writerExterior'),
+  "Lower apartment floors must be rendered underneath intact writer room");
+assert.ok(world.includes('camGoal.pos.y += writerInteriorWorldRoot.position.y;') &&
+  world.includes('camGoal.target.y += writerInteriorWorldRoot.position.y;'),
+  "Interior cameras must track relocated third floor");
 assert.ok(world.includes('writerInteriorWorldRoot.add(baseWriterRoomShell);'),
   "Base writer walls were NOT attached to the grounded room root");
 assert.ok(world.includes('writerInteriorWorldRoot.add(expandedWriterRoomShell);'),
