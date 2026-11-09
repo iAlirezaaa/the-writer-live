@@ -32,6 +32,7 @@ jobs:
           cp .github/city-assets/urban-plan.js _site/web/urban-plan.js
           cp .github/city-assets/road-surface.js _site/web/road-surface.js
           cp .github/city-assets/writer-block-road-preview.js _site/web/writer-block-road-preview.js
+          cp .github/city-assets/writer-block-street-frame.js _site/web/writer-block-street-frame.js
           cp .github/city-assets/writer-block-terrain-data.js _site/web/writer-block-terrain-data.js
           cp .github/city-assets/writer-block-terrain.js _site/web/writer-block-terrain.js
           cp .github/city-assets/writer-block-balcony.js _site/web/writer-block-balcony.js
@@ -66,6 +67,7 @@ jobs:
           node --check /tmp/the-writer-road-surface.mjs
           node tests/tehran_environment_probe.mjs _site
           node tests/tehran_writer_block_overlay_probe.mjs _site
+          node tests/tehran_writer_block_streets_probe.mjs _site
           node tests/tehran_writer_block_terrain_probe.mjs _site
           node tests/tehran_writer_block_balcony_probe.mjs _site
           node tests/tehran_writer_block_buildings_probe.mjs _site
