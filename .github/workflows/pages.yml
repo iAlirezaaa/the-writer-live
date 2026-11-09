@@ -34,6 +34,7 @@ jobs:
           cp .github/city-assets/writer-block-road-preview.js _site/web/writer-block-road-preview.js
           cp .github/city-assets/writer-block-terrain-data.js _site/web/writer-block-terrain-data.js
           cp .github/city-assets/writer-block-terrain.js _site/web/writer-block-terrain.js
+          cp .github/city-assets/writer-block-balcony.js _site/web/writer-block-balcony.js
           cp .github/city-assets/city-growth.js _site/web/city-growth.js
           cp .github/city-assets/tehran-environment.js _site/web/tehran-environment.js
           python3 .github/scripts/prepare_car_deploy.py _site
@@ -62,6 +63,7 @@ jobs:
           node tests/tehran_environment_probe.mjs _site
           node tests/tehran_writer_block_overlay_probe.mjs _site
           node tests/tehran_writer_block_terrain_probe.mjs _site
+          node tests/tehran_writer_block_balcony_probe.mjs _site
           node tests/urban_plan_probe.mjs _site
           node tests/road_topology_probe.mjs _site
           node tests/writer_house_consistency_probe.mjs _site
