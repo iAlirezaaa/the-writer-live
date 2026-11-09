@@ -56,3 +56,9 @@ Only compare `town.js` and `world.js`; do not modify citizen logic. A matched bl
 - Weather observation must include provenance, observed timestamp, fetch timestamp, and stale/unavailable fallback (older than 30 minutes); no fictional weather may be labeled live.
 - Fetch weather outside the render loop at intervals >=10 minutes; test network failures, delayed replies, midnight, sunrise, sunset, and mobile rendering before publishing.
 - Do not alter road geometry or resident routes for a weather/time fix. Require the established Node/scene probes, six pin SHA checks, visual QA and fresh Pages verification for runtime edits.
+
+## MAYOR-020: weather geospatial provenance gate
+- Compare the forecast request latitude/longitude against `TEHRAN_GEO_ORIGIN` rather than assuming any Tehran-city coordinate is equivalent to the writer's house.
+- The current `/v1/forecast` endpoint is model-derived weather; distinguish estimated current conditions from a physical station observation in all public labels and diagnostics.
+- Assert requested coordinates, timezone, provider attribution, payload timestamp and stale/offline behavior in a deterministic city-only probe before a runtime change.
+- Weather coordinate fixes must not affect city roads, author/citizen clocks or publisher logic. No runtime release without Node, visual and pinned-source gates.
