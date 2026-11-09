@@ -12,7 +12,7 @@ import sys
 
 
 VERSION = "reader-20261109-v7"
-CATALOG_VERSION = "reader-20261109-catalog-v8"
+CATALOG_VERSION = "reader-20261109-library-v2"
 
 
 def patch_site(root: Path) -> None:
@@ -37,6 +37,12 @@ def patch_site(root: Path) -> None:
         '"turn turn-next", "←"' in book,
         f"read.js?v={CATALOG_VERSION}" in html,
         "function resetShelfFilters()" in reader,
+        "function toggleLibraryTheme()" in reader,
+        "function toggleFavorite(id)" in reader,
+        'id="library-list"' in html,
+        'id="reading-filter"' in html,
+        'id="story-favorites"' in html,
+        "Library atelier v2" in css,
         "const query=searchKey(" in reader,
         'id="story-reset"' in html,
         'role="search"' in html,
