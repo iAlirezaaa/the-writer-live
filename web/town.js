@@ -3,6 +3,8 @@ import { buildCityDistricts } from "./town-districts.js?v=city-districts-2026110
 import { buildCityGrowth } from "./city-growth.js?v=civic-growth-20261108-v1";
 import { ROAD_SEGMENTS } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { buildSeamlessRoadSurface, ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
+import { buildWriterBlockRoadPreview } from "./writer-block-road-preview.js?v=writer-block-osm-preview-20261109-v1";
+import { buildWriterBlockTerrain } from "./writer-block-terrain.js?v=writer-block-dem-contours-20261109-v1";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -196,6 +198,10 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   // Keep the original underneath as a collision/path reference for resident routes.
   const cityRoadSurface=buildSeamlessRoadSurface(THREE,ROAD_SEGMENTS,{streetY:STREET_Y});
   group.add(cityRoadSurface);
+  // Source-backed centerlines are a visual survey layer, not traffic/curb geometry.
+  buildWriterBlockRoadPreview(THREE,group,{streetY:STREET_Y});
+  // Licensed SRTM elevation contours are visible; physical terrain remains untouched.
+  buildWriterBlockTerrain(THREE,group,{streetY:STREET_Y});
     const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
   const carLayer = buildTownCars({ THREE, city: group, streetY: STREET_Y });
