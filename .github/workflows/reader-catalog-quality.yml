@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
     paths:
+      - "web/book.js"
+      - ".github/reader-assets/book.js"
+      - "tests/reader-feedback-transport.test.cjs"
       - "web/read.js"
       - "web/read.html"
       - "web/book.css"
@@ -32,6 +35,8 @@ jobs:
         run: |
           node --test tests/reader-catalog-reset.test.cjs
           node --test tests/reader-library-experience.test.cjs
+      - name: Execute reader vote and comment transports
+        run: node --test tests/reader-feedback-transport.test.cjs
       - name: Persian Unicode normalization boundaries
         run: |
           node tests/test_reader_unicode_boundaries.cjs
