@@ -84,3 +84,13 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-052 P1 new:** add a negative-match fixture to ensure normalizing Arabic/Persian letters does not collapse distinct catalog titles. Acceptance: public and protected implementations produce identical positive and negative results.
 - [ ] **RDR-053 P2 new:** introduce a rights-only preview eligibility contract for storefront cards, with explicit reason codes for blocked previews and no unpublished text in test fixtures.
 - Benchmark: Kobo Web Reader supports keyboard navigation, notes, saved position and typography controls: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
+
+
+## RDR-057 — 2026-11-09 — public feedback transport publication
+- [x] Publish reader vote/comment branches from the private source into public `web/book.js` and the protected `.github/reader-assets/book.js`, without copying private writer data. Both protected/public JavaScript sources have matching blob hashes. Only the explicitly public transport branches were ported; the earlier public pagination implementation was preserved.
+- [x] Update versioned public reader imports, catalog HTML, and `.github/scripts/prepare_reader_deploy.py` so the protected assets survive future snapshot pushes and bypass old browser module caches.
+- [x] Add `tests/reader-feedback-transport.test.cjs` and include it in the independent `reader-catalog-quality.yml`; it exercises GitHub fallback, direct submission with a configured API, error messaging, protected/source parity and live Persian normalization behavior.
+- **Deployment caveat:** A public backend URL has not been configured. GitHub Pages therefore still opens an explicit GitHub Issue for final vote/comment confirmation; this is **not** first-party data capture. Pushing commits triggers the Pages workflow, but neither Pages outcome nor fresh focused Node results were verified from the connector in this run. Browser validation was not performed.
+- [ ] **RDR-057a P1 new:** prevent duplicate in-flight comment submissions on rapid double click; preserve typed feedback and show an accessible retry action on network/429 errors. Acceptance: one request per submission attempt and no lost form text.
+- [ ] **RDR-058 P2 new:** add a clear on-page transport status (GitHub confirmation vs direct API connected), announced accessibly when it changes; no misleading success toast, no persistent health polling, no exposed API keys.
+- Security: do not expose admin credentials, unpublished writer data, private `data/index/` comment queue, or a guessed external API endpoint in public assets. Actual backend deployment and anti-abuse controls remain RDR-055.
