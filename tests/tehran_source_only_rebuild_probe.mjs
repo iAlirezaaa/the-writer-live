@@ -72,7 +72,7 @@ assert.equal(originalRoom.parent,scene);
 assert.equal(writerExterior.parent,scene);
 assert.equal(town.districts,null);
 assert.equal(town.growth,null);
-assert.deepEqual(town.trafficState(),[],"No fictional cars in the clean map");
+assert.equal(town.trafficState().length,0,"No fictional cars in the clean map");
 assert.doesNotThrow(()=>town.update(0,0,false,{cloudCover:70}));
 assert.doesNotThrow(()=>town.update(1,20,true,{cloudCover:10}));
 assert.equal(clicks.length,0,"No fake old-city clickable objects should survive");
