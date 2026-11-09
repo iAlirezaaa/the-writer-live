@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WRITER_HOME,writerArea,toScene,toGeo,overpassQuery,compileSurvey,normalizeOsmApiMap,OSM_ATTRIBUTION}
+import {WRITER_HOME,writerArea,toScene,toGeo,overpassQuery,compileSurvey,normalizeOsmApiMap,deriveContainingRoadFace,OSM_ATTRIBUTION}
   from '../survey/writer-block-survey.mjs';
 const area=writerArea(230);
 const t=(x,z)=>{const p=toGeo(x,z);return {lat:p.lat,lon:p.lon};};
@@ -63,4 +63,22 @@ test('official OSM map.json nodes resolve to only complete roads/buildings',()=>
   const result=compileSurvey(normalized,{area,capturedAt:'2026-11-09T09:08:00Z'});
   assert.equal(result.totals.roads,1);
   assert.equal(result.blockBoundary.status,'UNVERIFIED');
+});
+
+test('connected real-road centerlines enclose only a map-derived candidate block',()=>{
+  const corners=[[-20,-18],[35,-18],[35,23],[-20,23]];
+  const elements=corners.map((p,i)=>{
+    const a=toGeo(...p),b=toGeo(...corners[(i+1)%4]);
+    return {type:'way',id:900+i,tags:{highway:'residential',name:'Fixture road'},
+      geometry:[{lat:a.lat,lon:a.lon},{lat:b.lat,lon:b.lon}]};
+  });
+  const x=compileSurvey({version:0.6,elements},{capturedAt:'2026-11-09T09:08:00Z'});
+  assert.equal(x.blockBoundary.status,'OSM_CENTERLINE_CANDIDATE');
+  assert.equal(x.blockBoundary.areaSquareMeters,2255);
+  assert.equal(x.blockBoundary.roadWayIds.length,4);
+  assert.equal(x.blockBoundary.geometry.coordinates[0].length,5);
+  assert.equal(x.blockBoundary.requiresSurvey,true);
+  assert.match(x.blockBoundary.confidence,/not curbs/);
+  const broken=deriveContainingRoadFace(x.features.features.slice(0,2));
+  assert.equal(broken,null,'Open/partial roads must not produce an invented block');
 });
