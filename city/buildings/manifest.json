@@ -118,6 +118,26 @@
     "mayor039": "2026-11-09 public Pages CI run 42642944967: source-only and independent-building-02 Node/Three.js tests pass; build/deploy overall fails due pre-existing legacy town_scene_probe.mjs paths obstacle at X=0 Z=8.7, also present in earlier run 42641786729; no new live deployment",
     "mayor039RealPhotos": "not captured",
     "mayor039ActualFloorsAndStores": "unverified; source has no building:levels or shop nodes within writer block",
-    "mayor041": "Private geometry and targeted probe authored; execution and screenshot comparison not yet verified; public mirror gated on tests"
+    "mayor041": "Private geometry and targeted probe authored; execution and screenshot comparison not yet verified; public mirror gated on tests",
+    "mayor043": "Private direct execution against vendored Three.js: 7 groups, 25 render objects, 0 nonfinite bounds, 0 new physical colliders; full Node/legacy CI and actual browser screenshots not yet confirmed; pinned public release pending."
+  },
+  "visualContext": {
+    "layer": "web/writer-block-illustrative-context.js",
+    "status": "PRIVATE_SCENE_ASSEMBLY_TESTED_PUBLIC_DEPLOY_PENDING",
+    "sourceTruth": false,
+    "authoredProps": true,
+    "verifiedPositions": false,
+    "counts": {
+      "trees": 19,
+      "shrubs": 27,
+      "lamps": 16,
+      "stationaryCarProxies": 9
+    },
+    "physicalCollider": false,
+    "citizenRoutesModified": false,
+    "streetWidthEvidence": "UNKNOWN",
+    "buildingHeightsEvidence": "UNKNOWN",
+    "gpuBenchmarked": false,
+    "dayNightScreenshotCaptured": false
   }
 }
