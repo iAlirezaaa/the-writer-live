@@ -8,9 +8,7 @@
  * Uses the existing Three.js instance; no shaders/network or extra renderer.
  */
 import { WRITER_BLOCK_BUILDING_SOURCE } from "./writer-block-building-data.js?v=writer-block-overture-20261109-v1";
-import {
-  validateWriterBuildingSurvey, touchesWriterRoom
-} from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v1";
+import { validateWriterBuildingSurvey, touchesWriterRoom } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v1";
 import { writerBlockContainsLocalPoint } from "./writer-block-road-preview.js?v=writer-block-osm-preview-20261109-v1";
 
 export const BUILDING_01_SOURCE_ID="3d7b8239-b1e0-48bc-8868-ae4a4d392586";
