@@ -23,6 +23,7 @@ import { buildWriterBlockBuilding03 } from "./writer-block-building-03.js?v=tehr
 import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261109-v1";
 import { attachIllustrativeFacades } from "./writer-block-facade-preview.js?v=writer-block-facade-illustration-20261109-v1";
 import { buildWriterBlockRoadRegulations } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
+import { buildSatarkhanEastRoadCorridor } from "./writer-satarkhan-osm-corridor.js?v=writer-satarkhan-east-osm-20261109-v1";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
@@ -58,6 +59,9 @@ export function buildTehranReconstructionTown({
     sourceLicenses:["ODbL-1.0","NASA/USGS SRTM"],
     noPhysicsOrCitizenPathMigration:true,
     sourcedSpeedLimitWayCount:4,
+    adjacentLicensedOSMWayFragments:6,
+    parkSatarkhanPolygonMapped:false,
+    connectsRealSattarkhanPrimaryWay:true,
     realRoadSignLocationsKnown:false,
     authorRoomProtected:true,
     urbanLayout:"clean-source-only-from-scratch"
@@ -67,6 +71,9 @@ export function buildTehranReconstructionTown({
   const streets=buildWriterBlockStreetFrame(THREE,group,{streetY,canvasTex});
   // OSM 30 km/h and oneway TAG evidence; glyph locations are map annotations, not surveyed signs.
   const roadRegulations=buildWriterBlockRoadRegulations(THREE,group,{streetY,canvasTex});
+  // First user-approved expansion: exact OSM way strips along real alleys to
+  // Sattarkhan primary street, with all width/sidewalks still visual proxies.
+  const eastCorridor=buildSatarkhanEastRoadCorridor(THREE,group,{streetY,canvasTex});
   const terrain=buildWriterBlockTerrain(THREE,group,{streetY,reliefVisible:false});
   // True aerial plan lines, as opposed to residential architecture invented
   // outside licensed footprints. Terrain contours remain a coarse DEM overlay.
@@ -85,10 +92,12 @@ export function buildTehranReconstructionTown({
      building02.plan.measuredHeightMeters!==null||
      building03.plan.measuredHeightMeters!==null||
      roadRegulations.plan.facts.length!==4||
+     eastCorridor.topology.mainStreetConnected!==true||
+     eastCorridor.group.userData.cityCorridorEvidence.parkReached!==false||
      roadRegulations.group.userData.cityRoadEvidence.physicalCollider!==false||
      !streets.group.getObjectByName("writer-block-osm-4-street-pavement"))
     throw new Error("Sourced city evidence changed; stop rather than invent replacement buildings");
-  if(group.children.length!==8||context.group.userData.cityContextEvidence.physicalCollider!==false)
+  if(group.children.length!==9||context.group.userData.cityContextEvidence.physicalCollider!==false)
     throw new Error("Unexpected old fictional objects attached to source-only map");
   scene.add(group);
   return {
