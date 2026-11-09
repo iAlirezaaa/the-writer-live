@@ -7,6 +7,7 @@ import { buildWriterBlockRoadPreview } from "./writer-block-road-preview.js?v=wr
 import { buildWriterBlockTerrain } from "./writer-block-terrain.js?v=writer-block-dem-contours-20261109-v1";
 import { buildWriterBlockBalcony } from "./writer-block-balcony.js?v=writer-block-home-east-balcony-20261109-v1";
 import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v1";
+import { buildWriterBlockStreetFrame } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -208,6 +209,9 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
   buildWriterBlockTerrain(THREE,group,{streetY:STREET_Y});
   // Overture geometry, not surveyed heights: three 3D masses and room-safe outline.
   buildWriterBlockBuildingMasses(THREE,group,{streetY:STREET_Y});
+  // Four real OSM street directions now have visible paved corridors/curbs (widths still schematic).
+  // Keep the existing physical traffic graph and protected writer room unchanged.
+  buildWriterBlockStreetFrame(THREE,group,{streetY:STREET_Y,canvasTex});
     const mountainMat = material("mountain", 0x65727c);
   for (let i = 0; i < 8; i++) mesh(new THREE.ConeGeometry(12, 13 + (i % 3) * 4, 7), mountainMat, -70 + i * 20, 3, -65);
   const carLayer = buildTownCars({ THREE, city: group, streetY: STREET_Y });
