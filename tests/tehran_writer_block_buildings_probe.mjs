@@ -33,7 +33,7 @@ assert.ok(plan.every(b=>b.symbolicOnly&&b.sourceHeightMeters===null));
 assert.ok(plan.some(p=>p.protectedWriterRoom&&p.footprintRings.some(r=>survey.touchesWriterRoom(r))));
 assert.ok(plan.reduce((sum,b)=>sum+b.surfaceAreaMeters2,0)>5000);
 
-const parent=new THREE.Group(),result=survey.buildWriterBlockBuildingMasses(THREE,parent,{streetY:-3});
+const parent=new THREE.Group(),result=survey.buildWriterBlockBuildingMasses(THREE,parent,{streetY:-3,independentBuilding03:true});
 assert.equal(parent.children.length,1);
 assert.equal(result.group.children.length,1,"Retired empty bulk volume must not occupy the scene graph");
 assert.equal(result.group.name,"writer-block-overture-building-reconstruction");
