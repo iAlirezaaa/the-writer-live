@@ -206,7 +206,7 @@ test("RDR-048: deployed protected search normalizer executes Persian/Arabic equi
   const pinnedPath = path.join(__dirname, "../.github/reader-assets/read.js");
   if (!fs.existsSync(pinnedPath)) return; // private repo has no protected public assets
   const pinned = fs.readFileSync(pinnedPath, "utf8");
-  const expression = /^const searchKey\\s*=\\s*value\\s*=>[^\\n]+;/m;
+  const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
   const implementation = pinned.match(expression)?.[0];
   assert.ok(implementation, "protected catalog must expose searchKey");
   const normalize = new Function(implementation + "\nreturn searchKey;")();
