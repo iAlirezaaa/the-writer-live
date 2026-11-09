@@ -38,3 +38,11 @@ Read in this order:
 - Inventory a licensed OSM/other open data extract around the exact coordinate, identify road-bounded area-of-interest and document datum, bounds, feature coverage, discrepancy and attribution. Do not state exact block edges until measured.
 - Build a neutral ground-survey overlay/metadata contract, not unsourced final architecture.
 - Pilot a sidewalk fixture or single surveyed facade using 3Dviz, then evaluate old-vs-new silhouette, contact shadow, collisions, materials and frame cost.
+
+## Mandatory pre-reconstruction recovery gate (MAYOR-027)
+- Before changing **any** map, structure, roads, materials or scenery to match the Tehran reference, confirm that the snapshot manifest `city/backups/writer-block-pre-tehran-rebuild-2026-11-09.md` and both backup branches still exist.
+- Private frozen backup commit: `cfdac995b6e070d472627b484c93d8fbf5f6ed2b` (`backup/writer-block-pre-tehran-rebuild-2026-11-09`).
+- Public frozen backup commit: `ececf9ffc041b1666b0425f4f1746d162b9dcf67` (same branch label).
+- **Do not delete, force-push, overwrite or repoint these backup branches.** Future geometry revisions need distinct new snapshot labels as needed.
+- If rollback becomes necessary, restore only the city-scoped files from the saved commit onto a new review branch; do not revert unrelated newer writer, publisher or citizen data. Apply the public pinned-overlay restore separately after passing geometry, pedestrian and city CI probes.
+- The backup preserves the old procedural map as a baseline; it does not make that map a surveyed Tehran reconstruction.
