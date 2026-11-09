@@ -11,6 +11,7 @@ import { writerBlockContainsLocalPoint } from "./writer-block-road-preview.js?v=
 export const OVERTURE_WRITER_BUILDING_VERSION = "writer-block-sourced-buildings-20261109-v1";
 export const PROXY_UNVERIFIED_HEIGHT_METERS = 6;
 export const ROOM_PROTECTION_METERS = 4; // render-only exclusion; writer room unchanged
+export const INDIVIDUAL_BUILDING_01_ID="3d7b8239-b1e0-48bc-8868-ae4a4d392586"; // individually built from exact Overture map
 
 function isFiniteRing(ring){
   return Array.isArray(ring)&&ring.length>=4&&ring.length<=512&&
@@ -85,7 +86,7 @@ export function writerBlockBuildingPlan(data=WRITER_BLOCK_BUILDING_SOURCE){
 export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
   if(!Number.isFinite(streetY))throw new TypeError("Invalid ground datum");
   const plan=writerBlockBuildingPlan();
-  const masses=[],outlines=[],modeledIds=[],roomProtectedIds=[];
+  const masses=[],outlines=[],modeledIds=[],roomProtectedIds=[],individualIds=[];
   for(const building of plan){
     if(building.protectedWriterRoom)roomProtectedIds.push(building.id);
     for(const ring of building.footprintRings){
@@ -94,6 +95,9 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
           ring[i+1][0],streetY+.26,ring[i+1][1]);
       }
       if(building.protectedWriterRoom)continue; // do not cover or replace the room
+      // Retire this exact footprint from the old translucent bulk-ghost layer.
+      // MAYOR-037 now draws it as its own georeferenced, opaque building shell.
+      if(building.id===INDIVIDUAL_BUILDING_01_ID)continue;
       const shape=new THREE.Shape();
       shape.moveTo(ring[0][0],-ring[0][1]);
       for(let i=1;i<ring.length-1;i++)shape.lineTo(ring[i][0],-ring[i][1]);
@@ -116,7 +120,8 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
       }
       geometry.dispose();
     }
-    if(!building.protectedWriterRoom)modeledIds.push(building.id);
+    if(building.id===INDIVIDUAL_BUILDING_01_ID)individualIds.push(building.id);
+    else if(!building.protectedWriterRoom)modeledIds.push(building.id);
   }
   const group=new THREE.Group();
   group.name="writer-block-overture-building-reconstruction";
@@ -126,6 +131,9 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
     release:WRITER_BLOCK_BUILDING_SOURCE.release,
     originalRoofprints:plan.length,
     generatedVolumeCount:modeledIds.length,
+    individuallyModeledSourceIds:individualIds,
+    independentlyModeledCount:individualIds.length,
+    totalDistinctSourceVolumeCount:modeledIds.length+individualIds.length,
     ignoredRoomCollisionCount:roomProtectedIds.length,
     sourceHeightKnownCount:WRITER_BLOCK_BUILDING_SOURCE.counts.knownSourceHeight,
     renderedHeightUnverified:plan.some(p=>p.symbolicOnly),
