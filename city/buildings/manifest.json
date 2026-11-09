@@ -124,7 +124,7 @@
     "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches.",
     "mayor047": "Vendored Three.js full source-only assembly PASS: 9 groups and 40 rendered objects with finite bounds, 6 OSM way subranges, 5 shared source junctions, no traffic changes; Node/legacy Pages CI and screenshots not yet confirmed.",
     "mayor048": "Private direct Three.js source-only PASS: 9 groups, 41 finite-bounds renderables, floor-3 room intact; public Pages deployment success at run 42680523167 / SHA 68d78aca2a21e04a406a055d71fbbcb7259bc57f. Newer root index run 42680802013 FAILS legacy route probe at X=0 Z=7.3; not bypassed or altered.",
-    "mayor049": "Direct real Three.js section builder PASS (5 additional drawables, 7 bays, 5 stationary car proxies, 5.6m moving envelope, 1.5m per-side sidewalks, finite geometry, non-overlap with four known Overture source polygons); actual road width and house count UNKNOWN. Public Pages and legacy tests pending."
+    "mayor049": "REAL vendored Three.js source-only scene PASS: 9 town groups, 46 finite-bounds objects, 4 ML source roofprints preserved, no moving traffic change, writer third floor intact. Public Pages CI/deploy run 42685813611 SUCCESS at SHA 62316f6897efd9610227d92554a074b18b77108d, new alley and orientation probes passed. Actual ROW/curb widths, lawful parking, real house count, screenshots/FPS still unverified."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
@@ -295,6 +295,9 @@
     "peopleRoutesChanged": false,
     "originalWriterRoomY": 6.6,
     "sourceRealityClaim": "DESIGN_HYPOTHESIS_NOT_SURVEY",
-    "releaseVerified": false
+    "releaseVerified": true,
+    "confirmedPagesRun": 42685813611,
+    "confirmedPagesSha": "62316f6897efd9610227d92554a074b18b77108d",
+    "visualScreenshotCaptured": false
   }
 }
