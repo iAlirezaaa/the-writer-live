@@ -23,8 +23,10 @@ Status: DOCUMENTED; runtime execution PENDING. No production code modified.
 Acceptance: all eight scenarios pass on desktop and mobile; any failure becomes a tracked bug before visual polish.
 
 ## Prioritized backlog (deduplicate before implementation)
-- P0 [NEW IDEA 1] Stable text-anchor progress across re-pagination: store chapter/paragraph offset rather than only page index. Test changing font size and reopening on mobile; require same paragraph restored.
+- P0 [IMPLEMENTED — browser verification pending] Stable passage anchors: store section, paragraph and word offset alongside legacy percentage. Restore across font/viewport changes; server retains validated coordinates for owner-only sync.
 - P1 [NEW IDEA 2] RTL-aware page-turn regression harness: automated assertions for forward/back direction, reduced motion and one-page/two-page boundary behavior.
+- P1 [NEW IDEA 3 — next] Persist bookmark as its own passage anchor, not a numeric page, so bookmark survives a font/viewport change independently of read progress.
+- P1 [NEW IDEA 4 — next] Add a lightweight story-text revision fingerprint to saved locators and a safe fallback when paragraphs are edited/reordered.
 - P1 Verify focus-visible, keyboard-only access and live status announcements against WCAG 2.2.
 - P1 Long Persian paragraph line-breaking and punctuation QA on 320–390px viewports.
 - P2 Catalog metadata schema: title, author, edition, language, rights, preview availability, without checkout or payment.
@@ -35,3 +37,17 @@ Acceptance: all eight scenarios pass on desktop and mobile; any failure becomes 
 - 2026-11-09: reader audit and reproducible QA checklist created; two distinct new backlog ideas recorded.
 - Tests: source inspection only; browser test suite not run from connector environment.
 - Public sync: documentation is safe to publish after checking the public repository path; no private data in this file.
+
+## Execution 2 — 2026-11-09: stable passage restoration
+
+**Scope:** One behavioral improvement: persist a stable passage anchor in addition to the existing fractional page progress. No payment, bookstore checkout, city, or author data changed.
+
+- `web/reader-position.js`: pure lookup by `kind`, `firstPara`, `firstWord`, with 1-page/2-page spread alignment and fallback if the critic's report was removed.
+- `web/book.js`: records word offset at page creation, writes anchor to local state and resumes from it; old percentage-only state remains accepted.
+- **Private only:** `writer/reader_state.py` now validates and stores only bounded anchor coordinates, never arbitrary selected text. `tests/test_reader_state.py` covers round-trip, malformed input and field stripping.
+- `tests/reader-position.test.mjs`: six pure unit tests for paragraph splits, reflow, RTL spread, report anchor, malformed/legacy values, and removed report.
+- **Executed locally:** `node --test --experimental-default-type=module tests/reader-position.test.mjs` → **6/6 pass** (Node 22); standalone Python sanitizer smoke → 9 assertions pass.
+- **Not executed:** full repository Python unittest suite, browser/device QA, actual server sync across two devices. Do not treat those as passed.
+- **Manual acceptance still required:** reopen a Persian story midway through a long paragraph; change font/viewport, refresh and test owner sync. Verify the same passage is visible, not simply the same percentage.
+- **Standards comparison:** [Readium locators](https://readium.org/architecture/models/locators/), [Readium RTL pagination](https://readium.org/css/docs/CSS03-injection_and_pagination.html), [WCAG 2.2 reflow/focus](https://www.w3.org/TR/wcag/).
+- Operational TODO and test follow-up: [`docs/reader/TODO.md`](TODO.md).
