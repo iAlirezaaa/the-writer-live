@@ -27,6 +27,13 @@ assert.ok(source.includes('const query=searchKey('));
 assert.ok(source.includes('searchKey(`\u0024{story.title||""} \u0024{story.stage||""}`)'));
 console.log('PASS RDR-027: ' + equal.length + ' equivalences, ' + distinct.length + ' distinct pairs, 2 wiring checks');
 
+// RDR-065: normalization must be idempotent for both scripts and mixed input.
+const stableInputs = ['كِتاب', 'عَلِي', 'ﻛﺘﺎﺏ', 'می‌روم', 'Book ۱۲۳', ''];
+for (const value of stableInputs) {
+  assert.equal(key(key(value)), key(value), 'normalization must be idempotent: ' + value);
+}
+console.log('PASS RDR-065: ' + stableInputs.length + ' idempotence fixtures');
+
 // Public Pages deploys the protected asset in place of web/read.js. When that
 // asset exists, its normalizer and both search call sites must remain identical.
 const protectedPath = path.join(__dirname, '../.github/reader-assets/read.js');
