@@ -19,7 +19,7 @@ assert.equal(growthAudit.ok,true,JSON.stringify(growthAudit));
 assert.ok(growth.CITY_HOUSING_CAPACITY>=400);
 const previewSource=read("web/writer-block-road-preview.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const preview=new Function("geoToCityLocal",previewSource+
-  ";return {buildWriterBlockRoadPreview,writerBlockLocalRing,writerBlockContainsLocalPoint};")(urban.geoToCityLocal);
+  ";return {buildWriterBlockRoadPreview,writerBlockLocalRing,writerBlockContainsLocalPoint,writerBlockRingArea,WRITER_BLOCK_ROAD_EVIDENCE};")(urban.geoToCityLocal);
 const terrainDataSource=read("web/writer-block-terrain-data.js").replace(/^export /gm,"");
 const terrainData=new Function(terrainDataSource+";return WRITER_BLOCK_DEM_SOURCE;")();
 const terrainSource=read("web/writer-block-terrain.js").replace(/^import [\s\S]*?;$/gm,"").replace(/^export /gm,"");
@@ -32,14 +32,17 @@ const buildingData=new Function(buildingDataSource+";return WRITER_BLOCK_BUILDIN
 const realBuildingSource=read("web/writer-block-buildings.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const realBuildings=new Function("WRITER_BLOCK_BUILDING_SOURCE","writerBlockContainsLocalPoint",realBuildingSource+
   ";return {buildWriterBlockBuildingMasses};")(buildingData,preview.writerBlockContainsLocalPoint);
+const streetFrameSource=read("web/writer-block-street-frame.js").replace(/^import [\s\S]*?;$/gm,"").replace(/^export /gm,"");
+const streetFrame=new Function("writerBlockLocalRing","writerBlockRingArea","writerBlockContainsLocalPoint","WRITER_BLOCK_ROAD_EVIDENCE",streetFrameSource+
+  ";return {buildWriterBlockStreetFrame};")(preview.writerBlockLocalRing,preview.writerBlockRingArea,preview.writerBlockContainsLocalPoint,preview.WRITER_BLOCK_ROAD_EVIDENCE);
 const townSource=read("web/town.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain","buildWriterBlockBalcony","buildWriterBlockBuildingMasses",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain","buildWriterBlockBalcony","buildWriterBlockBuildingMasses","buildWriterBlockStreetFrame",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain,balcony.buildWriterBlockBalcony,realBuildings.buildWriterBlockBuildingMasses
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain,balcony.buildWriterBlockBalcony,realBuildings.buildWriterBlockBuildingMasses,streetFrame.buildWriterBlockStreetFrame
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
@@ -80,6 +83,13 @@ assert.equal(mapBuildings.userData.citySurvey.ignoredRoomCollisionCount,1);
 assert.equal(mapBuildings.userData.citySurvey.protectedWriterRoom,true);
 assert.equal(mapBuildings.userData.citySurvey.physicalCollider,false);
 assert.equal(mapBuildings.children.length,2,"One volume mesh and one noncolliding footprint outline");
+const streetFrameMesh=scene.getObjectByName("writer-block-osm-4-street-pavement");
+assert.ok(streetFrameMesh&&streetFrameMesh.userData.cityStreetEvidence?.physicalCollider===false,
+  "Four sourced streets need visible paved shapes without adding traffic colliders");
+assert.equal(streetFrameMesh.userData.cityStreetEvidence.actualPavementWidthKnown,false,
+  "Visual road widths must remain explicitly schematic");
+const streetFrameGroup=scene.getObjectByName("writer-block-source-aligned-streets");
+assert.ok(streetFrameGroup&&streetFrameGroup.children.length===5,"Four OSM street labels missing");
 const roadUnion=scene.getObjectByName("city-road-union");
 assert.ok(roadUnion&&roadUnion.isMesh,"The town lost its unified asphalt road surface");
 assert.equal(roadUnion.userData.urbanSurface.segments,urban.ROAD_SEGMENTS.length,
