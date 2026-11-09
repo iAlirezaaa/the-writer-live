@@ -106,3 +106,34 @@ for (const input of controlInputs) {
   if (protectedKeyForControls) assert.equal(protectedKeyForControls(input), output);
 }
 console.log('PASS RDR-072: ' + controlInputs.length + ' fixtures');
+
+
+// RDR-075: prove the live CI guard fails closed when the protected asset is absent.
+// Use an isolated temporary checkout; never remove files from the real repository.
+const os = require('node:os');
+const { spawnSync } = require('node:child_process');
+if (process.env.READER_GATE_FIXTURE !== '1') {\nconst fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'reader-protected-gate-'));
+try {
+  fs.mkdirSync(path.join(fixtureRoot, 'tests'));
+  fs.mkdirSync(path.join(fixtureRoot, 'web'));
+  fs.copyFileSync(__filename, path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs'));
+  fs.writeFileSync(path.join(fixtureRoot, 'web/read.js'), source);
+  const child = spawnSync(process.execPath, [path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs')], {
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_REPOSITORY: 'iAlirezaaa/the-writer-live', READER_GATE_FIXTURE: '1' },
+    timeout: 10000,
+  });
+  assert.equal(child.error, undefined, 'temporary public guard process must start');
+  assert.notEqual(child.status, 0, 'missing protected asset must fail public CI');
+  assert.match(child.stderr, /public CI requires \.github\/reader-assets\/read\.js/);
+  const privateChild = spawnSync(process.execPath, [path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs')], {
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_REPOSITORY: 'iAlirezaaa/the-writer', READER_GATE_FIXTURE: '1' },
+    timeout: 10000,
+  });
+  assert.equal(privateChild.status, 0, 'private checkout must run without protected asset: ' + privateChild.stderr);
+  console.log('PASS RDR-075: missing protected asset rejected in live, accepted in private');
+} finally {
+  fs.rmSync(fixtureRoot, { recursive: true, force: true });
+}
+}
