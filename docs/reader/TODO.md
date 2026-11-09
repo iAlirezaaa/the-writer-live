@@ -77,3 +77,10 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-049 P1 new:** add a protected/public normalization fuzz corpus covering ZWNJ, Arabic digits and punctuation with deterministic expected matches and false-positive boundaries; run it in focused CI.
 - [ ] **RDR-050 P2 new:** add a non-transactional, rights-aware sample-length badge (pages or minutes) generated only from explicitly public preview metadata; never inspect unpublished text or enable checkout.
 - Benchmark: Kobo Web Reader supports keyboard navigation, book search, notes, adjustable typography and saved position: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
+
+## RDR-051 — 2026-11-09 — repair focused Node regression
+- [x] **P0 test repair:** remove a broken undeclared `implementation` reference and orphaned loop from protected/source parity test; repair executable protected `searchKey` fixture escaping. One focused test-only change, private-first then public. No runtime, catalog records, city or payment edits.
+- [ ] **CI verification pending:** run `.github/workflows/reader-catalog-quality.yml` and report exact successful/failed Node counts; a prior green run cannot validate this change. Browser QA and Pages deployment are independent.
+- [ ] **RDR-052 P1 new:** add a negative-match fixture to ensure normalizing Arabic/Persian letters does not collapse distinct catalog titles. Acceptance: public and protected implementations produce identical positive and negative results.
+- [ ] **RDR-053 P2 new:** introduce a rights-only preview eligibility contract for storefront cards, with explicit reason codes for blocked previews and no unpublished text in test fixtures.
+- Benchmark: Kobo Web Reader supports keyboard navigation, notes, saved position and typography controls: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
