@@ -42,3 +42,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-039 P1 new:** fail CI when the public HTML entry point references a stale catalog script cache key compared with the protected Pages HTML. Acceptance: matching version keys and a passing Node regression.
 - [ ] **RDR-040 P2 new:** add a rights-safe catalog loading retry control with an accessible error status when a public snapshot request fails. Acceptance: retry without reload, no unpublished data exposure.
 - CI and browser status must be recorded separately; protected assets replace root files at deployment, so root/protected parity is a release gate.
+
+## RDR-039 — 2026-11-09 — public catalog entry-point parity
+- [x] Correct public `read/index.html` to match protected `.github/reader-assets/read.html`: restore the accessible filter-reset control and catalog JS cache key `reader-20261109-catalog-v8`. No story data, checkout, or city files changed.
+- [x] Add a Node regression in `tests/reader-catalog-reset.test.cjs` checking versioned entry scripts and reset controls; private-first commit `4c163c447bd0c1881dca3b8896e2282986eff546`; public HTML `eaa4f748956f173965562d171feefbf94643d0f6`; public test `4011a1d4abdd5d1a7885bc578ebf6b335b0b7373`.
+- [ ] Confirm fresh reader-catalog-quality workflow run and Node pass/fail totals. Connector currently cannot list push-triggered workflow runs; do not infer success. Browser QA and Pages deployment remain unverified.
+- [ ] **RDR-041 P1:** assert both public entry HTML and protected replacement preserve exactly one named search landmark and all search/status/sort/reset IDs, with one Node test. Acceptance: no entry-point semantic drift.
+- [ ] **RDR-042 P2:** test RTL keyboard arrow page-turn behavior with an explicit language-direction fixture, including reduced-motion mode. Acceptance: deterministic navigation without scroll hijacking.
+- Benchmark: Kobo Web Reader supports keyboard page navigation, bookmarks, annotations, search and reading settings: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
