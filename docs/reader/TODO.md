@@ -69,3 +69,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-047 P2 new:** verify public-only book preview links use an explicit rights allowlist and never construct links for unpublished editions.
 - Benchmark: Kobo Web Reader documents keyboard navigation, table of contents, search, bookmarks and reading settings: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
 - Only a generic Node test is synchronized publicly; no unpublished writer data, secrets or payment functionality.
+
+## RDR-048 — 2026-11-09 — executable protected-search regression
+- [x] Add a Node regression in `tests/reader-catalog-reset.test.cjs` that evaluates the deployed protected `searchKey` implementation against four Persian/Arabic/Latin equivalence fixtures. The test is skipped in the private repository when public deployment assets are absent, and executes against the protected file in live. No runtime catalog behavior, story data, city code or payment changes.
+- [ ] Confirm a fresh `reader-catalog-quality.yml` CI run for the new commit, including exact Node pass/fail totals. Previous known live run 42623444113 passed, but does not validate RDR-048. A separate earlier run 42623242316 failed in the catalog test step; root cause and fresh results remain unconfirmed.
+- [ ] Browser keyboard, screen-reader and GitHub Pages deployment verification remain separate and unverified.
+- [ ] **RDR-049 P1 new:** add a protected/public normalization fuzz corpus covering ZWNJ, Arabic digits and punctuation with deterministic expected matches and false-positive boundaries; run it in focused CI.
+- [ ] **RDR-050 P2 new:** add a non-transactional, rights-aware sample-length badge (pages or minutes) generated only from explicitly public preview metadata; never inspect unpublished text or enable checkout.
+- Benchmark: Kobo Web Reader supports keyboard navigation, book search, notes, adjustable typography and saved position: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
