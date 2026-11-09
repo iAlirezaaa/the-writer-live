@@ -28,3 +28,9 @@ North = negative Z: layered mountains farther behind the existing ridgeline. Eas
 
 ## Acceptance
 Validate with `tests/urban_plan_probe.mjs`, `tests/city_districts_probe.mjs`, and `tests/town_scene_probe.mjs`. Then verify the current Pages workflow and inspect street-level, overhead, winter/night and mobile screenshots. If a phase fails, do not mark it visually finished.
+
+## Geographically faithful Tehran writer-block phase (supersedes hypothetical spatial placement)
+- The project's long-term geography is a real-city digital twin of Tehran. The current approved **build extent is one road-bounded block containing writer-home WGS84 35.715361987616696, 51.3642455031707**, not the whole city. The existing `ROAD_SEGMENTS`, housing, studio, mountain and forest are procedural placeholders unless independently surveyed; do not present them as actual Tehran alignments.
+- Derive the initial block polygon and meter-accurate road edges, sidewalk widths, crossings, parcel footprints, roof massing, terrain elevations, green plots and street fixtures from attributed rights-cleared data. Survey/validate WGS84 projection, control points, scale, street heading and source timestamps; never guess coordinates or 1:1 precision.
+- During this phase, defer reconfiguring roads and parcel positions outside the writer block, regardless of older east-forest/north-mountains plans. Preserve stable scene object IDs, public accessibility and current resident mobility contracts.
+- For every new/improved prop, consult `cognition/skills/3dviz-pro-max/` and the city skill `city/skills/tehran-writer-block/SKILL.md`. Prioritize proportions, silhouettes, support/contact, coherent openings/materials, and render-cost/LOD. Do not mark a prop visually accepted until actual screenshot review.
