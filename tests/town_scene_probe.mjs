@@ -124,7 +124,7 @@ try {
   const clickable = (mesh, panel, label) => {
     mesh.userData.panel = panel; mesh.userData.label = label; clickables.push(mesh); return mesh;
   };
-  const town = buildTown({ THREE, scene, clickable, canvasTex });
+  const town = buildTown({ THREE, scene, clickable, canvasTex, mapMode:"legacy" });
   const townClickables = [...clickables];
   const citizens = createCitizens({ THREE, scene, clickable });
   citizens.setRoster(roster);
@@ -261,7 +261,7 @@ try {
     }
     assert.deepEqual(nightLighting(-1), night, "Negative daylight must clamp to night");
     assert.deepEqual(nightLighting(2), day, "Excess daylight must clamp to day");
-    const lamps = descendants(town.group, (o) => o.isPointLight && Math.abs(o.position.z) >= 4.5 && Math.abs(o.position.z) <= 12);
+    const lamps = descendants(town.group, (o) => o.isPointLight && o.userData.cityStreetLamp);
     assert.ok(lamps.some((l) => l.position.z < 0) && lamps.some((l) => l.position.z > 0), "Street lamps missing on one road");
     assert.ok(Math.max(...lamps.map((l) => l.position.x)) - Math.min(...lamps.map((l) => l.position.x)) >= 20,
       "Street lamps are clustered instead of covering the town");
@@ -279,21 +279,29 @@ try {
     // cannot hide behind otherwise-correct isolated town geometry. No browser/network is needed.
     function element() {
       return { style: {}, dataset: {}, classList: { add() {}, remove() {}, toggle() {} },
-        clientWidth: 1000, clientHeight: 700, value: "", children: [],
+        clientWidth: 1000, clientHeight: 700, value: "", textContent: "", children: [],
         append(...children) { this.children.push(...children); }, appendChild(child) { this.children.push(child); return child; },
-        prepend() {}, replaceChildren() {}, setAttribute() {}, addEventListener() {}, removeEventListener() {},
+        prepend() {}, replaceChildren() {}, setAttribute() {}, getAttribute() { return null; }, hasAttribute() { return false; }, insertAdjacentElement() {}, addEventListener() {}, removeEventListener() {},
         querySelectorAll(){return [];}, querySelector(){return element();},
         matches(){return false;}, closest(){return element();}, contains(){return false;},
         getContext: drawingContext, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1000, height: 700 }) };
     }
     const elements = new Map();
-    context.document = { createElement: element, querySelectorAll: () => [],
-      querySelector(selector){return this.getElementById(String(selector).replace(/^#/,""));}, addEventListener() {},
+    const html = readFileSync(resolve(root, "web/index.html"), "utf8");
+    const navButtons = (attr) => [...html.matchAll(new RegExp(attr + '="([^"]+)"', "g"))]
+      .map((match) => { const button = element(); button.dataset[attr === "data-panel" ? "panel" : "view"] = match[1]; return button; });
+    const tabbar = element(), stageTools = element();
+    tabbar.querySelectorAll = (selector) => selector === "button[data-panel]" ? navButtons("data-panel") : [];
+    stageTools.querySelectorAll = (selector) => selector === "button[data-view]" ? navButtons("data-view") : [];
+    context.document = { body: element(), documentElement: element(), createElement: element, querySelectorAll: () => [],
+      querySelector(selector){return selector === ".tabbar" ? tabbar : selector === ".stage-tools" ? stageTools
+        : this.getElementById(String(selector).replace(/^#/,""));}, addEventListener() {},
       getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); } };
     context.location = { href:"https://example.invalid/the-writer-live/",pathname:"/the-writer-live/",hostname:"example.invalid",origin:"https://example.invalid" };
     context.URL = URL;
     context.window = { innerWidth: 1280, devicePixelRatio: 1, addEventListener() {},
       location:context.location };
+    context.MutationObserver = class { observe() {} disconnect() {} };
     context.requestAnimationFrame = () => 0;
     context.setInterval = context.setTimeout = () => 0;
     context.clearInterval = context.clearTimeout = () => {};
@@ -355,7 +363,7 @@ try {
     const awake = frame(0, false), asleep = frame(0, true);
     assert.ok(awake.every((n) => Number.isFinite(n) && n > 0), "Actual world night lights are dark");
     assert.deepEqual(asleep, awake, "Writer sleep changes outdoor night lighting");
-    assert.notDeepEqual(frame(12, true), asleep, "World never drives town lighting with daylight");
+    assert.deepEqual(frame(12, true), asleep, "Author preview hour must not change actual-time town lighting");
     assert.deepEqual(frame(0, true), asleep, "World night lighting is not repeatable");
     const { probeSources } = await evaluate("objects.js");
     assertWiring({ sources: Object.keys(probeSources), clickables: world.probeClickables
@@ -364,6 +372,6 @@ try {
   } else throw new Error(`Unknown check: ${mode}`);
   if (mode !== "views") console.log(`TOWN-SCENE-OK ${mode} (Three.js ${THREE.REVISION}; ${townClickables.length} town + ${clickables.length - townClickables.length} citizen clickables)`);
 } catch (error) {
-  console.error(`TOWN-SCENE-FAIL ${mode}: ${error.message}`);
+  console.error(`TOWN-SCENE-FAIL ${mode}: ${error.stack || error.message}`);
   process.exitCode = 1;
 }
