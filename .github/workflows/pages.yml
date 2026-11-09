@@ -44,6 +44,7 @@ jobs:
           cp .github/city-assets/writer-block-illustrative-context.js _site/web/writer-block-illustrative-context.js
           cp .github/city-assets/writer-block-facade-preview.js _site/web/writer-block-facade-preview.js
           cp .github/city-assets/writer-block-road-regulations.js _site/web/writer-block-road-regulations.js
+          cp .github/city-assets/writer-apartment-third-floor.js _site/web/writer-apartment-third-floor.js
           cp .github/city-assets/town-tehran-rebuild.js _site/web/town-tehran-rebuild.js
           mkdir -p _site/city/survey/output
           cp city/survey/output/writer-block-overture-buildings.json _site/city/survey/output/writer-block-overture-buildings.json
@@ -89,6 +90,7 @@ jobs:
           node tests/urban_plan_probe.mjs _site
           node tests/road_topology_probe.mjs _site
           node tests/writer_house_consistency_probe.mjs _site
+          node --experimental-vm-modules tests/tehran_writer_apartment_third_floor_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           node tests/city_housing_access_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
