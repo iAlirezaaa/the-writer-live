@@ -221,7 +221,7 @@ try {
       const road = roads.find(({ box }) => insideXZ(box, p));
       if (road) assert.ok(Math.abs(p.x - crossingX) <= 0.65, `Route crosses asphalt away from zebra crossing: ${JSON.stringify(p)}`);
       assert.ok(surfaces.some(({ box }) => insideXZ(box, p, 0.08)), `Route has no physical paving beneath it: ${JSON.stringify(p)}`);
-      for (const { box } of blockers) assert.ok(!insideXZ(box, p, 0.15), `Route walks through furniture/wall at ${JSON.stringify(p)}`);
+      for (const { box, mesh } of blockers) assert.ok(!insideXZ(box, p, 0.15), `Route walks through furniture/wall at ${JSON.stringify(p)}; mesh=${mesh.name||"(unnamed)"} geom=${mesh.geometry.type} box=${JSON.stringify({min:[...box.min],max:[...box.max]})} parent=${mesh.parent?.name||"(unnamed)"}`);
       assert.ok(!(Math.abs(p.x) < 3.2 && Math.abs(p.z) < 3.2), "Town route enters the writer's house");
     }
     function segment(a, b) {
