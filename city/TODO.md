@@ -101,3 +101,30 @@ Release: documentation-only. Previous public deploy success is historical and do
 ### Two proposed backlog ideas (MAYOR-016)
 1. **Intersection occupancy arbitration**: safe turn/merge tokens with right-of-way priorities that prevent car overlap without reintroducing deadlocks.
 2. **Adaptive real-light pool**: give SpotLights to only nearby/on-screen headlights while every far car retains emissive lenses and turn/brake visibility.
+
+## MAYOR-017 — Tehran georeference contract (2026-11-09)
+- [x] Register independent task before editing skill: `city/tasks/MAYOR-017-tehran-georeference-contract.md`.
+- [x] Inspect `web/urban-plan.js`: exact WGS84 writer-home coordinates already present, local X east / Z south; existing roads remain procedural, NOT mapped Tehran streets.
+- [x] Document accuracy, licensing and regression release gates in municipal skill.
+- [ ] Run geospatial round-trip, urban, road, scene and night tests in checkout; not executed in this audit.
+- [ ] Source licensed Tehran GIS road/building/elevation data and compare against site coordinates before scene changes.
+
+### Two backlog ideas (MAYOR-017)
+1. **Tehran parcel provenance ledger:** city-only table of geographic features with license, capture date, projection, confidence and source-to-scene error.
+2. **Georeferenced visual discrepancy viewer:** optional debug-only overlay of actual mapped street centerlines against simulated road meshes, with meter-scale error badges and no changes to citizen routing.
+
+Status: documentation-only. No geometry, weather runtime, citizen paths, public pinned assets or deployment changed. No test execution or real-world accuracy claimed.
+
+## MAYOR-019 — Tehran environment source-of-truth (2026-11-09)
+- [x] Create independent task `city/tasks/MAYOR-019-tehran-live-clock-weather-contract.md` before changing municipal QA guidance.
+- [x] Audit anchor and timezone declarations in `web/urban-plan.js`; confirm procedural geometry is not a surveyed Tehran street map.
+- [x] Document timezone/solar-phase/weather provenance and stale-data acceptance gates in `city/skills/city-regression/SKILL.md`.
+- [ ] Trace actual city clock, sky and weather runtime consumers and implement only after source/probe validation.
+- [ ] Run Node scene/geometry tests and visual day/night/mobile checks; NOT RUN in this documentation-only iteration.
+- [ ] Confirm fresh Pages build before claiming any deployment; NOT VERIFIED.
+
+### Two new backlog ideas (MAYOR-019)
+1. **Solar-phase fixture set**: reference Tehran seasonal sunrise/sunset timestamps with deterministic rendering snapshots and boundary checks.
+2. **Weather provenance badge**: compact observed-at/source/freshness display in city diagnostics; no render-loop network calls or private location exposure.
+
+Status: documentation-only; no runtime files, roads, citizen paths or author/publisher data modified. Public mirror is documentation-only; live weather and solar-driven lighting are NOT yet implemented or verified.
