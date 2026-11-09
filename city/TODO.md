@@ -360,3 +360,15 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Two new backlog ideas — MAYOR-046
 1. **Satarkhan Park geospatial corridor** with park polygon, named road way IDs, routing topology, no invented junctions, and owner-approved outer boundary.
 2. **Official per-parcel floor registry** using verified municipal permit identifiers; separately distinguish approved floors, physical built floors, unit counts, roof/entrance proof and confidence.
+
+## MAYOR-047 — licensed side streets into Sattarkhan primary road (2026-11-09)
+- [x] Register independent pre-edit TODO and recheck immutable backups and Tehran/3Dviz contract.
+- [x] Extract six real way fragments from dated official OSM snapshot with exact source subranges; five shared junctions connect 3 actual alleys to primary road.
+- [x] Render compact non-colliding mapped 3D road/edge ribbons via THREE; all strip widths labelled illustrative, no new physical traffic.
+- [x] Direct Three.js complete scene: nine top-level groups, forty finite-bound rendered objects, third-floor writer room preserved, four existing source roofprints and no traffic.
+- [ ] Verify full Node/legacy public Pages CI, record release hash and real screenshot/FPS separately. Do not call old failed runs a successful release.
+- [ ] Obtain park 448551081 polygon and the remaining verified street connections; not part of this task.
+
+### Exactly two new backlog ideas — MAYOR-047
+1. Source and build the missing final park-bound road nodes and OSM leisure=park polygon 448551081, including named access footways and real crossings; no invented shortcuts.
+2. Acquire licensed adjacent block Overture polygons and municipal/OSM floor and entrance evidence; build only one validated site-specific building per future run with data confidence and rollback.
