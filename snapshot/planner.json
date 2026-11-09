@@ -261,9 +261,7 @@
       "task": "nap"
     }
   ],
-  "current": null,
-  "day": "2026-11-09",
-  "next": {
+  "current": {
     "attempts": null,
     "end": "2026-11-09T10:20",
     "id": "202611090940",
@@ -272,5 +270,16 @@
     "start": "2026-11-09T09:40",
     "status": "planned",
     "task": "persian_reading"
+  },
+  "day": "2026-11-09",
+  "next": {
+    "attempts": null,
+    "end": "2026-11-09T11:00",
+    "id": "202611091020",
+    "label": "چرت",
+    "next_retry_at": null,
+    "start": "2026-11-09T10:20",
+    "status": "planned",
+    "task": "nap"
   }
 }
