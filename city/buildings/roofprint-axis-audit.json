@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "source": "city/survey/output/writer-block-overture-buildings.json",
+  "sourceCapturedAt": "2026-11-09T12:18:12.627338+00:00",
+  "sourceLicense": "ODbL-1.0",
+  "sourceRelease": "latest-via-overturemaps-cli; exact release NOT verified",
+  "homeAnchorWGS84": {
+    "lat": 35.715361987616696,
+    "lon": 51.3642455031707,
+    "localX": 0,
+    "localZ": 0
+  },
+  "localAxisConvention": "+X east, +Z south; axis angle clockwise from east, modulo 180 degrees",
+  "method": "longest straight polygon boundary edge, derived from sourced planar vertices",
+  "limits": "Polygon edge orientation is not facade/entrance facing; ML roofprints may merge multiple real buildings.",
+  "numberOfSourceRoofprintCandidates": 4,
+  "verifiedIndependentRealBuildingCount": null,
+  "actualStreetWidthMeters": null,
+  "surveyedParkingBays": null,
+  "footprints": [
+    {
+      "sourceId": "3d2290d6-c533-4c11-b2c0-079f0ee2e29e",
+      "sourceFeatureType": "building",
+      "roofprintAreaSquareMeters": 1035.58,
+      "calculatedAreaSquareMeters": 1035.595,
+      "ringVertexCount": 15,
+      "longestBoundaryEdgeIndex": 2,
+      "longestBoundaryEdgeLengthMeters": 28.831,
+      "roofprintEdgeAxisDegrees": 75.793,
+      "entranceDirectionDegrees": null,
+      "floorCount": null,
+      "actualRealBuildingCountRepresented": null,
+      "measurementTier": "T1-sourced-roofprint-plan-only"
+    },
+    {
+      "sourceId": "3d7b8239-b1e0-48bc-8868-ae4a4d392586",
+      "sourceFeatureType": "building",
+      "roofprintAreaSquareMeters": 965.73,
+      "calculatedAreaSquareMeters": 965.737,
+      "ringVertexCount": 6,
+      "longestBoundaryEdgeIndex": 3,
+      "longestBoundaryEdgeLengthMeters": 47.491,
+      "roofprintEdgeAxisDegrees": 166.86,
+      "entranceDirectionDegrees": null,
+      "floorCount": null,
+      "actualRealBuildingCountRepresented": null,
+      "measurementTier": "T1-sourced-roofprint-plan-only"
+    },
+    {
+      "sourceId": "75edb751-8810-4f84-97b5-a53b58dbbf03",
+      "sourceFeatureType": "building",
+      "roofprintAreaSquareMeters": 1954.26,
+      "calculatedAreaSquareMeters": 1954.259,
+      "ringVertexCount": 32,
+      "longestBoundaryEdgeIndex": 29,
+      "longestBoundaryEdgeLengthMeters": 48.463,
+      "roofprintEdgeAxisDegrees": 166.145,
+      "entranceDirectionDegrees": null,
+      "floorCount": null,
+      "actualRealBuildingCountRepresented": null,
+      "measurementTier": "T1-sourced-roofprint-plan-only"
+    },
+    {
+      "sourceId": "76931a07-c621-4e37-9241-c41ee59d4248",
+      "sourceFeatureType": "building",
+      "roofprintAreaSquareMeters": 2505.89,
+      "calculatedAreaSquareMeters": 2505.91,
+      "ringVertexCount": 31,
+      "longestBoundaryEdgeIndex": 18,
+      "longestBoundaryEdgeLengthMeters": 37.852,
+      "roofprintEdgeAxisDegrees": 168.828,
+      "entranceDirectionDegrees": null,
+      "floorCount": null,
+      "actualRealBuildingCountRepresented": null,
+      "measurementTier": "T1-sourced-roofprint-plan-only"
+    }
+  ]
+}
