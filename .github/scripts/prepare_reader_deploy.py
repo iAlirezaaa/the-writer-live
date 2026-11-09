@@ -11,8 +11,8 @@ import re
 import sys
 
 
-VERSION = "reader-20261109-v7"
-CATALOG_VERSION = "reader-20261109-library-v2"
+VERSION = "reader-20261109-v8"
+CATALOG_VERSION = "reader-20261109-library-v3"
 
 
 def patch_site(root: Path) -> None:
