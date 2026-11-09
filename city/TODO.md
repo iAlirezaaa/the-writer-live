@@ -385,3 +385,16 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Two new backlog ideas — MAYOR-048
 1. **Park polygon + actual pedestrian path provenance:** acquire dated official way 448551081 nodes and source footways; validate accessible junction route to current west-side source street before any park mesh or shortcuts.
 2. **Municipal road-width and painted lane evidence:** independently licensed Tehran curb/median survey, lane separators and public-right-of-way data tied to per-way source IDs; replace current 10.8m sample width/paint with measured actual geometry.
+
+## MAYOR-049 — real urban-section clarity for Sixth Daryan alley (2026-11-09)
+- [x] Register MAYOR-049 TODO before code edits, check both protected backup branches, read Tehran/3Dviz skills and licensed OSM source tags.
+- [x] Validate Iranian 1399 Urban Street Design Code Part 5 Table 4-3 example minimums (2.5m lane / 1.8m parking / 1.2m clear footpath each side), clearly separate planning minima from physical measured neighborhood widths.
+- [x] Build Sixth Daryan way 92200441 as 10.7m clearly illustrative separated surface: 5.6m two-way-safe movement envelope; one 2.1m parking strip; two 1.5m footpaths, continuous in design. Source says neither `oneway` nor `width` nor parking restriction, so physical claims stay unknown.
+- [x] Add 7 bounded ≥6m parking stalls with 15m intersection end setbacks and only 5 static (non-traffic) illustrative vehicles; maintain ≥0.2m parking-to-travel/footpath margin.
+- [x] Direct vendored Three.js local street assembly PASS, 5 additional bounded drawables, 0 bad AABBs, 0 new citizen/vehicle colliders, intact owner-designed third-floor writer room.
+- [x] Audit 4 Overture ML roofprint axis bearings in `city/buildings/writer-block-orientation-audit.json`, NOT house counts/door orientations.
+- [ ] Run full Pages and existing legacy route/path probes without suppressing failures; inspect public deployment by SHA and capture actual day/night/street snapshots and render FPS separately.
+
+### Exactly two backlog ideas — MAYOR-049
+1. Acquire verified municipal/right-of-way and legal curb, sidewalk, parking-permission **widths** per OSM way (not general code minima), and clip design bands to certified cadastral envelopes before asserting accurate travel capacity.
+2. Acquire geocoded legal parcel and Overture building-part / entrance evidence to disaggregate four ML building polygons into an actual **verified** house count, unit/floor counts and street-facing façade orientation.
