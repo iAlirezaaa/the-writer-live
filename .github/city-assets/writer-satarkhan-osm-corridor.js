@@ -178,6 +178,192 @@ export const SATARKHAN_OPPOSING_PRIMARY=Object.freeze({
   sourceCapture:"2026-11-09T09:22:58.743Z",license:"ODbL-1.0",
   measuredWidthMeters:null,realLineMarkingsObserved:false
 });
+
+// MAYOR-049: ONE sourced way gets a concept-level complete street section.
+// Measured right of way is UNKNOWN; this is not a claim of actual street width,
+// two-way control, legal parking permission, or parcel ownership.
+export const SIXTH_DARYAN_DESIGN_PROFILE=Object.freeze({
+  wayId:92200441,kind:"DESIGN_HYPOTHESIS_NOT_SURVEY",
+  guideline:"Iran Urban Street Design Code 1399 vol.5 Table 4-3 p.56",
+  guidelineMinimums:Object.freeze({movingLane:2.5,parallelParking:1.8,clearSidewalk:1.2}),
+  actualRightOfWayMeters:null,actualCarriagewayWidthMeters:null,
+  onewaySourceTag:null,parkingPermissionVerified:false,actualCurbPositionKnown:false,
+  movingPassingEnvelopeCount:2,eachMovingEnvelopeMeters:2.8,
+  movingZoneMeters:5.6,parkingRightWidthMeters:2.1,
+  footpathEachSideMeters:1.5,fullConceptSectionMeters:10.7,
+  parkingSideIsObserved:false,carsParkedAreIllustrative:true,
+  carLengthMeters:4.4,carWidthMeters:1.7,minimumEndSetbackMeters:15,
+  candidateParkingBays:7,illustrativeParkedCars:5,physicalCollider:false
+});
+export function planSixthDaryanIllustrativeSection(){
+  const way=SATARKHAN_CORRIDOR_WAYS.find(w=>w.wayId===SIXTH_DARYAN_DESIGN_PROFILE.wayId);
+  if(!way||way.oneway!==null||way.highway!=="residential"||
+     way.localXZ.length!==2)throw new Error("Sixth Daryan OSM geometry requires source review");
+  const [a,b]=way.localXZ,dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
+  const ux=dx/len,uz=dz/len,nx=-uz,nz=ux;
+  if(!(len>150&&len<155))throw new Error("Source right-of-way segment drift");
+  const profile=SIXTH_DARYAN_DESIGN_PROFILE;
+  if(profile.eachMovingEnvelopeMeters<profile.guidelineMinimums.movingLane||
+     profile.parkingRightWidthMeters<profile.guidelineMinimums.parallelParking||
+     profile.footpathEachSideMeters<profile.guidelineMinimums.clearSidewalk)
+    throw new Error("Design strips below sourced guideline minima");
+  const travel=[-2.8,2.8],parking=[-4.9,-2.8],
+    sidewalkR=[-6.4,-4.9],sidewalkL=[2.8,4.3];
+  const from=([s,e])=>e-s;
+  if(Math.abs(from(travel)-profile.movingZoneMeters)>1e-6||
+     Math.abs(from(parking)-profile.parkingRightWidthMeters)>1e-6||
+     Math.abs(from(sidewalkR)-profile.footpathEachSideMeters)>1e-6||
+     Math.abs(from(sidewalkL)-profile.footpathEachSideMeters)>1e-6)
+    throw new Error("Cross section width arithmetic invalid");
+  const toPoint=(distance,normalOffset)=>({
+    x:a[0]+ux*distance+nx*normalOffset,
+    z:a[1]+uz*distance+nz*normalOffset
+  });
+  const slotDistances=[18,36,54,72,90,108,126];
+  const bayHalfLength=3,carHalfLength=profile.carLengthMeters/2;
+  const parkingOffset=(parking[0]+parking[1])/2;
+  const slots=slotDistances.map((d,i)=>({
+    slotIndex:i,distanceFromWayStart:d,
+    center:toPoint(d,parkingOffset),parked:[0,2,3,5,6].includes(i),
+    lengthMeters:bayHalfLength*2,sideOfOSMWay:"negativeNormal_unverified"
+  }));
+  if(slots.length!==profile.candidateParkingBays||
+     slots.filter(s=>s.parked).length!==profile.illustrativeParkedCars)
+    throw new Error("Parking bay inventory inconsistent");
+  const parkingClearance=Math.min(
+    parkingOffset-profile.carWidthMeters/2-parking[0],
+    parking[1]-(parkingOffset+profile.carWidthMeters/2)
+  );
+  if(parkingClearance<.15)throw new Error("Illustrative cars overlap sidewalk or moving lanes");
+  for(const s of slots)if(s.distanceFromWayStart-bayHalfLength<profile.minimumEndSetbackMeters ||
+    s.distanceFromWayStart+bayHalfLength>len-profile.minimumEndSetbackMeters ||
+    s.lengthMeters<profile.carLengthMeters+.5)
+    throw new Error("Parking obstructs an intersection or access aisle");
+  return {wayId:way.wayId,sourcePolyline:way.localXZ,lengthMeters:len,
+    travel,parking,sidewalkR,sidewalkL,parkingOffset,
+    slots,parkedCars:slots.filter(s=>s.parked),toPoint,
+    longitudinal:{ux,uz,nx,nz},designOnly:true,
+    directionOfRealTrafficKnown:false,actualParkingPermitted:null,
+    parkingClearanceMeters:parkingClearance,
+    twoMovingEnvelopesAlwaysClear:true,sidewalksContinuous:true};
+}
+function buildSixthDaryanIllustrativeSection(THREE,parent,{streetY=-3}={}){
+  const plan=planSixthDaryanIllustrativeSection(),group=new THREE.Group();
+  group.name="sixth-daryan-concept-pedestrian-parking-cross-section";
+  const surfaces=[
+    {name:"two-moving-envelopes",range:plan.travel,y:streetY+.165,color:0x343b40},
+    {name:"parallel-parking-strip",range:plan.parking,y:streetY+.169,color:0x52595e},
+    {name:"left-clear-sidewalk",range:plan.sidewalkL,y:streetY+.34,color:0xaca69b},
+    {name:"right-clear-sidewalk",range:plan.sidewalkR,y:streetY+.34,color:0xaca69b},
+    {name:"curb-barrier-left",range:[2.79,2.9],y:streetY+.36,color:0x77766f},
+    {name:"curb-barrier-right",range:[-5,-4.88],y:streetY+.36,color:0x77766f}
+  ];
+  const triangles=[],ranges=[],materials=[];
+  const makeStrip=(p,q,low,high,y)=>{
+    const a=[p.x,y,p.z],b=[q.x,y,q.z];
+    // range is given by local source-way normal; use the exact endpoint
+    // direction and never rotate against the original OSM way.
+    const n=plan.longitudinal,normal=[n.nx,n.nz];
+    const pt=(r,o)=>[r[0]+normal[0]*o,y,r[2]+normal[1]*o];
+    const A=pt(a,low),B=pt(b,low),C=pt(a,high),D=pt(b,high);
+    triangles.push(...A,...B,...C,...B,...D,...C);
+  };
+  const fwd0=plan.toPoint(0,0),fwd1=plan.toPoint(plan.lengthMeters,0);
+  surfaces.forEach((surface,i)=>{
+    const first=triangles.length/3;
+    makeStrip(fwd0,fwd1,surface.range[0],surface.range[1],surface.y);
+    ranges.push({start:first,count:6,materialIndex:i});
+    materials.push(new THREE.MeshStandardMaterial({color:surface.color,
+      roughness:.96,metalness:0,side:THREE.DoubleSide}));
+  });
+  const g=new THREE.BufferGeometry();
+  g.setAttribute("position",new THREE.Float32BufferAttribute(triangles,3));
+  for(const range of ranges)g.addGroup(range.start,range.count,range.materialIndex);
+  g.computeVertexNormals();g.computeBoundingBox();
+  const cross=new THREE.Mesh(g,materials);
+  cross.name="sixth-daryan-separated-travel-parking-sidewalks";
+  cross.renderOrder=4;cross.receiveShadow=true;cross.castShadow=false;
+  cross.userData.cityStreetEvidence={sourceOSMWay:plan.wayId,conceptOnly:true,
+    realWidthsMeasured:false,physicalCollider:false,actualSidewalkVerified:false};
+  group.add(cross);
+  // Bay partitions have their own diagram geometry. They are NOT surveyed road
+  // markings or parking permits. They end entirely inside parking band.
+  const bayTriangles=[],n=plan.longitudinal;
+  function bayLine(distance){
+    const x=plan.toPoint(distance,0);
+    const point=(longitudinal,offset)=>[
+      x.x+n.ux*longitudinal+n.nx*offset,streetY+.18,
+      x.z+n.uz*longitudinal+n.nz*offset
+    ];
+    const a=point(-.055,plan.parking[0]),b=point(.055,plan.parking[0]),
+      c=point(-.055,plan.parking[1]),d=point(.055,plan.parking[1]);
+    bayTriangles.push(...a,...b,...c,...b,...d,...c);
+  }
+  plan.slots.forEach(s=>{bayLine(s.distanceFromWayStart-3);bayLine(s.distanceFromWayStart+3);});
+  const linesG=new THREE.BufferGeometry();
+  linesG.setAttribute("position",new THREE.Float32BufferAttribute(bayTriangles,3));
+  linesG.computeVertexNormals();linesG.computeBoundingBox();
+  const lines=new THREE.Mesh(linesG,new THREE.MeshBasicMaterial({
+    color:0xd4d1c8,side:THREE.DoubleSide,transparent:true,opacity:.75,
+    depthWrite:false}));
+  lines.name="illustrative-parallel-parking-bay-dividers";
+  lines.renderOrder=6;lines.userData.cityStreetEvidence={
+    sourceOSMWay:plan.wayId,realPaintObserved:false,physicalCollider:false};
+  group.add(lines);
+  const carGroup=new THREE.Group();carGroup.name="illustrative-parked-cars-only";
+  const box=(name,geometry,material,instancePlaces)=>{
+    const mesh=new THREE.InstancedMesh(geometry,material,instancePlaces.length);
+    mesh.name=name;
+    const t=new THREE.Object3D(),yaw=-Math.atan2(n.uz,n.ux);
+    for(let i=0;i<instancePlaces.length;i++){
+      const p=instancePlaces[i];
+      t.position.set(p.x,streetY+p.y,p.z);
+      t.rotation.set(0,yaw,0);t.scale.set(1,1,1);t.updateMatrix();
+      mesh.setMatrixAt(i,t.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
+    mesh.castShadow=false;mesh.receiveShadow=true;
+    mesh.userData.cityStreetEvidence={
+      conceptualOnly:true,actualParkedVehiclesObserved:false,
+      physicalCollider:false,vehicleRouteChanged:false
+    };
+    carGroup.add(mesh);
+    return mesh;
+  };
+  const parked=plan.parkedCars.map(s=>({x:s.center.x,z:s.center.z,y:.54,t:s.distanceFromWayStart}));
+  box("parked-car-bodies",new THREE.BoxGeometry(4.4,.65,1.7),
+    new THREE.MeshStandardMaterial({color:0x71868e,roughness:.57,metalness:.19}),parked);
+  box("parked-car-cabins",new THREE.BoxGeometry(2.10,.52,1.4),
+    new THREE.MeshStandardMaterial({color:0x40565c,roughness:.43,metalness:.18}),
+    parked.map(p=>({...p,y:1.09})));
+  const wheels=[];
+  for(const p of parked)for(const lenOfs of [-1.35,1.35])
+    for(const sideOfs of [-.88,.88])
+      wheels.push({...plan.toPoint(
+        p.t+lenOfs,
+        plan.parkingOffset+sideOfs),y:.48});
+  box("parked-car-wheels-proxy",new THREE.BoxGeometry(.62,.62,.18),
+    new THREE.MeshStandardMaterial({color:0x262a2e,roughness:.83}),wheels);
+  group.add(carGroup);
+  group.userData.cityStreetEvidence={
+    sourceOSMWay:plan.wayId,kind:"ILLUSTRATIVE_FIT_REQUIRES_CADASTRAL_SURVEY",
+    guideline:"Iran urban street design 1399 part5 table 4-3 page56",
+    rights:"OSM centerline ODbL; all road widths and parking authored visual",
+    sourceWayDirectionKnown:true,actualOnewayKnown:false,
+    designedCombinedWidthMeters:SIXTH_DARYAN_DESIGN_PROFILE.fullConceptSectionMeters,
+    movingZoneWidthMeters:5.6,parkingZoneWidthMeters:2.1,
+    clearFootpathEachSideMeters:1.5,illustrativeParkingBays:7,
+    illustrativeParkedCars:5,realParkingPermissionKnown:false,
+    surveyedCurbs:false,unverifiedRightOfWay:true,
+    physicalCollider:false,existingVehicleRoutesChanged:false,
+    citizensRoutesChanged:false,writerRoomPreserved:true,
+    clearRoadEndSetbackMeters:SIXTH_DARYAN_DESIGN_PROFILE.minimumEndSetbackMeters,
+    geometricParkingToTravelSeparationMeters:plan.parkingClearanceMeters,
+    trafficPassingEnvelopeCountIsDesignAssumption:true
+  };
+  parent.add(group);return{group,plan};
+}
+
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 export function inspectSatarkhanCorridorTopology(ways=SATARKHAN_CORRIDOR_WAYS){
   const byId=new Map(ways.map(w=>[w.wayId,w]));
@@ -298,6 +484,7 @@ export function buildSatarkhanEastRoadCorridor(THREE,parent,{
     laneMarkingsSurveyed:false,physicalCollider:false,citizenPathsChanged:false
   };
   group.add(laneSketch);
+  const sixthSection=buildSixthDaryanIllustrativeSection(THREE,group,{streetY});
   // A few clearly graphic street-map labels, not municipal street signs.
   if(typeof canvasTex==="function"){
     for(const way of SATARKHAN_CORRIDOR_WAYS){
@@ -331,6 +518,7 @@ export function buildSatarkhanEastRoadCorridor(THREE,parent,{
     oppositePrimaryWayId:opposing.wayId,oppositePrimarySourceLanes:opposing.lanes,
     totalDistinctSourcedWayIds:7,oppositeCarriagewayModeled:true,
     primaryLaneWidthSurveyed:false,actualPaintPositionsSurveyed:false,
+    sixthDaryanIllustrativeSection: sixthSection.group.userData.cityStreetEvidence,
     protectedFloor3Unchanged:true,
     streetNames:SATARKHAN_CORRIDOR_WAYS.map(w=>w.name),
     userApprovedExpansion:true,roomThirdFloorPreserved:true,
