@@ -223,7 +223,15 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [x] Registered independent city task before runtime edits and checked exact frozen backup refs in both repos.
 - [x] Created one source-backed, non-colliding overlay in `web/writer-block-road-preview.js` and wired it into the existing town scene. This is **visual geography**, not surveyed roadway surfaces.
 - [x] Lightweight in-process JS geometry check: source coordinates match survey polygon, area ≈12,264.69 m², writer home contained, one mesh and finite ground coordinates, existing urban plan audit still valid.
-- [ ] GitHub Actions executable test and browser street/day/night screenshots: blocked/unverified; runner did not start jobs. Do not claim website deployment or measured GPU/visual performance.
-- [ ] Public pinned-city source parity and Pages deployment: record only after attempting public sync.
+- [x] Public GitHub Actions real Three.js/scene/traffic tests and Pages deploy succeeded in run 42604022465. Real browser street/day/night screenshots and GPU performance remain unverified.
+- [x] Public pinned-city source parity and Pages deployment verified: run 42604022465; weather pinned mismatch repaired in MAYOR-031.
 - Backlog idea A: OSM source-versus-procedural map layer switcher with license/source attribution.
 - Backlog idea B: geographic difference heatmap clipped to the writer block, showing mismatch without automatic street replacement.
+
+## MAYOR-031 — Unblock public Pages by pinning canonical Tehran weather (2026-11-09)
+- [x] Trace failing run 42603491954 to stale public `.github/city-assets/tehran-environment.js` requesting 35.6892 rather than writer-home anchor 35.715361987616696.
+- [x] Create independent TODO before one-file pinned repair, sync private-approved weather source; public commit `65515b71fa9eeb703ada4d377d21232635311acc`.
+- [x] Confirm `TEHRAN-ENVIRONMENT-OK`, writer-block preview and complete city scene/traffic tests plus Pages deployment in https://github.com/iAlirezaaa/the-writer-live/actions/runs/42604022465.
+- [ ] Real browser day/night weather screenshot remains pending.
+- Backlog A: add CI parity check for city weather module and its pinned public copy.
+- Backlog B: live-page smoke test for geo origin, map preview availability and attribution visibility.
