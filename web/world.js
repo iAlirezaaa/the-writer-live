@@ -2387,6 +2387,17 @@ window.addEventListener("drop", (e) => {
 
 async function loadExperiments() {
   const x = await getJSON("/api/experiments");
+  const policy = x.reward_policy;
+  const rewardSummary = $("reward-policy");
+  if (policy && rewardSummary) {
+    const arms = Object.entries(policy.arms || {}).filter(([name]) => name !== "بدون تمرین");
+    arms.sort((a, b) => b[1].mean_reward - a[1].mean_reward);
+    const leader = arms.find(([, stats]) => stats.tries >= 2);
+    const leaderText = leader
+      ? `تمرین برتر فعلی: ${leader[0]} · پاداش ${Math.round(leader[1].mean_reward * 100)}٪ · پذیرش ${Math.round(leader[1].acceptance_rate * 100)}٪`
+      : "هنوز برای رتبه‌بندی تمرین‌ها نمونه‌ی کافی نیست.";
+    rewardSummary.textContent = `${policy.algorithm} · ${policy.total_observations} نتیجه · مهارتِ نیازمند تمرین: ${policy.weakest_skill || "در حال سنجش"}. ${leaderText}`;
+  }
   const ul = $("experiments"); ul.replaceChildren();
   for (const r of x.recent.slice(0, 12)) {
     const verdict = r.delta == null ? "بدون مقایسه" : `${r.delta > 0 ? "+" : ""}${r.delta} نسبت به میانگین ${r.baseline}`;
