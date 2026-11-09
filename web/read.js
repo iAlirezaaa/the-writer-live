@@ -7,6 +7,8 @@ import { installPersianPresentation } from "./persian-display.js?v=observatory-2
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
 const $ = id => document.getElementById(id);
 const nfa = number => new Intl.NumberFormat("fa-IR").format(number);
+// Match Persian and Arabic keyboard variants and ignore vowel marks in catalog search.
+const searchKey = value => String(value ?? "").normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
 let stories = [];
 
 function savedProgress(id) {
@@ -65,11 +67,11 @@ function makeCover(story) {
 function renderShelf() {
   const shelf=$("covers");
   if(!shelf)return;
-  const query=$("story-search").value.trim().toLocaleLowerCase("fa");
+  const query=searchKey($("story-search").value.trim());
   const status=$("story-status").value;
   const list=stories.filter(story=>
     (status==="all"||story.status===status) &&
-    (!query||`${story.title||""} ${story.stage||""}`.toLocaleLowerCase("fa").includes(query))
+    (!query||searchKey(`${story.title||""} ${story.stage||""}`).includes(query))
   );
   const sort=$("story-sort").value;
   list.sort((a,b)=>{
