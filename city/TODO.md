@@ -372,3 +372,16 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Exactly two new backlog ideas — MAYOR-047
 1. Source and build the missing final park-bound road nodes and OSM leisure=park polygon 448551081, including named access footways and real crossings; no invented shortcuts.
 2. Acquire licensed adjacent block Overture polygons and municipal/OSM floor and entrance evidence; build only one validated site-specific building per future run with data confidence and rollback.
+
+## MAYOR-048 — source-backed second Sattarkhan main carriageway (2026-11-09)
+- [x] Before edits, create `city/tasks/MAYOR-048-sattarkhan-opposite-carriageway.md`; verify original protected backup refs and mandated Tehran/3Dviz skills.
+- [x] Extract exact opposite main-way OSM 1232461345 contiguous vertices 3..6, tagged 4 lanes, one-way, 50 km/h and sidewalk=right, separate from way 207742970.
+- [x] Update the existing low-cost, non-colliding visual road/graphic lane ribbon, no geometry or route alterations to the preserved writer apartment.
+- [x] Execute real vendored Three.js road renderer: five renderables, 80 roadway triangles + 90 schematic paint triangles, finite bounds and protected room.
+- [x] Strengthen source topology probe to check exact OSM coordinate/tags, opposite way direction, paint uncertainty, road bounds and collision safety.
+- [ ] Check all public Node/legacy/scene CI, Pages deployment and actual screenshot/FPS; do not claim visual correctness until captured.
+- [ ] Fetch official OSM polygon for Park Sattarkhan way 448551081; API unavailable through current external source. No park boundary built.
+
+### Two new backlog ideas — MAYOR-048
+1. **Park polygon + actual pedestrian path provenance:** acquire dated official way 448551081 nodes and source footways; validate accessible junction route to current west-side source street before any park mesh or shortcuts.
+2. **Municipal road-width and painted lane evidence:** independently licensed Tehran curb/median survey, lane separators and public-right-of-way data tied to per-way source IDs; replace current 10.8m sample width/paint with measured actual geometry.
