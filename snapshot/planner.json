@@ -27,7 +27,7 @@
       "label": "نوشتن داستان",
       "next_retry_at": null,
       "start": "2026-11-09T08:20",
-      "status": "planned",
+      "status": "done",
       "task": "write"
     },
     {
@@ -261,16 +261,7 @@
       "task": "nap"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-09T09:00",
-    "id": "202611090820",
-    "label": "نوشتن داستان",
-    "next_retry_at": null,
-    "start": "2026-11-09T08:20",
-    "status": "planned",
-    "task": "write"
-  },
+  "current": null,
   "day": "2026-11-09",
   "next": {
     "attempts": null,
