@@ -128,3 +128,16 @@ Status: documentation-only. No geometry, weather runtime, citizen paths, public 
 2. **Weather provenance badge**: compact observed-at/source/freshness display in city diagnostics; no render-loop network calls or private location exposure.
 
 Status: documentation-only; no runtime files, roads, citizen paths or author/publisher data modified. Public mirror is documentation-only; live weather and solar-driven lighting are NOT yet implemented or verified.
+
+## MAYOR-020 — weather coordinate/provenance audit (2026-11-09)
+- [x] Register task `city/tasks/MAYOR-020-weather-anchor-source-audit.md` before editing municipal guidance.
+- [x] Compare home anchor (35.715361987616696, 51.3642455031707) to the forecast request (35.6892, 51.3890): coordinates differ.
+- [x] Document that Open-Meteo forecast `current` values are model-based estimates, not direct on-site observations.
+- [ ] Change weather request only after deterministic coordinate, clock, fallback and existing city/scene probes pass.
+- [ ] Browser-level network, day/night visuals, Pages deployment: NOT VERIFIED.
+
+### Two new backlog ideas (MAYOR-020)
+1. **Single-source weather anchor adapter**: generate provider query coordinates from `TEHRAN_GEO_ORIGIN` and add an exact-coordinate assertion in the environment probe, without touching any citizen route.
+2. **Model-versus-station provenance switch**: show weather source type, sample location, observation/model timestamp and freshness in a compact city-only diagnostics badge.
+
+Status: documentation-only; no runtime files changed, no executable tests run, no deployment claimed.
