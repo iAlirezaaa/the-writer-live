@@ -1,0 +1,40 @@
+name: Reader catalog focused tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/read.js"
+      - "web/read.html"
+      - "read/index.html"
+      - "web/reader-position.js"
+      - "tests/reader-catalog-reset.test.cjs"
+      - "tests/reader-position.test.mjs"
+      - "tests/test_reader_unicode_boundaries.cjs"
+      - "tests/test_reader_unicode_controls.cjs"
+      - ".github/reader-assets/read.js"
+      - ".github/reader-assets/read.html"
+      - ".github/workflows/reader-catalog-quality.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reader-catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Catalog behavior and keyboard reset
+        run: node --test tests/reader-catalog-reset.test.cjs
+      - name: Persian Unicode normalization boundaries
+        run: |
+          node tests/test_reader_unicode_boundaries.cjs
+          node tests/test_reader_unicode_controls.cjs
+      - name: Stable passage resume after typography reflow
+        run: node --test --experimental-default-type=module tests/reader-position.test.mjs
+      - name: Parse production catalog module
+        run: |
+          cp web/read.js /tmp/reader-catalog-validated.mjs
+          node --check /tmp/reader-catalog-validated.mjs
