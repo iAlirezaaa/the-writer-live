@@ -28,7 +28,7 @@ jobs:
           import {readFileSync} from 'node:fs';
           const x=JSON.parse(readFileSync('city/survey/output/writer-block-survey.json','utf8'));
           if(x.license!=='ODbL-1.0'||x.blockBoundary.status!=='UNVERIFIED'||x.totals.roads<1||
-             !x.osmBaseTimestamp||!x.features.features.every(f=>f.id.startsWith('osm:way:')))
+             !Number.isFinite(Date.parse(x.capturedAt))||!x.features.features.every(f=>f.id.startsWith('osm:way:')))
              process.exit(1);
           console.log('SURVEY-SOURCE-OK',JSON.stringify({totals:x.totals,source:x.endpoint,base:x.osmBaseTimestamp}));
           "
