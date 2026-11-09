@@ -15,11 +15,12 @@
  */
 import { buildWriterBlockStreetFrame } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
 import { buildWriterBlockTerrain } from "./writer-block-terrain.js?v=writer-block-dem-contours-20261109-v1";
-import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v2";
+import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v3";
 import { buildWriterBlockBuilding01 } from "./writer-block-building-01.js?v=tehran-building-by-building-01-20261109-v1";
 import { buildWriterBlockBuilding02 } from "./writer-block-building-02.js?v=tehran-source-building-02-20261109-v1";
 
 import { buildWriterBlockBuilding03 } from "./writer-block-building-03.js?v=tehran-source-building-03-20261109-v1";
+import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261109-v1";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
@@ -63,10 +64,12 @@ export function buildTehranReconstructionTown({
   const terrain=buildWriterBlockTerrain(THREE,group,{streetY,reliefVisible:false});
   // True aerial plan lines, as opposed to residential architecture invented
   // outside licensed footprints. Terrain contours remain a coarse DEM overlay.
-  const footprintMasses=buildWriterBlockBuildingMasses(THREE,group,{streetY});
+  const footprintMasses=buildWriterBlockBuildingMasses(THREE,group,{streetY,independentBuilding03:true});
   const building01=buildWriterBlockBuilding01(THREE,group,{streetY});
   const building02=buildWriterBlockBuilding02(THREE,group,{streetY});
   const building03=buildWriterBlockBuilding03(THREE,group,{streetY});
+  // Optional-to-replace, always labeled interpretive context: no surveyed tree/parking/lamps.
+  const context=buildWriterBlockContext(THREE,group,{streetY});
   if(footprintMasses.plan.length!==4||
      footprintMasses.group.userData.citySurvey.generatedVolumeCount!==0||
      footprintMasses.group.userData.citySurvey.independentlyModeledCount!==3||
@@ -76,7 +79,7 @@ export function buildTehranReconstructionTown({
      building03.plan.measuredHeightMeters!==null||
      !streets.group.getObjectByName("writer-block-osm-4-street-pavement"))
     throw new Error("Sourced city evidence changed; stop rather than invent replacement buildings");
-  if(group.children.length!==6)
+  if(group.children.length!==7||context.group.userData.cityContextEvidence.physicalCollider!==false)
     throw new Error("Unexpected old fictional objects attached to source-only map");
   scene.add(group);
   return {
@@ -87,9 +90,9 @@ export function buildTehranReconstructionTown({
     growth:null,
     trafficState(){return [];}, // no obsolete car bodies on the new OSM map
     update(day, elapsed, crossingDemand=false,weather=null){
-      // All reconstructed elements are static until street crossing and
-      // elevation surveys support navigable real routes. Global Tehran
-      // daylight and Open-Meteo still update independently in world.js.
+      // Interpretive lamp emission follows the existing daylight input, not a separate clock.
+      // No traffic, route, citizen, building or writer state is updated here.
+      context.update(day);
       return undefined;
     }
   };
