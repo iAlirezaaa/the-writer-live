@@ -1,0 +1,55 @@
+name: Sample licensed Tehran writer-block SRTM terrain
+on:
+  push:
+    branches: [main]
+    paths:
+      - "city/survey/acquire-writer-block-terrain.mjs"
+      - "city/tests/writer-block-terrain.test.mjs"
+      - ".github/workflows/city-writer-block-terrain-source.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: city-writer-block-dem-source
+  cancel-in-progress: false
+jobs:
+  terrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check writer-block source grid and DEM response guardrails
+        run: node --test city/tests/writer-block-terrain.test.mjs
+      - name: Read real SRTM 30m elevations from OpenTopoData
+        run: node city/survey/acquire-writer-block-terrain.mjs
+      - name: Reject invalid/out-of-scope DEM capture before writing
+        run: |
+          node --input-type=module -e "
+          import {readFileSync} from 'node:fs';
+          const d=JSON.parse(readFileSync('city/survey/output/writer-block-dem-srtm30m.json','utf8'));
+          if(d.providerDataset!=='srtm30m'||d.grid?.width!==9||d.grid?.depth!==7||
+             d.grid.heightsMetersEGM96.length!==63||d.homeAnchor.lat!==35.715361987616696||
+             d.homeAnchor.lon!==51.3642455031707||d.blockBoundary.status!=='OSM_CENTERLINE_CANDIDATE'||
+             d.stats.sampleCount!==64||!d.grid.heightsMetersEGM96.every(Number.isFinite))
+            process.exit(1);
+          console.log('TERRAIN-REAL-SRTM-SOURCE-OK',JSON.stringify(d.stats));
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: writer-block-srtm30m-DEM
+          path: city/survey/output/writer-block-dem-srtm30m.json
+          retention-days: 30
+      - name: Commit only dated SRTM terrain evidence to private source
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add city/survey/output/writer-block-dem-srtm30m.json
+          if ! git diff --cached --quiet; then
+            git commit -m "city: capture real SRTM30 terrain source for writer block"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
