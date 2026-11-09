@@ -123,7 +123,7 @@
     "mayor044": "Private direct Three.js scene integration PASS (34 finite-bound render objects, 9 facade meshes, 7 unchanged top-level groups, room preserved); CI/Pages and real visual renders still unverified.",
     "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches.",
     "mayor047": "Vendored Three.js full source-only assembly PASS: 9 groups and 40 rendered objects with finite bounds, 6 OSM way subranges, 5 shared source junctions, no traffic changes; Node/legacy Pages CI and screenshots not yet confirmed.",
-    "mayor048": "2026-11-09: standalone real Three.js corridor assembly PASS: opposing OSM 1232461345 source segment 3..6, 80 road-band + 90 schematic stripe triangles, five corridor renderable meshes, finite bounds. CI/Pages unverified pending run."
+    "mayor048": "Private direct Three.js source-only PASS: 9 groups, 41 finite-bounds renderables, floor-3 room intact; public Pages deployment success at run 42680523167 / SHA 68d78aca2a21e04a406a055d71fbbcb7259bc57f. Newer root index run 42680802013 FAILS legacy route probe at X=0 Z=7.3; not bypassed or altered."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
@@ -236,7 +236,12 @@
       "renderedGeometry": "single batched road mesh + one non-colliding schematic lane-stripe mesh",
       "originalTrafficRoutesModified": false,
       "writerApartmentMovedOrRemoved": false,
-      "publicReleaseVerified": false
+      "publicReleaseVerified": true,
+      "confirmedDeployedSha": "68d78aca2a21e04a406a055d71fbbcb7259bc57f",
+      "confirmedPagesRunId": 42680523167,
+      "latestRootHtmlCommitNotVerified": true,
+      "currentLegacyRouteRegression": "x=0,z=7.3 crossing furniture/wall in existing town_scene_probe paths",
+      "browserScreenshotCaptured": false
     },
     "totalDistinctSourceWayCount": 7
   }
