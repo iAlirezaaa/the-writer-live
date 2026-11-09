@@ -1,0 +1,79 @@
+name: Publish owner-authorized reading copy (preserve verified world)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "snapshot/stories/**"
+      - "snapshot/stories.json"
+      - "snapshot/manifest.json"
+      - ".github/reader-assets/read.js"
+      - ".github/reader-assets/book.js"
+      - ".github/workflows/publish-owner-stories.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-owner-stories
+  cancel-in-progress: true
+
+jobs:
+  deploy-reading:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find the most recent successful verified world deployment
+        id: last_good
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          id="$(gh api -X GET "repos/${{ github.repository }}/actions/workflows/pages.yml/runs" -f status=success -f per_page=1 --jq '.workflow_runs[0].id')"
+          test -n "$id" && test "$id" != "null"
+          echo "run_id=$id" >> "$GITHUB_OUTPUT"
+          echo "Reusing verified world artifact from run $id; city assets remain unchanged."
+      - uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          run-id: ${{ steps.last_good.outputs.run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+          path: _prior
+      - name: Overlay only authorized literature onto the last verified site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          test -s _prior/artifact.tar
+          tar -xf _prior/artifact.tar -C _site
+          mkdir -p _site/snapshot/stories _site/web
+          cp snapshot/stories.json snapshot/manifest.json _site/snapshot/
+          cp snapshot/stories/owner-20261110-jaye-doxt.json _site/snapshot/stories/
+          cp .github/reader-assets/read.js .github/reader-assets/book.js _site/web/
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("_site")
+          books = json.loads((p/"snapshot/stories.json").read_text(encoding="utf-8"))
+          b = [r for r in books if r.get("id") == "owner-20261110-jaye-doxt"]
+          assert len(b) == 1 and b[0].get("status") == "owner_shared", "story absent from public shelf"
+          story = json.loads((p/"snapshot/stories/owner-20261110-jaye-doxt.json").read_text(encoding="utf-8"))
+          assert story["body"].startswith("# جای دوخت\n") and len(story["body"]) > 3500
+          assert story["score"] is None and story["review_status"] == "awaiting_independent_critic"
+          assert "owner_shared" in (p/"web/book.js").read_text(encoding="utf-8")
+          assert "owner_shared" in (p/"web/read.js").read_text(encoding="utf-8")
+          assert (p/"web/town.js").is_file(), "world asset lost"
+          print("OWNER-STORY-RELEASE-OK: no critic score fabricated; prior verified town retained")
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
