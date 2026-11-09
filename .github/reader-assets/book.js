@@ -21,7 +21,7 @@ const MARGIN_STATE_FA = {
 };
 import { getJSON, isGitHubPages } from "./snapshot.js";
 import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
-import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v7";
+import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v8";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -459,6 +459,21 @@ async function sendReaderVote(value){
   const sid=book.story.id;
   ui.voteStatus.textContent="";
   if(isGitHubPages()){
+    // A static Pages site needs a separately deployed write API.
+    // Until configured, retain the explicit GitHub confirmation flow.
+    const endpoint=String(window.THE_WRITER_FEEDBACK_API||"").replace(/[/]$/,"");
+    if(endpoint){
+      try{
+        const response=await fetch(endpoint+"/api/stories/"+encodeURIComponent(sid)+"/votes",{
+          method:"POST",mode:"cors",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({value})
+        });
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(data.error||"ثبت رأی ممکن نشد");
+        ui.voteStatus.textContent=data.updated?"رأی شما ثبت شد.":"رأی شما از قبل ثبت شده بود.";
+      }catch(error){ui.voteStatus.textContent="ثبت مستقیم ناموفق بود: "+String(error.message||error);}
+      return;
+    }
     try{
       const result=openPublicVote({story:book.story,value});
       if(result.opened){
@@ -824,6 +839,20 @@ function openNoteForm(quote) {
 async function sendNote(e) {
   e.preventDefault();
   if (isGitHubPages()) {
+    const endpoint=String(window.THE_WRITER_FEEDBACK_API||"").replace(/[/]$/,"");
+    if(endpoint){
+      try{
+        const response=await fetch(endpoint+"/api/stories/"+encodeURIComponent(book.story.id)+"/comments",{
+          method:"POST",mode:"cors",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({name:ui.popName.value,text:ui.popText.value,quote:ui.pop.dataset.quote})
+        });
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(data.error||"ثبت نظر ممکن نشد");
+        ui.popStatus.textContent="نظر شما ثبت شد.";
+        book.comments.push(data);ui.pop.hidden=true;renderMargin();repaginate();
+      }catch(error){ui.popStatus.textContent="ثبت مستقیم ناموفق بود: "+String(error.message||error);}
+      return;
+    }
     try {
       const result=openPublicFeedback({story:book.story,quote:ui.pop.dataset.quote,name:ui.popName.value,
         text:ui.popText.value,rating:ui.popRating.value,category:ui.popCategory.value});
