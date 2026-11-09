@@ -297,6 +297,8 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [x] Audited 54 OSM nearby features (7 buildings, 47 roads), **no recorded shop/commercial tags and no building:levels** in this snapshot; mapped OSM alley service ways are outside the approved block. The 4 Overture within-block candidate roofprints also lack real heights/floor counts.
 - [x] Reconstructed the exact 15-vertex aerial polygon for Overture ID `3d2290d6-c533-4c11-b2c0-079f0ee2e29e`, 1035.58 sqm, in an independent one-mesh 3D shell with a symbolic 6m envelope and single 3m metric guide; no invented shop names/doors/windows.
 - [x] Retired duplicate translucent Overture volume; updated default sourced town from four to five groups, two independently modeled footprints plus one bulk anonymous mass and one writer-room-protected outline.
-- [ ] Actual Node/Three.js test and public Pages deployment verdict: pending GitHub Actions. Do not claim screenshots, real measured floors or verified shop tenants.
+- [x] Actual Three.js tests for second mapped building, source-only renderer and legacy layout passed: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42642944967 .
+- [ ] Public Pages deployment **BLOCKED**: pre-existing legacy citizen-route test fails at local X=0 Z=8.7; same failure in previous run https://github.com/iAlirezaaa/the-writer-live/actions/runs/42641786729 . No citizen route rewrite or test bypass undertaken.
+- [ ] Actual screenshots, surveyed storeys/shop names and real alley topology remain unavailable; do not claim verification.
 - New backlog A: query licensed commercial/shop/POI addresses inside the block and verify frontage alignment before creating any real storefront.
 - New backlog B: collect legally reusable building heights, `building:levels`, entrances and interior access/service alleys per source polygon; only then replace schematic floor guides and roads with surveyed 3D shapes.

@@ -1,6 +1,6 @@
 # MAYOR-039 — Second Tehran source roofprint, illustrative storey scale, commercial-data audit
 Date: 2026-11-09
-Status: IN PROGRESS (source/geometry validation and public deployment pending)
+Status: SOURCE AND ACTUAL THREE.JS TESTS PASS; PUBLIC DEPLOYMENT BLOCKED BY PRE-EXISTING LEGACY CITIZEN-PATH FAILURE
 
 ## User priority
 Start reconstructing actual mapped buildings, floors, streets/alleys and shops from overhead licensed geographic evidence. Rebuild only the originally authorized single writer-home road-bounded block, preserving the author's room, states, identities and citizen route data. No fake verified floor/shop claims.
@@ -18,10 +18,10 @@ Start reconstructing actual mapped buildings, floors, streets/alleys and shops f
 - `web/writer-block-building-02.js` visual silhouette will use exact source polygon, ONE 6m transparent/neutral illustrative envelope with at most ONE horizontal 3m scale line (NOT evidence of 2 storeys), no fabricated windows/shopfronts/signs and no physics. Separate from the remaining anonymous volume and author room. This is a floor-height measuring guide, **not a count of actual levels**.
 
 ## Single safe incremental change
-- [ ] Implement independent mapped building 02 and its scale guide with source-ID metadata, license/date, exact vertex and area checks and room protection; 3Dviz clean silhouette and low draw calls.
-- [ ] Remove only this ID from prior anonymized Overture ghost batch; keep other true source IDs, protect author-room overlap and no duplicates.
-- [ ] Integrate in `web/town-tehran-rebuild.js` (source-only, not `mapMode:legacy`), keep map layer count gated and writer room externally owned.
-- [ ] Source integrity/Three.js tests: actual WGS84/projected polygon, bounds, height-label uncertainty, all points in single block, no crossings/colliders, no new road or citizen changes, no fabricated shop/storey metadata.
+- [x] Implement independent mapped building 02 and its scale guide with source-ID metadata, license/date, exact vertex and area checks and room protection; 3Dviz clean silhouette and low draw calls.
+- [x] Remove only this ID from prior anonymized Overture ghost batch; keep other true source IDs, protect author-room overlap and no duplicates.
+- [x] Integrate in `web/town-tehran-rebuild.js` (source-only, not `mapMode:legacy`), keep map layer count gated and writer room externally owned.
+- [x] Source integrity/Three.js tests: actual WGS84/projected polygon, bounds, height-label uncertainty, all points in single block, no crossings/colliders, no new road or citizen changes, no fabricated shop/storey metadata.
 - [ ] Mirror private-authoritative changes to public pins, run Pages deployment and city acceptance suite; actual screenshot review marked unverified unless captured.
 
 ## Exactly two new backlog ideas
@@ -30,3 +30,10 @@ Start reconstructing actual mapped buildings, floors, streets/alleys and shops f
 
 ## Risks and release contract
 Overture is ML-derived and may merge several Tehran buildings into one source polygon. An illustrative horizontal guide at 3m is *not two actual floors*. No real business names can be asserted from the current source. Do not enlarge beyond the block or overwrite backup. Publication contingent on current Node/Three.js scene/room/traffic gates, and no screenshot claims without real capture.
+
+## Verified execution and release blocker
+- Private built model: `web/writer-block-building-02.js`, commit https://github.com/iAlirezaaa/the-writer/commit/dc3e0493ad286a4b0873bab8b9c02bbc30c53c0f .
+- Public mirrored Git commit https://github.com/iAlirezaaa/the-writer-live/commit/06fdc06999215c5b8f7c994decec18212ce94c0a .
+- Actual public GitHub Actions run https://github.com/iAlirezaaa/the-writer-live/actions/runs/42642944967 executed real Node + Three.js source-only and mapped-building tests. **PASSED** `TEHRAN-BUILDING-02-FLOOR-EVIDENCE-OK`, `TEHRAN-REAL-BUILDING-ROOFPRINTS-OK` (4 source roofprints: 2 standalone models + 1 anonymous proxy + 1 writer-room protected outline), `TEHRAN-SOURCE-ONLY-REBUILD-OK` (5 source groups, 13 visual geometry objects, 0 legacy buildings, cars or streets), and `TOWN-SCENE-OK layout`.
+- The **same public CI ultimately FAILED** in an existing *legacy-mode* `town_scene_probe.mjs paths` assertion, at coordinate `{x:0,z:8.700000000000001}`: `Route walks through furniture/wall`. It was **already failing before this MAYOR-039 change**, e.g. preceding https://github.com/iAlirezaaa/the-writer-live/actions/runs/42641786729 . We did not rewrite citizen routes, fictional old-city props, author room or skip the failing gate to claim a green build. Therefore **new version is committed, NOT deployed**; public live URL may still show the previous Pages release.
+- Day/night/overhead street screenshot captures, direct performance/GPU proof, audited shop names and real building levels **not performed**. Do not claim a faithful 1:1 commercial/vertical reconstruction. Separate investigation required for the preexisting *legacy-only* route obstruction, with independent safety verification if the city simulation routes are ever migrated to real OSM streets.

@@ -20,7 +20,7 @@
       "sourceId": "3d2290d6-c533-4c11-b2c0-079f0ee2e29e",
       "areaSquareMeters": 1035.58,
       "geometryTier": "T1-plan-proxy",
-      "visualStatus": "built-independent-map-footprint-building-02; current CI pending",
+      "visualStatus": "second independent source-mapped envelope; Three.js geometry tests pass; Pages deploy blocked by preexisting legacy paths check",
       "heightMetersSource": null,
       "heightMetersDisplayProxy": 6,
       "writerRoomIntersect": false,
@@ -101,6 +101,8 @@
     "writerHouseConsistency": "success",
     "traffic": "success",
     "district": "success",
-    "mayor039": "new independent mapped shell and source contracts committed; public deployment/tests not yet verified"
+    "mayor039": "2026-11-09 public Pages CI run 42642944967: source-only and independent-building-02 Node/Three.js tests pass; build/deploy overall fails due pre-existing legacy town_scene_probe.mjs paths obstacle at X=0 Z=8.7, also present in earlier run 42641786729; no new live deployment",
+    "mayor039RealPhotos": "not captured",
+    "mayor039ActualFloorsAndStores": "unverified; source has no building:levels or shop nodes within writer block"
   }
 }
