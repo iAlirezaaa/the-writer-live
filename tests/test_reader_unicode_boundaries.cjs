@@ -89,19 +89,15 @@ if (fs.existsSync(protectedPath)) {
 }
 console.log('PASS RDR-069: ' + missingMetadata.length + ' metadata fixtures and protected parity');
 
-// RDR-072: non-printing input must be deterministic and never throw.
-// Do not strip controls silently: this test records current search behavior.
+// RDR-072: Unicode control-input stability and protected/public parity.
 const controlInputs = ['کتاب\u0000', '\u200fکتاب', 'کتاب\u200e', '\u2067کتاب\u2069', '\ud800', '\udc00'];
+const protectedKeyForControls = fs.existsSync(protectedPath)
+  ? vm.runInNewContext(match[0] + '\nsearchKey')
+  : null;
 for (const input of controlInputs) {
   const output = key(input);
   assert.equal(typeof output, 'string');
-  assert.equal(key(input), output, 'search key must be deterministic');
-  if (fs.existsSync(protectedPath)) {
-    const protectedSource = fs.readFileSync(protectedPath, 'utf8');
-    const protectedMatch = protectedSource.match(/^const searchKey\\s*=\\s*value\\s*=>[^;]+;/m);
-    assert.ok(protectedMatch, 'protected searchKey must exist');
-    const protectedKey = vm.runInNewContext(protectedMatch[0] + '\\nsearchKey');
-    assert.equal(protectedKey(input), output, 'protected/public control-input parity');
-  }
+  assert.equal(key(input), output, 'normalization must be deterministic');
+  if (protectedKeyForControls) assert.equal(protectedKeyForControls(input), output);
 }
-console.log('PASS RDR-072: ' + controlInputs.length + ' control-input fixtures');
+console.log('PASS RDR-072: ' + controlInputs.length + ' fixtures');
