@@ -57,3 +57,24 @@ visually label the reconstruction proxy and keep physics unchanged.
 Authoritative progress ledger: `city/buildings/manifest.json`.
 Current model source: `city/survey/output/writer-block-overture-buildings.json`.
 Frozen scene backups: `backup/writer-block-pre-tehran-rebuild-2026-11-09` in both repositories.
+
+## User-directed clean-slate city reset — MAYOR-038 (2026-11-09)
+The owner authorized removing **all former fictional buildings and old procedural
+city scenery**, retaining **only the writer's room** as protected state/geometry,
+and rebuilding the visible map from real licensed aerial/geographic data.
+The live `buildTown` default must now be `mapMode:"source-only"`: only the
+single-block sourced OSM street frame, SRTM evidence and Overture roofprint
+candidates may be rendered. Fictional legacy `home-west/home-east`, school,
+police, publisher/bookstore building shells, 12 invented districts, car roads,
+mountain cones and arbitrary landscaping must NOT be instantiated in production.
+Legacy code can remain **off by default**, callable only via explicit
+`mapMode:"legacy"` in regression/debug to enable safe Git rollback.
+Never delete author room interior, its movable state/scene node, publisher/story
+data, citizen identities or routines. Map room preservation belongs to
+`web/world.js`, outside the disposable `web/town.js` town root.
+
+Aerial source geometry is now the only basis for city construction. The four
+Overture polygons may each represent groups of actual buildings; they are *not*
+proof there are only four buildings in that block. All heights remain unverified
+display proxies; a complete Tehran replica is an objective, not a completed
+state. Expand the block only upon new owner authorization and new licensed data.

@@ -272,3 +272,22 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [x] Public Three.js Node/scene/traffic tests and Pages deployment succeeded at https://github.com/iAlirezaaa/the-writer-live/actions/runs/42626660016 (source building 01: 60 vertices, 965.737 m², no duplicate). [ ] Real browser screenshots, verified true building height, roof/façade and photographic similarity remain outstanding.
 - Next idea 1: compare Microsoft ML / Overture roof clusters with independent higher-resolution licensed data for building-by-building segmentation; do not invent legal parcels.
 - Next idea 2: add a per-building calibrated WGS84-ground-contact and aerial-screenshot similarity review, recording source footprint IoU, confidence and screenshot provenance.
+
+## MAYOR-038 — Throw out old fictional city, rebuild source-only writer block
+- [x] Required independent task created first; both original frozen backup
+  branch SHAs and matching recovery manifest verified.
+- [x] The live town now defaults to `web/town-tehran-rebuild.js`; all older
+  houses, fictional district geometry, 432-place housing blocks, mountains,
+  road-grid cars and decor are **not instantiated** in that town group.
+- [x] Real-map default consists of OSM street-frame, coarse SRTM, Overture
+  roofprint candidates, and one individually mapped roofprint shell; writer
+  room and exterior remain independently owned by world.js.
+- [x] Kept legacy fallback only by explicit `mapMode:"legacy"`, and
+  switched prior regression harnesses to legacy mode without touching writer
+  data/citizen identity/routine source.
+- [x] Actual source-only Three.js city test, public pinned-world cache, and Pages deploy confirmed in https://github.com/iAlirezaaa/the-writer-live/actions/runs/42628790047 ; zero fictional city meshes, four source map layers, writer room preserved.
+- [ ] Public browser screenshot/FPS/visual-accuracy survey; footpaths and citizen avatars are owned outside town and not relocated yet.
+- Backlog A: map the existing fictional citizen path visuals to future
+  surveyed real sidewalk/crosswalk geometry with strict identity/clock protection.
+- Backlog B: licensed roofprint segmentation and height/elevation survey for
+  current four potentially merged ML polygons before claiming building counts.

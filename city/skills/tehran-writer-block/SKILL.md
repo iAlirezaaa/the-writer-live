@@ -142,3 +142,30 @@ only the real writer block bounded by sourced OSM centerlines.
 - A passing static/CI Three.js model test is not a screenshot, true photograph
   match or confirmation of a Google Maps-like 1:1 reconstruction. Requires
   a documented licensed aerial view and independent roof/facade survey.
+
+## MAYOR-038 — Clean-slate town architecture, preserve independent writer room
+- The owner explicitly authorized discarding previous fictional city geometry.
+  **Default** `buildTown()` delegates to `web/town-tehran-rebuild.js`, producing
+  exactly 4 real-map layer groups: OSM street paving, coarse SRTM (hidden
+  solid terrain), 3 Overture unverified-height masses/outline layers, and
+  one standalone source footprint model. No old mountains, 12 fictional
+  districts, extra houses, cars, old roads or arbitrary props in the town root.
+- NEVER move/deallocate `web/world.js` `writerInteriorWorldRoot` nor
+  `writerExterior`. They are **not** children of `town.group`. Public/canonical
+  author stories, publisher state and citizen routes are preserved unchanged.
+- Former town remains in source as an explicit *opt-in* `mapMode:"legacy"` only
+  for rollback diagnostic and existing scene contracts; legacy tests must
+  explicitly request that mode. Live default is source-only. Do not silently
+  re-enable legacy on data errors.
+- Based on 3Dviz Pro Max `TWIN-WORLD.md` and historical-diorama recipes,
+  source and reconstruction remain separable. Current buildings are
+  MAP FOOTPRINT CANDIDATES, no surveyed parcel, facade, entrance or height.
+  SRTM is ~30m raster. Detailed ground/road/collision rebuilding needs a later
+  licensed higher-resolution source and dedicated city route/access tests.
+- Run `node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs .`
+  on the real Three.js modules. It checks 4 clean map layers, no fictional
+  meshes, city update API safety, no cars, footprint counts and room continuity.
+  Old city geometry tests run only with `mapMode:"legacy"`, never use those
+  passes to claim the new default scene looks authentic. Capture actual
+  before/after aerial, street, day/night visual images and FPS if available;
+  otherwise report missing visual proof.
