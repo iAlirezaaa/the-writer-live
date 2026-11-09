@@ -49,7 +49,7 @@ for(let i=1;i<=3;i++){
   for(const mesh of f.children){
     assert.ok(mesh.isInstancedMesh);
     assert.equal(mesh.count,evidence.instanceCount);
-    assert.equal(mesh.userData.physicalCollider,false);
+    assert.equal(mesh.userData.cityFacadeEvidence?.physicalCollider,false,"Facade instance must remain explicitly non-colliding");
     const bounds=new THREE.Box3().setFromObject(mesh);
     assert.ok([...bounds.min,...bounds.max].every(Number.isFinite));
     const transform=new THREE.Matrix4(),p=new THREE.Vector3();
