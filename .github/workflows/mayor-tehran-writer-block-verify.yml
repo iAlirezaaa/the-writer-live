@@ -46,6 +46,7 @@ jobs:
           for check in layout paths wiring; do
             node --experimental-vm-modules tests/town_scene_probe.mjs . "$check" < snapshot/town.json
           done
+          node tests/city_districts_probe.mjs
           node tests/road_topology_probe.mjs
           node tests/city_housing_access_probe.mjs
           node tests/city_traffic_probe.mjs

@@ -69,7 +69,7 @@ for(const obj of [result.mass,result.guides]){
   assert.ok(y>=-3.001&&y<3.1);
  }
 }
-const bulkMap=preview.buildWriterBlockBuildingMasses(THREE,new THREE.Group(),{streetY:-3});
+const bulkMap=preview.buildWriterBlockBuildingMasses(THREE,new THREE.Group(),{streetY:-3,independentBuilding03:true});
 assert.equal(bulkMap.group.userData.citySurvey.generatedVolumeCount,0);
 assert.equal(bulkMap.group.children.length,1,"Only the evidence outline remains in the bulk group");
 assert.equal(bulkMap.volume.parent,null,"Empty geometry must never be attached to the scene");

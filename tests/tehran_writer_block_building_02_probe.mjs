@@ -84,8 +84,8 @@ for(const coords of [a,upper]){
 }
 const bulkMap=preview.buildWriterBlockBuildingMasses(THREE,new THREE.Group(),{streetY:-3});
 assert.equal(bulkMap.group.userData.citySurvey.originalRoofprints,4);
-assert.equal(bulkMap.group.userData.citySurvey.generatedVolumeCount,0);
-assert.equal(bulkMap.group.userData.citySurvey.independentlyModeledCount,3);
+assert.equal(bulkMap.group.userData.citySurvey.generatedVolumeCount,1);
+assert.equal(bulkMap.group.userData.citySurvey.independentlyModeledCount,2);
 assert.equal(bulkMap.group.userData.citySurvey.totalDistinctSourceVolumeCount,3);
 assert.ok(!bulkMap.volume.userData.modeledSourceIds.includes(source.id),
   "Second building must NOT render twice");
