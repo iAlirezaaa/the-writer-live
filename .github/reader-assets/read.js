@@ -1,5 +1,5 @@
 // The Writer — editorial library. Covers are stable per story and rendered without remote images.
-import { openBook } from "./book.js?v=reader-20261109-v7";
+import { openBook } from "./book.js?v=reader-20261109-v8";
 import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v7";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
