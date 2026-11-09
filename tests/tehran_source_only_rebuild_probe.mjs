@@ -57,14 +57,15 @@ assert.equal(town.group.userData.cityBuild.retainedLegacyCityMeshes,0);
 assert.equal(town.group.userData.cityBuild.imaginaryMountainOrForestMeshes,0);
 assert.equal(town.group.userData.cityBuild.realBuildingHeightsMeasured,false);
 assert.equal(town.group.userData.cityBuild.authorRoomProtected,true);
-assert.equal(town.group.children.length,6,"Exactly six licensed-map groups including three individually reconstructed building envelopes expected");
+assert.equal(town.group.children.length,7,"Six source-backed groups plus one explicitly interpretive, non-colliding streetscape");
 assert.deepEqual(town.group.children.map(c=>c.name),[
   "writer-block-source-aligned-streets",
   "writer-block-srtm30-topology",
   "writer-block-overture-building-reconstruction",
   "writer-block-building-01-georeferenced",
   "writer-block-building-02-georeferenced",
-  "writer-block-building-03-georeferenced"
+  "writer-block-building-03-georeferenced",
+  "writer-block-illustrative-streetscape"
 ]);
 assert.ok(scene.getObjectByName("writer-interior-street-level")===originalRoom,
   "Original author's room must survive rebuilt town");
@@ -78,6 +79,16 @@ assert.equal(town.trafficState().length,0,"No fictional cars in the clean map");
 assert.doesNotThrow(()=>town.update(0,0,false,{cloudCover:70}));
 assert.doesNotThrow(()=>town.update(1,20,true,{cloudCover:10}));
 assert.equal(clicks.length,0,"No fake old-city clickable objects should survive");
+const context=town.group.getObjectByName("writer-block-illustrative-streetscape");
+assert.ok(context,"Populated block must contain visible interpretive streetscape");
+assert.equal(context.userData.cityContextEvidence.kind,"INTERPRETIVE_NOT_SURVEYED");
+assert.equal(context.userData.cityContextEvidence.actualObjectLocationsKnown,false);
+assert.equal(context.userData.cityContextEvidence.physicalCollider,false);
+assert.equal(context.userData.cityContextEvidence.writerRoomPreserved,true);
+assert.ok(context.userData.cityContextEvidence.instances.trees>=8,"Visible trees must be placed");
+assert.ok(context.userData.cityContextEvidence.instances.lamps>=6,"Visible lamps must be placed");
+assert.ok(context.userData.cityContextEvidence.instances.parkedVehicleProxies>=3,"Static illustrative cars must be placed");
+assert.ok(context.children.length>=6 && context.children.length<=15,"Instanced context should stay affordable");
 for(const name of [
  "legacy-shopfront-interiors","city-road-union","city-districts",
  "civic-city-school","civic-police-station","civic-film-studio",
@@ -114,7 +125,7 @@ assert.ok(terrain);
 assert.equal(terrain.getObjectByName("writer-block-srtm30-relief-inspection-only").visible,false);
 const geometry=[];
 town.group.traverse(o=>{if(o.isMesh||o.isLineSegments)geometry.push(o);});
-assert.ok(geometry.length>=4 && geometry.length<19,
+assert.ok(geometry.length>=15 && geometry.length<36,
   "Build must be bounded by sourced geometry, not hundreds of old meshes");
 for(const obj of geometry){
   const bb=new THREE.Box3().setFromObject(obj);
@@ -127,6 +138,7 @@ assert.ok(read("web/world.js").includes("const town = buildTown({ THREE, scene, 
 console.log("TEHRAN-SOURCE-ONLY-REBUILD-OK",JSON.stringify({
   name:town.group.name,sourceMapLayers:town.group.children.map(c=>c.name),
   visibleSourceObjects:geometry.length,realRoads:4,realMappedRoofprintCandidates:4,
-  fictionalBuildings:0,fictionalStreets:0,fictionalCars:0,
+  fictionalBuildings:0,fictionalStreets:0,fictionalTrafficCars:0,
+  illustrativeParkedCars:context.userData.cityContextEvidence.instances.parkedVehicleProxies,
   writerRoomPreserved:true,measuredBuildingHeights:0
 }));
