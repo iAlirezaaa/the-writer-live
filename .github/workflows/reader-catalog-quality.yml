@@ -5,9 +5,11 @@ on:
     paths:
       - "web/read.js"
       - "web/read.html"
+      - "web/book.css"
       - "read/index.html"
       - "web/reader-position.js"
       - "tests/reader-catalog-reset.test.cjs"
+      - "tests/reader-library-experience.test.cjs"
       - "tests/reader-position.test.mjs"
       - "tests/test_reader_unicode_boundaries.cjs"
       - "tests/test_reader_unicode_controls.cjs"
@@ -27,7 +29,9 @@ jobs:
         with:
           node-version: '22'
       - name: Catalog behavior and keyboard reset
-        run: node --test tests/reader-catalog-reset.test.cjs
+        run: |
+          node --test tests/reader-catalog-reset.test.cjs
+          node --test tests/reader-library-experience.test.cjs
       - name: Persian Unicode normalization boundaries
         run: |
           node tests/test_reader_unicode_boundaries.cjs
