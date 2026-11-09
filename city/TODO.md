@@ -235,3 +235,12 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 - [ ] Real browser day/night weather screenshot remains pending.
 - Backlog A: add CI parity check for city weather module and its pinned public copy.
 - Backlog B: live-page smoke test for geo origin, map preview availability and attribution visibility.
+
+## MAYOR-032 — Tehran writer-block sourced SRTM terrain (2026-11-09)
+- [x] Checked both frozen pre-Tehran backup refs and matching manifest; read required 3Dviz/TWIN-WORLD, coordinate and contour recipes.
+- [x] Captured 64 genuine NASA/USGS SRTMGL1 V3 samples via OpenTopoData `srtm30m`, approx. 30m raster, EGM96 heights 1234–1243m; stored time-stamped private/public evidence under `city/survey/output/`.
+- [x] Added clipped Three.js topographic mesh (203 triangles, hidden by default for safety) and 21 visible contour segments at 2m increments without changing physical ground, sidewalks, citizen routes or building footprints.
+- [x] Public pinned city modules synchronized; actual GitHub Pages build and deployment passed: https://github.com/iAlirezaaa/the-writer-live/actions/runs/42609544002 .
+- [ ] Real street/aerial/day/night screenshots and performance comparison not captured; no claim of 1:1 elevation reconstruction.
+- Backlog idea 1: graded access ledger checking building door, pavement and zebra crossing heights against finer licensed/surveyed terrain.
+- Backlog idea 2: interactive inspection mode for DEM ghost relief versus contour map and OSM way centers, without modifying physical simulation until certified.
