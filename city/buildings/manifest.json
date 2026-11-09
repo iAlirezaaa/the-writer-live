@@ -121,7 +121,7 @@
     "mayor041": "Private geometry and targeted probe authored; execution and screenshot comparison not yet verified; public mirror gated on tests",
     "mayor043": "Private direct execution against vendored Three.js: 7 groups, 25 render objects, 0 nonfinite bounds, 0 new physical colliders; full Node/legacy CI and actual browser screenshots not yet confirmed; pinned public release pending.",
     "mayor044": "Private direct Three.js scene integration PASS (34 finite-bound render objects, 9 facade meshes, 7 unchanged top-level groups, room preserved); CI/Pages and real visual renders still unverified.",
-    "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 76? meshes (count measured separately), bounds finite. Full world and CI/Pages outstanding; no real as-built property matches."
+    "mayor046": "Private standalone apartment Three.js builder direct-check: ground contact -3.035, third-floor support top 6.595, 73 meshes with bounded finite geometry, bounds finite. Full world and CI/Pages outstanding; no real as-built property matches."
   },
   "visualContext": {
     "layer": "web/writer-block-illustrative-context.js",
