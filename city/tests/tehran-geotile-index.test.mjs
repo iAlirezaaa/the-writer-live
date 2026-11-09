@@ -16,6 +16,7 @@ test("A real Tehran coordinate uses deterministic EPSG:3857 tile IDs",()=>{
   assert.equal(result.tileCount,1);
   assert.deepEqual(result.tiles[`17/${t.x}/${t.y}`],["osm:way:1"]);
   assert.equal(result.mode,"provenance-metadata-only");
+  assert.deepEqual(result.features["osm:way:1"],{geometryType:"Point",bbox:{west:51.3642,east:51.3642,south:35.7153,north:35.7153}});
   assert.equal(result.attribution,"© OpenStreetMap contributors");
 });
 test("The index is deterministic and keeps all source IDs across touched tiles",()=>{
@@ -27,6 +28,8 @@ test("The index is deterministic and keeps all source IDs across touched tiles",
   const first=makeTehranTileIndex(sample(features));
   assert.deepEqual(first,makeTehranTileIndex(sample(features)));
   assert.equal(first.featureCount,2);
+  assert.deepEqual(first.features["osm:way:2"],{geometryType:"LineString",bbox:{west:51.360,east:51.370,south:35.715,north:35.715}});
+  assert.deepEqual(Object.keys(first.features),["osm:way:2","osm:way:5"]);
   assert.ok(Object.values(first.tiles).some(ids=>ids.includes("osm:way:2")));
   assert.ok(Object.values(first.tiles).every(ids=>new Set(ids).size===ids.length));
 });
