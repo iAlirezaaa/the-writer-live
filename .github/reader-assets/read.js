@@ -7,10 +7,68 @@ import { installPersianPresentation } from "./persian-display.js?v=observatory-2
 const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pending:"در جریان" };
 const $ = id => document.getElementById(id);
 const nfa = number => new Intl.NumberFormat("fa-IR").format(number);
-// Normalize Persian/Arabic keyboard variants without changing visible book titles.
+// Match Persian and Arabic keyboard variants without changing displayed titles.
 const searchKey = value => String(value ?? "").normalize("NFKC").replace(/[\u0640\u064B-\u065F\u0670]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
 let stories = [];
+let favoritesOnly = false;
+let readingFilter = "all";
+let libraryView = "grid";
+let libraryTheme = "light";
+try {
+  if(localStorage.getItem("the-writer-library-view")==="list")libraryView="list";
+  if(localStorage.getItem("the-writer-library-theme")==="dark")libraryTheme="dark";
+}catch{}
+const favoriteMemory = new Map();
+const favoriteKey = id => `the-writer-favorite:${id}`;
+function isFavorite(id) {
+  const key=String(id??"");
+  if(!key)return false;
+  if(favoriteMemory.has(key))return favoriteMemory.get(key);
+  try{return localStorage.getItem(favoriteKey(key))==="1"}catch{return false}
+}
+function toggleFavorite(id) {
+  const key=String(id??"");
+  if(!key)return false;
+  const active=!isFavorite(key);
+  favoriteMemory.set(key,active);
+  try{if(active)localStorage.setItem(favoriteKey(key),"1");else localStorage.removeItem(favoriteKey(key))}catch{}
+  return active;
+}
+function updateFavoritesBadge() {
+  const button=$("story-favorites");
+  button.setAttribute("aria-pressed",String(favoritesOnly));
+  button.textContent=`☆ علاقه‌مندی‌های من · ${nfa(stories.filter(story=>isFavorite(story.id)).length)}`;
+}
+function toggleFavoritesFilter() {
+  favoritesOnly=!favoritesOnly;
+  renderShelf();
+  $("story-favorites").focus();
+}
 
+function setLibraryView(view) {
+  if(view!=="grid" && view!=="list")return;
+  libraryView=view;
+  try{localStorage.setItem("the-writer-library-view",view)}catch{}
+  renderShelf();
+  $(view==="list"?"library-list":"library-grid").focus();
+}
+function toggleLibraryTheme() {
+  libraryTheme=libraryTheme==="dark"?"light":"dark";
+  try{localStorage.setItem("the-writer-library-theme",libraryTheme)}catch{}
+  updateLibraryControls();
+}
+function updateLibraryControls() {
+  const body=document.body;
+  body.dataset.libraryTheme=libraryTheme;
+  $("library-theme").setAttribute("aria-pressed",String(libraryTheme==="dark"));
+  $("library-theme").textContent=libraryTheme==="dark"?"حالت روشن":"حالت شب";
+  $("library-grid").setAttribute("aria-pressed",String(libraryView==="grid"));
+  $("library-list").setAttribute("aria-pressed",String(libraryView==="list"));
+  $("covers").dataset.view=libraryView;
+  $("library-stories-count").textContent=nfa(stories.length);
+  $("library-progress-count").textContent=nfa(stories.filter(story=>{const p=savedProgress(story.id);return p>0 && p<1}).length);
+  $("library-saved-count").textContent=nfa(stories.filter(story=>isFavorite(story.id)).length);
+}
 function savedProgress(id) {
   if (id == null) return 0;
   try {
@@ -41,7 +99,24 @@ function makeCover(story) {
   const metaTop=make("div","cover-meta-top");
   const status=make("span",`c-status ${story.status||"pending"}`,STATUS[story.status]||story.status||"نامشخص");
   const stage=make("span","c-meta",`${nfa(story.words||0)} واژه`);
-  metaTop.append(status,stage);
+  const favoriteBtn=make("button","cover-favorite",isFavorite(story.id)?"★ ذخیره شده":"☆ ذخیره");
+  favoriteBtn.type="button";
+  favoriteBtn.setAttribute("aria-pressed",String(isFavorite(story.id)));
+  favoriteBtn.setAttribute("aria-label",`${isFavorite(story.id)?"حذف از":"افزودن به"} علاقه‌مندی‌ها: ${story.title||"اثر بی‌عنوان"}`);
+  favoriteBtn.addEventListener("click",()=>{
+    const active=toggleFavorite(story.id);
+    if(favoritesOnly){
+      renderShelf();
+      $("story-favorites").focus();
+    }else{
+      favoriteBtn.textContent=active?"★ ذخیره شده":"☆ ذخیره";
+      favoriteBtn.setAttribute("aria-pressed",String(active));
+      favoriteBtn.setAttribute("aria-label",`${active?"حذف از":"افزودن به"} علاقه‌مندی‌ها: ${story.title||"اثر بی‌عنوان"}`);
+      updateFavoritesBadge();
+      updateLibraryControls();
+    }
+  });
+  metaTop.append(status,stage,favoriteBtn);
   const score=make("span","c-score",story.score==null?"بدون امتیاز":`امتیاز منتقد · ${nfa(story.score)}`);
   const p=savedProgress(story.id);
   const reading=make("div","cover-reading");
@@ -51,7 +126,9 @@ function makeCover(story) {
   fill.style.width=`${Math.round(p*100)}%`;
   rail.append(fill);
   reading.append(text,rail);
-  meta.append(metaTop,score,reading);
+  const minutes=Number(story.words)>0?Math.max(1,Math.ceil(Number(story.words)/220)):0;
+  const estimate=make("span","cover-estimate",minutes?`زمان تقریبی مطالعه · ${nfa(minutes)} دقیقه`:"زمان مطالعه نامشخص");
+  meta.append(metaTop,score,estimate,reading);
   button.setAttribute("aria-label",`${story.title||"اثر بی‌عنوان"}، ${STATUS[story.status]||story.status||"نامشخص"}، ${story.stage||"داستان"}، ${p>0?`ادامه از ${Math.round(p*100)} درصد`:"شروع مطالعه"}`);
   button.addEventListener("click",()=>{
     const id=String(story.id||"");
@@ -70,11 +147,15 @@ function renderShelf() {
   const query=searchKey($("story-search").value.trim());
   const status=$("story-status").value;
   const list=stories.filter(story=>
+    (!favoritesOnly||isFavorite(story.id)) &&
+    (readingFilter==="all"||(readingFilter==="unread"&&savedProgress(story.id)===0)||(readingFilter==="reading"&&savedProgress(story.id)>0&&savedProgress(story.id)<1)||(readingFilter==="finished"&&savedProgress(story.id)>=1)) &&
     (status==="all"||story.status===status) &&
     (!query||searchKey(`${story.title||""} ${story.stage||""}`).includes(query))
   );
   const sort=$("story-sort").value;
-  $("story-reset").hidden=!(query||status!=="all"||sort!=="newest");
+  $("story-reset").hidden=!(query||status!=="all"||sort!=="newest"||favoritesOnly||readingFilter!=="all");
+  updateFavoritesBadge();
+  updateLibraryControls();
   list.sort((a,b)=>{
     if(sort==="title")return String(a.title||"").localeCompare(String(b.title||""),"fa");
     if(sort==="score")return (Number(b.score)||0)-(Number(a.score)||0);
@@ -84,12 +165,15 @@ function renderShelf() {
   const cards=list.map(makeCover);
   shelf.replaceChildren(...cards);
   $("shelf-count").textContent=`${nfa(list.length)} اثر از ${nfa(stories.length)}`;
-  if(!list.length)shelf.append(make("p","reading-empty",stories.length?"اثری با این جست‌وجو یا فیلتر پیدا نشد.":"هنوز داستانی در کتابخانه نیست."));
+  if(!list.length)shelf.append(make("p","reading-empty",!stories.length?"هنوز داستانی در کتابخانه نیست.":favoritesOnly?"هنوز کتابی در علاقه‌مندی‌ها نیست؛ با دکمهٔ ☆ ذخیره کنار جلد، کتابی اضافه کنید.":"کتابی با این فیلتر پیدا نشد. برای مشاهدهٔ همهٔ کتاب‌ها فیلترها را پاک کنید."));
 }
 function resetShelfFilters(){
   $("story-search").value="";
   $("story-status").value="all";
   $("story-sort").value="newest";
+  favoritesOnly=false;
+  readingFilter="all";
+  $("reading-filter").value="all";
   renderShelf();
   $("story-search").focus();
 }
@@ -115,6 +199,19 @@ $("home-link").href=appHref("");
 $("story-search").addEventListener("input",renderShelf);
 $("story-status").addEventListener("change",renderShelf);
 $("story-sort").addEventListener("change",renderShelf);
+$("reading-filter").addEventListener("change",value=>{
+  readingFilter=$("reading-filter").value;
+  renderShelf();
+});
+$("library-grid").addEventListener("click",()=>setLibraryView("grid"));
+$("library-list").addEventListener("click",()=>setLibraryView("list"));
+$("library-theme").addEventListener("click",toggleLibraryTheme);
+$("library-explore").addEventListener("click",()=>{
+  const reduce=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  $("library-collection").scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+  $("story-search").focus({preventScroll:true});
+});
+$("story-favorites").addEventListener("click",toggleFavoritesFilter);
 $("story-reset").addEventListener("click",resetShelfFilters);
 $("story-search").addEventListener("keydown",event=>{
   if(event.key==="Escape"){
