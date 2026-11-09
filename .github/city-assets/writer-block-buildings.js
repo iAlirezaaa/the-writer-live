@@ -13,6 +13,7 @@ export const PROXY_UNVERIFIED_HEIGHT_METERS = 6;
 export const ROOM_PROTECTION_METERS = 4; // render-only exclusion; writer room unchanged
 export const INDIVIDUAL_BUILDING_01_ID="3d7b8239-b1e0-48bc-8868-ae4a4d392586"; // individually built from exact Overture map
 export const INDIVIDUAL_BUILDING_02_ID="3d2290d6-c533-4c11-b2c0-079f0ee2e29e"; // MAYOR-039 mapped second envelope
+export const INDIVIDUAL_BUILDING_03_ID="76931a07-c621-4e37-9241-c41ee59d4248"; // MAYOR-041 third sourced envelope
 
 function isFiniteRing(ring){
   return Array.isArray(ring)&&ring.length>=4&&ring.length<=512&&
@@ -98,7 +99,7 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
       if(building.protectedWriterRoom)continue; // do not cover or replace the room
       // Retire this exact footprint from the old translucent bulk-ghost layer.
       // MAYOR-037 now draws it as its own georeferenced, opaque building shell.
-      if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID)continue;
+      if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID||building.id===INDIVIDUAL_BUILDING_03_ID)continue;
       const shape=new THREE.Shape();
       shape.moveTo(ring[0][0],-ring[0][1]);
       for(let i=1;i<ring.length-1;i++)shape.lineTo(ring[i][0],-ring[i][1]);
@@ -121,7 +122,7 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
       }
       geometry.dispose();
     }
-    if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID)individualIds.push(building.id);
+    if(building.id===INDIVIDUAL_BUILDING_01_ID||building.id===INDIVIDUAL_BUILDING_02_ID||building.id===INDIVIDUAL_BUILDING_03_ID)individualIds.push(building.id);
     else if(!building.protectedWriterRoom)modeledIds.push(building.id);
   }
   const group=new THREE.Group();
@@ -156,7 +157,9 @@ export function buildWriterBlockBuildingMasses(THREE,parent,{streetY=-3}={}){
   volume.userData.isCitySurveyOnly=true;
   volume.userData.physicalCollider=false;
   volume.userData.modeledSourceIds=modeledIds;
-  group.add(volume);
+  // Once all three source footprints have independent models, do not attach
+  // a zero-vertex ghost: Box3 would otherwise have non-finite bounds.
+  if(modeledIds.length)group.add(volume);
 
   const outlineGeo=new THREE.BufferGeometry();
   outlineGeo.setAttribute("position",new THREE.Float32BufferAttribute(outlines,3));

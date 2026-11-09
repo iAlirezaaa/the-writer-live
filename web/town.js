@@ -9,7 +9,7 @@ import { buildWriterBlockBalcony } from "./writer-block-balcony.js?v=writer-bloc
 import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=writer-block-sourced-buildings-20261109-v1";
 import { buildWriterBlockBuilding01 } from "./writer-block-building-01.js?v=tehran-building-by-building-01-20261109-v1";
 import { buildWriterBlockStreetFrame } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
-import { buildTehranReconstructionTown } from "./town-tehran-rebuild.js?v=writer-block-source-only-20261109-v1";
+import { buildTehranReconstructionTown } from "./town-tehran-rebuild.js?v=writer-block-source-only-20261109-v2";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
