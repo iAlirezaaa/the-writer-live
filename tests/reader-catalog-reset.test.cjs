@@ -148,9 +148,9 @@ test("public protected assets retain catalog behavior and semantic HTML", () => 
   const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
   assert.equal(pinned.match(expression)?.[0], source.match(expression)?.[0], "deployed Persian search must match source");
   // Prevent the protected Pages replacement from silently diverging from tested catalog behavior.
-  const normalize = new Function(implementation + "\nreturn searchKey;")();
-    const pattern = new RegExp(`^function ${name}\\(\\)\\s*\\{[\\s\\S]*?^\\}`, "m");
-    assert.equal(pinned.match(pattern)?.[0], source.match(pattern)?.[0], `protected ${name} differs from public source`);
+  for (const name of ["renderShelf", "resetShelfFilters"]) {
+    const pattern = new RegExp("^function " + name + "\\(\\)\\s*\\{[\\s\\S]*?^\\}", "m");
+    assert.equal(pinned.match(pattern)?.[0], source.match(pattern)?.[0], "protected " + name + " differs from public source");
   }
   for (const symbol of ["function renderShelf()", "function resetShelfFilters()", "story-reset", "const query=searchKey("]) {
     assert.ok(pinned.includes(symbol), "missing from public pinned reader: " + symbol);
@@ -209,7 +209,7 @@ test("RDR-048: deployed protected search normalizer executes Persian/Arabic equi
   const expression = /^const searchKey\\s*=\\s*value\\s*=>[^\\n]+;/m;
   const implementation = pinned.match(expression)?.[0];
   assert.ok(implementation, "protected catalog must expose searchKey");
-  const normalize = new Function(implementation + "\\nreturn searchKey;")();
+  const normalize = new Function(implementation + "\nreturn searchKey;")();
   for (const [query, title] of [
     ["عَلِي", "علی"], ["كـِتاب", "کتاب"], ["ﻛﺘﺎﺏ", "کتاب"], ["TEST", "test"]
   ]) assert.equal(normalize(query), normalize(title), query + " must match " + title);
