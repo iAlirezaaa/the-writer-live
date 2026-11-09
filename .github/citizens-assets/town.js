@@ -5,6 +5,7 @@ import { ROAD_SEGMENTS } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { buildSeamlessRoadSurface, ROAD_PAINT_CENTER_OFFSET } from "./road-surface.js?v=road-surface-20261108-v4";
 import { buildWriterBlockRoadPreview } from "./writer-block-road-preview.js?v=writer-block-osm-preview-20261109-v1";
 import { buildWriterBlockTerrain } from "./writer-block-terrain.js?v=writer-block-dem-contours-20261109-v1";
+import { buildWriterBlockBalcony } from "./writer-block-balcony.js?v=writer-block-home-east-balcony-20261109-v1";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -165,6 +166,8 @@ export function buildTown({ THREE, scene, clickable, canvasTex }) {
         box(1.22, 0.08, 0.06, metal, x, y - 0.50, b.z + 3.08);
       }
     }
+    // One supported balcony detail on the existing *procedural* east home; not a Tehran survey.
+    if (b.key === "home-east") buildWriterBlockBalcony(THREE, group, { house: b, streetY: STREET_Y });
     // Private lots: side parking is off the continuous pavement, and each front door
     // has a walkable approach rather than opening straight onto a road.
     box(1.85,0.08,2.7,stone,b.x+2.0,STREET_Y+0.04,-4.15);
