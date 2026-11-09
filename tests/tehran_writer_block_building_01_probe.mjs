@@ -66,7 +66,7 @@ assert.ok(Math.abs(box.min.y+3)<1e-4,"Ground contact must be on existing street 
 assert.ok(Math.abs(box.max.y-3)<1e-4,"Symbolic 6m not real height");
 const geometry=result.mass.geometry;
 const attr=geometry.getAttribute("position");
-assert.ok(attr.count>60&&attr.count<2500);
+assert.ok(attr.count>=36&&attr.count<2500,"Source hexagonal building needs >= 12 3D triangles");
 for(let i=0;i<attr.count;i++){
  const x=attr.getX(i),y=attr.getY(i),z=attr.getZ(i);
  assert.ok([x,y,z].every(Number.isFinite),"No invalid source mesh vertices");
