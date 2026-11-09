@@ -313,3 +313,14 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Two NEW backlog ideas (MAYOR-042)
 1. **Licensed facade confidence index:** each source-backed building side records independently verified windows, entrances, shop POIs and levels with dates/rights/uncertainties before detailed modeling.
 2. **Camera-anchored evidence diff:** reusable aerial and street cameras with georeferenced source outlines, screenshot hashes and bounded FPS counters to quantify each visible city revision.
+
+## MAYOR-043 — Populate Tehran writer block visibly without replacing geography (2026-11-09)
+- [x] Independent pre-change task `city/tasks/MAYOR-043-writer-block-live-streetscape.md` registered privately.
+- [x] New compact Three.js interpretive city layer: 19 trees, 27 shrubs, 16 lampposts, 9 stationary display cars placed by sourced one-block road ring and exclusion checks; 11 InstancedMesh drawables.
+- [x] Direct Three.js scene assembly checked: 7 groups, 25 renderables, finite bounds, preserved writer room/exterior, 3 independent source roofprints, zero physical traffic and no citizen-route mutation; night lamp emissive response increases.
+- [ ] Browser aerial / street / day / night screenshots and real FPS/visibility: not captured; must not be implied.
+- [ ] Legacy-regression and public Pages pipeline: separately inspect; public published SHA only after mirror and successful deploy.
+
+### Two new backlog ideas (MAYOR-043)
+1. **Block object provenance inspector:** geolocated evidence table differentiating real OSM/Overture lines from guessed context props, with toggles per confidence level.
+2. **Measured frontage + floor registry:** independently licensed levels, entrances, commercial POIs and units for each actual building prior to replacing illustrative architecture.
