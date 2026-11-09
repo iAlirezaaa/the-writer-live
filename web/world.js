@@ -8,10 +8,11 @@ import { initPanels } from "./panels.js";
 import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-tehran-source-only-20261109-v1";
 import { createTehranWeatherService, tehranWeatherLabel } from "./tehran-environment.js?v=tehran-environment-20261108-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
+import { apartmentFloorElevation, WRITER_APARTMENT_LEVEL_OFFSET, buildWriterApartmentLowerStoreys } from "./writer-apartment-third-floor.js?v=writer-apartment-floor3-20261109-v1";
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261109-v1";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261109-v1";
-import { initObserverUI } from "./observer-ui.js?v=observatory-20261108-v4";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261109-first-paint-v1";
 import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
@@ -1291,7 +1292,7 @@ const interiorSceneObjects = scene.children.filter(node => !citySceneBaseline.ha
 // the actual street-level origin instead of supporting it with a fake lower floor.
 const writerInteriorWorldRoot = new THREE.Group();
 writerInteriorWorldRoot.name = "writer-interior-street-level";
-writerInteriorWorldRoot.position.y = STREET_Y;
+writerInteriorWorldRoot.position.y = apartmentFloorElevation(STREET_Y);
 scene.add(writerInteriorWorldRoot);
 for (const node of interiorSceneObjects) writerInteriorWorldRoot.add(node);
 // The two architectural shell groups were created BEFORE citySceneBaseline,
@@ -1305,6 +1306,8 @@ writerInteriorWorldRoot.updateMatrixWorld(true);
 writerMeshParent = writerInteriorWorldRoot;
 const writerExterior = new THREE.Group();
 writerExterior.name = "writer-home-exterior-v2";
+writerExterior.position.y = WRITER_APARTMENT_LEVEL_OFFSET;
+writerExterior.userData.cityApartmentEvidence={kind:"OWNER_AUTHORED_SCENARIO",floorIndex:3,actualFloorsVerified:false,sourceRoomPreserved:true};
 scene.add(writerExterior);
 let currentWriterHouseLevel = -1;
 let currentWriterSceneMode = "town";
@@ -1323,9 +1326,11 @@ const exteriorGreen = new THREE.MeshStandardMaterial({color:0x5b7956,roughness:1
 function rebuildWriterExterior(level=0){
   for(const node of [...writerExterior.children]){
     const index=clickables.indexOf(node);if(index>=0)clickables.splice(index,1);
-    writerExterior.remove(node);node.geometry?.dispose?.();
+    writerExterior.remove(node);
+    node.traverse?.(part=>{part.geometry?.dispose?.();});
   }
   const [w,d]=writerHouseDimensions(level);
+  const apartment=buildWriterApartmentLowerStoreys(THREE,writerExterior,{streetY:STREET_Y,roomWidth:w,roomDepth:d});
   const home=WRITER_HOME_BLUEPRINT,h=home.room.height,front=d/2,back=-d/2;
   const door=home.facade.door,frontGlass=home.facade.frontWindow,rear=home.facade.rearWindow;
   const b=(bw,bh,bd,mat,x,y,z)=>exteriorPart(new THREE.BoxGeometry(bw,bh,bd),mat,x,STREET_Y+y,z);
@@ -1360,26 +1365,18 @@ function rebuildWriterExterior(level=0){
   const portal=b(door.width,door.height,.09,exteriorWood,door.x,door.height/2,front+.075);
   b(door.width+.2,.12,.23,exteriorWood,door.x,door.height+.06,front+.14);
   b(.05,.07,.09,frameMat,door.x+door.width*.34,1.03,front+.19);
-  // No false extra storey: single roof resting directly above the single room.
-  for(const side of [-1,1]){
-    const roof=b(w/2+.45,.17,d+.60,exteriorRoof,side*w/4,h+.43,0);
-    roof.rotation.z=-side*.38;
-  }
-  const gable=new THREE.Shape();gable.moveTo(-w/2,0);gable.lineTo(w/2,0);
-  gable.lineTo(0,home.facade.roof.rise);gable.closePath();
-  const triangle=exteriorPart(new THREE.ShapeGeometry(gable),exteriorWall,0,STREET_Y+h,front+.025);
-  triangle.material.side=THREE.DoubleSide;
-  b(w+.26,.10,.22,exteriorWood,0,h,front+.035);
-  b(1.3,.12,.78,exteriorPath,door.x,.05,front+.44);
-  // Safe, continuous pedestrian approach without an oversized front courtyard.
-  const approachEnd=6.48;
-  const walkDepth=approachEnd-(front+.44);
-  if(walkDepth>.2)b(1.3,.07,walkDepth,exteriorPath,door.x,.03,(front+.44+approachEnd)/2);
-  for(const side of [-1,1]){
-    const gx=side*(w/2+.54);
-    if(Math.abs(gx)+.26<4.4)b(.44,.12,Math.min(d,6.2),exteriorGreen,gx,.08,0);
-  }
-  if(level>=3) b(1.38,.07,2.15,exteriorPath,3.5,.035,5.05);
+  // Owner-defined apartment THIRD FLOOR: a flat concrete roof replaces
+  // the old gabled one-room cottage roof. Actual Tehran roof form unknown.
+  b(w+.58,.24,d+.58,exteriorRoof,0,h+.15,0);
+  for(const side of [-1,1]) b(.17,.42,d+.58,exteriorWall,side*(w/2+.20),h+.42,0);
+  b(w+.58,.42,.17,exteriorWall,0,h+.42,-(d/2+.20));
+  b(w+.58,.42,.17,exteriorWall,0,h+.42,d/2+.20);
+  // The elevated third-floor door meets an owner-authored access landing.
+  // Ground-level entry is separately rendered by the apartment support.
+  const lobby=apartment.group.getObjectByName("writer-apartment-street-lobby");
+  if(!lobby)throw new Error("Apartment ground lobby missing");
+  lobby.userData.writerExterior=true;
+  clickable(lobby,"p-status","ورودی آپارتمان نویسنده — طبقه سوم");
   const hit=b(w,h,d,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,h/2,0);
   hit.userData.writerExterior=true;
   clickable(hit,"p-status","خانهٔ نویسنده — ورود به اتاق");
@@ -1817,8 +1814,8 @@ function setView(name) {
     // Room view coordinates describe the writer's local 6x6 floor.
     // The entire live room is now grounded at STREET_Y, not above the city.
     if (!["town","tehran","cars","publisher","bookstore"].includes(name)) {
-      camGoal.pos.y += STREET_Y;
-      camGoal.target.y += STREET_Y;
+      camGoal.pos.y += writerInteriorWorldRoot.position.y;
+      camGoal.target.y += writerInteriorWorldRoot.position.y;
     }
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
     if (name === "tehran") camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1,1.45/Math.max(.68,camera.aspect))).add(camGoal.target);
@@ -2113,8 +2110,8 @@ function animate() {
 
   // --- camera
   if (view === "follow") {
-    camGoal.target.set(character.position.x, 1.1 + STREET_Y, character.position.z);
-    camGoal.pos.set(character.position.x + 1.8, 2.4 + STREET_Y, character.position.z + 3.2);
+    camGoal.target.set(character.position.x, 1.1 + writerInteriorWorldRoot.position.y, character.position.z);
+    camGoal.pos.set(character.position.x + 1.8, 2.4 + writerInteriorWorldRoot.position.y, character.position.z + 3.2);
     camMoving = true;
   }
   if (camMoving) {
