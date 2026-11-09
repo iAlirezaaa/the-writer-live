@@ -63,7 +63,7 @@ for(let i=1;i<=3;i++){
   result.push({sourceId:evidence.sourceId,illustrativeWindows:evidence.instanceCount});
 }
 assert.equal(meshes.length,9);
-assert.equal(town.group.children.length,8);
+assert.equal(town.group.children.length,9);
 assert.equal(scene.getObjectByName(room.name),room);
 assert.equal(scene.getObjectByName(exterior.name),exterior);
 assert.equal(town.trafficState().length,0);
