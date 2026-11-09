@@ -97,7 +97,7 @@ assert.ok(/body\.app\.side-collapsed \.side\s*(?:,|\{)/.test(css) &&
 assert.ok(css.includes('html[data-observer-boot-theme="light"] body.app:not([data-observer-theme])') &&
   css.includes('html[data-observer-boot-theme="dark"] body.app:not([data-observer-theme])'));
 assert.ok(html.indexOf('root.dataset.theme = value;')>=0 &&
-  html.indexOf('root.dataset.theme = value;')<html.indexOf('rel="stylesheet"')),
+  html.indexOf('root.dataset.theme = value;')<html.indexOf('rel="stylesheet"'),
   "Stored theme must be selected before CSS loads");
 assert.ok(css.includes("@media(max-width:670px)"));
 assert.ok(css.includes('body.app[data-observer-theme="light"]'));
