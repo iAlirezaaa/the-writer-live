@@ -5,7 +5,7 @@ import { openExplorer } from "./explorer.js?v=graph-structure-v1";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-tehran-source-only-20261109-v2";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-tehran-source-only-20261109-v3";
 import { createTehranWeatherService, tehranWeatherLabel } from "./tehran-environment.js?v=tehran-environment-20261108-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { apartmentFloorElevation, WRITER_APARTMENT_LEVEL_OFFSET, buildWriterApartmentLowerStoreys } from "./writer-apartment-third-floor.js?v=writer-apartment-floor3-20261109-v1";
