@@ -31,7 +31,10 @@ const buildingDataSource=read("web/writer-block-building-data.js").replace(/^exp
 const buildingData=new Function(buildingDataSource+";return WRITER_BLOCK_BUILDING_SOURCE;")();
 const realBuildingSource=read("web/writer-block-buildings.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
 const realBuildings=new Function("WRITER_BLOCK_BUILDING_SOURCE","writerBlockContainsLocalPoint",realBuildingSource+
-  ";return {buildWriterBlockBuildingMasses};")(buildingData,preview.writerBlockContainsLocalPoint);
+  ";return {buildWriterBlockBuildingMasses,validateWriterBuildingSurvey,touchesWriterRoom};")(buildingData,preview.writerBlockContainsLocalPoint);
+const individualSource=read("web/writer-block-building-01.js").split("\n").filter(line=>!line.startsWith("import ")).join("\n").replace(/^export /gm,"");
+const individual=new Function("WRITER_BLOCK_BUILDING_SOURCE","validateWriterBuildingSurvey","touchesWriterRoom","writerBlockContainsLocalPoint",individualSource+
+  ";return {buildWriterBlockBuilding01};")(buildingData,realBuildings.validateWriterBuildingSurvey,realBuildings.touchesWriterRoom,preview.writerBlockContainsLocalPoint);
 const streetFrameSource=read("web/writer-block-street-frame.js").replace(/^import [\s\S]*?;$/gm,"").replace(/^export /gm,"");
 const streetFrame=new Function("writerBlockLocalRing","writerBlockRingArea","writerBlockContainsLocalPoint","WRITER_BLOCK_ROAD_EVIDENCE",streetFrameSource+
   ";return {buildWriterBlockStreetFrame};")(preview.writerBlockLocalRing,preview.writerBlockRingArea,preview.writerBlockContainsLocalPoint,preview.WRITER_BLOCK_ROAD_EVIDENCE);
@@ -40,9 +43,9 @@ const mockCars=()=>({
   trafficState(){return [];},update(){},setCrossingDemand(){}
 });
 const {buildTown,TOWN_BUILDINGS,STREET_Y}=
-  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain","buildWriterBlockBalcony","buildWriterBlockBuildingMasses","buildWriterBlockStreetFrame",townSource+
+  new Function("buildCityDistricts","buildTownCars","ROAD_SEGMENTS","buildSeamlessRoadSurface","ROAD_PAINT_CENTER_OFFSET","buildCityGrowth","buildWriterBlockRoadPreview","buildWriterBlockTerrain","buildWriterBlockBalcony","buildWriterBlockBuildingMasses","buildWriterBlockStreetFrame","buildWriterBlockBuilding01",townSource+
     ";return {buildTown,TOWN_BUILDINGS,STREET_Y};")(
-      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain,balcony.buildWriterBlockBalcony,realBuildings.buildWriterBlockBuildingMasses,streetFrame.buildWriterBlockStreetFrame
+      districts.buildCityDistricts,mockCars,urban.ROAD_SEGMENTS,roads.buildSeamlessRoadSurface,roads.ROAD_PAINT_CENTER_OFFSET,growth.buildCityGrowth,preview.buildWriterBlockRoadPreview,terrain.buildWriterBlockTerrain,balcony.buildWriterBlockBalcony,realBuildings.buildWriterBlockBuildingMasses,streetFrame.buildWriterBlockStreetFrame,individual.buildWriterBlockBuilding01
     );
 const plan=districts.auditCityPlan();
 assert.equal(plan.blocks,12);
@@ -78,7 +81,13 @@ assert.equal(balconyRail.userData.cityConstructionEvidence.surveyedTehranBuildin
 const mapBuildings=scene.getObjectByName("writer-block-overture-building-reconstruction");
 assert.ok(mapBuildings,"Real geographic 2D building footprints must appear in scene");
 assert.equal(mapBuildings.userData.citySurvey.originalRoofprints,4);
-assert.equal(mapBuildings.userData.citySurvey.generatedVolumeCount,3);
+assert.equal(mapBuildings.userData.citySurvey.generatedVolumeCount,2);
+assert.equal(mapBuildings.userData.citySurvey.independentlyModeledCount,1);
+const singleBuilding=scene.getObjectByName("writer-block-building-01-georeferenced");
+assert.ok(singleBuilding,"First individual roofprint model must exist in town");
+assert.equal(singleBuilding.userData.cityBuildingEvidence.physicalCollider,false);
+assert.equal(singleBuilding.userData.cityBuildingEvidence.measuredHeightMeters,null);
+assert.equal(singleBuilding.children.length,2);
 assert.equal(mapBuildings.userData.citySurvey.ignoredRoomCollisionCount,1);
 assert.equal(mapBuildings.userData.citySurvey.protectedWriterRoom,true);
 assert.equal(mapBuildings.userData.citySurvey.physicalCollider,false);
