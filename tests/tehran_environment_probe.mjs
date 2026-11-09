@@ -10,7 +10,12 @@ assert.equal(mod.tehranSkyAt(Date.UTC(2026,10,8,9,0)).day>0,true);
 assert.equal(mod.tehranSkyAt(epoch).day,0);
 assert.equal(mod.tehranSkyAt(epoch).solarSource,"fallback");
 assert.ok(mod.TEHRAN_WEATHER_URL.includes("timezone=Asia%2FTehran"));
-assert.ok(mod.TEHRAN_WEATHER_URL.includes("latitude=35.6892"));
+const weatherURL=new URL(mod.TEHRAN_WEATHER_URL);
+assert.equal(Number(weatherURL.searchParams.get("latitude")),35.715361987616696,
+ "Weather latitude must match the writer-home WGS84 anchor");
+assert.equal(Number(weatherURL.searchParams.get("longitude")),51.3642455031707,
+ "Weather longitude must match the writer-home WGS84 anchor");
+assert.equal(weatherURL.searchParams.get("timezone"),"Asia/Tehran");
 let clock=epoch,calls=0,success=true,mode="rain";
 function response(){
  const stamp=new Date(clock+210*60000).toISOString().slice(0,16); // Tehran UTC+03:30
