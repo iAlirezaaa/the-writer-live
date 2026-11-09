@@ -47,3 +47,27 @@ if (fs.existsSync(protectedPath)) {
   }
   console.log('PASS protected/public search parity');
 }
+
+// RDR-068: the deployed catalog must preserve numeric and punctuation distinctions.
+// These are deliberately negative fixtures: no digit folding or punctuation removal
+// is promised by searchKey. Keep the protected asset's behavior identical.
+const boundaryPairs = [
+  ['کتاب ۱۲۳', 'کتاب 123'],
+  ['کتاب ١٢٣', 'کتاب ۱۲۳'],
+  ['کتاب، دوم', 'کتاب دوم'],
+  ['نسخه-۲', 'نسخه ۲'],
+];
+for (const [a, b] of boundaryPairs) {
+  assert.notEqual(key(a), key(b), 'distinct search keys required: ' + a + ' / ' + b);
+}
+if (fs.existsSync(protectedPath)) {
+  const protectedSource = fs.readFileSync(protectedPath, 'utf8');
+  const protectedMatch = protectedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(protectedMatch, 'protected searchKey must exist');
+  const protectedKey = vm.runInNewContext(protectedMatch[0] + '\nsearchKey');
+  for (const [a, b] of boundaryPairs) {
+    assert.equal(protectedKey(a), key(a), 'protected/public parity: ' + a);
+    assert.equal(protectedKey(b), key(b), 'protected/public parity: ' + b);
+  }
+}
+console.log('PASS RDR-068: ' + boundaryPairs.length + ' numeric/punctuation boundaries and protected parity');
