@@ -8,7 +8,7 @@ const STATUS = { accepted:"پذیرفته‌شده", rejected:"ردشده", pend
 const $ = id => document.getElementById(id);
 const nfa = number => new Intl.NumberFormat("fa-IR").format(number);
 // Match Persian and Arabic keyboard variants without changing displayed titles.
-const searchKey = value => String(value ?? "").normalize("NFKC").replace(/[\u0640\u064B-\u065F\u0670]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
+const searchKey = value => String(value ?? "").normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g, "").replace(/ي/g, "ی").replace(/ك/g, "ک").toLocaleLowerCase("fa");
 let stories = [];
 
 function savedProgress(id) {
