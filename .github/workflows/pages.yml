@@ -52,6 +52,7 @@ jobs:
           cp city/survey/output/writer-block-survey.json _site/city/survey/output/writer-block-survey.json
           mkdir -p _site/city/buildings
           cp city/buildings/manifest.json _site/city/buildings/manifest.json
+          cp city/buildings/writer-block-orientation-audit.json _site/city/buildings/writer-block-orientation-audit.json
           cp .github/city-assets/city-growth.js _site/web/city-growth.js
           cp .github/city-assets/tehran-environment.js _site/web/tehran-environment.js
           python3 .github/scripts/prepare_car_deploy.py _site
@@ -95,6 +96,7 @@ jobs:
           node tests/writer_house_consistency_probe.mjs _site
           node --experimental-vm-modules tests/tehran_writer_apartment_third_floor_probe.mjs _site
           node tests/tehran_satarkhan_east_corridor_probe.mjs _site
+          node tests/tehran_sixth_daryan_street_section_probe.mjs _site
           node tests/city_districts_probe.mjs _site
           node tests/city_housing_access_probe.mjs _site
           # Protect original writer-house clearance and proven sidewalk graph.
