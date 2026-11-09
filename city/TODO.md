@@ -335,3 +335,15 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Two new backlog ideas (MAYOR-044)
 1. **Georeferenced licensed façade evidence board:** map each observed shopfront, entrance, balcony and window to actual building ID with date, license and confidence before upgrading illustration to T3.
 2. **Architectural animation performance gate:** tune draw calls for rooftop and window variation using measured frame time and low/mobile camera captures, keeping static city physics unchanged.
+
+## MAYOR-045 — authentic OSM road-tag direction and speed overlay (2026-11-09)
+- [x] Register independent pre-edit TODO and audit both immutable backups, mandatory Tehran and 3Dviz skills.
+- [x] Inspect dated official OSM survey source; identify actual `maxspeed=30` on 4 writer-block road ways, two explicit `oneway=yes`, one `oneway=no`, one unknown.
+- [x] Implement source-only diagram: source-way-aligned directional arrows and 30 km/h tags without claiming actual signage positions, adding colliders or changing vehicle/citizen traffic routing.
+- [x] Record individual road provenance, local road orientation and tags in `city/roads/writer-block-regulations.json`.
+- [x] Direct vendored Three.js scene builder confirms 8 town groups, finite objects, 4 sourced speed labels, 4 diagram arrows, separate preserved author room, zero physics cars.
+- [ ] Run mandatory Node and legacy regression in public Pages CI, inspect outcomes, synchronize pinned assets, and confirm real deployment separately.
+- [ ] Actual aerial/street/day/night browser screenshots still required; do not claim observed visual accuracy.
+### Two new backlog ideas (MAYOR-045)
+1. **Dated road-rule change ledger:** poll only on demand for OSM `oneway`, `maxspeed`, `surface`, `width`, `sidewalk` and matched municipality traffic records, with confidence and license.
+2. **LOD2-building evidence ingestion:** verify one Overture `building_part`, floor/height and one independently licensed photo/entrance per source building ID before modifying actual roof, units or shops.
