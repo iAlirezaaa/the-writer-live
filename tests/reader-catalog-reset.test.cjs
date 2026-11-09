@@ -148,7 +148,7 @@ test("public protected assets retain catalog behavior and semantic HTML", () => 
   const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
   assert.equal(pinned.match(expression)?.[0], source.match(expression)?.[0], "deployed Persian search must match source");
   // Prevent the protected Pages replacement from silently diverging from tested catalog behavior.
-  for (const name of ["renderShelf", "resetShelfFilters"]) {
+  const normalize = new Function(implementation + "\nreturn searchKey;")();
     const pattern = new RegExp(`^function ${name}\\(\\)\\s*\\{[\\s\\S]*?^\\}`, "m");
     assert.equal(pinned.match(pattern)?.[0], source.match(pattern)?.[0], `protected ${name} differs from public source`);
   }
