@@ -166,3 +166,20 @@ Status: test-only source correction; no runtime assets, city geometry, traffic, 
 2. **Forecast attribution micro-panel**: show model-estimate label, provider timestamp, cache age and unavailable status, without claiming station observations or altering writer/citizen clocks.
 
 Status: documentation-only. No geometry, traffic, author/publisher/citizen data, runtime weather source or deployment modified. Existing Node/visual acceptance tests NOT EXECUTED.
+
+
+## MAYOR-026 — Geographically faithful Tehran writer block + 3Dviz Pro Max (2026-11-09)
+- [x] Register independent TODO first: `city/tasks/MAYOR-026-tehran-writer-block-3dviz-contract.md`.
+- [x] Confirm the existing WGS84 home anchor **35.715361987616696, 51.3642455031707** in `web/urban-plan.js`. Current roads/buildings are procedural, **not** one-to-one Tehran geography.
+- [x] Confirm the full skill is already vendored privately at `cognition/skills/3dviz-pro-max/`, with a Twin World integration guide. Keep local Three.js and use this skill to rebuild one city prop/structure at a time.
+- [x] Define geographic reconstruction **limited to the actual road-bounded writer block**, pending legitimate map-footprint/perimeter evidence. City expansion elsewhere is paused, not erased from historical backlog.
+- [x] Create `city/skills/tehran-writer-block/SKILL.md` and update city handbook, urban code, municipal growth and release-gate instructions. Update existing hourly "شهردار شهر نویسنده" automation; retain its cadence and previous safety requirements.
+- [ ] Source licensed street/parcel/elevation data and document the exact block polygon, uncertainty and attribution before altering the runtime world.
+- [ ] Conduct screenshot comparison to real geography, street-level and overhead before claiming that Tehran was recreated.
+- [ ] Runtime city geometry/object rebuild in this iteration: **NOT PERFORMED**. No tests or Pages deployment claimed from documentation updates.
+
+### Two additional backlog ideas — MAYOR-026
+1. **Map evidence coverage ledger** — georeferenced feature registry showing dataset/license/date, positional uncertainty and unknown surfaces so no prop is described as 1:1 without evidence.
+2. **Old-vs-new 3D prop proof gate** — reproducible 3Dviz workflow using silhouette/ground contact/material/LOD assessments, close + wide screenshot comparisons and frame-budget tests before replacing low-fidelity objects.
+
+Status: instruction changes and automation updated; geographic capture, real modeling and performance verification remain pending.
