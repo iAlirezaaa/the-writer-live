@@ -32,12 +32,19 @@ function fixture() {
     "story-search": { value: "", focused: false, handlers: {}, focus() { this.focused = true; }, addEventListener(name, fn) { this.handlers[name] = fn; } },
     "story-status": { value: "all" },
     "story-sort": { value: "newest" },
+    "reading-filter": { value: "all" },
     "story-reset": { hidden: true, handlers: {}, addEventListener(name, fn) { this.handlers[name] = fn; } },
     "shelf-count": { textContent: "" },
     covers: { children: [], replaceChildren(...cards) { this.children = cards; }, append(card) { this.children.push(card); } },
   };
   const deps = {
     stories: library,
+    favoritesOnly: false,
+    readingFilter: "all",
+    isFavorite: () => false,
+    updateFavoritesBadge: () => {},
+    updateLibraryControls: () => {},
+    savedProgress: () => 0,
     $: id => nodes[id],
     nfa: number => new Intl.NumberFormat("fa-IR").format(number),
     makeCover: story => ({ id: story.id, title: story.title }),
@@ -150,7 +157,7 @@ test("public protected assets retain catalog behavior and semantic HTML", () => 
   }
   assert.match(html, /role="search"\s+aria-label="[^"]+"/);
   assert.match(html, /id="story-reset"/);
-  assert.match(html, /read\.js\?v=reader-20261109-catalog-v8/);
+  assert.match(html, /read\.js\?v=reader-20261109-library-v2/);
 });
 
 test("catalog entry points share the protected script cache version and reset controls", () => {
