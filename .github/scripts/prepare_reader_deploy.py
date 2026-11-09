@@ -12,6 +12,7 @@ import sys
 
 
 VERSION = "reader-20261109-v7"
+CATALOG_VERSION = "reader-20261109-catalog-v8"
 
 
 def patch_site(root: Path) -> None:
@@ -34,7 +35,12 @@ def patch_site(root: Path) -> None:
         '"vazir-classic"' in book,
         '"turn turn-prev", "→"' in book,
         '"turn turn-next", "←"' in book,
-        f"read.js?v={VERSION}" in html,
+        f"read.js?v={CATALOG_VERSION}" in html,
+        "function resetShelfFilters()" in reader,
+        "const query=searchKey(" in reader,
+        'id="story-reset"' in html,
+        'role="search"' in html,
+        'reader-reset[hidden]' in css,
         "persian-display.js?v=observatory-20261108-v2" in reader,
         "overlay.dataset.readerTheme" in book,
     ]):
