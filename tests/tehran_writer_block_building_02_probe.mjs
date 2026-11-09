@@ -82,7 +82,7 @@ for(const coords of [a,upper]){
     assert.ok(y>=-3.001&&y<3.1);
   }
 }
-const bulkMap=preview.buildWriterBlockBuildingMasses(THREE,new THREE.Group(),{streetY:-3});
+const bulkMap=preview.buildWriterBlockBuildingMasses(THREE,new THREE.Group(),{streetY:-3,independentBuilding03:true});
 assert.equal(bulkMap.group.userData.citySurvey.originalRoofprints,4);
 assert.equal(bulkMap.group.userData.citySurvey.generatedVolumeCount,0);
 assert.equal(bulkMap.group.userData.citySurvey.independentlyModeledCount,3);
