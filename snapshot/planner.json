@@ -207,109 +207,109 @@
       "label": "پاسخ به نامه‌ها",
       "next_retry_at": null,
       "start": "2026-11-09T14:40:02",
-      "status": "planned",
+      "status": "done",
       "task": "letter"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T16:00:02",
+      "end": "2026-11-09T15:21:02",
       "id": "202611091854",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T15:20:02",
+      "start": "2026-11-09T14:41:02",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T16:40:02",
+      "end": "2026-11-09T16:01:02",
       "id": "202611091934",
       "label": "مطالعهٔ متن کلاسیک فارسی",
       "next_retry_at": null,
-      "start": "2026-11-09T16:00:02",
+      "start": "2026-11-09T15:21:02",
       "status": "planned",
       "task": "persian_reading"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T17:20:02",
+      "end": "2026-11-09T16:41:02",
       "id": "202611092014",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T16:40:02",
+      "start": "2026-11-09T16:01:02",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T18:00:02",
+      "end": "2026-11-09T17:21:02",
       "id": "202611092054",
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
-      "start": "2026-11-09T17:20:02",
+      "start": "2026-11-09T16:41:02",
       "status": "planned",
       "task": "notebook"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T18:40:02",
+      "end": "2026-11-09T18:01:02",
       "id": "202611092134",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T18:00:02",
+      "start": "2026-11-09T17:21:02",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T19:20:02",
+      "end": "2026-11-09T18:41:02",
       "id": "202611092214",
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
-      "start": "2026-11-09T18:40:02",
+      "start": "2026-11-09T18:01:02",
       "status": "planned",
       "task": "notebook"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T20:00:02",
+      "end": "2026-11-09T19:21:02",
       "id": "202611092254",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-09T19:20:02",
+      "start": "2026-11-09T18:41:02",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-09T20:40:02",
+      "end": "2026-11-09T20:01:02",
       "id": "202611092334",
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
-      "start": "2026-11-09T20:00:02",
+      "start": "2026-11-09T19:21:02",
       "status": "planned",
       "task": "notebook"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-09T15:20:02",
-    "id": "202611091814",
-    "label": "پاسخ به نامه‌ها",
+    "end": "2026-11-09T15:21:02",
+    "id": "202611091854",
+    "label": "استراحت",
     "next_retry_at": null,
-    "start": "2026-11-09T14:40:02",
+    "start": "2026-11-09T14:41:02",
     "status": "planned",
-    "task": "letter"
+    "task": "rest"
   },
   "day": "2026-11-09",
   "next": {
     "attempts": null,
-    "end": "2026-11-09T16:00:02",
-    "id": "202611091854",
-    "label": "استراحت",
+    "end": "2026-11-09T16:01:02",
+    "id": "202611091934",
+    "label": "مطالعهٔ متن کلاسیک فارسی",
     "next_retry_at": null,
-    "start": "2026-11-09T15:20:02",
+    "start": "2026-11-09T15:21:02",
     "status": "planned",
-    "task": "rest"
+    "task": "persian_reading"
   }
 }
