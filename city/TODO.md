@@ -324,3 +324,14 @@ Status: one source-backed GIS baseline completed and archived, no premature runt
 ### Two new backlog ideas (MAYOR-043)
 1. **Block object provenance inspector:** geolocated evidence table differentiating real OSM/Overture lines from guessed context props, with toggles per confidence level.
 2. **Measured frontage + floor registry:** independently licensed levels, entrances, commercial POIs and units for each actual building prior to replacing illustrative architecture.
+
+## MAYOR-044 — Architectural illustrative skins on sourced building masses (2026-11-09)
+- [x] Registered stand-alone task before code; consulted mandatory Tehran and vendored 3Dviz skills and license checks.
+- [x] Attached Three.js facade illustration to 3 true Overture roofprints, without changing mapped geometry, rooms, citizens or traffic: 40/47/70 repeated bays, nine InstancedMesh objects in total.
+- [x] Executed actual vendored Three.js source-only builder in isolated JS: 7 top-level groups, 34 finite-bound renderables; still no physical colliders, no measured facade/height/level/units.
+- [ ] Run new authored facade probe in public Pages and certify CI; report public hash only on success.
+- [ ] Capture real street, aerial, day, night visual comparisons; do not claim verification without images.
+
+### Two new backlog ideas (MAYOR-044)
+1. **Georeferenced licensed façade evidence board:** map each observed shopfront, entrance, balcony and window to actual building ID with date, license and confidence before upgrading illustration to T3.
+2. **Architectural animation performance gate:** tune draw calls for rooftop and window variation using measured frame time and low/mobile camera captures, keeping static city physics unchanged.
