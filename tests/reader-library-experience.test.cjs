@@ -161,7 +161,9 @@ test("unavailable storage degrades safely without breaking shelf",()=>{
   f.toggleLibraryTheme();assert.equal(f.body.dataset.libraryTheme,"dark");
 });
 test("new HTML controls and visible editorial styling are installed",()=>{
-  const html=fs.readFileSync(path.join(__dirname,"../web/read.html"),"utf8");
+  const privateHtml=path.join(__dirname,"../web/read.html");
+  const publicHtml=path.join(__dirname,"../read/index.html");
+  const html=fs.readFileSync(fs.existsSync(privateHtml)?privateHtml:publicHtml,"utf8");
   const css=fs.readFileSync(path.join(__dirname,"../web/book.css"),"utf8");
   for(const id of ["story-favorites","reading-filter","library-grid","library-list","library-theme","library-explore",
     "library-stories-count","library-progress-count","library-saved-count"])
