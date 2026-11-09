@@ -157,6 +157,7 @@ mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bo
 .explorer-legend { position: absolute; bottom: var(--s3); right: var(--s3); display: flex; gap: var(--s3); flex-wrap: wrap; font-size: 0.78rem; color: #a39b8d; }
 .explorer-legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: var(--s1); background: var(--c); }
 .explorer-help { position: absolute; top: var(--s3); right: var(--s3); font-size: 0.78rem; color: #7c7468; }
+.explorer-shapes { position:absolute;left:var(--s3);bottom:104px;max-width:260px;padding:6px 9px;border:1px solid rgba(236,230,218,.1);border-radius:9px;background:rgba(27,25,21,.92);color:#a39b8d;font-size:.7rem;line-height:1.8; }
 .explorer-side { overflow-y: auto; padding: var(--s4); border-inline-start: 1px solid rgba(236, 230, 218, 0.09); background: #1b1915; }
 .explorer-side button { color: #ece6da; border-color: rgba(236, 230, 218, 0.2); margin-bottom: var(--s3); }
 .explorer-side .muted, .explorer-side .time, .explorer-side dt { color: #a39b8d; }

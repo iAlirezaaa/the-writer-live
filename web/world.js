@@ -2543,29 +2543,44 @@ const gCanvas = $("graph");
 const gCtx = gCanvas.getContext("2d");
 const DOMAIN_COLOR = { craft: "#b7791f", flaw: "#9a3412", world: "#8a6e5c", research: "#4d7f80", audience: "#8a5c7a", self: "#6e8f6b" };
 const DOMAIN_LABEL = { all: "همه", craft: "داستان و مهارت", flaw: "ایرادها", world: "جهان", research: "تحقیق", audience: "مخاطب", self: "درون" };
+const DOMAIN_ORDER = ["craft", "flaw", "world", "research", "audience", "self"];
+const GRAPH_SYMMETRIC = new Set(["related", "co_occurs"]);
+const graphDomainLabel = (key) => DOMAIN_LABEL[key] || (key.startsWith("skill:") ? `مهارت · ${key.slice(6).replaceAll("-", " ")}` : key);
+const graphDomainColor = (key) => DOMAIN_COLOR[key] || (key.startsWith("skill:") ? DOMAIN_COLOR.craft : "#888");
+const graphNodeShape = (kind) => kind === "idea" || kind === "thread" ? "diamond" :
+  kind === "skill" || kind === "skillnode" ? "hexagon" : kind === "flaw" ? "triangle" : "circle";
 let graphData = { nodes: [], edges: [] };
 let layout = new Map();
-let currentDomain = "all";
+let currentDomain = "craft";
 function layoutGraph(data) {
   const pos = new Map();
-  const n = data.nodes.length;
-  data.nodes.forEach((node, i) => { const a = (i / Math.max(1, n)) * Math.PI * 2; pos.set(node.id, { x: Math.cos(a) * 0.6, y: Math.sin(a) * 0.6, vx: 0, vy: 0 }); });
-  for (let it = 0; it < 160; it++) {
-    for (const a of data.nodes) for (const b of data.nodes) {
-      if (a === b) continue;
-      const pa = pos.get(a.id), pb = pos.get(b.id);
-      const dx = pa.x - pb.x, dy = pa.y - pb.y, d2 = dx * dx + dy * dy + 0.001;
-      pa.vx += (dx / d2) * 0.0009; pa.vy += (dy / d2) * 0.0009;
-    }
-    for (const e of data.edges) {
-      const pa = pos.get(e.a), pb = pos.get(e.b);
-      if (!pa || !pb) continue;
-      const dx = pb.x - pa.x, dy = pb.y - pa.y, w = Math.min(2, e.w);
-      pa.vx += dx * 0.02 * w; pa.vy += dy * 0.02 * w; pb.vx -= dx * 0.02 * w; pb.vy -= dy * 0.02 * w;
-    }
-    for (const p of pos.values()) { p.x += p.vx; p.y += p.vy; p.vx *= 0.6; p.vy *= 0.6; p.x *= 0.995; p.y *= 0.995; }
+  const groups = new Map();
+  for (const node of data.nodes) { if (!groups.has(node.domain)) groups.set(node.domain, []); groups.get(node.domain).push(node); }
+  const custom = [...groups.keys()].filter((key) => !DOMAIN_ORDER.includes(key)).sort();
+  const order = [...DOMAIN_ORDER.filter((key) => groups.has(key)), ...custom];
+  for (const [domainIndex, key] of order.entries()) {
+    const members = groups.get(key).slice().sort((a, b) => a.id.localeCompare(b.id));
+    const span = order.length === 1 ? Math.PI * 2 : Math.PI * 2 / order.length * .82;
+    const center = (domainIndex + .5) * Math.PI * 2 / order.length;
+    const rings = Math.max(1, Math.ceil(Math.sqrt(members.length / 5)));
+    members.forEach((node, i) => {
+      const angle = center + (i / Math.max(1, members.length) - .5) * span;
+      const ring = Math.floor(i / 5) % rings;
+      const r = .28 + (ring / Math.max(1, rings - 1)) * .36;
+      pos.set(node.id, { x: Math.cos(angle) * r, y: Math.sin(angle) * r });
+    });
   }
   return pos;
+}
+function paintGraphNode(node, x, y, r, color) {
+  gCtx.fillStyle = color;
+  if (graphNodeShape(node.kind) === "diamond") {
+    gCtx.beginPath();gCtx.moveTo(x,y-r);gCtx.lineTo(x+r,y);gCtx.lineTo(x,y+r);gCtx.lineTo(x-r,y);gCtx.closePath();gCtx.fill();
+  } else if (graphNodeShape(node.kind) === "hexagon") {
+    gCtx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6,px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;i?gCtx.lineTo(px,py):gCtx.moveTo(px,py);}gCtx.closePath();gCtx.fill();
+  } else if (graphNodeShape(node.kind) === "triangle") {
+    gCtx.beginPath();gCtx.moveTo(x,y-r);gCtx.lineTo(x+r,y+r);gCtx.lineTo(x-r,y+r);gCtx.closePath();gCtx.fill();
+  } else {gCtx.beginPath();gCtx.arc(x,y,r,0,Math.PI*2);gCtx.fill();}
 }
 function drawGraph() {
   const dpr = window.devicePixelRatio || 1;
@@ -2576,22 +2591,27 @@ function drawGraph() {
   gCtx.clearRect(0, 0, w, h);
   const ink = getComputedStyle(gCanvas).color || "#444";
   const toXY = (p) => [w / 2 + p.x * w * 0.8, h / 2 + p.y * h * 0.8];
-  gCtx.strokeStyle = "rgba(140,128,110,0.35)";
   for (const e of graphData.edges) {
     const pa = layout.get(e.a), pb = layout.get(e.b);
     if (!pa || !pb) continue;
     const [x1, y1] = toXY(pa), [x2, y2] = toXY(pb);
+    gCtx.strokeStyle = "rgba(140,128,110,0.34)";gCtx.lineWidth=Math.min(2,0.8+Number(e.w||1)*.25);
     gCtx.beginPath(); gCtx.moveTo(x1, y1); gCtx.lineTo(x2, y2); gCtx.stroke();
+    if(graphData.nodes.length<=60&&!GRAPH_SYMMETRIC.has(e.rel)){
+      const angle=Math.atan2(y2-y1,x2-x1),size=4.5,mx=x1+(x2-x1)*.7,my=y1+(y2-y1)*.7;
+      gCtx.fillStyle="rgba(110,98,80,.68)";gCtx.beginPath();gCtx.moveTo(mx+Math.cos(angle)*size,my+Math.sin(angle)*size);
+      gCtx.lineTo(mx-size*.65*Math.cos(angle-.55),my-size*.65*Math.sin(angle-.55));
+      gCtx.lineTo(mx-size*.65*Math.cos(angle+.55),my-size*.65*Math.sin(angle+.55));gCtx.closePath();gCtx.fill();
+    }
   }
   gCtx.direction = "rtl";
   for (const node of graphData.nodes) {
     const p = layout.get(node.id); if (!p) continue;
     const [x, y] = toXY(p), r = 3 + Math.min(6, node.strength * 6);
-    gCtx.fillStyle = DOMAIN_COLOR[node.domain] || "#888";
-    gCtx.beginPath(); gCtx.arc(x, y, r, 0, Math.PI * 2); gCtx.fill();
-    if (["episode", "skill", "flaw", "entity"].includes(node.kind)) {
+    paintGraphNode(node,x,y,r,graphDomainColor(node.domain));
+    if (graphData.nodes.length <= 42 || ["episode", "skill", "flaw", "source"].includes(node.kind)) {
       gCtx.fillStyle = ink; gCtx.font = "11px Vazirmatn, Tahoma, sans-serif";
-      gCtx.fillText(node.label.slice(0, 18), x - r - 3, y + 4);
+      gCtx.fillText(node.label.slice(0, 22), x - r - 4, y + 4);
     }
   }
   if (!graphData.nodes.length) {
@@ -2602,21 +2622,29 @@ function drawGraph() {
 }
 function renderDomainTabs(counts) {
   const boxEl = $("domains"); boxEl.replaceChildren();
-  for (const key of Object.keys(DOMAIN_LABEL)) {
+  const present=Object.keys(counts).filter((key)=>counts[key]>0);
+  const extra=present.filter((key)=>!DOMAIN_ORDER.includes(key)).sort();
+  for (const key of ["all",...DOMAIN_ORDER.filter((key)=>counts[key]>0),...extra]) {
     const b = document.createElement("button");
     const n = key === "all" ? Object.values(counts).reduce((a, c) => a + c, 0) : counts[key] || 0;
-    b.textContent = `${DOMAIN_LABEL[key]} (${n})`;
+    b.textContent = `${graphDomainLabel(key)} (${n})`;
     b.setAttribute("aria-pressed", String(currentDomain === key));
     b.addEventListener("click", () => { currentDomain = key; loadGraph(); });
     boxEl.appendChild(b);
   }
 }
 async function loadGraph() {
-  const g = await getJSON(`/api/graph${currentDomain === "all" ? "" : `?domain=${currentDomain}`}`);
-  graphData = g; layout = layoutGraph(g);
-  renderDomainTabs(g.counts);
-  $("graph-counts").textContent = `پیوندها: ${g.edge_count} · نمایش: ${g.nodes.length} گره`;
-  drawGraph();
+  try {
+    const g = await getJSON(`/api/graph${currentDomain === "all" ? "" : `?domain=${encodeURIComponent(currentDomain)}`}`);
+    graphData = g; layout = layoutGraph(g);
+    renderDomainTabs(g.counts);
+    $("graph-counts").textContent = `${faNum(g.nodes.length)} از ${faNum(g.node_count ?? g.nodes.length)} نود · ${faNum(g.visible_edge_count ?? g.edges.length)} پیوند در این نما`;
+    drawGraph();
+  } catch {
+    graphData = { nodes: [], edges: [] };layout.clear();
+    $("graph-counts").textContent = "دریافت گراف ناموفق بود؛ اتصال را بررسی کنید.";
+    drawGraph();
+  }
 }
 window.addEventListener("resize", () => drawGraph());
 

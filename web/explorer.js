@@ -4,23 +4,29 @@
 const KIND_FA = {
   episode: "داستان", skill: "مهارت", lesson: "درس", experiment: "آزمایش", flaw: "ایراد", entity: "شخصیت یا مکان",
   thread: "رشته‌ی داستانی", source: "فایل جهان", rule: "قانون جهان", research: "تحقیق", feedback: "فکر بیرونی",
-  idea: "ایده", diary: "یادداشت دفترچه",
+  idea: "ایده", diary: "یادداشت دفترچه", skillnode: "مفهوم مهارتی",
 };
 const DOMAIN_FA = { all: "همه", craft: "داستان و مهارت", flaw: "ایرادها", world: "جهان", research: "تحقیق", audience: "مخاطب", self: "درون" };
 const DOMAIN_COLOR = { craft: "#c08a2e", flaw: "#c0573a", world: "#9a7a5c", research: "#4d8f90", audience: "#9a6a8a", self: "#6e9a6b" };
+const DOMAIN_ORDER = ["craft", "flaw", "world", "research", "audience", "self"];
+const SYMMETRIC_RELATIONS = new Set(["related", "co_occurs"]);
 const REL_FA = {
   learned_from: "آموخته از", improves: "بهتر می‌کند", weakens: "ضعیف می‌کند", exercised: "تمرین شد در", passed: "گذشت در",
   failed: "رد شد در", appears_in: "حاضر در", co_occurs: "همراه با", related: "مرتبط با", about: "درباره‌ی", found_in: "پیدا شده در",
   resolved_in: "حل شد در", inspired_by: "الهام از", reflects_on: "تأمل درباره‌ی", open_in: "باز در", defined_in: "تعریف شده در",
-  tried_in: "امتحان شده در",
+  tried_in: "امتحان شده در", woven_into: "بافته شد در",
 };
+const domainLabel = (key) => DOMAIN_FA[key] || (key.startsWith("skill:") ? `مهارت · ${key.slice(6).replaceAll("-", " ")}` : key);
+const domainColor = (key) => DOMAIN_COLOR[key] || (key.startsWith("skill:") ? DOMAIN_COLOR.craft : "#888");
+const nodeShape = (kind) => kind === "idea" || kind === "thread" ? "◇" :
+  kind === "skill" || kind === "skillnode" ? "⬡" : kind === "flaw" ? "△" : "●";
 
 let ui = null;
 let data = { nodes: [], edges: [] };
 let pos = new Map();
 let cam = { x: 0, y: 0, k: 1 };
 let selected = null, hovered = null, neighbours = new Set(), searchMatches = new Set();
-let domain = "all";
+  let domain = "craft";
 let raf = 0, ticks = 0;
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -45,8 +51,9 @@ function build() {
   const zoomOut = el("button", "", "−"); zoomOut.title = "کوچک‌نمایی"; zoomOut.setAttribute("aria-label", zoomOut.title);
   const reset = el("button", "", "نمای کلی"); reset.title = "بازنشانی نما";
   zoom.append(zoomIn,zoomOut,reset);
-  const help = el("div", "explorer-help", "بکشید تا جابه‌جا شود، چرخ ماوس برای بزرگ‌نمایی، روی هر گره کلیک کنید.");
-  canvasWrap.append(canvas, legend, help, zoom);
+  const help = el("div", "explorer-help", "رنگ = حوزه · شکل = نوع · پیکان = جهت رابطه | بکشید، بزرگ‌نمایی کنید و برای جزئیات روی گره بزنید.");
+  const shapes = el("div", "explorer-shapes", "● داستان/منبع   ⬡ مهارت   ◇ ایده/رشته   △ ایراد");
+  canvasWrap.append(canvas, legend, shapes, help, zoom);
   const side = el("aside", "explorer-side");
   body.append(canvasWrap, side);
   overlay.append(bar, body);
@@ -97,9 +104,14 @@ export async function openExplorer(startId) {
   if (!ui) build();
   ui.overlay.hidden = false;
   document.body.classList.add("book-open");
-  await load();
-  if (startId) focusId(startId);
-  else showOverview();
+  try {
+    await load();
+    if (startId) focusId(startId);
+    else showOverview();
+  } catch {
+    ui.side.replaceChildren(el("h3", "", "گراف بارگذاری نشد"),
+      el("p", "muted small", "داده‌ی گراف از حافظه دریافت نشد. اتصال را بررسی کنید و دوباره باز کنید."));
+  }
 }
 
 function closeExplorer() {
@@ -117,8 +129,9 @@ async function load() {
   const hashId=(s)=>{let h=2166136261;for(const ch of String(s)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
   data.nodes.forEach((node, i) => {
     const p = old.get(node.id);
-    const h=hashId(node.id),sector=Math.max(0,domainOrder.indexOf(node.domain))/domainOrder.length*Math.PI*2;
-    const a=sector+((h%1000)/1000-.5)*.9,r=48+((h>>>10)%100);
+    const h=hashId(node.id),sectorIndex=Math.max(0,domainOrder.indexOf(node.domain));
+    const sector=(sectorIndex+.5)/domainOrder.length*Math.PI*2;
+    const a=sector+((h%1000)/1000-.5)*Math.min(.9,Math.PI/domainOrder.length),r=56+((h>>>10)%76);
     pos.set(node.id, p ? { ...p } : { x: Math.cos(a) * r, y: Math.sin(a) * r, vx: 0, vy: 0 });
   });
   resize();
@@ -129,9 +142,12 @@ async function load() {
 
 function renderChips(counts) {
   ui.chips.replaceChildren();
-  for (const d of Object.keys(DOMAIN_FA)) {
+  const present = Object.keys(counts).filter((key) => counts[key] > 0);
+  const dynamic = present.filter((key) => !DOMAIN_ORDER.includes(key)).sort();
+  const keys = ["all", ...DOMAIN_ORDER.filter((key) => counts[key] > 0), ...dynamic];
+  for (const d of keys) {
     const n = d === "all" ? Object.values(counts).reduce((a, c) => a + c, 0) : counts[d] || 0;
-    const b = el("button", "", `${DOMAIN_FA[d]} (${n})`);
+    const b = el("button", "", `${domainLabel(d)} (${n})`);
     b.setAttribute("aria-pressed", String(domain === d));
     b.addEventListener("click", async () => { domain = d; selected = null; await load(); showOverview(); });
     ui.chips.append(b);
@@ -199,10 +215,16 @@ function draw() {
   for (const e of data.edges) {
     const a = pos.get(e.a), b = pos.get(e.b); if (!a || !b) continue;
     const on = focus && (e.a === selected?.id || e.b === selected?.id);
-    ctx.strokeStyle = on ? "rgba(224,168,79,0.85)" : focus ? "rgba(150,140,125,0.08)" : "rgba(150,140,125,0.28)";
-    ctx.lineWidth = on ? 1.6 : 1;
+    ctx.strokeStyle = on ? "rgba(224,168,79,0.9)" : focus ? "rgba(150,140,125,0.07)" : "rgba(150,140,125,0.2)";
+    ctx.lineWidth = on ? 1.8 : 0.9;
     const [x1, y1] = screen(a), [x2, y2] = screen(b);
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    if (on && !SYMMETRIC_RELATIONS.has(e.rel)) {
+      const angle=Math.atan2(y2-y1,x2-x1),size=6;
+      ctx.fillStyle="rgba(224,168,79,0.95)";ctx.beginPath();ctx.moveTo(x2,y2);
+      ctx.lineTo(x2-size*Math.cos(angle-.48),y2-size*Math.sin(angle-.48));
+      ctx.lineTo(x2-size*Math.cos(angle+.48),y2-size*Math.sin(angle+.48));ctx.closePath();ctx.fill();
+    }
   }
   ctx.direction = "rtl"; ctx.textAlign = "right";
   for (const n of data.nodes) {
@@ -210,8 +232,14 @@ function draw() {
     const [x, y] = screen(p), r = radius(n);
     const dim = focus && !focus.has(n.id);
     ctx.globalAlpha = dim ? 0.18 : 1;
-    ctx.fillStyle = DOMAIN_COLOR[n.domain] || "#888";
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = domainColor(n.domain);
+    if (n.kind === "idea" || n.kind === "thread") {
+      ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();ctx.fill();
+    } else if (n.kind === "skill" || n.kind === "skillnode") {
+      ctx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6,px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();ctx.fill();
+    } else if (n.kind === "flaw") {
+      ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r,y+r);ctx.lineTo(x-r,y+r);ctx.closePath();ctx.fill();
+    } else { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
     if(searchMatches.has(n.id)){ctx.strokeStyle="#f0ce84";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);ctx.stroke();}
     if (selected && n.id === selected.id) { ctx.strokeStyle = "#f1ead8"; ctx.lineWidth = 2; ctx.stroke(); }
     const showLabel = !dim && (cam.k > 1.6 || n === hovered || (focus && focus.has(n.id)) || ["episode", "skill", "source"].includes(n.kind));
@@ -242,8 +270,8 @@ function renderDetail(d) {
   back.addEventListener("click", () => { selected = null; neighbours = new Set(); showOverview(); draw(); });
   s.append(back);
   const head = el("div", "detail-head");
-  const dot = el("span", "dot"); dot.style.background = DOMAIN_COLOR[d.domain] || "#888";
-  head.append(dot, el("span", "time", `${KIND_FA[d.kind] || d.kind} · ${DOMAIN_FA[d.domain] || d.domain}`));
+  const dot = el("span", "dot"); dot.style.background = domainColor(d.domain);
+  head.append(dot, el("span", "time", `${nodeShape(d.kind)} ${KIND_FA[d.kind] || d.kind} · ${domainLabel(d.domain)}`));
   s.append(head, el("h3", "detail-title", d.label));
   if (d.text && d.text !== d.label) s.append(el("p", "detail-text", d.text));
   const facts = el("dl", "facts");
@@ -261,7 +289,7 @@ function renderDetail(d) {
   for (const nb of d.neighbours) {
     const li = el("li", "clickable");
     const top = el("div"); top.append(el("span", "rel", REL_FA[nb.rel] || nb.rel), document.createTextNode(" "), el("span", "", nb.label));
-    li.append(top, el("div", "time", `${KIND_FA[nb.kind] || nb.kind} · ${DOMAIN_FA[nb.domain] || nb.domain}`));
+    li.append(top, el("div", "time", `${nodeShape(nb.kind)} ${KIND_FA[nb.kind] || nb.kind} · ${domainLabel(nb.domain)}`));
     li.addEventListener("click", () => focusId(nb.id, nb));
     ul.append(li);
   }
@@ -295,7 +323,7 @@ async function runSearch(q) {
   const ul = el("ul", "list small");
   for (const r of rows) {
     const li = el("li", "clickable");
-    li.append(el("div", "", r.label), el("div", "time", `${KIND_FA[r.kind] || r.kind} · ${DOMAIN_FA[r.domain] || r.domain}`));
+    li.append(el("div", "", r.label), el("div", "time", `${nodeShape(r.kind)} ${KIND_FA[r.kind] || r.kind} · ${domainLabel(r.domain)}`));
     li.addEventListener("click", () => focusId(r.id, r));
     ul.append(li);
   }
@@ -306,17 +334,18 @@ async function runSearch(q) {
 function showOverview() {
   const s = ui.side; s.replaceChildren();
   s.append(el("h3", "", "حافظه‌ی نویسنده"));
-  s.append(el("p", "muted small", "هر تجربه یک گره است و پیوندها نشان می‌دهند از کجا آمده و به چه ربط دارد. روی گره‌ها کلیک کنید و از پیوندی به پیوند دیگر بروید."));
+  s.append(el("p", "muted small", "قاعده‌ی خواندن: رنگ حوزه را نشان می‌دهد، شکل نوع نود را؛ عنوان، مفهوم است و شناسه فقط کلید داخلی. پیوند جهت‌دار از فاعل به مقصد می‌رود. هر نود یک مفهوم کوتاه دارد و جزئیات در پرونده‌ی کناری است."));
   const counts = el("dl", "facts");
   for (const [d, n] of Object.entries(data.counts || {})) counts.append(el("dt", "", DOMAIN_FA[d] || d), el("dd", "", String(n)));
   counts.append(el("dt", "", "پیوندها"), el("dd", "", String(data.edge_count || 0)));
   s.append(counts);
   const strong = [...data.nodes].sort((a, b) => b.strength * (1 + b.uses / 5) - a.strength * (1 + a.uses / 5)).slice(0, 12);
+  s.append(el("p", "time", `${data.nodes.length} نود از ${data.node_count ?? data.nodes.length} نود · ${data.visible_edge_count ?? data.edges.length} پیوند در این نما`));
   s.append(el("h3", "", "پررنگ‌ترین‌ها"));
   const ul = el("ul", "list small");
   for (const n of strong) {
     const li = el("li", "clickable");
-    li.append(el("div", "", n.label), el("div", "time", `${KIND_FA[n.kind] || n.kind} · قدرت ${Math.round(n.strength * 100)}٪`));
+    li.append(el("div", "", n.label), el("div", "time", `${nodeShape(n.kind)} ${KIND_FA[n.kind] || n.kind} · ${domainLabel(n.domain)} · قدرت ${Math.round(n.strength * 100)}٪`));
     li.addEventListener("click", () => focusId(n.id));
     ul.append(li);
   }
