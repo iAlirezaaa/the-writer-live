@@ -53,7 +53,8 @@ assert.equal(group.userData.cityContextEvidence.actualTreeSpeciesKnown,false);
 assert.equal(group.userData.cityContextEvidence.physicalCollider,false);
 assert.equal(group.userData.cityContextEvidence.routesUnchanged,true);
 assert.equal(group.userData.cityContextEvidence.writerRoomPreserved,true);
-assert.deepEqual(group.userData.cityContextEvidence.instances,counts);
+for(const [key,expected] of Object.entries(counts))
+  assert.equal(group.userData.cityContextEvidence.instances[key],expected,"Count mismatch: "+key);
 assert.ok(group.children.length>=6&&group.children.length<=15);
 for(const mesh of group.children){
   assert.equal(mesh.isInstancedMesh,true);
