@@ -1,6 +1,6 @@
 # MAYOR-048 — source-backed opposite carriageway of Sattarkhan main street
 Date: 2026-11-09
-Status: PRIVATE BUILT + ACTUAL THREE.JS RUNTIME PASS; PUBLIC CI/DEPLOY UNVERIFIED
+Status: SOURCE GEOMETRY BUILT AND PAGES-DEPLOYED AT SHA 68d78aca2a21e04a406a055d71fbbcb7259bc57f; LATER LEGACY ROUTE GATE FAILS
 
 ## Single safe city change
 Make the rendered main Sattarkhan road materially more faithful by adding **one additional, separately mapped OSM way** representing the opposite-direction carriageway beside the phase-one road. Do not extend the neighborhood map perimeter beyond owner-authorized writer→Satarkhan main road corridor and do NOT infer Park Sattarkhan outline.
@@ -16,7 +16,7 @@ Make the rendered main Sattarkhan road materially more faithful by adding **one 
 - [x] Add just this OSM way subrange (consecutive source indices 3..6) as a separate identifiable but batched motorway visual inside existing `web/writer-satarkhan-osm-corridor.js`. Ground strip width purely approximate, not certified. If any dashed lanes drawn, they are schematic.
 - [x] Validate source coordinate values and 4-lane/oneway metadata directly against saved OSM survey; assert opposing direction, finite bounds, no overlaps with protected room and no physics/route migration.
 - [x] Add bounded, runnable Node + real vendored Three.js test without deleting existing legacy/safety tests.
-- [ ] Mirror reviewed pinned public city files AFTER private success, CI gate, docs/TODO + skill updates, capture actual SHA and Pages status; no site/browser render success claim unless verified.
+- [x] Mirrored city/Pages pinned asset and exact-version imports; GitHub Pages run 42680523167 succeeded for SHA 68d78aca2a21e04a406a055d71fbbcb7259bc57f, including built artifact upload and deploy.
 - [ ] Full park polygon way 448551081 unavailable from verified API during this execution: do not fabricate its boundary nor imply roadway connects to park.
 
 ## Two new backlog items
@@ -32,3 +32,9 @@ Source centerlines and highway/lanes/oneway are community-tagged OSM claims, not
 - Test `tests/tehran_satarkhan_east_corridor_probe.mjs` strengthened against source way 1232461345 exact coordinate slice and OSM tags, opposite-way dot product, annotated painted lanes and in-corridor render bounds. CI must still run it in a public Pages build.
 - Current stage uses owner-facing **source way ID/lanes evidence** but marks widths/paint as unknown and never claims an accurate 10.8m street profile.
 - Actual street/aerial/night screenshot and FPS NOT captured. Park polygon not accessible via currently queried OpenStreetMap API; no park perimeter synthesized.
+
+## CI and release audit
+- GitHub Pages job `https://github.com/iAlirezaaa/the-writer-live/actions/runs/42680523167` **succeeded** (SHA `68d78aca2a21e04a406a055d71fbbcb7259bc57f`), including private-derived source-only city/room geometry regressions, public build and `actions/deploy-pages@v4` success. Source files and pinned city/citizens assets confirmed byte-identical at the audit.
+- Later public commit `03259f0cbaf34de4046776416d17a2362d9735a3` corrected root `index.html` to use the new import cache key. Dedicated Observatory UI contract workflow `42680801966` succeeded.
+- A later Pages run `42680802013` **failed** at pre-existing legacy town-path safety test: `TOWN-SCENE-FAIL paths: Route walks through furniture/wall at {"x":0,"z":7.300000000000001}`. No citizen routes, migration logic, path tests or physical collision objects were modified, so this remains an explicit blocker for latest SHA and must NOT be suppressed.
+- The earlier verified successful Pages deployment remains the last directly confirmed released city version; the latest root HTML commit cannot be claimed deployed. Browser screenshots, visual accuracy, FPS and physical lane width remain unverified. Park polygon remains unavailable.
