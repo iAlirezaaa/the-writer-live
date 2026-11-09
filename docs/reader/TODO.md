@@ -114,3 +114,12 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-075 P1 NEW:** add a controlled Node fixture that intentionally removes the protected asset in a temporary checkout and asserts the public CI guard exits nonzero, while private mode succeeds. No production file deletion.
 - [ ] **RDR-076 P2 NEW:** test catalog favorites persistence when storage quota is exceeded or browser storage is disabled; preserve visible book list and announce recoverable state without leaking reading data.
 - Priority: confirm real CI first, then browser-level RTL/keyboard QA, then optional rights-aware catalog commerce metadata. No checkout, payment, private stories or city changes.
+
+
+## RDR-075 — 2026-11-10 — isolated fail-closed CI fixture
+- [x] **P1 test-only:** isolated temporary Node checkout asserts the live repository rejects missing `.github/reader-assets/read.js` and the private repository accepts its absence. Production files are never removed; child fixtures avoid recursion. Private commit `33361b514eacbe1fba8686c6453adb8a73a00562`; public commit `7f8436a33ff4cb1ba34c04e7c7db88767cd9956c`; identical test blob `1686f882fc0b46346be8ed9b14f62aba512d9ba8`.
+- [ ] **P0 verification:** run focused Node suite in Actions and capture exact pass/fail counts and run URL. Push-triggered Actions runs cannot be enumerated using current connector. No browser or Pages success inferred.
+- [ ] **RDR-077 P1 NEW:** execute protected/public Unicode normalization parity with randomized, seeded Persian/Arabic search strings and report reproducible failing seed; never include unpublished titles.
+- [ ] **RDR-078 P2 NEW:** test accessible keyboard focus recovery after closing an RTL book preview and returning to its catalog card, including when sorting changes.
+- Benchmarks: Kobo Web Reader supports saved bookmarks, search and typography controls (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features); Libby respects reduced motion and labeled navigation (https://help.libbyapp.com/en-us/6243.htm).
+- Priority: CI runtime verification, then RTL keyboard accessibility, then future rights-cleared storefront metadata; no payment, city or private content changes.
