@@ -27,8 +27,11 @@ jobs:
           node --input-type=module -e "
           import {readFileSync} from 'node:fs';
           const x=JSON.parse(readFileSync('city/survey/output/writer-block-survey.json','utf8'));
-          if(x.license!=='ODbL-1.0'||x.blockBoundary.status!=='UNVERIFIED'||x.totals.roads<1||
+          if(x.license!=='ODbL-1.0'||!['UNVERIFIED','OSM_CENTERLINE_CANDIDATE'].includes(x.blockBoundary.status)||x.totals.roads<1||
              !Number.isFinite(Date.parse(x.capturedAt))||!x.features.features.every(f=>f.id.startsWith('osm:way:')))
+             process.exit(1);
+          if(x.blockBoundary.status==='OSM_CENTERLINE_CANDIDATE'&&
+             (!(x.blockBoundary.areaSquareMeters>100)||x.blockBoundary.roadWayIds.length<3||!x.blockBoundary.requiresSurvey))
              process.exit(1);
           console.log('SURVEY-SOURCE-OK',JSON.stringify({totals:x.totals,source:x.endpoint,base:x.osmBaseTimestamp}));
           "
