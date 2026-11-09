@@ -22,7 +22,6 @@ const MARGIN_STATE_FA = {
 import { getJSON, isGitHubPages } from "./snapshot.js";
 import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
 import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v7";
-import { pageAnchor, locatePageByAnchor } from "./reader-position.js";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
@@ -342,7 +341,7 @@ function readerState(){
   const progress=book.pages.length<=1?0:book.index/(book.pages.length-1);
   book.progress=progress;
   return {
-    progress,anchor:anchorOf(book.pages[book.index]),bookmark:book.bookmark,fontSize:book.fontSize,fontFamily:book.fontFamily,
+    progress,bookmark:book.bookmark,fontSize:book.fontSize,fontFamily:book.fontFamily,
     theme:book.theme,leading:book.leading,align:book.align,margins:book.margins,mode:book.mode,focus:book.focus,
     updated:new Date().toISOString()
   };
@@ -352,20 +351,6 @@ function writeProgress(){
   const state=readerState();
   try{localStorage.setItem(`the-writer-reading:${book.story.id}`,JSON.stringify(state));}catch{}
   scheduleServerReading(book.story.id,state);
-}
-// Prefer a passage anchor across font and viewport changes, but continue to accept
-// historical percentage-only state already stored on users' devices/servers.
-function restoreReadingLocation(saved,resumeProgress){
-  if(!book?.pages?.length)return;
-  if(saved?.anchor&&["title","body","report"].includes(saved.anchor.kind)){
-    book.index=locate(saved.anchor,spread());
-    show();
-  }else if(resumeProgress>0){
-    const per=spread();
-    book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,
-      Math.max(0,book.pages.length-per));
-    show();
-  }
 }
 function adoptStoredState(data){
   if(!book||!data||typeof data!=="object")return;
@@ -379,7 +364,12 @@ function adoptStoredState(data){
   storeGlobalReadingOptions();
   renderMargin();
   repaginate();
-  restoreReadingLocation(data,resumeProgress);
+  if(resumeProgress>0){
+    const per=spread();
+    book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,
+      Math.max(0,book.pages.length-per));
+    show();
+  }
 }
 async function connectReaderOwner(){
   if(!book||isGitHubPages())return;
@@ -444,7 +434,12 @@ export async function openBook(storyId) {
   updateSyncState();
   renderMargin();
   repaginate();
-  restoreReadingLocation(saved,resumeProgress);
+  if(resumeProgress>0){
+    const per=spread();
+    book.index=Math.min(Math.floor(resumeProgress*Math.max(0,book.pages.length-1)/per)*per,
+      Math.max(0,book.pages.length-per));
+    show();
+  }
   ensureReaderFont();
 }
 
@@ -583,7 +578,7 @@ function titlePage() {
   );
   if (s.experiment) meta.append(el("div", "", `آزمایش این داستان: ${s.experiment}`));
   page.append(ribbon, meta, el("div", "tp-hint", "متن را انتخاب کنید تا روی آن بخش نظر بدهید."));
-  return { node: page, kind: "title", firstPara: 0, firstWord: 0 };
+  return { node: page, kind: "title", firstPara: 0 };
 }
 
 // Fill measured pages paragraph by paragraph; split a paragraph by words when it does not fit.
@@ -594,24 +589,18 @@ function paginate(blocks, kind) {
   const m = ui.measure;
   let content = el("div", `page-content ${kind}`);
   let firstPara = null;
-  let firstWord = null;
   m.replaceChildren(content);
   const flush = () => {
-    if (content.childElementCount) pages.push({ node: content, kind, firstPara, firstWord });
+    if (content.childElementCount) pages.push({ node: content, kind, firstPara });
     content = el("div", `page-content ${kind}`);
     firstPara = null;
-    firstWord = null;
     m.replaceChildren(content);
   };
   const fits = () => m.scrollHeight <= m.clientHeight + 1;
   for (const b of blocks) {
     let words = b.text.split(" ");
-    let consumed = 0;
     while (words.length) {
-      if (!content.childElementCount) {
-        firstPara = b.index;
-        firstWord = consumed;
-      }
+      if (!content.childElementCount) firstPara = b.index;
       const p = el(b.tag || "p", b.cls || "");
       p.textContent = words.join(" ");
       content.appendChild(p);
@@ -635,18 +624,38 @@ function paginate(blocks, kind) {
       p.classList.add("cont");
       content.appendChild(p);
       words = words.slice(lo);
-      consumed += lo;
       flush();
     }
   }
-  if (content.childElementCount) pages.push({ node: content, kind, firstPara, firstWord });
+  if (content.childElementCount) pages.push({ node: content, kind, firstPara });
   return pages;
 }
 
 // Remember where the reader is by (kind, paragraph) rather than by page number, so adding a note or
 // resizing keeps them in the same passage instead of throwing them back to the title page.
-function anchorOf(page) { return pageAnchor(page); }
-function locate(anchor, per) { return locatePageByAnchor(book.pages, anchor, per); }
+function anchorOf(page) {
+  return page ? { kind: page.kind, firstPara: page.firstPara } : null;
+}
+function locate(anchor, per) {
+  const pages = book.pages;
+  if (!anchor) return 0;
+  let i = -1;
+  if (anchor.kind === "body") {
+    i = pages.findIndex((p) => p.kind === "body" && p.firstPara >= anchor.firstPara);
+    if (i < 0) i = lastPageOf("body");
+  } else {
+    i = pages.findIndex((p) => p.kind === anchor.kind && p.firstPara >= anchor.firstPara);
+    if (i < 0) i = pages.findIndex((p) => p.kind === anchor.kind);
+    if (i < 0) i = lastPageOf(anchor.kind === "report" ? "body" : anchor.kind);
+  }
+  if (i < 0) i = 0;
+  i -= i % per;
+  return Math.min(i, Math.max(0, pages.length - per));
+}
+function lastPageOf(kind) {
+  for (let i = book.pages.length - 1; i >= 0; i--) if (book.pages[i].kind === kind) return i;
+  return 0;
+}
 
 function refreshReaderSections(){
   if(!ui?.jump||!book)return;
@@ -683,7 +692,7 @@ function repaginate() {
     book.pages.push(...rp);
   }
   if (per === 2 && book.pages.length % 2) {
-    book.pages.push({ node: el("div", "page-content blank"), kind: "blank", firstPara: null, firstWord: null });
+    book.pages.push({ node: el("div", "page-content blank"), kind: "blank", firstPara: null });
   }
   book.index = locate(anchor, per);
   refreshReaderSections();
