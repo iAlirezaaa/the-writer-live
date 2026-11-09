@@ -23,7 +23,7 @@ import { buildWriterBlockBuilding03 } from "./writer-block-building-03.js?v=tehr
 import { buildWriterBlockContext } from "./writer-block-illustrative-context.js?v=writer-block-illustrative-context-20261109-v1";
 import { attachIllustrativeFacades } from "./writer-block-facade-preview.js?v=writer-block-facade-illustration-20261109-v1";
 import { buildWriterBlockRoadRegulations } from "./writer-block-road-regulations.js?v=writer-block-osm-regulations-20261109-v1";
-import { buildSatarkhanEastRoadCorridor } from "./writer-satarkhan-osm-corridor.js?v=writer-satarkhan-east-osm-20261109-v2";
+import { buildSatarkhanEastRoadCorridor } from "./writer-satarkhan-osm-corridor.js?v=writer-satarkhan-east-osm-20261109-v3";
 
 export const WRITER_BLOCK_REBUILD_VERSION="writer-block-source-only-20261109-v1";
 export const WRITER_BLOCK_REBUILD_RULES=Object.freeze({
