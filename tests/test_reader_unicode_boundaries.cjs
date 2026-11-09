@@ -37,6 +37,10 @@ console.log('PASS RDR-065: ' + stableInputs.length + ' idempotence fixtures');
 // Public Pages deploys the protected asset in place of web/read.js. When that
 // asset exists, its normalizer and both search call sites must remain identical.
 const protectedPath = path.join(__dirname, '../.github/reader-assets/read.js');
+// RDR-073: public CI must never silently skip checks for the deployed replacement.
+if (process.env.GITHUB_REPOSITORY?.toLowerCase() === 'ialirezaaa/the-writer-live') {
+  assert.ok(fs.existsSync(protectedPath), 'public CI requires .github/reader-assets/read.js');
+}
 if (fs.existsSync(protectedPath)) {
   const protectedSource = fs.readFileSync(protectedPath, 'utf8');
   const protectedMatch = protectedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
