@@ -131,3 +131,16 @@ test("Reject empty or malformed GeoJSON coordinate shapes before tile assignment
     assert.throws(()=>makeTehranTileIndex(fixture),/Empty geometry|Invalid EPSG:4326|Cannot read properties|Geometry without coordinates/);
   }
 });
+
+
+test("Reject incomplete longitude-only tuples while preserving valid altitude coordinates",()=>{
+  const badPoint=sample([{type:"Feature",id:"synthetic:lon-only",
+    geometry:{type:"Point",coordinates:[51.3642]}}]);
+  assert.throws(()=>makeTehranTileIndex(badPoint),/Invalid coordinate tuple/);
+  const badLine=sample([{type:"Feature",id:"synthetic:broken-line",
+    geometry:{type:"LineString",coordinates:[[51.3642,35.7153],[51.365]]}}]);
+  assert.throws(()=>makeTehranTileIndex(badLine),/Invalid coordinate tuple/);
+  const valid=sample([{type:"Feature",id:"synthetic:altitude",
+    geometry:{type:"Point",coordinates:[51.3642,35.7153,1200]}}]);
+  assert.equal(makeTehranTileIndex(valid).featureCount,1);
+});
