@@ -5,6 +5,7 @@
  */
 import {MAP_TILES,MAP_ZOOM,mapTileRect,CIVITA_ORIGIN,SANTA_MARIA_GATE,geoToCivita,CAMERA_TARGET_LIMITS} from './civita-geo.mjs';
 import {attachCivitaVectors} from './civita-osm-render.js';
+import {createCivitaPedestrians} from './civita-pedestrians.js';
 
 export function buildCivitaTown({THREE,scene,streetY=-3}){
  if(!THREE?.Group||!scene?.add||!Number.isFinite(streetY))throw new TypeError('Civita needs existing Three.js scene');
@@ -39,6 +40,7 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
  marker.userData={source:SANTA_MARIA_GATE.source,license:'ODbL-1.0',architecturalModel:false};
  group.add(marker);
  const status=new THREE.Group();status.name='civita-source-volumes';group.add(status);
+ let ambientPedestrians=null;
  // Node geometry tests have no browser images; do not load tiles there.
  if(typeof window!=='undefined'&&typeof Image!=='undefined'){
    const loader=new THREE.TextureLoader();
@@ -62,9 +64,12 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
          child.visible=false;child.userData.suppressedForUnlocatedWriterRoom=true;
        }
      }
+     // Source-backed, anonymous ambient pedestrians: old Tehran resident identities/routes are untouched.
+     ambientPedestrians=createCivitaPedestrians(THREE,status,result.paths,{maxPeople:18});
+     group.userData.cityBuild.ambientPedestrianCount=ambientPedestrians.count;
    }).catch(error=>{group.userData.cityBuild.vectorStatus='OSM unavailable: '+error.message;});
  }
  scene.add(group);
  return {group,districts:null,growth:null,trafficState(){return [];},
-   update(_day,_elapsed,_crossingDemand,_weather){/* Visual map uses no fictional traffic or writer mutations */}};
+   update(day,elapsed,_crossingDemand,_weather){ambientPedestrians?.update(day,elapsed);}};
 }
