@@ -1395,7 +1395,7 @@ function updateWriterHouse(acceptedCount){
 }
 function setWriterSceneMode(mode){
   currentWriterSceneMode=mode;
-  const outdoors=["town","tehran","cars","publisher","bookstore"].includes(mode);
+  const outdoors=["town","civita","cars","publisher","bookstore"].includes(mode);
   writerExterior.visible=outdoors;
   writerInteriorWorldRoot.visible=!outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
@@ -1747,7 +1747,7 @@ async function loadWardrobe() {
 }
 const VIEWS = {
   town:     { pos: [22, 86, 125], target: [-10, -1, 2] }, // Civita OSM village foreground, writer room preserved
-  tehran:   { pos: [0, 148, 75], target: [-8, -1, 0] }, // legacy menu id, now Civita overhead map
+  civita:   { pos: [0, 148, 75], target: [-8, -1, 0] }, // authentic Civita OSM overhead view
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
@@ -1771,35 +1771,35 @@ function setView(name) {
   view = name;
   setWriterSceneMode(name);
   // Aerial geographic inspection only; other cameras retain their original contract.
-  controls.maxDistance = name === "tehran" ? 150 : name === "town" ? 150 : 140;
-  controls.maxPolarAngle = (name==="town" || name==="tehran") ? 1.08 : Math.PI*0.49;
-  camera.far = name === "tehran" ? 420 : name === "town" ? 360 : 200;
+  controls.maxDistance = name === "civita" ? 150 : name === "town" ? 150 : 140;
+  controls.maxPolarAngle = (name==="town" || name==="civita") ? 1.08 : Math.PI*0.49;
+  camera.far = name === "civita" ? 420 : name === "town" ? 360 : 200;
   // Only outdoor geographic views need city-scale visibility. Restore the
   // original interior fog without touching author-room geometry or content.
-  scene.fog.near = name === "tehran" ? 95 : name === "town" ? 56 : 38;
-  scene.fog.far = name === "tehran" ? 680 : name === "town" ? 270 : 115;
+  scene.fog.near = name === "civita" ? 95 : name === "town" ? 56 : 38;
+  scene.fog.far = name === "civita" ? 680 : name === "town" ? 270 : 115;
   camera.updateProjectionMatrix();
-  sky.scale.setScalar(name === "tehran" ? 5 : 1);
+  sky.scale.setScalar(name === "civita" ? 5 : 1);
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
-  document.getElementById("writer-block-map-view")?.setAttribute("aria-pressed",String(name==="tehran"));
+  document.getElementById("writer-block-map-view")?.setAttribute("aria-pressed",String(name==="civita"));
   if (name !== "follow") {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
     // Room view coordinates describe the writer's local 6x6 floor.
     // The entire live room is now grounded at STREET_Y, not above the city.
-    if (!["town","tehran","cars","publisher","bookstore"].includes(name)) {
+    if (!["town","civita","cars","publisher","bookstore"].includes(name)) {
       camGoal.pos.y += writerInteriorWorldRoot.position.y;
       camGoal.target.y += writerInteriorWorldRoot.position.y;
     }
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
-    if (name === "tehran") camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1,1.45/Math.max(.68,camera.aspect))).add(camGoal.target);
+    if (name === "civita") camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1,1.45/Math.max(.68,camera.aspect))).add(camGoal.target);
   }
-  const names = { cars: "ماشین‌های شهر", town: "سیویتا دی بانیورجو (نقشهٔ OSM)", tehran: "سیویتا از بالا — داده‌های OSM", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
+  const names = { cars: "ماشین‌های شهر", town: "سیویتا دی بانیورجو (نقشهٔ OSM)", civita: "سیویتا از بالا — داده‌های OSM", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
   $("location-label").textContent = names[name] || "اتاق نویسنده";
   observerUI?.syncView(name);
   camMoving = true;
 }
 document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
-document.getElementById("writer-block-map-view")?.addEventListener("click",()=>setView("tehran"));
+document.getElementById("writer-block-map-view")?.addEventListener("click",()=>setView("civita"));
 document.querySelectorAll("[data-inspect]").forEach((b) => b.addEventListener("click", () => {
   const object = clickables.find((c) => c.userData.view === b.dataset.inspect);
   if (object) inspect(object);
@@ -1863,7 +1863,7 @@ function animate() {
   // Retire the former Tehran-layout citizen VISUALS without mutating roster,
   // identities, stories, publisher state, simulation routes or writer figure.
   // The active Civita town supplies independent OSM-footway ambient walkers.
-  const showingCivitaOutdoors=["town","tehran","cars","publisher","bookstore"].includes(view);
+  const showingCivitaOutdoors=["town","civita","cars","publisher","bookstore"].includes(view);
   if(showingCivitaOutdoors){
     for(const node of scene.children)
       if(node.userData?.citizenId)node.visible=false;
@@ -2108,12 +2108,12 @@ function animate() {
   controls.update();
   // Main city camera must not pan beyond the small mapped plateau's safe viewing area.
   // Move camera and orbit target together to avoid springing or showing an empty tile edge.
-  if (view === "town" || view === "tehran") {
+  if (view === "town" || view === "civita") {
     const clamped=clampCivitaTarget(controls.target.x,controls.target.z);
     const dx=clamped.x-controls.target.x, dz=clamped.z-controls.target.z;
     if(dx||dz){controls.target.x=clamped.x;controls.target.z=clamped.z;camera.position.x+=dx;camera.position.z+=dz;}
   }
-  scene.fog.near = (view === "town" || view === "tehran") ? camera.position.distanceTo(controls.target) + 8 : 38;
+  scene.fog.near = (view === "town" || view === "civita") ? camera.position.distanceTo(controls.target) + 8 : 38;
   scene.fog.far = scene.fog.near + 85;
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
