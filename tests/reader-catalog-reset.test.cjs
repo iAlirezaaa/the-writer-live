@@ -157,7 +157,7 @@ test("public protected assets retain catalog behavior and semantic HTML", () => 
   }
   assert.match(html, /role="search"\s+aria-label="[^"]+"/);
   assert.match(html, /id="story-reset"/);
-  assert.match(html, /read\.js\?v=reader-20261109-library-v\d+/);
+  assert.match(html, /read\.js\?v=reader-20261110-shelf-v\d+/);
 });
 
 test("catalog entry points share the protected script cache version and reset controls", () => {
