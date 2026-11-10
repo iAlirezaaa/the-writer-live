@@ -48,3 +48,12 @@ Technical learning: A renderable raster tile provides neither licensed vector fo
 ### Two new backlog items — MAYOR-068
 1. Fetch and commit a dated, ODbL-attributed **deterministic Civita OSM building/footway snapshot** as the primary source for the active world, with controlled online update checks, so network outages don't return an empty footprint layer.
 2. Georeference the actual Lo Studio parcel and entrance from licensed plans/OSM, build a reversible tufa/peperino/chestnut/clay-tile external shell, then prove door/room/terrain clearance with real camera captures before replacing the temporary modern shell.
+
+## MAYOR-069 — deterministic OSM snapshot release gate (2026-11-10)
+The independently registered task `city/tasks/MAYOR-069-osm-snapshot-release-gate.md` is a **documentation-only** acceptance contract, not an imported snapshot or a 3D feature. A future snapshot must preserve query/bounds, UTC acquisition time, source ID/version, ODbL attribution, original-data digest and explicit nulls for unsupported height, floors, roof, entrance and elevation. Validate offline fallback, provenance, geometry and route topology separately before publication. Existing Overpass network responses are provisional; never treat a rendered proxy as a surveyed facade.
+
+### Two new backlog ideas — MAYOR-069
+1. Add a reproducible source-data integrity check that compares OSM way ID/version/digest between committed snapshot and controlled Overpass updates, surfacing changed or removed ways without automatically replacing geometry.
+2. Build a camera-corner screenshot matrix (desktop/mobile, minimum/maximum zoom and each pan extreme) that fails if unmodeled tile edges appear; keep all writer-room collision tests as a release prerequisite.
+
+Technical learning: reproducibility requires immutable source identity and acquisition metadata, while a camera clamp is not equivalent to verified visual coverage. This run introduced no new geometry, browser screenshots or CI execution.
