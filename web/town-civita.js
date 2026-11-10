@@ -7,6 +7,7 @@ import {MAP_TILES,MAP_ZOOM,mapTileRect,CIVITA_ORIGIN,SANTA_MARIA_GATE,geoToCivit
 import {attachCivitaVectors} from './civita-osm-render.js';
 import {createCivitaPedestrians} from './civita-pedestrians.js';
 import {attachCivitaBridge} from './civita-bridge.js';
+import {loadCivitaTerrain} from './civita-terrain.js';
 
 export function buildCivitaTown({THREE,scene,streetY=-3}){
  if(!THREE?.Group||!scene?.add||!Number.isFinite(streetY))throw new TypeError('Civita needs existing Three.js scene');
@@ -42,7 +43,42 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
  group.add(marker);
  const status=new THREE.Group();status.name='civita-source-volumes';group.add(status);
  const bridgeLayer=new THREE.Group();bridgeLayer.name='civita-verified-viaduct-study';group.add(bridgeLayer);
- let ambientPedestrians=null;
+ let ambientPedestrians=null,sourceRelief=null,bridgeModel=null,vectorModel=null;
+ const groundSourceGeometry=()=>{
+   if(!sourceRelief)return;
+   const height=sourceRelief.heightAtLocal;
+   const markHeight=height(gate.x,gate.z);
+   if(Number.isFinite(markHeight))marker.position.y=.4+markHeight;
+   if(bridgeModel?.group){
+     const start=bridgeModel.stations?.[0];
+     const h=start&&height(start.x,start.z);
+     if(Number.isFinite(h)){
+       bridgeModel.group.position.y=h;
+       bridgeModel.group.userData.deckStartGroundElevationFromApproximateDEM=true;
+       bridgeModel.group.userData.pierGroundContactVerified=false;
+     }
+   }
+   if(vectorModel?.layer){
+     for(const obj of vectorModel.layer.children){
+       if(obj.isMesh){
+         const h=height(obj.position.x,obj.position.z);
+         if(Number.isFinite(h)){
+           obj.position.y=.18+h;
+           obj.userData.elevationSource='Mapzen EU-DEM visual terrain (not surveyed)';
+           obj.userData.groundContactVerified=false;
+         }
+       }else if(obj.isLine&&obj.geometry?.attributes?.position){
+         const pos=obj.geometry.attributes.position;
+         for(let i=0;i<pos.count;i++){
+           const h=height(pos.getX(i),pos.getZ(i));
+           if(Number.isFinite(h))pos.setY(i,.30+h);
+         }
+         pos.needsUpdate=true;obj.geometry.computeBoundingSphere();
+       }
+     }
+   }
+ };
+
  // Node geometry tests have no browser images; do not load tiles there.
  if(typeof window!=='undefined'&&typeof Image!=='undefined'){
    const loader=new THREE.TextureLoader();
@@ -52,12 +88,26 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
        texture=>{texture.colorSpace=THREE.SRGBColorSpace;material.map=texture;material.needsUpdate=true;},
        undefined,()=>{group.userData.cityBuild.tileLoadErrors=(group.userData.cityBuild.tileLoadErrors||0)+1;});
    }
+   // Optional open-terrain grid drapes the original raster map in real-source
+   // relative elevations; missing/invalid source leaves the safe flat map.
+   void loadCivitaTerrain(THREE,survey.children,{onStatus:message=>{
+     group.userData.cityBuild.terrainStatus=message;
+   }}).then(result=>{
+     if(!result.error){
+       sourceRelief=result;
+       group.userData.cityBuild.terrainReliefSource='Mapzen open DEM (EU-DEM / USGS), approximate';
+       group.userData.cityBuild.terrainHeightRangeM=[result.minRelativeM,result.maxRelativeM];
+       group.userData.cityBuild.terrainElevationSurveyed=false;
+       groundSourceGeometry();
+     }
+   });
    // The actual viaduct is a separately provenance-gated, 14-span geometric
    // model. If the documented OSM centerline is missing, never draw a fake bridge.
    void attachCivitaBridge(THREE,bridgeLayer,{onStatus:message=>{
      group.userData.cityBuild.bridgeStatus=message;
    }}).then(result=>{
      if(!result.error){
+       bridgeModel=result;groundSourceGeometry();
        group.userData.cityBuild.bridgeOSMWay=result.source.sourceId;
        group.userData.cityBuild.bridgeStructuralSpanCount=14;
        group.userData.cityBuild.bridgePierFootingElevationSurveyed=false;
@@ -68,6 +118,7 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
      group.userData.cityBuild.vectorStatus=message;
    }}).then(result=>{
      if(result.error)return;
+     vectorModel=result;groundSourceGeometry();
      // The original writer room/exterior occupies a protected temporary anchor.
      // Do not draw an unrelated OSM building across it until Lo Studio is geolocated.
      for(const child of result.layer.children){
@@ -84,5 +135,13 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
  }
  scene.add(group);
  return {group,districts:null,growth:null,trafficState(){return [];},
-   update(day,elapsed,_crossingDemand,_weather){ambientPedestrians?.update(day,elapsed);}};
+   update(day,elapsed,_crossingDemand,_weather){
+     ambientPedestrians?.update(day,elapsed);
+     if(sourceRelief&&ambientPedestrians){
+       for(const walker of ambientPedestrians.group.children){
+         const h=sourceRelief.heightAtLocal(walker.position.x,walker.position.z);
+         if(Number.isFinite(h))walker.position.y=.13+h;
+       }
+     }
+   }};
 }
