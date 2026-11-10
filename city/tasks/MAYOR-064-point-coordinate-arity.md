@@ -1,6 +1,6 @@
 # MAYOR-064 — Reject incomplete GeoJSON point coordinates
 Date: 2026-11-10
-Status: TODO (before implementation)
+Status: CODE AND REGRESSION COMMITTED; EXECUTION NOT VERIFIED
 
 ## Scope
 One small, non-rendering safety change in city/survey/tehran-geotile-index.mjs: reject coordinate tuples with fewer than two ordinates. The existing recursive geometry scanner treats a single finite number as a valid point after destructuring, which can yield an invalid bbox. Add focused regression tests for one-element tuples and ensure valid two- and three-ordinate coordinates remain accepted. No city mesh, writer room, citizen routes, legacy collision guard, or deployment files changed.
@@ -19,4 +19,4 @@ Read city/skills/tehran-writer-block/SKILL.md, city/tasks/MAYOR-026-tehran-write
 2. Shared GPU geometry ownership and disposal regression for cross-tile features.
 
 ## Results
-Pending implementation and tests.
+Implementation: one explicit arity guard in city/survey/tehran-geotile-index.mjs and one focused node:test case in city/tests/tehran-geotile-index.test.mjs. Private/public Git blob parity confirmed by returned content SHA (module 6a68f24d46a0e266e44af83cdeb150b08c6f9c59; test e59ec1c6bcffe4139cdaf0d038d8c784267117e7; skill 9088c9ed9a0ef2274096a2f7e1b3d2868bf1bb7f). Backup branch web/urban-plan.js was readable in both repositories with matching blob SHA 64480b048da29fa8b140e99df09dc83e1d83a496; backup file on main also read. Node is installed in local container (v22.16.0), but direct GitHub raw fetch failed with HTTP 000 and source files could not be materialized for local execution. Therefore Node tests, city probes, legacy collision smoke, browser captures, CI, Pages deployment and live Tehran weather integration were NOT verified. No changes made to runtime geometry, writer room, citizen routes or pinned Pages assets. Two backlog items above remain open.
