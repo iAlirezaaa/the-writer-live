@@ -46,7 +46,7 @@ assert.equal(beams.length,44,'First span 5 and 13x3 other spans');
 assert.equal(built.group.children.filter(c=>c.name.startsWith('reinforced-concrete-pier-cap')).length,13);
 assert.equal(built.group.children.filter(c=>c.name.startsWith('concrete-round-pier-')).length,44);
 assert.ok(built.group.getObjectByName('concrete-round-pier-4-column-1').userData.heightProxyM===15);
-const coords=stations.flatMap(p=>[p.x,p.y,p.z]);
+const coords=built.stations.flatMap(p=>[p.x,p.y,p.z]);
 assert.ok(coords.every(Number.isFinite));
 assert.ok(stations.every(p=>p.x<-20),'bridge never overwrites writer home center');
 assert.ok(built.group.children.every(c=>c.userData.physicalCollider===false));
