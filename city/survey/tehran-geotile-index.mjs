@@ -29,6 +29,7 @@ function featureBounds(feature){
   function visit(coords){
     assert(Array.isArray(coords)&&coords.length>0,"Empty geometry "+feature.id);
     if(typeof coords[0]==="number"){
+      assert(coords.length>=2,"Invalid coordinate tuple: expected longitude and latitude for "+feature.id);
       const [lon,lat]=coords;
       lonLatTile(lon,lat,17); // validate EPSG:4326 and Mercator latitude
       west=Math.min(west,lon);east=Math.max(east,lon);
