@@ -296,3 +296,7 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 - A MultiPolygon may represent **one** sourced feature with disjoint rings; never split it into multiple buildings solely because rings occupy different tiles. Maintain original source ID and an index-level geometry type.
 - The current index uses bounding-box tile coverage, which may include empty intermediate tiles; do not interpret indexed tile membership as exact footprint intersection or as rendered geometry.
 - Synthetic MultiPolygon tests validate metadata consistency only, not measured Tehran footprint, valid facade, elevation, GPU disposal, or visual fidelity. Require actual source geometry and licenses before extruding.
+
+## MAYOR-061 — bounded tile budget
+- MultiPolygon bbox coverage must respect `maxTilesPerFeature` before any mesh or cache allocation; a large cross-tile feature must fail explicitly, not silently be duplicated or dropped.
+- Preserve canonical source IDs in every tile reference. The synthetic test in `city/tests/tehran-geotile-index.test.mjs` is not geographic survey evidence; runtime GPU disposal remains unimplemented and unverified.
