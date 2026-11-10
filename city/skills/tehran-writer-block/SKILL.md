@@ -285,3 +285,9 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 - For each source feature crossing multiple tiles, keep one canonical render owner with reference-counted tile membership; reject contradictory geometry hashes or source versions. When a tile unloads, preserve features referenced by another loaded tile. Dispose only loader-owned resources when the last reference leaves, never shared geometries/materials or the protected writer room.
 - Require deterministic reverse-order tile loading/unloading tests; unknown/proxy fields must stay unknown. Validate source-only scene, legacy collision probe, writer-room access, pinned-asset parity, real day/night/aerial/street captures and draw-call/memory baselines **before** any visual publication.
 - Task/evidence: `city/tasks/MAYOR-058-geotile-identity-release-gate.md`. This update is documentation only; no runtime tests or captures claimed.
+
+
+## MAYOR-059 — Cross-tile identity regression (2026-11-10)
+- A geotile index is a **reference map**, not an owner of separate Three.js meshes. One source ID crossing multiple tiles must have exactly one feature metadata record and may be referenced by multiple tile lists.
+- Added `city/tests/tehran-geotile-index.test.mjs` regression for an OSM road crossing adjacent z17 tiles. A passing metadata test would **not** establish GPU ref-count disposal correctness or physical geometry safety; those require separate runtime tests.
+- 3Dviz Pro Max/TWIN-WORLD guidance: preserve stable identity and shared-resource ownership before adding LOD mesh caches. Do not create one independently disposable GPU mesh per tile reference without ownership tracking.
