@@ -126,6 +126,10 @@ assert.ok(world.includes("solarDate(String(e.at).slice(0, 10))"));
 assert.ok(world.includes("observerUI=initObserverUI("));
 assert.ok(actions.includes("installPersianPresentation(document.body)"));
 assert.ok(ui.includes("installPersianPresentation(document.body)"));
+// Regression guard: system Reduce Motion disables nonessential UI transitions.
+assert.ok(css.includes("body.app button,body.app a,body.app select{transition:none;}") &&
+  css.includes("@media(prefers-reduced-motion:reduce)"),
+  "System Reduce Motion must disable Observatory control transitions");
 console.log("OBSERVATORY-OK",JSON.stringify({
   tabs:tabs.length,views:views.length,
   groupedMenuSections:data.PANEL_GROUPS.length,
