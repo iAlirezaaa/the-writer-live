@@ -43,6 +43,12 @@ class SnapshotTests(unittest.TestCase):
             self.assertEqual([way["id"] for way in data["elements"]], [993])
             self.assertEqual(data["source"]["ways_without_full_nodes"], 2)
 
+    def test_duplicate_way_id_rejected_even_if_versions_disagree(self):
+        duplicate = b"""<way id="881" version="8"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/><tag k="building" v="yes"/></way>"""
+        xml = XML.replace(b"</osm>", duplicate + b"</osm>")
+        with self.assertRaisesRegex(ValueError, "Duplicate OSM way identity: way/881"):
+            SOURCE.convert(xml, acquired_at="2026-11-10T09:00:00+00:00")
+
     def test_empty_and_broken_data_are_rejected(self):
         with self.assertRaises(ValueError):
             SOURCE.convert(b"<osm version='0.6'/>", acquired_at="test")
