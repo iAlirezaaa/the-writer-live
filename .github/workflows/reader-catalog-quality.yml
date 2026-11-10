@@ -31,6 +31,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Parse reader regression scripts before behavior tests
+        run: |
+          node --check tests/test_reader_unicode_boundaries.cjs
+          node --check tests/test_reader_unicode_controls.cjs
+          node --check tests/reader-catalog-reset.test.cjs
+          node --check tests/reader-library-experience.test.cjs
+          node --check tests/reader-feedback-transport.test.cjs
       - name: Catalog behavior and keyboard reset
         run: |
           node --test tests/reader-catalog-reset.test.cjs
