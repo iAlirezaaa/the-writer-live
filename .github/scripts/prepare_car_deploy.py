@@ -80,7 +80,7 @@ def patch_site(root: Path) -> None:
     # Preserve the current street elevation and architected city module.
     # This guard owns vehicle integrity, not the newer town cache namespace.
     town_import = 'import { buildTown, nightLighting, STREET_Y } from "./town.js";'
-    bust_import = 'import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-tehran-source-only-20261109-v3";'
+    bust_import = 'import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main-20261110-v1";'
     world, count = re.subn(
         r'^import \{ buildTown, nightLighting(?:, STREET_Y)? \} from "\./town\.js(?:\?v=[^"]+)?";',
         lambda _m: bust_import, world, count=1, flags=re.MULTILINE
