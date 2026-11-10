@@ -1,32 +1,37 @@
-# Active goal — Civita di Bagnoregio digital twin
+# Active target: source-grounded Civita di Bagnoregio, Italy
 
-Updated: 2026-11-10. **The owner has replaced Tehran with Civita di Bagnoregio (Lazio, Italy) as the sole active city-reconstruction target.** Previous Tehran materials are historical/rollback evidence, not the target for new geometry. Preserve Git history, all old backup refs, the protected writer room and author/publisher/citizen data.
+Owner directive 2026-11-10: Rebuild the actual **Civita di Bagnoregio**, not a fictional town based on it and not Tehran. Preserve the writer character's physical appearance and the furnished 6×6m authored room. The old Tehran scene and its research/tests are removed from the active branches; frozen historical recovery branches and backup manifest remain untouched.
 
-## Build objective
-A documented, navigable Three.js digital twin of the **actual** Civita di Bagnoregio: real plateau, bridge, alleyways, historic buildings and facades, one building at a time. No generated or estimated building heights, storeys, entrances, roof shapes or cliff elevations may be presented as surveyed facts. Each item needs source ID, WGS84 geometry, collection date, reuse license, height/roof/level certainty and accuracy tier.
+## Current state — verified code, not surveyed 1:1 completion
+- Main site `web/world.js` now loads **Civita-only** `web/town.js` / `web/town-civita.js` rather than Tehran source-only or fictional procedural grids. Pages uses pinned `.github/citizens-assets/town.js`.
+- Local geo baseline `web/civita-geo.mjs` uses EPSG:4326, positive X east / positive Z south, centre `42.6277,12.1137` (OSM node 1778014513), Porta Santa Maria `42.62741,12.11272` (OSM node 1079071522). These are **reference points**, not precise locations for other buildings.
+- `web/civita-osm-vectors.mjs` and `web/civita-osm-render.js` read bounded, legally reusable OSM building ways and pedestrian ways, validate provenance, show building **2D footprints as translucent 3D extrusions**, mark missing heights as 6m visual PROXIES (never actual level count or roof geometry). Buildings depend on source fetch; no fabricated fallback city.
+- `web/civita-pedestrians.js` contains lightweight anonymous illustrated walkers traversing documented OSM footway centerlines. These are not verified actual residents, and their paths/locations are visual proxies. Old fictional urban layouts were removed, and outdated citizen meshes are suppressed in outdoor Civita views. Private actual resident identities/story routines and publisher records remain protected, not overwritten.
+- `web/civita-writer-house.js`: real modeled **two-storey Civita-inspired tufa exterior** around retained room, with peperino-looking door/window masonry, chestnut-like timber and terracotta-style pitched roof. Exterior is deliberately documented as an **interpretive Lo Studio-style study**: actual Lo Studio footprint, parcel, roof measurements and rights to raw scans UNKNOWN. House not yet relocated to a legally verified Lo Studio address.
+- `web/civita-environment.js`: weather from current **Open-Meteo model data** for Civita, not on-site sensors; sky cycle, dawn/dusk and clock follow `Europe/Rome` including DST; if live data fails, label this as unavailable.
+- `web/civita-place-catalog.js`: actual sourced village/gate points and visibly flagged writer-room provisional anchor. Old Tehran fictional catalogue retired.
+- Camera bounds in `world.js` prevent target panning outside the published map, but actual non-visible map edges / cliff terrain need browser screenshot and geodata QA.
 
-## First working phase (MAYOR-065)
-The standalone `web/civita-map-preview.html` shows an **OSM 2D map as a Three.js geographic underlay**, two limited normal-view tiles, visible OSM attribution, source-identified village/gate anchors, and bounded orbit/pan/zoom. It is *not yet* a geometric 3D reconstruction and **does not replace** the existing protected writer dashboard until integration tests and visual QA pass. Do not imply the map tiles supply a DEM or floor plans. Camera safe-zone is a viewing constraint, not an official cliff boundary.
+## Final goal
+Build a high-fidelity documented digital twin of every lane/building and cliff/bridge within Civita, matching geometry/floors/facades/roof/door/window and geographic orientation where primary licensed survey evidence exists. Do NOT invent missing heights or extrapolate a purported 1:1 replica from flat raster map tiles.
 
-- Village reference: WGS84 `42.6277, 12.1137`, OpenStreetMap node `1778014513`; village center, **not a house coordinate**.
-- Porta di Santa Maria: WGS84 `42.62741, 12.11272`, OpenStreetMap node `1079071522`.
-- Local coordinate system: +X east, +Z south; world unit meters in the initial tangent-plane approximation.
-- Locale: `Europe/Rome`. Legacy Tehran weather/time are not Civita weather/time. Do not silently relabel existing weather readings.
+Source and QA plan:
+1. Acquire licensed OSM vector ways with stable IDs, timestamps, ODbL citation and processed feature identity. Avoid OSM tile bulk downloads. Store bounded reusable cache with source date when permitted, to avoid external Overpass rate limits.
+2. Licensed Lazio regional DEM/LiDAR / terrain datum for Civita plateau, erosive cliffs and elevated pedestrian bridge. Record spacing, vertical CRS, absolute error, no fabricated scaffolding.
+3. One verified building at a time, identifying 3Dviz Pro Max silhouette, structural joins, ground contact, roof, entrances, UV/LOD, material provenance and safe scene disposal.
+4. Verify precise **Lo Studio** parcel geometry and its two storeys; remodel exterior from licensed measurements and preserve the writer's figure, original room, accessible camera portals, content and interactions.
+5. Test source geometry, protected room, no intersections, mapped paths, performance, pan/zoom edges, night/day and live weather, then capture actual in-browser overhead/eye-level images before claiming visual validation.
+6. Release private-first to public/pinned Pages, check GitHub Actions build+deploy and current URL before claiming success.
 
-## Possible writer home
-**Lo Studio**, Civita Institute property on Via della Maestà, is a candidate based on published architecture, **not yet validated as an exact parcel or permitted 3D reuse asset**. Keep the existing writer interior intact and functional; do not move the room into an invented footprint. Check detailed rights, access, footprint, floors and camera behavior before any migration.
+## Sources and rights
+- OpenStreetMap ODbL: https://www.openstreetmap.org/copyright .
+- Civita Institute: https://www.civitainstitute.org/496/lo-studio.html and architectural reference plans; reuse and scale must be licensed/validated before copying source geometry.
+- CyArk interactive reference: https://tapestry.cyark.org/content/civita-splat ; browsing does not establish rights to distribute/clone its raw model.
+- Licensed geographic/DEM discovery: https://geoportale.regione.lazio.it/ . Confirm per-layer license, polygon coverage and geometric accuracy before importing.
+- Open-Meteo: https://open-meteo.com/en/docs . Model weather for user-facing lighting and sky; noncommercial free-service conditions apply, show attribution.
 
-## Provenance & rights
-- CyArk 2022 survey and 2026 Project ETERNAL interactive 3D tour: https://www.cyark.org/projects/civita-di-bagnoregio and https://tapestry.cyark.org/content/civita-splat . A browsable model is not proof that raw 3D data can be reused.
-- Civita Institute September 2014 preservation town plan: https://www.civitainstitute.org/files/1127.pdf . Not authorized to trace/digitize as source geometry before rights/georeferencing review.
-- Regional terrain-data discovery: https://geoportale.regione.lazio.it/ . Confirm site coverage and per-layer license.
-- OSM data and attribution: https://www.openstreetmap.org/copyright ; tile-service policy: https://operations.osmfoundation.org/policies/tiles/ . Do not bulk-fetch tiles, cache-bust, or remove copyright attribution.
-
-## QA & next stages
-1. Basemap/browser navigation, coordinate and camera-clamp tests, verified fallback and attribution. Capture actual before/after images when browser is available.
-2. Licensed OSM ways and roofprint polygon IDs for gate → square; test geometry, adjacency and feature identity.
-3. Verified DEM/LiDAR cliff, bridge support and constrained visual horizon with no unmodeled map edges.
-4. One licensed, measured roof/facade at a time with 3Dviz Pro Max geometry, materials, LOD and day/night rendering.
-5. Relocate or refit ONLY the exterior around the **protected room**, after room-access/navigation/collision tests; maintain private→public pinned synchronization and Pages/CI proof.
-
-Every run: unique TODO before changes, read `city/skills/civita-digital-twin/SKILL.md` and the vendored 3Dviz Pro Max SKILL/TWIN-WORLD and relevant object kits; one small change; Node/scene/legacy collision checks; two new backlog ideas and skill update; private-first followed by safe public release with SHA links. Historical backups `backup/writer-block-pre-tehran-rebuild-2026-11-09` and manifests must remain intact. Old Tehran city code may be retained as a rollback **only**, not advertised as the current target.
+## Strict safety, reporting and archival contract
+- Author's visual identity, private content, published texts and publisher memory NEVER reconstructed or removed; existing citizen cores protected, but public ambient visual population can be progressively reauthored on source paths.
+- Frozen prior-city backups remain referenced by `city/backups/writer-block-pre-tehran-rebuild-2026-11-09.md`, never delete/overwrite them. Active branches no longer contain old Tehran source meshes/data/workflows.
+- In each city task: TODO before code, small reversible change, private→public, add two backlog ideas to city skill, report actual test evidence, CI SHA, checked deployment state, limitations.
+- Only real runnable code, mapped source snapshots and measured data count as progress; do not say a raster map underlay is a complete 3D city.
