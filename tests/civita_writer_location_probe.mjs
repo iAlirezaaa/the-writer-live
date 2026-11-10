@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {locateCivitaWriterParcel,CIVITA_LO_STUDIO_MATCH} from '../web/civita-writer-location.js';
-import {buildCivitaWriterExterior} from '../web/civita-writer-house.js';
+import {buildCivitaWriterExterior,CIVITA_WRITER_HOUSE_EVIDENCE} from '../web/civita-writer-house.js';
 import {geoToCivita} from '../web/civita-geo.mjs';
 const root=resolve(process.argv[2]||'.');
 const snapshot=JSON.parse(readFileSync(resolve(root,'web/data/civita-osm-snapshot.json'),'utf8'));
@@ -37,6 +37,26 @@ const beforeAppearanceGeometry=appearance.geometry;
 room.position.set(site.x,.2,site.z);room.rotation.y=site.yawRadians;
 exterior.position.set(site.x,3.2,site.z);exterior.rotation.y=site.yawRadians;
 const shell=buildCivitaWriterExterior(THREE,exterior,{roomWidth:6,roomDepth:6,streetY:-3,parentOffsetY:3.2});
+/* MAYOR-076: verify actual object carries source-provenance without fabricating
+ * a cadastral-certified lot, a surveyed threshold or a traversable opening.
+ * The institute documents an upper door; its geometry is still unknown. */
+const arch=CIVITA_WRITER_HOUSE_EVIDENCE;
+assert.equal(arch.officialPlanLotKey,'D');
+assert.equal(arch.neighborPropertyPlanKey,'E');
+assert.equal(arch.officialPlanNotToScale,true);
+assert.equal(arch.candidateOsmWayId,464102189);
+assert.equal(arch.cadastralParcelVerified,false);
+assert.equal(arch.secondFloorConnectionToIlNuovoDocumented,true);
+assert.equal(arch.secondFloorConnectionModeled,false);
+for(const unknown of [
+ 'secondFloorConnectingDoorCoordinatesM','facadeMeasuredWidthM',
+ 'entranceMeasuredWidthM','entranceMeasuredHeightM',
+ 'entranceThresholdSurveyedElevationM','thresholdVerticalDatum'
+])assert.equal(arch[unknown],null,unknown+' must not be guessed');
+assert.equal(arch.protectedWriterAppearance,true);
+assert.equal(shell.group.userData.cityArchitectureEvidence.officialPlanLotKey,'D');
+assert.ok(!shell.group.children.some(o=>/il[-_ ]?nuovo/i.test(o.name)),
+ 'Do not fabricate an upstairs corridor or door without permitted measurements');
 room.updateMatrixWorld(true);exterior.updateMatrixWorld(true);
 const p=room.localToWorld(new THREE.Vector3(1,1,2));
 assert.ok(p.distanceTo(new THREE.Vector3(1,1,2))>25,'local room/camera moves to real sourced parcel');
