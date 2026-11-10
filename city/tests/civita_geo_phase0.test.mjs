@@ -13,9 +13,9 @@ test('two raster tiles cover both documented anchors',()=>{
   assert.ok(rectangles.some(r=>Math.abs(p.x-r.x)<r.width/2&&Math.abs(p.z-r.z)<r.depth/2));
  }
 });
-test('camera target never escapes safe zone',()=>{
+test('camera target extends to verified OSM bridge but stays within tiles',()=>{
  assert.deepEqual(clampCivitaTarget(10000,-10000),{x:140,z:-45});
- assert.deepEqual(clampCivitaTarget(-10000,10000),{x:-140,z:45});
+ assert.deepEqual(clampCivitaTarget(-10000,10000),{x:-360,z:140});
  assert.deepEqual(clampCivitaTarget(0,0),{x:0,z:0});
  assert.throws(()=>clampCivitaTarget(Number.NaN,0));
 });
