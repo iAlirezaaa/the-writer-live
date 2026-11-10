@@ -57,6 +57,33 @@ assert.equal(arch.protectedWriterAppearance,true);
 assert.equal(shell.group.userData.cityArchitectureEvidence.officialPlanLotKey,'D');
 assert.ok(!shell.group.children.some(o=>/il[-_ ]?nuovo/i.test(o.name)),
  'Do not fabricate an upstairs corridor or door without permitted measurements');
+/* MAYOR-077: visible historical masonry/ivy patina is decorative only.
+ * The geometry must stay inside the same OSM parcel, avoid speculative facade
+ * doors and preserve room/click collision; browser pixels need separate QA. */
+const patina=shell.group.getObjectByName('lo-studio-tufa-ivy-facade-study');
+assert.ok(patina,'source-informed facade patina should exist in real Three.js group');
+assert.equal(patina.userData.originalProceduralAtlas,true);
+assert.equal(patina.userData.surfaceOnly,true);
+assert.equal(patina.userData.physicalCollider,false);
+assert.equal(patina.userData.actualIvyExtentVerified,false);
+assert.equal(patina.castShadow,false);
+assert.equal(patina.receiveShadow,false);
+assert.equal(patina.material.depthWrite,false);
+assert.ok(patina.geometry.parameters.width>5.5&&patina.geometry.parameters.width<6.5);
+const rearPatina=shell.group.getObjectByName('lo-studio-tufa-ivy-rear-study');
+assert.ok(rearPatina,'the default public camera must see a textured Lo Studio wall');
+assert.equal(rearPatina.userData.surfaceOnly,true);
+assert.equal(rearPatina.userData.physicalCollider,false);
+assert.equal(rearPatina.userData.backWallVegetationExtentVerified,false);
+assert.ok(rearPatina.position.z<0&&rearPatina.rotation.y===Math.PI);
+
+assert.ok(patina.geometry.parameters.height>6.0&&patina.geometry.parameters.height<6.5);
+const door=shell.group.getObjectByName('civita-writer-front-door');
+assert.ok(door?.userData.writerExterior,'front-door click interaction remains present');
+assert.ok(patina.position.z<door.position.z+door.geometry.parameters.depth/2,
+ 'painted patina cannot move in front of existing door and block its visual identity');
+if(typeof document==='undefined')assert.equal(patina.material.opacity,0,
+ 'no document: panel remains invisible instead of creating a broken canvas');
 room.updateMatrixWorld(true);exterior.updateMatrixWorld(true);
 const p=room.localToWorld(new THREE.Vector3(1,1,2));
 assert.ok(p.distanceTo(new THREE.Vector3(1,1,2))>25,'local room/camera moves to real sourced parcel');
