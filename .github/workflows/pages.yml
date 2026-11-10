@@ -34,6 +34,15 @@ jobs:
             rm -f _site/web/data/civita-osm-snapshot.json
             echo "::warning::Civita official OSM snapshot unavailable; city will request bounded live OSM with no invented fallback"
           fi
+          # MAYOR-071: read source-identified OSM footways and bridge tags near
+          # Civita's suspended viaduct; missing data must not fabricate a bridge.
+          python3 city/tests/test_civita_bridge_source.py
+          if python3 city/survey/build_civita_bridge_source.py _site/web/data/civita-bridge-corridor.json; then
+            echo "CIVITA-BRIDGE-SOURCE-CORRIDOR-READY"
+          else
+            rm -f _site/web/data/civita-bridge-corridor.json
+            echo "::warning::Civita bridge source unavailable; no guessed bridge coordinates"
+          fi
           # The snapshot publisher supplies the current character motion and
           # dashboard entrypoint. Preserve those authored files in the artifact.
           for name in objects.js town.js; do
