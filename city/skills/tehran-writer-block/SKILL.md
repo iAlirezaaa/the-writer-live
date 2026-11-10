@@ -310,3 +310,6 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 ## MAYOR-063 — GeoJSON coordinate-shape safety (2026-11-10)
 - Run `node --test city/tests/tehran-geotile-index.test.mjs` when Node is available before accepting new sourced tile metadata. The synthetic regression covers empty Point/LineString/MultiPolygon, empty Polygon rings and nonnumeric ordinates.
 - A missing second Point ordinate remains a separate upstream validation gap: never claim complete GeoJSON schema validation from this regression alone. Source-only renderer and citizen collision gates remain mandatory for any subsequent runtime change.
+
+## MAYOR-064 — GeoJSON coordinate arity (2026-11-10)
+Before tile indexing, every coordinate tuple must contain finite longitude and latitude. A one-ordinate tuple such as [51.3642] is not a valid WGS84 point, even when the first ordinate is finite. The tile-index validator now checks tuple arity; the optional third elevation ordinate does not become an asserted building height. This is metadata safety only, not geographic surveying, 3D asset improvement, or a scene deployment. Geometry-type-aware nesting and polygon ring validation remain separate backlog items.
