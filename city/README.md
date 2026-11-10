@@ -1,46 +1,35 @@
-# City Engineering — independent city subsystem
+# Civita di Bagnoregio — digital-twin city subsystem
 
-This directory is **separate from the writer's narrative, memory, and agent personality**. It contains urban design rules, scene constraints, acceptance tests, and persistent skills.
+Active target since 2026-11-10: **Civita di Bagnoregio, Lazio, Italy**, not Tehran. The writer's personality, actual figure, text, authored room, publisher logic, resident core identities and memory live outside this repository area and must not be destroyed.
 
-## Source of truth
-- Authoring repo `iAlirezaaa/the-writer`: `web/urban-plan.js`, `web/road-surface.js`, `web/town.js`, `web/town-districts.js`, `web/world.js`.
-- Published repo `iAlirezaaa/the-writer-live`: pinned sources `.github/city-assets/urban-plan.js`, `.github/city-assets/road-surface.js`, `.github/city-assets/town-districts.js`, `.github/citizens-assets/town.js`, `.github/citizens-assets/world.js`.
-- The shared `WRITER_HOME_BLUEPRINT` in urban-plan.js owns room dimensions, door/window anchors, exterior material palette and growth stages. **Do not duplicate these values in separate view files.**
-- `docs/CITY_LAYOUT_V2.md` is the existing long-form handoff.
+## Active web scene
+- `web/world.js`: the only real writer and observer scene, writer model/room preserved; exterior group rebuilt with `web/civita-writer-house.js`.
+- `web/town.js`: **Civita-only** entry; `web/town-civita.js` renders source-identified OSM map tiles and provisional footprint volumes.
+- `web/civita-geo.mjs`, `web/civita-osm-vectors.mjs`, `web/civita-osm-render.js`: local EPSG:4326 tangent projection (+X east, +Z south), OSM attribution, polygon/footway intake.
+- `web/civita-pedestrians.js`: anonymous animated visual passersby tied to OSM footway centerlines. Not real population records. Historic citizen identity and routes remain in private core, but their obsolete Tehran-layout meshes are hidden in outdoor Civita views.
+- `web/civita-room-plan.js`: protected author's 6×6m authored room contract. `web/civita-writer-house.js` is a **two-level interpretive tufa/peperino/terracotta shell**, inspired by Civita Institute's published Lo Studio architectural description. Location and survey dimensions of actual Lo Studio **remain unverified**.
+- `web/civita-environment.js`: current model weather from Open-Meteo at `42.6277, 12.1137`; live time, dawn/dusk and clock use `Europe/Rome` (CET/CEST). Weather failure is shown explicitly.
+- `web/civita-place-catalog.js`: two OSM sourced anchors (village centre + Porta Santa Maria gate), plus one explicitly unverified protected writer-room visual anchor.
 
-## Municipal expansion (2026-11-08)
-- `web/city-growth.js`: 432-place housing plan, school, police, screenplay office, film studio, northern ridgeline, eastern forest, ambient wildlife.
-- `city/TODO.md`: delivery log and pending QA; `city/URBAN_CODE.md`: municipal safety and design requirements.
-- Capacity is planned space, not an active population of 432 people.
+## Target and evidence tiers
+The long-term requirement is a near-1:1 digital twin of the real Civita, based on legally reusable plans, photogrammetry/LiDAR, building polygons, terrain and surveyed details. Current map is **NOT** 1:1 architecture, a verified height model, real resident count, verified traffic/citizen navigation or scanned cliff/bridge.
 
-## Skills (persistent)
-- `skills/road-parcel-access/SKILL.md`: roads, plots, entrances, pedestrian paths, parking, landscaping.
-- `skills/building-foundations/SKILL.md`: ground-level support, facades, clearance, neighbour isolation.
-- `skills/writer-home-consistency/SKILL.md`: single-room opening, interior/exterior identity, expansion and cutaway.
-- `skills/city-regression/SKILL.md`: browserless Three.js checks and deployment gates.
-- `skills/municipal-growth/SKILL.md`: municipal iteration, services, animation and safety.
-- Existing agent integration: `.agents/skills/city-layout-rebuild/SKILL.md`.
+For each building, retain OSM/geo source ID, WGS84 shape, capture timestamp, license, source of each height/floor/entrance/roof fact, uncertainty and proxy-vs-surveyed flags. Do not claim an online CyArk tour grants permission to copy mesh files. Respect OSM ODbL credit and tile/server usage policies.
 
-## Workflow
-1. Read the relevant skill and the source modules before editing.
-2. Make a minimal geometry-safe change, preserve stable IDs and saved memories.
-3. Synchronize affected modules to both repos; the public deployment uses pinned source files rather than raw `web/` copies.
-4. Run `tests/urban_plan_probe.mjs`, `tests/road_topology_probe.mjs`, `tests/city_districts_probe.mjs`, `tests/writer_house_consistency_probe.mjs`, and available `town_scene_probe.mjs` checks.
-5. Verify the latest live GitHub Pages workflow is green.
-6. Perform visual inspection from street level and both day/night conditions before claiming visual perfection.
+## GitHub Pages / CI
+- Private repo `iAlirezaaa/the-writer` is canonical.
+- Public `iAlirezaaa/the-writer-live` pins reviewed `web/town.js` in `.github/citizens-assets/town.js` and deploys active Civita files only.
+- Civita QA: `tests/civita_main_town_probe.mjs`, `tests/civita_writer_home_probe.mjs`, `tests/civita_pedestrians_probe.mjs`, `tests/civita_environment_probe.test.mjs`, `city/tests/civita_geo_phase0.test.mjs`, `city/tests/civita_osm_vectors.test.mjs`, `city/tests/civita_osm_renderer.test.mjs` and `tests/writer_house_consistency_probe.mjs`. Also keep reader/observer and author/core safety regressions.
+- Tests in GitHub Actions verify source/geometry contracts; only real browser screenshots/console prove visual quality. Check Actions status, do not assume a pushed commit has deployed.
 
-## Invariants
-- One physical street-level base underneath each building.
-- 3D house shell grounded at STREET_Y, no unsupported upper volume.
-- Initial writer room and exterior **same width/depth, same entry, same rear window**.
-- Larger interior sections cannot appear before earned growth levels.
-- Town remains exterior-first; clicking author's house enters the room. The room door can return to the town.
-- Landmarks must not block sidewalks; neighboring houses maintain breathing room.
-- No modification to author memories, stories, resident identities or movement archive.
+## Historical backups
+The entire old city history (including all deleted Tehran city sources, snapshots, research and tests) remains retrievable from **frozen, intentionally untouched** backup branches `backup/writer-block-pre-tehran-rebuild-2026-11-09` and the immutable SHA references in `city/backups/writer-block-pre-tehran-rebuild-2026-11-09.md`. Never force-push or remove those refs. The active branch no longer carries old Tehran map meshes, weather, OSM surveys, historical geotile pipeline or third-floor apartment scripts.
 
-## New controlling brief — MAYOR-026 (2026-11-09)
-- Geographic target: a **faithful real-world reconstruction of Tehran**, not the current imaginary street/plot scheme. Begin with **only the block containing the writer's home**. Do not expand coverage until explicitly requested.
-- Real-world anchor already in `web/urban-plan.js`: WGS84 **35.715361987616696, 51.3642455031707**; local +X east, local -Z north. This anchor is real; **present road and building meshes are procedural and not a surveyed Tehran copy**.
-- New mandatory entrypoint for every city visual/asset task: `city/skills/tehran-writer-block/SKILL.md`. Use the preinstalled **`cognition/skills/3dviz-pro-max/SKILL.md`** and `TWIN-WORLD.md` to plan/author or upgrade existing 3D houses, facades, street furniture, cars, terrain and other scene props, one testable representative item at a time. Keep the same Three.js renderer and stable scene/picking IDs.
-- Build real topography, street contours, parcels/footprints and facade massing from licensed and attributed geographic measurements and image references; capture provenance/uncertainty and validate ground support, public access, traffic, writer room and camera states. Treat unsurveyed details as provisional proxies, not geographic truth.
-- Protect author/publisher narrative, memory, citizen paths/identities and outside-city app code. Release only verified city changes; record separate source/visual/test/deployment status.
+## Roadmap
+1. Acquire licensed surveyed DEM/LiDAR for cliff, plateau and bridge, with vertical datum.
+2. Record a dated ODbL Civita roofprint/footpath snapshot that can load without live Overpass, or clearly expose live service failure.
+3. Geolocate Lo Studio lot and doorway (only with verified rights), adapt preserved room without changing writer figure.
+4. Model real individual facade/roof and entrance, then test day/night, collisions, ground contact, camera bounds, UV/LOD and city population rendering.
+5. Maintain one small, independently testable migration per city task, with private-first sync and cited SHA/test/deploy evidence.
+
+For current acceptance and technical craft use `city/GOAL.md`, `city/skills/civita-digital-twin/SKILL.md` and vendored 3Dviz Pro Max SKILL/TWIN-WORLD.
