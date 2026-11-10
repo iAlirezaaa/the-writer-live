@@ -154,3 +154,12 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-087 P1 NEW:** add a negative-control fixture that changes only the protected HTML search label, and asserts a nonzero Node exit without editing the real protected asset.
 - [ ] **RDR-088 P2 NEW:** test screen-reader announcement throttling when reading progress jumps rapidly across pages; only the settled Persian progress should be announced, with no duplicate live-region messages.
 - Benchmark: Kobo Web Reader supports in-book search, annotations, saved bookmarks, adjustable typography and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features). Prioritize reliable reading accessibility before checkout.
+
+
+## RDR-089 — 2026-11-10 — isolated Node fixture completeness
+- [x] **P0 one scoped test repair:** copy the existing catalog HTML into the temporary checkout used by RDR-075. The nested private child runs the RDR-082 HTML assertions, so a fixture containing only web/read.js would fail for the unrelated missing HTML file. No runtime UI, private story data, or city code changed.
+- Private test commit `e9d49df76b428f17590d898a66090f5ca050a3e6`; public test commit `8f20b0391d0e762ead0fd4e4c6574f87e3590357`.
+- [ ] **P0 runtime verification:** full Node suite and Actions pass/fail totals remain unknown; commit-associated workflow lookup returned no runs, and local clone failed with DNS resolution. Do not claim CI success, Pages deployment, or browser verification.
+- [ ] **RDR-090 P1 NEW:** add a fixture self-check that validates all required HTML/JS fixture inputs exist before spawning nested Node, with explicit diagnostics identifying missing inputs.
+- [ ] **RDR-091 P2 NEW:** add an accessible, rights-safe empty-library state distinguishing zero published books from network load failure, with a keyboard-reachable retry action and no private metadata.
+- Benchmark priorities: Kobo Web Reader's search, annotations and typography controls; Libby's accessibility and reduced-motion support. Favor reliable core reading and diagnostics over checkout.
