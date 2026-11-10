@@ -26,6 +26,101 @@ export const CIVITA_WRITER_HOUSE_EVIDENCE=Object.freeze({
  architecturalAccuracy:'interpretive-study',
  protectedWriterAppearance:true,physicalCollider:false
 });
+
+/* MAYOR-077: one original, deterministic, painted facade surface — not a
+ * photograph, a surveyed masonry course, or a reconstruction of terrace
+ * geometry. The official Institute photographs establish material/ivy presence.
+ * No part of the original writer room, doors or collider is edited here.
+ */
+const facadesByThree=new WeakMap();
+function makeLoStudioFacadeTexture(THREE,{w,h,storeyHeight,cutOpenings=true}){
+ if(typeof document==='undefined'||!THREE?.CanvasTexture)return null;
+ const key=[w,h,storeyHeight].map(n=>n.toFixed(3)).join(':')+':'+String(cutOpenings);
+ let cache=facadesByThree.get(THREE);
+ if(!cache){cache=new Map();facadesByThree.set(THREE,cache);}
+ if(cache.has(key))return cache.get(key);
+ const canvas=document.createElement('canvas');
+ canvas.width=768;canvas.height=768;
+ const ctx=canvas.getContext('2d');
+ if(!ctx)return null;
+ const W=canvas.width,H=canvas.height;
+ let seed=0x51c17a;
+ const rnd=()=>{seed=(Math.imul(1664525,seed)+1013904223)>>>0;return seed/4294967296;};
+ ctx.clearRect(0,0,W,H);
+ // Irregular, quiet mortar and golden-tufa weathering: one continuous atlas
+ // across separately modelled facade wall segments, never pasted photography.
+ for(let row=0;row<18;row++){
+  const y=row*H/18,step=51;
+  ctx.strokeStyle='rgba(53,45,32,.32)';ctx.lineWidth=1.7;
+  ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y+1);ctx.stroke();
+  for(let x=-(row%2)*step/2;x<W;x+=step*(.78+rnd()*.4)){
+   const width=step*(.8+rnd()*.38),height=H/18-3;
+   ctx.fillStyle=['rgba(243,202,137,.09)','rgba(75,54,38,.075)','rgba(255,226,172,.07)'][Math.floor(rnd()*3)];
+   ctx.fillRect(x+2,y+2,width-3,height-2);
+   ctx.strokeStyle='rgba(62,54,42,.28)';
+   ctx.beginPath();ctx.moveTo(x,y+1);ctx.lineTo(x+1+rnd()*2,y+height+2);ctx.stroke();
+  }
+ }
+ for(let n=0;n<500;n++){
+  ctx.fillStyle=rnd()>.52?'rgba(78,64,47,.095)':'rgba(255,231,173,.10)';
+  const x=rnd()*W,y=rnd()*H,r=1+rnd()*2;
+  ctx.fillRect(x,y,r,1+rnd()*2);
+ }
+ // Hanging ivy is a visibly documented feature of Lo Studio. This atlas
+ // shows an original stylisation with bounded leaves; no copied image pixels.
+ const leafColors=['#344d2c','#4e6732','#5e743a','#748342','#3c5f31','#82904d'];
+ function leaf(x,y,angle,size){
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=leafColors[Math.floor(rnd()*leafColors.length)];
+  ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(-size*.78,-size*.58,0,-size*1.18);
+  ctx.quadraticCurveTo(size*.85,-size*.60,0,0);ctx.fill();
+  ctx.strokeStyle='rgba(13,38,16,.27)';ctx.lineWidth=.65;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-size*.88);ctx.stroke();ctx.restore();
+ }
+ // Dense crown along the roof line and a right-hand ivy mass: lower masonry
+ // and the historic window/door silhouettes remain readable.
+ for(let i=0;i<420;i++){
+  const x=rnd()*W,y=Math.pow(rnd(),1.65)*H*.29;
+  leaf(x,y,(rnd()-.5)*2.7,8+rnd()*12);
+ }
+ for(let s=0;s<21;s++){
+  let x=(s+.25+rnd()*.5)*W/21,y=rnd()*H*.05;
+  const length=H*(.16+rnd()*.48)*(s%4===0?1.16:.75);
+  const links=15+Math.floor(rnd()*13),turn=(rnd()-.5)*.7;
+  ctx.strokeStyle='#45532b';ctx.lineWidth=2+rnd()*1.8;
+  ctx.beginPath();ctx.moveTo(x,y);
+  for(let k=0;k<links;k++){
+   y+=length/links;x+=Math.sin(k*.62+s)*4+turn;
+   ctx.lineTo(x,y);
+   leaf(x-4-rnd()*12,y,(rnd()-.5)*1.6,6+rnd()*10);
+   leaf(x+4+rnd()*12,y,(rnd()-.5)*1.6,6+rnd()*10);
+  }
+  ctx.stroke();
+ }
+ for(let i=0;i<235;i++){
+  const x=W*(.77+rnd()*.22),y=H*(.15+rnd()*.76);
+  leaf(x,y,(rnd()-.5)*3,6+rnd()*10);
+ }
+ // The builder's illustrative openings MUST remain clear in the atlas;
+ // these positions follow existing proxy code, not a measured facade survey.
+ const panelW=w-.38,panelH=h-.20;
+ function clearOpening(x,bottom,width,height){
+  const left=(x-width/2+panelW/2)/panelW*W;
+  const top=(h-.10-bottom-height)/panelH*H;
+  const ww=width/panelW*W,hh=height/panelH*H;
+  ctx.clearRect(left-8,top-9,ww+16,hh+18);
+ }
+ if(cutOpenings){
+  clearOpening(-1.22,0,1.10,2.24);
+  clearOpening(1.55,.88,1.12,1.22);
+  clearOpening(.85,storeyHeight+1.0,1.35,1.40);
+ }
+ const texture=new THREE.CanvasTexture(canvas);
+ if(THREE.SRGBColorSpace)texture.colorSpace=THREE.SRGBColorSpace;
+ texture.anisotropy=4;
+ cache.set(key,texture);
+ return texture;
+}
+
 export function buildCivitaWriterExterior(THREE,parent,{
  roomWidth=6,roomDepth=6,streetY=-3,parentOffsetY=3.2,storeyHeight=3.2
 }={}){
@@ -94,6 +189,48 @@ export function buildCivitaWriterExterior(THREE,parent,{
   box('chestnut-eave-'+dir,.13,.17,d+.22,timber,dir*halfSpan,eaveY-.10,0);
  }
  box('terracotta-ridge',.24,.26,d+.25,tufaEdge,0,eaveY+rise+.02,0);
+
+ // One bounded, non-colliding painted masonry/ivy surface. No protruding
+ // pergola, new terrace, structural infill or speculative historical doors.
+ const atlas=makeLoStudioFacadeTexture(THREE,{w,h,storeyHeight});
+ const ivyOverlay=new THREE.Mesh(
+  new THREE.PlaneGeometry(w-.38,h-.20),
+  new THREE.MeshBasicMaterial({
+   map:atlas,transparent:true,opacity:atlas?1:0,depthWrite:false,
+   alphaTest:.05,polygonOffset:true,polygonOffsetFactor:-1
+  })
+ );
+ ivyOverlay.name='lo-studio-tufa-ivy-facade-study';
+ ivyOverlay.position.set(0,y0+h/2,front+.145);
+ ivyOverlay.userData={
+  architectureStudy:true,surfaceOnly:true,physicalCollider:false,
+  reference:'https://www.civitainstitute.org/496/lo-studio.html',
+  originalProceduralAtlas:true,measuredStoneCourse:false,actualIvyExtentVerified:false
+ };
+ ivyOverlay.castShadow=false;ivyOverlay.receiveShadow=false;
+ shell.add(ivyOverlay);
+ // The public starting camera views the opposite side of this rotated house.
+ // Give that wall the same interpretive tufa/ivy finish without inventing a
+ // second actual door. Its vegetation distribution is not survey-confirmed.
+ const rearAtlas=makeLoStudioFacadeTexture(THREE,{w,h,storeyHeight,cutOpenings:false});
+ const rearOverlay=new THREE.Mesh(
+  new THREE.PlaneGeometry(w-.42,h-.22),
+  new THREE.MeshBasicMaterial({
+   map:rearAtlas,transparent:true,opacity:rearAtlas?1:0,depthWrite:false,
+   alphaTest:.05,polygonOffset:true,polygonOffsetFactor:-1
+  })
+ );
+ rearOverlay.name='lo-studio-tufa-ivy-rear-study';
+ rearOverlay.position.set(0,y0+h/2,-d/2-.135);
+ rearOverlay.rotation.y=Math.PI;
+ rearOverlay.userData={
+  architectureStudy:true,surfaceOnly:true,physicalCollider:false,
+  originalProceduralAtlas:true,backWallVegetationExtentVerified:false,
+  reference:'https://www.civitainstitute.org/496/lo-studio.html'
+ };
+ rearOverlay.castShadow=false;rearOverlay.receiveShadow=false;
+ shell.add(rearOverlay);
+
  // True one-floor stair access has not been surveyed, so only an interaction marker.
  const clickArea=box('civita-writer-house-interactive-front',w,h,.05,
    new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,y0+h/2,front+.37);
