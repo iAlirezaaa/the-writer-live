@@ -20,3 +20,10 @@ Add a narrowly scoped negative regression for malformed WGS84 GeoJSON coordinate
 ## Two backlog ideas
 1. Add a schema validator for finite numeric lon/lat pairs, ring closure, and minimum LineString/Polygon vertex counts before tile assignment.
 2. Add a bounded tile-cache ownership test with reference-counted GPU disposal, including features crossing tile boundaries.
+## Outcome
+- Added one synthetic negative regression covering NaN, +Infinity and -Infinity in longitude and latitude. No runtime implementation changed.
+- Private test commit: `9dddf01b4766cbe68ecf98f8bfbdded5bd8d87e1`; public: `28227c9602377d706e904b4a2887d5ea0473e4a4`. Matching test Git blob: `a5a6c7c81280e9fe414162f5e0146d986596864b`.
+- Private skill commit: `8ff388fcdf826ad7b06fe96beaa3c776cd261ee2`; public: `dc904a394ac9932febcf4372b604d0b5a7e56997`. Matching skill blob: `fde8016e1eaeb22cce4dc1909f1b8776d44c5832`.
+- Test execution: **NOT RUN** (no executable repository checkout/CI execution in this run). Geometry, writer room, citizen routes and pinned Pages assets: **not edited**. Browser captures and Pages deployment: **not verified**.
+- Backup branch verification: **BLOCKED** (branch-ref fetch 404 on both repositories). Main-branch backup manifest was read, but is not proof the refs currently exist.
+- Status: test committed and mirrored; runtime/CI validation pending. No visual reconstruction or deployment claimed.
