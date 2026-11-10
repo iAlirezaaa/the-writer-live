@@ -23,6 +23,17 @@ jobs:
           mkdir -p _site
           cp -a index.html web read snapshot _site/
           touch _site/.nojekyll
+          # Civita: one bounded official OSM map request at build time.
+          # The website can still deploy without external-source availability,
+          # but it must not fabricate buildings or use an invalid local JSON.
+          python3 city/tests/test_civita_osm_snapshot.py
+          if python3 city/survey/build_civita_osm_snapshot.py _site/web/data/civita-osm-snapshot.json \
+             && node city/tests/civita_osm_snapshot_validate.mjs _site/web/data/civita-osm-snapshot.json; then
+            echo "CIVITA-STATIC-OSM-ARTIFACT-READY"
+          else
+            rm -f _site/web/data/civita-osm-snapshot.json
+            echo "::warning::Civita official OSM snapshot unavailable; city will request bounded live OSM with no invented fallback"
+          fi
           # The snapshot publisher supplies the current character motion and
           # dashboard entrypoint. Preserve those authored files in the artifact.
           for name in objects.js town.js; do
