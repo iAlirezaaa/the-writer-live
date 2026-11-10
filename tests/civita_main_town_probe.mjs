@@ -53,7 +53,7 @@ assert.doesNotThrow(()=>town.update(0,0,false));
 assert.equal(town.group.getObjectByName('writer-block-source-aligned-streets'),undefined);
 const world=read('web/world.js');
 assert.match(world,/clampCivitaTarget/);
-assert.match(world,/city-civita-main-20261110-v1/);
+assert.match(world,/city-civita-main-20261110-v2/);
 assert.match(world,/writerInteriorWorldRoot\.add\(baseWriterRoomShell\)/);
 const pubPin=resolve(root,'.github/citizens-assets/town.js');
 if(existsSync(pubPin))assert.equal(readFileSync(pubPin,'utf8'),read('web/town.js'),'public Pages town pin drift');
