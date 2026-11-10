@@ -3,6 +3,9 @@ name: tehran-writer-block-digital-twin
 description: Plan verifiable Tehran block geometry and improve existing 3D city objects with the vendored 3Dviz Pro Max skill, without moving protected writer/citizen data.
 ---
 
+> **RETIRED GEOGRAPHY NOTICE (2026-11-10, MAYOR-065):** The owner replaced the Tehran build target with **Civita di Bagnoregio**. This skill is retained solely as recovery/historical documentation. Do **not** invoke Tehran construction steps for new city work. Use `city/GOAL.md` and `city/skills/civita-digital-twin/SKILL.md` instead; frozen backup branches and protected writer room are unchanged.
+
+
 # Tehran writer-block digital twin / 3Dviz Pro Max
 
 ## Activation and priority
