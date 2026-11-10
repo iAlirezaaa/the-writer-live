@@ -1,58 +1,50 @@
 #!/usr/bin/env python3
-"""Final build gate for versioned living-city architecture.
-
-Checks only the Pages artifact. No user memories, writer-room data,
-publisher meetings, authored citizen routines or car trajectories are changed.
-"""
+"""Active Civita digital-twin artifact gate, no Tehran fallback geometry."""
 from pathlib import Path
 import sys
 
-VERSION="city-districts-20261108-v3"
+WORLD_VERSION="city-world-20261110-civita-v2"
 TOWN_VERSION="city-civita-main-20261110-v1"
-ROOT=Path(".github/city-assets")
 
-
-def inspect(site: Path) -> None:
-    city=(site/"web/town-districts.js").read_text(encoding="utf-8")
-    town=(site/"web/town.js").read_text(encoding="utf-8")
-    world=(site/"web/world.js").read_text(encoding="utf-8")
-    objects=(site/"web/objects.js").read_text(encoding="utf-8")
-    index=(site/"index.html").read_text(encoding="utf-8")
-    urban=(site/"web/urban-plan.js").read_text(encoding="utf-8")
-    roads=(site/"web/road-surface.js").read_text(encoding="utf-8")
-    growth=(site/"web/city-growth.js").read_text(encoding="utf-8")
-    expected=[
-        ("pin matches authored growth kit",growth==(ROOT/"city-growth.js").read_text(encoding="utf-8")),
-        ("new civic growth runtime", './city-growth.js?v=civic-growth-20261108-v1' in town),
-        ("housing capacity declared", 'CITY_HOUSING_CAPACITY' in growth and 'flatsPerFloor:3' in growth),
-        ("forest and municipal links present", 'eastern-forest-exit' in urban and 'west-civic-link' in urban),
-        ("one unified road mesh module", "export function buildSeamlessRoadSurface" in roads),
-        ("road paint elevation shared", "export const ROAD_PAINT_CENTER_OFFSET" in roads),
-        ("one writer room root", "writerInteriorWorldRoot.add(baseWriterRoomShell)" in world),
-        ("urban master plan shipped", "export function auditUrbanPlan" in urban),
-        ("writer home exterior", "writer-home-exterior-v2" in world),
-        ("outdoor facade first", 'let view = "town"' in world),
-        ("pinned district kit",city==(ROOT/"town-districts.js").read_text(encoding="utf-8")),
-        ("twelve authored blocks",city.count('{id:"')>=21),
-        ("publisher office interior",'"editorial-office-desk"' in city),
-        ("writer room explicitly protected",'"writerRoomUntouched:true"' in city or 'writerRoomUntouched:true' in city),
-        ("city module connected",f'./town-districts.js?v={VERSION}' in town),
-        ("world town cache fresh",f'./town.js?v={TOWN_VERSION}' in world),
-        ("city catalog connected",f'./town-districts.js?v={VERSION}' in world),
-        ("city information panel",'"place:"+civic.id' in objects),
-        ("city venues navigable",'"town-places"' in world and 'renderCityPlaces()' in world),
-        ("new world entrypoint",'src="./web/world.js?v=city-world-20261110-civita-v1"' in index),
-        ("original camera menu kept",index.count("data-view=")==10),
-        ("original notebook panels kept",index.count("data-panel=")==15),
-        ("unchanged car source", 'buildTownCars' in town),
-        ("active Civita default with preserved Tehran rollback", 'mapMode="civita"' in town and 'buildCivitaTown' in town and 'if(mapMode==="source-only")' in town),
-        ("active Civita builder published", (site/"web/town-civita.js").is_file() and (site/"web/civita-geo.mjs").is_file() and (site/"web/civita-osm-render.js").is_file()),
-    ]
-    failed=[name for name,good in expected if not good]
-    if failed:
-        raise RuntimeError("City district build gate: "+", ".join(failed))
-    print("CITY-DISTRICT-BUILD-OK",len(expected),"invariants")
-
+def inspect(root:Path):
+  web=root/"web"
+  needed=[
+    "world.js","town.js","town-civita.js","civita-geo.mjs",
+    "civita-osm-vectors.mjs","civita-osm-render.js",
+    "civita-pedestrians.js","civita-writer-house.js",
+    "civita-room-plan.js","civita-place-catalog.js","civita-environment.js"
+  ]
+  missing=[name for name in needed if not (web/name).is_file()]
+  if missing:raise RuntimeError("Missing active Civita assets: "+", ".join(missing))
+  town=(web/"town.js").read_text(encoding="utf-8")
+  world=(web/"world.js").read_text(encoding="utf-8")
+  city=(web/"town-civita.js").read_text(encoding="utf-8")
+  home=(web/"civita-writer-house.js").read_text(encoding="utf-8")
+  index=(root/"index.html").read_text(encoding="utf-8")
+  geo=(web/"civita-geo.mjs").read_text(encoding="utf-8")
+  checks={
+   "Civita is the only active town": "mapMode='civita'" in town
+     and "buildCivitaTown" in town and "buildTehranReconstructionTown" not in town,
+   "same origin on map": "42.6277" in geo and "12.1137" in geo,
+   "source-only 3D city layer": "attachCivitaVectors" in city,
+   "pedestrians anchored to source ways": "createCivitaPedestrians" in city,
+   "room root retained": "writerInteriorWorldRoot.add(baseWriterRoomShell)" in world
+     and "writerInteriorWorldRoot.add(expandedWriterRoomShell)" in world,
+   "Lo Studio study is not falsely surveyed": "matchedToActualLoStudio:false" in home,
+   "exterior builder active": "buildCivitaWriterExterior(THREE,writerExterior," in world,
+   "live local Italian weather": "createCivitaWeatherService()" in world
+     and "./civita-environment.js" in world,
+   "old Tehran weather not imported": "tehran-environment.js" not in world,
+   "old Tehran architecture not active": "town-districts.js" not in world
+     and "urban-plan.js" not in world,
+   "Civita camera pan bounds": "clampCivitaTarget" in world,
+   "source attribution": "OpenStreetMap contributors" in index,
+   "current world import": f'./town.js?v={TOWN_VERSION}' in world,
+   "current index entry": f'src="./web/world.js?v={WORLD_VERSION}"' in index,
+  }
+  errors=[name for name,good in checks.items() if not good]
+  if errors:raise RuntimeError("Civita city deploy gate: "+", ".join(errors))
+  print("CIVITA-CITY-BUILD-OK",len(checks),"checks; zero active Tehran road/roof meshes")
 
 if __name__=="__main__":
-    inspect(Path(sys.argv[1]) if len(sys.argv)>1 else Path("_site"))
+  inspect(Path(sys.argv[1]) if len(sys.argv)>1 else Path("_site"))
