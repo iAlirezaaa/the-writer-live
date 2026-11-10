@@ -7,6 +7,7 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {locateCivitaWriterParcel,CIVITA_LO_STUDIO_MATCH} from '../web/civita-writer-location.js';
 import {buildCivitaWriterExterior} from '../web/civita-writer-house.js';
+import {geoToCivita} from '../web/civita-geo.mjs';
 const root=resolve(process.argv[2]||'.');
 const snapshot=JSON.parse(readFileSync(resolve(root,'web/data/civita-osm-snapshot.json'),'utf8'));
 const site=locateCivitaWriterParcel(snapshot);
@@ -42,6 +43,36 @@ assert.ok(p.distanceTo(new THREE.Vector3(1,1,2))>25,'local room/camera moves to 
 assert.equal(room.children[0],appearance);
 assert.equal(appearance.geometry,beforeAppearanceGeometry);
 assert.equal(exterior.children[0],shell.group);
+
+/* Validate the ACTUAL 3D shell, including all roof and step vertices; merely
+ * fitting the room floor rectangle previously let the eaves cross OSM lot.
+ * Invisible click-target surface is not physical building geometry. */
+const candidate=snapshot.elements.find(e=>e.type==='way'&&e.id===site.osmWayId);
+const outline=candidate.geometry.map(p=>geoToCivita(p.lat,p.lon));
+const within=(p)=>{
+ let ok=false;
+ for(let i=0,j=outline.length-2;i<outline.length-1;j=i++){
+  const a=outline[i],b=outline[j];
+  if((a.z>p.z)!==(b.z>p.z)&&p.x<(b.x-a.x)*(p.z-a.z)/(b.z-a.z)+a.x)ok=!ok;
+ }
+ return ok;
+};
+const exteriorViolations=[];
+let verticesChecked=0;
+for(const mesh of shell.group.children){
+ if(mesh.name==='civita-writer-house-interactive-front')continue;
+ const points=mesh.geometry?.attributes?.position;
+ if(!points)continue;
+ for(let j=0;j<points.count;j++){
+  verticesChecked++;
+  const vertex=new THREE.Vector3().fromBufferAttribute(points,j).applyMatrix4(mesh.matrixWorld);
+  if(!within(vertex))exteriorViolations.push(mesh.name);
+ }
+}
+assert.ok(verticesChecked>400,'Check actual structural vertices, not a 2D room box');
+assert.deepEqual([...new Set(exteriorViolations)],[],
+ 'Writer roof, threshold, plinth, facade must remain inside the sourced OSM polygon');
+
 const worldCode=readFileSync(resolve(root,'web/world.js'),'utf8');
 assert.match(worldCode,/loadCivitaWriterParcel\(/);
 assert.match(worldCode,/town\.setWriterPlacement/);
@@ -51,5 +82,5 @@ console.log('CIVITA-REAL-WRITER-PARCEL-CANDIDATE-OK',JSON.stringify({
  officialPlan:'D',osmWay:site.sourceWay,roomFootprintFit:true,
  relativeMapX:Math.round(site.x),relativeMapZ:Math.round(site.z),
  buildingM2:Math.round(site.footprintAreaM2),
- writerAppearancePreserved:true,cadastralVerification:false
+ writerAppearancePreserved:true,cadastralVerification:false,exteriorVerticesChecked:verticesChecked,lotBoundaryViolations:0
 }));
