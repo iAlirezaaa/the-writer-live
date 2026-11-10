@@ -89,3 +89,19 @@ test("MultiPolygon crossing tiles retains one source feature and unique tile ref
   for(const key of tileKeys)assert.deepEqual(index.tiles[key],[id]);
   assert.equal(index.mode,"provenance-metadata-only");
 });
+
+test("MultiPolygon tile budget rejects oversized coverage without splitting source identity",()=>{
+  const id="synthetic:multi:wide-budget";
+  const polygons=[
+    [[[51.360,35.715],[51.361,35.715],[51.361,35.716],[51.360,35.716],[51.360,35.715]]],
+    [[[51.370,35.715],[51.371,35.715],[51.371,35.716],[51.370,35.716],[51.370,35.715]]]
+  ];
+  const fixture=sample([{type:"Feature",id,geometry:{type:"MultiPolygon",coordinates:polygons},
+    properties:{heightEvidence:"unknown",levelsEvidence:"unknown"}}]);
+  assert.throws(()=>makeTehranTileIndex(fixture,{maxTilesPerFeature:1}),/Unsplit feature spans too many tiles/);
+  const index=makeTehranTileIndex(fixture);
+  assert.equal(index.featureCount,1);
+  assert.deepEqual(Object.keys(index.features),[id]);
+  assert.ok(index.tileCount>1);
+  assert.ok(Object.values(index.tiles).every(ids=>ids.length===1&&ids[0]===id));
+});
