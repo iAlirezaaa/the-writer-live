@@ -81,3 +81,12 @@ Technical learning: reproducibility requires immutable source identity and acqui
 ### Fresh backlog ideas (MAYOR-069)
 1. Source a **licensed Lazio LiDAR/DEM** for the cliff, historic bridge and Lo Studio parcel; record WGS84 coverage, vertical datum, interpolation error, ground contact and camera/horizon stress tests.
 2. Confirm the **exact OSM cadastral/building polygon for Lo Studio** and licensed room plan/door measurements; replace the temporary author-house exterior with measured geometry, while preserving the character/room and proving clickability, doorway alignment and safe access.
+
+## MAYOR-071 — OSM source way version metadata (2026-11-10)
+The bounded OSM API snapshot converter now retains `way/@version` as a positive integer or `null` when the upstream XML does not supply it. An invalid nonpositive/noninteger version rejects that way; no source version is inferred. This changes source metadata only, not the render geometry or protected writer room. The offline fixture covers both versioned and unversioned ways. Run the actual Python test and Pages CI before treating the new metadata as validated in deployment.
+
+### Two fresh backlog ideas — MAYOR-071
+1. Add a read-only version-diff report comparing `(way ID, version, geometry digest)` across two explicitly dated snapshots, with no automatic geometry replacement.
+2. Surface a nonblocking source-age badge on Civita preview when the snapshot acquisition time exceeds a documented freshness threshold; distinguish source freshness from architectural accuracy.
+
+Technical learning: OSM `timestamp` alone is not a stable revision key; `way/@version` is a separate upstream identity field. A missing revision must stay null rather than becoming a fabricated version 1.
