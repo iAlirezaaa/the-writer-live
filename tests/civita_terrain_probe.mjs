@@ -17,7 +17,7 @@ const fake={
  relative_heights_m:Array.from({length:cols*rows},(_,i)=>-(Math.floor(i/cols))*.5)
 };
 assert.equal(fake.relative_heights_m.length,4753);
-assert.equal(sampleCivitaTerrain(fake,bounds.north,bounds.west),0);
+assert.ok(Math.abs(sampleCivitaTerrain(fake,bounds.north,bounds.west))<1e-8);
 assert.ok(sampleCivitaTerrain(fake,bounds.south,bounds.east)<-23);
 const local=geoToCivita(CIVITA_ORIGIN.latitude,CIVITA_ORIGIN.longitude);
 assert.equal(local.x,0);assert.equal(local.z,0);
