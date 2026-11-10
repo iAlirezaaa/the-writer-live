@@ -212,7 +212,7 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 
 
 ## 2026-11-10 — RDR-103 pinned Unicode corpus
-- [x] **RDR-103 P1:** FNV-1a UTF-16 digest `4777eb3d` pins the 250 seeded catalog search cases; the executable Node test fails on corpus drift. Public/protected output parity checks remain in the same test. Source and deployment assets are unchanged. Actual Node suite/CI outcome not yet verified; Pages and browser QA are separate gates.
+- [x] **RDR-103 P1:** FNV-1a UTF-16 digest `9f8ef52f` pins the 250 seeded catalog search cases; the executable Node test fails on corpus drift. Public/protected output parity checks remain in the same test. Source and deployment assets are unchanged. Actual Node suite/CI outcome not yet verified; Pages and browser QA are separate gates.
 - [ ] **RDR-105 P1 NEW:** add a CI-readable TAP/JUnit summary artifact for all focused Node reader tests, with exact passed/failed counts and retained logs; never treat an absent run as success.
 - [ ] **RDR-106 P2 NEW:** test catalog search result ordering under mixed Persian/Arabic titles with identical normalized keys, preserving deterministic tie-breaks across public and protected assets.
 - Benchmark: Kobo Web Reader supports in-book search, notes, bookmarks, typography, and keyboard navigation: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
