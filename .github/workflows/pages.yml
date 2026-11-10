@@ -18,45 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare public site with correct vehicle imports
+      - name: Prepare protected writer room and sourced Civita world
         run: |
           mkdir -p _site
           cp -a index.html web read snapshot _site/
           touch _site/.nojekyll
           # The snapshot publisher supplies the current character motion and
           # dashboard entrypoint. Preserve those authored files in the artifact.
-          for name in objects.js town.js town-cars.js; do
+          for name in objects.js town.js; do
             cp ".github/citizens-assets/$name" "_site/web/$name"
           done
-          cp .github/city-assets/town-districts.js _site/web/town-districts.js
-          cp .github/city-assets/urban-plan.js _site/web/urban-plan.js
-          cp .github/city-assets/road-surface.js _site/web/road-surface.js
-          cp .github/city-assets/writer-block-road-preview.js _site/web/writer-block-road-preview.js
-          cp .github/city-assets/writer-block-street-frame.js _site/web/writer-block-street-frame.js
-          cp .github/city-assets/writer-block-terrain-data.js _site/web/writer-block-terrain-data.js
-          cp .github/city-assets/writer-block-terrain.js _site/web/writer-block-terrain.js
-          cp .github/city-assets/writer-block-balcony.js _site/web/writer-block-balcony.js
-          cp .github/city-assets/writer-block-building-data.js _site/web/writer-block-building-data.js
-          cp .github/city-assets/writer-block-buildings.js _site/web/writer-block-buildings.js
-          cp .github/city-assets/writer-block-building-01.js _site/web/writer-block-building-01.js
-          cp .github/city-assets/writer-block-building-02.js _site/web/writer-block-building-02.js
-          cp .github/city-assets/writer-block-building-03.js _site/web/writer-block-building-03.js
-          cp .github/city-assets/writer-block-illustrative-context.js _site/web/writer-block-illustrative-context.js
-          cp .github/city-assets/writer-block-neighborhood-life.js _site/web/writer-block-neighborhood-life.js
-          cp .github/city-assets/writer-block-facade-preview.js _site/web/writer-block-facade-preview.js
-          cp .github/city-assets/writer-block-road-regulations.js _site/web/writer-block-road-regulations.js
-          cp .github/city-assets/writer-apartment-third-floor.js _site/web/writer-apartment-third-floor.js
-          cp .github/city-assets/writer-satarkhan-osm-corridor.js _site/web/writer-satarkhan-osm-corridor.js
-          cp .github/city-assets/town-tehran-rebuild.js _site/web/town-tehran-rebuild.js
-          mkdir -p _site/city/survey/output
-          cp city/survey/output/writer-block-overture-buildings.json _site/city/survey/output/writer-block-overture-buildings.json
-          cp city/survey/output/writer-block-survey.json _site/city/survey/output/writer-block-survey.json
-          mkdir -p _site/city/buildings
-          cp city/buildings/manifest.json _site/city/buildings/manifest.json
-          cp city/buildings/writer-block-orientation-audit.json _site/city/buildings/writer-block-orientation-audit.json
-          cp .github/city-assets/city-growth.js _site/web/city-growth.js
-          cp .github/city-assets/tehran-environment.js _site/web/tehran-environment.js
-          python3 .github/scripts/prepare_car_deploy.py _site
+          # The original Tehran street grid, housing and city assets were retired.
+          # Do not inject legacy geo/height/traffic files into the new Civita Pages artifact.
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
           mkdir -p _site/read _site/web
@@ -69,51 +42,21 @@ jobs:
           # Check the observer shell without replacing the current index/style.
           python3 .github/scripts/prepare_observer_deploy.py _site
           python3 .github/scripts/prepare_city_deploy.py _site
-          cp _site/web/town-districts.js /tmp/the-writer-town-districts.mjs
-          node --check /tmp/the-writer-town-districts.mjs
-          cp _site/web/urban-plan.js /tmp/the-writer-urban-plan.mjs
-          node --check /tmp/the-writer-urban-plan.mjs
-          cp _site/web/city-growth.js /tmp/the-writer-city-growth.mjs
-          node --check /tmp/the-writer-city-growth.mjs
-          cp _site/web/tehran-environment.js /tmp/the-writer-tehran-environment.mjs
-          node --check /tmp/the-writer-tehran-environment.mjs
-          cp _site/web/road-surface.js /tmp/the-writer-road-surface.mjs
-          node --check /tmp/the-writer-road-surface.mjs
+          # Validate only active Civita scripts, not the retired Tehran build.
+          for name in town town-civita civita-environment civita-writer-house civita-pedestrians civita-room-plan civita-place-catalog world; do
+            cp "_site/web/$name.js" "/tmp/civita-$name.mjs"
+            node --check "/tmp/civita-$name.mjs"
+          done
           # Active Civita default must render sourced map geometry without changing writer room.
           test -s _site/web/town-civita.js
           test -s _site/web/civita-osm-vectors.mjs
           node --experimental-vm-modules tests/civita_main_town_probe.mjs _site
           node --test tests/civita_environment_probe.test.mjs
-          node --test tests/civita_osm_vectors.test.mjs
-          node --test tests/civita_osm_renderer.test.mjs
+          node --test city/tests/civita_osm_vectors.test.mjs
+          node --test city/tests/civita_osm_renderer.test.mjs
           node tests/civita_writer_home_probe.mjs _site
           node tests/civita_pedestrians_probe.mjs _site
-          node tests/tehran_writer_block_overlay_probe.mjs _site
-          node tests/tehran_writer_block_streets_probe.mjs _site
-          node tests/tehran_writer_block_terrain_probe.mjs _site
-          node tests/tehran_writer_block_balcony_probe.mjs _site
-          node tests/tehran_writer_block_buildings_probe.mjs _site
-          node tests/tehran_writer_block_building_01_probe.mjs _site
-          node tests/tehran_writer_block_building_02_probe.mjs _site
-          node tests/tehran_writer_block_building_03_probe.mjs _site
-          node --experimental-vm-modules tests/tehran_writer_block_context_probe.mjs _site
-          node --experimental-vm-modules tests/tehran_writer_block_facade_probe.mjs _site
-          node --experimental-vm-modules tests/tehran_writer_block_regulations_probe.mjs _site
-          node --experimental-vm-modules tests/tehran_writer_block_neighborhood_life_probe.mjs _site
-          node --experimental-vm-modules tests/tehran_source_only_rebuild_probe.mjs _site
-          node tests/urban_plan_probe.mjs _site
-          node tests/road_topology_probe.mjs _site
           node tests/writer_house_consistency_probe.mjs _site
-          # Retired third-floor Tehran apartment: now checked as two-level Civita house above.
-          node tests/tehran_satarkhan_east_corridor_probe.mjs _site
-          node tests/tehran_sixth_daryan_street_section_probe.mjs _site
-          node tests/tehran_building_orientation_source_audit_probe.mjs _site
-          node tests/city_districts_probe.mjs _site
-          node tests/city_housing_access_probe.mjs _site
-          # Protect original writer-house clearance and proven sidewalk graph.
-          for check in layout paths wiring; do
-            node --experimental-vm-modules tests/town_scene_probe.mjs _site "$check" < _site/snapshot/town.json
-          done
           for name in observer-ui persian-display; do
             cp "_site/web/$name.js" "/tmp/the-writer-observer-$name.mjs"
             node --check "/tmp/the-writer-observer-$name.mjs"
@@ -129,15 +72,10 @@ jobs:
             node --check "/tmp/the-writer-city-$name.mjs"
           done
           node tests/citizens_v2_probe.mjs _site _site/snapshot/town.json
-          node tests/city_traffic_probe.mjs _site _site/snapshot/town.json
           node tests/citizens_probe.mjs _site < _site/snapshot/town.json
           for name in book read book-cover feedback; do
             cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
             node --check "/tmp/the-writer-reader-$name.mjs"
-          done
-          for name in town town-cars world; do
-            cp "_site/web/$name.js" "/tmp/the-writer-$name.mjs"
-            node --check "/tmp/the-writer-$name.mjs"
           done
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
