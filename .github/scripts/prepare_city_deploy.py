@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 WORLD_VERSION="city-world-20261110-civita-v3"
-TOWN_VERSION="city-civita-main-20261110-v1"
+TOWN_VERSION="city-civita-main-20261110-v2"
 
 def inspect(root:Path):
   web=root/"web"
