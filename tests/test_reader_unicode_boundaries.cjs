@@ -96,7 +96,12 @@ console.log('PASS RDR-069: ' + missingMetadata.length + ' metadata fixtures and 
 // RDR-072: Unicode control-input stability and protected/public parity.
 const controlInputs = ['کتاب\u0000', '\u200fکتاب', 'کتاب\u200e', '\u2067کتاب\u2069', '\ud800', '\udc00'];
 const protectedKeyForControls = fs.existsSync(protectedPath)
-  ? vm.runInNewContext(match[0] + '\nsearchKey')
+  ? (() => {
+      const deployedSource = fs.readFileSync(protectedPath, 'utf8');
+      const deployedMatch = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+      assert.ok(deployedMatch, 'protected control-input normalizer must exist');
+      return vm.runInNewContext(deployedMatch[0] + '\nsearchKey');
+    })()
   : null;
 if (protectedKeyForControls) assert.ok(fs.readFileSync(protectedPath, 'utf8').includes(match[0]), 'protected normalizer must match public');
 for (const input of controlInputs) {
