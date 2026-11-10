@@ -15,3 +15,12 @@ summary: Incrementally reconstruct sourced Civita di Bagnoregio geometry; preser
 ## Two new backlog items — MAYOR-065
 - Acquire source-licensed OSM vector street/roofprints with stable way IDs and gate→piazza connections; compare the map and Civita Institute plan without tracing rights-restricted drawings.
 - Confirm licensed high-resolution DEM/LiDAR for the Civita plateau, cliff and pedestrian bridge before constructing their 3D meshes; audit LOD and safe camera view boundaries.
+
+## MAYOR-066 — licensed vector-feature intake gate (2026-11-10)
+Before constructing any OSM building or alley geometry, retain a feature record with `source_type` (`node`/`way`/`relation`), `source_id`, `source_url`, `license`, `attribution`, `observed_at`, `coordinates_crs` (`EPSG:4326`), `geometry`, `geometry_kind`, and `quality_tier`. Record `height_m`, `levels`, `roof_shape`, `entrance`, `ground_elevation_m` as **null** unless separately supported by a cited licensed source; attach per-field provenance and measurement uncertainty when known. Do not equate OSM ODbL data rights with third-party imagery or DEM rights. Validate polygon closure, non-self-intersection, coordinate bounds and stable IDs before any extrusion. Current raster tiles are **not** vector building data.
+
+### Two fresh backlog ideas — MAYOR-066
+- Build a read-only OSM vector provenance manifest for the Porta di Santa Maria → piazza pedestrian corridor, with duplicate-ID detection and per-feature license/attribution checks, without assuming building heights.
+- Add a fixture-based gate-to-piazza topological connectivity test that reports gaps and uncertainty before rendering any navigable path; keep historical Tehran and writer/citizen routing untouched.
+
+Technical learning: A renderable raster tile provides neither licensed vector footprints nor a validated walkable graph. Source-level rights, topology, field-level uncertainty and terrain datum must be separate gates before 3D extrusion.
