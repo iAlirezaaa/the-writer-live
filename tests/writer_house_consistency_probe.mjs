@@ -16,7 +16,11 @@ for(const contract of [
  'buildCivitaWriterExterior(THREE,writerExterior,',
  'rebuildWriterInteriorShell(level=0)',
  'if(o.userData.writerExterior){setView("building");return;}',
- 'camGoal.pos.y += writerInteriorWorldRoot.position.y;'
+ 'camGoal.pos.applyMatrix4(writerInteriorWorldRoot.matrixWorld);',
+ 'camGoal.target.applyMatrix4(writerInteriorWorldRoot.matrixWorld);',
+ 'loadCivitaWriterParcel()',
+ 'town.setWriterPlacement(site)',
+ 'writerExterior.visible=outdoors && Boolean(writerParcelSite);'
 ])assert.ok(world.includes(contract),'Writer room/home safety contract missing: '+contract);
 assert.ok(!world.includes('const apartment=buildWriterApartmentLowerStoreys(THREE,writerExterior'),'Retired Tehran apartment still used');
 assert.ok(shell.includes("storyCountReference:2")&&shell.includes('matchedToActualLoStudio:false'),'Unverified Lo Studio status required');
