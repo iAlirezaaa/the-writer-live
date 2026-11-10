@@ -92,5 +92,10 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+      # GitHub's artifact search can lag the successful upload by several seconds.
+      # Use a new run after a failed attempt: rerunning the same run can leave
+      # multiple github-pages artifacts sharing one run ID.
+      - name: Allow Pages artifact metadata indexing
+        run: sleep 15
       - id: deployment
         uses: actions/deploy-pages@v4
