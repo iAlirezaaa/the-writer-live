@@ -3,12 +3,27 @@
  * lintels, timber, terracotta roof. Exact Lo Studio parcel and plan unknown.
  * The authored writer character/room are never created or modified here.
  */
+/* MAYOR-076: Source-backed historical identity is distinct from an accurately
+ * surveyed 3D mesh. The published shell remains an illustrative study and is
+ * NOT a surveyed Lo Studio reconstruction or traversable Il Nuovo doorway.
+ * This evidence record travels with the actual Three.js shell userData.
+ */
 export const CIVITA_WRITER_HOUSE_EVIDENCE=Object.freeze({
- styleSource:'Civita Institute – Lo Studio architectural description',
+ styleSource:'The Civita Institute — Lo Studio, Il Nuovo and 2014 property plan',
  url:'https://www.civitainstitute.org/496/lo-studio.html',
+ propertyPlanUrl:'https://www.civitainstitute.org/files/1128.pdf',
+ independentConnectionSource:'https://www.civitainstitute.org/498/2024/09/il-nuovo.html',
+ reconstructionStudySource:'https://www.civitainstitute.org/files/1156.pdf',
+ officialPlanLotKey:'D',neighborPropertyPlanKey:'E',officialPlanNotToScale:true,
+ candidateOsmWayId:464102189,cadastralParcelVerified:false,
+ secondFloorConnectionToIlNuovoDocumented:true,
+ secondFloorConnectionModeled:false,secondFloorConnectingDoorCoordinatesM:null,
  storyCountReference:2,sourceHouseFootprintKnown:false,
- matchedToActualLoStudio:false,heightMeasured:false,
- terrainElevationsMeasured:false,architecturalAccuracy:'interpretive-study',
+ matchedToActualLoStudio:false,facadeMeasuredWidthM:null,
+ entranceMeasuredWidthM:null,entranceMeasuredHeightM:null,
+ entranceThresholdSurveyedElevationM:null,thresholdVerticalDatum:null,
+ heightMeasured:false,terrainElevationsMeasured:false,
+ architecturalAccuracy:'interpretive-study',
  protectedWriterAppearance:true,physicalCollider:false
 });
 export function buildCivitaWriterExterior(THREE,parent,{
