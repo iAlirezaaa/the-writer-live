@@ -46,7 +46,7 @@ const canvasTex=(w,h,draw)=>{
   return new THREE.Texture({width:w,height:h});
 };
 const clicks=[];
-const town=buildTown({THREE,scene,canvasTex,clickable(m,panel,label){
+const town=buildTown({THREE,scene,canvasTex,mapMode:"source-only",clickable(m,panel,label){
   clicks.push(m);m.userData.panel=panel;m.userData.label=label;return m;
 }});
 assert.ok(town&&town.group instanceof THREE.Group,"Town entry point not built");
