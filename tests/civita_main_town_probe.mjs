@@ -34,7 +34,7 @@ assert.equal(town.group.userData.cityBuild.authorRoomProtected,true);
 assert.equal(town.group.userData.cityBuild.realBuildingHeightsMeasured,false);
 assert.equal(town.group.userData.cityBuild.physicalCityCollidersAdded,false);
 assert.deepEqual(town.group.children.map(o=>o.name),[
- 'civita-osm-map-underlay','OSM-Porta-di-Santa-Maria-marker-not-architecture','civita-source-volumes'
+ 'civita-osm-map-underlay','OSM-Porta-di-Santa-Maria-marker-not-architecture','civita-source-volumes','civita-verified-viaduct-study'
 ]);
 const tiles=town.group.getObjectByName('civita-osm-map-underlay');
 assert.equal(tiles.children.length,2);
