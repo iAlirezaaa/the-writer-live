@@ -15,3 +15,12 @@ Run `node --test city/tests/tehran-geotile-index.test.mjs` and the existing city
 ## Backlog
 1. Tile-reference-counted geometry cache with explicit ownership and GPU disposal test.
 2. Source provenance overlay exposing feature ID, license, observation date, and unknown-height status.
+
+
+## Execution report
+- Implemented a single cross-tile source-identity regression in `city/tests/tehran-geotile-index.test.mjs`; the existing index implementation is unchanged.
+- Source-only runtime and writer-room/citizen/legacy collision tests: **NOT RUN** in this connector-only execution; no executable checkout or browser capture was used. New test is committed but **NOT EXECUTION-VERIFIED**.
+- Backup branch names and manifest files verified in both repositories before editing. Backup SHA references preserved; backup branches not modified.
+- Mirrored task, test and skill to the public repository after private changes; no pinned Pages runtime assets changed, no deployment asserted.
+- No scene geometry, weather integration, time-of-day logic, citizens, writer, publisher, or protected room altered.
+- Next gate: execute `node --test city/tests/tehran-geotile-index.test.mjs` and complete city smoke/legacy checks before any runtime mesh cache implementation.
