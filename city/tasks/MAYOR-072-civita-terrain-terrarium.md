@@ -1,0 +1,9 @@
+# MAYOR-072 — Source-grounded 3D relief for Civita OSM raster map
+Date: 2026-11-10
+Status: TODO BEFORE CODE
+Owner requests real changes in elevation/cliffs and better building grounding while preserving documented bridge and writer identity.
+One safe bounded enhancement: acquire small Mapzen/Terrain Tiles RGB Terrarium raster from AWS Open Data, georeference it to the existing two OSM z16 tiles, build a measured-source (NOT locally surveyed 5m) height mesh with no hand-made topography. Place source footprint extrusions/bridge relative to source terrain if data is valid; otherwise leave existing flat map unchanged.
+Data: https://registry.opendata.aws/terrain-tiles/ ; https://github.com/tilezen/joerd/blob/master/docs/attribution.md. Europe EU-DEM layer attribution + USGS where relevant. Derived grid is low-precision DEM, unknown vertical accuracy at steep cliffs. Never label as Regione Lazio 5m, surveyed LiDAR or exact cliff.
+Constraints: one controlled download at GitHub Pages build (2 low-area DEM tiles), strict source/grid range and test, attribution, preserve original writer mesh, stories, private state, past backup branches and author-room navigation. Implement only when source/download validates; no synthetic terrain fallback.
+Two future backlog: (1) replace visual EU-DEM baseline with verified Lazio 5m DTM WCS layer + terrain vertical datum/age; (2) measure representative historic roof and facade one OSM way at a time, Lo Studio footprint/door first.
+Preflight: read current Civita goal/skills, 3dviz Pro Max SKILL/TWIN-WORLD/object-craft, check both frozen Tehran backup refs and manifest. Bridge published with 14 spans 13 piers in MAYOR-071; do not modify structural source data.
