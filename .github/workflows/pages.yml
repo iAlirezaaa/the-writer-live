@@ -79,6 +79,10 @@ jobs:
           node --check /tmp/the-writer-tehran-environment.mjs
           cp _site/web/road-surface.js /tmp/the-writer-road-surface.mjs
           node --check /tmp/the-writer-road-surface.mjs
+          # Active Civita default must render sourced map geometry without changing writer room.
+          test -s _site/web/town-civita.js
+          test -s _site/web/civita-osm-vectors.mjs
+          node --experimental-vm-modules tests/civita_main_town_probe.mjs _site
           node tests/tehran_environment_probe.mjs _site
           node tests/tehran_writer_block_overlay_probe.mjs _site
           node tests/tehran_writer_block_streets_probe.mjs _site
