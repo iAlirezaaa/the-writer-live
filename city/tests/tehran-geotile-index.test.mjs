@@ -69,3 +69,23 @@ test("A cross-tile road keeps one source identity and no duplicated tile referen
   assert.deepEqual(index.features[id].bbox,{west,south:lat,east,north:lat});
   assert.equal(index.mode,"provenance-metadata-only");
 });
+
+test("MultiPolygon crossing tiles retains one source feature and unique tile references",()=>{
+  const id="overture:building:synthetic-boundary-fixture";
+  const polygons=[
+    [[[51.360,35.715],[51.361,35.715],[51.361,35.716],[51.360,35.716],[51.360,35.715]]],
+    [[[51.370,35.715],[51.371,35.715],[51.371,35.716],[51.370,35.716],[51.370,35.715]]]
+  ];
+  const feature={type:"Feature",id,geometry:{type:"MultiPolygon",coordinates:polygons},
+    properties:{heightEvidence:"unknown"}};
+  const index=makeTehranTileIndex(sample([feature]));
+  assert.equal(index.featureCount,1);
+  assert.deepEqual(Object.keys(index.features),[id]);
+  assert.equal(index.features[id].geometryType,"MultiPolygon");
+  assert.deepEqual(index.features[id].bbox,
+    {west:51.360,south:35.715,east:51.371,north:35.716});
+  const tileKeys=Object.keys(index.tiles);
+  assert.ok(tileKeys.length>=2,"Fixture must cross tiles");
+  for(const key of tileKeys)assert.deepEqual(index.tiles[key],[id]);
+  assert.equal(index.mode,"provenance-metadata-only");
+});
