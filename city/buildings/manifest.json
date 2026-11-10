@@ -299,5 +299,34 @@
     "confirmedPagesRun": 42685813611,
     "confirmedPagesSha": "62316f6897efd9610227d92554a074b18b77108d",
     "visualScreenshotCaptured": false
+  },
+  "cityPresentation20261110": {
+    "milestone": "MAYOR-059",
+    "renderer": "web/writer-block-neighborhood-life.js",
+    "realMapFootprints": 4,
+    "independentlyModeledSourceEnvelopeCount": 3,
+    "additionalVisualUpperEnvelopes": 3,
+    "authorRoomOverlappingFootprintModelled": false,
+    "upperRooflineVisualProxyMeters": 13.8,
+    "verifiedRealHeightOrFloorCount": 0,
+    "independentRealBuildingCountKnown": false,
+    "anonymousMovingPedestrianProxyCount": 46,
+    "humanSimulationOrCitizenRoutesModified": false,
+    "physicalCollidersAdded": 0,
+    "cameraTownPosition": [
+      -16,
+      54,
+      123
+    ],
+    "cameraTownTarget": [
+      -25,
+      -1,
+      44
+    ],
+    "actualBrowserScreenshotsTaken": false,
+    "gpuPerformanceMeasured": false,
+    "publicBuildStatus": "GitHub Pages deployment success; actual browser visual inspection pending",
+    "publicBuildURL": "https://github.com/iAlirezaaa/the-writer-live/actions/runs/42725792649",
+    "knownLimitations": "Geometry anchored on 2026-11-09 Overture ODbL snapshot; height, facade, real people and exact road widths not surveyed. Visual only; not 1:1 Tehran."
   }
 }
