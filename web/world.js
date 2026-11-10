@@ -5,7 +5,7 @@ import { openExplorer } from "./explorer.js?v=graph-structure-v1";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main-20261110-v2";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main-20261110-v3";
 import {clampCivitaTarget} from "./civita-geo.mjs?v=civita-main-20261110-v1";
 import {buildCivitaWriterExterior} from "./civita-writer-house.js?v=civita-house-20261110-v1";
 import { createCivitaWeatherService, civitaWeatherLabel } from "./civita-environment.js?v=civita-environment-20261110-v1";
