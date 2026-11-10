@@ -229,3 +229,24 @@ for (const input of stressInputs) {
   }
 }
 console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fixtures');
+
+// RDR-101: deterministic 250-case Unicode corpus, including malformed surrogates.
+// Compare the actual protected implementation when available, never a stand-in.
+{
+  let seed = 0x51f15e;
+  const next = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 0x100000000);
+  const alphabet = ['ک', 'ك', 'ی', 'ي', 'ا', 'ﻛ', 'ﺎ', '\\u200c', '\\u200f', '\\u2067', '\\u2069', '\\u0650', '\\u0640', '\\ud800', '\\udc00', ' ', '۳'];
+  for (let caseIndex = 0; caseIndex < 250; caseIndex++) {
+    const size = 1 + Math.floor(next() * 48);
+    let input = '';
+    for (let i = 0; i < size; i++) input += alphabet[Math.floor(next() * alphabet.length)];
+    const expected = key(input);
+    assert.equal(key(input), expected, 'non-deterministic search key at case ' + caseIndex);
+    assert.equal(key(expected), expected, 'non-idempotent search key at case ' + caseIndex + ': ' + JSON.stringify(input));
+    if (protectedKeyForControls) {
+      assert.equal(protectedKeyForControls(input), expected,
+        'protected/public mismatch at case ' + caseIndex + ': ' + JSON.stringify(input));
+    }
+  }
+  console.log('PASS RDR-101: 250 deterministic Unicode cases');
+}
