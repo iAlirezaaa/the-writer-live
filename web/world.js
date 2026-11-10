@@ -9,9 +9,9 @@ import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main
 import {clampCivitaTarget} from "./civita-geo.mjs?v=civita-main-20261110-v1";
 import {buildCivitaWriterExterior} from "./civita-writer-house.js?v=civita-house-20261110-v1";
 import { createCivitaWeatherService, civitaWeatherLabel } from "./civita-environment.js?v=civita-environment-20261110-v1";
-import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
-import { apartmentFloorElevation, WRITER_APARTMENT_LEVEL_OFFSET, buildWriterApartmentLowerStoreys } from "./writer-apartment-third-floor.js?v=writer-apartment-floor3-20261109-v1";
-import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
+import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./civita-room-plan.js?v=civita-room-plan-20261110-v1";
+// Retired Tehran apartment support: the original room is now housed on a Civita second floor.
+import { CITY_PLACE_CATALOG, auditCityPlan } from "./civita-place-catalog.js?v=civita-catalog-20261110-v1";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261109-v1";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261109-v1";
 import { initObserverUI } from "./observer-ui.js?v=observatory-20261109-first-paint-v1";
