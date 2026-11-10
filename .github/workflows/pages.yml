@@ -83,7 +83,11 @@ jobs:
           test -s _site/web/town-civita.js
           test -s _site/web/civita-osm-vectors.mjs
           node --experimental-vm-modules tests/civita_main_town_probe.mjs _site
-          node tests/tehran_environment_probe.mjs _site
+          node --test tests/civita_environment_probe.test.mjs
+          node --test tests/civita_osm_vectors.test.mjs
+          node --test tests/civita_osm_renderer.test.mjs
+          node tests/civita_writer_home_probe.mjs _site
+          node tests/civita_pedestrians_probe.mjs _site
           node tests/tehran_writer_block_overlay_probe.mjs _site
           node tests/tehran_writer_block_streets_probe.mjs _site
           node tests/tehran_writer_block_terrain_probe.mjs _site
@@ -100,7 +104,7 @@ jobs:
           node tests/urban_plan_probe.mjs _site
           node tests/road_topology_probe.mjs _site
           node tests/writer_house_consistency_probe.mjs _site
-          node --experimental-vm-modules tests/tehran_writer_apartment_third_floor_probe.mjs _site
+          # Retired third-floor Tehran apartment: now checked as two-level Civita house above.
           node tests/tehran_satarkhan_east_corridor_probe.mjs _site
           node tests/tehran_sixth_daryan_street_section_probe.mjs _site
           node tests/tehran_building_orientation_source_audit_probe.mjs _site
