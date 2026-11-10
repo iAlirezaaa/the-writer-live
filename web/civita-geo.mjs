@@ -21,9 +21,9 @@ export function mapTileRect(x,y,zoom=MAP_ZOOM){
   const se=geoToCivita(tileLat(y+1,zoom),tileLon(x+1,zoom));
   return {x:(nw.x+se.x)/2,z:(nw.z+se.z)/2,width:se.x-nw.x,depth:se.z-nw.z};
 }
-// Safe camera-target zone: strictly inside currently published 2-tile map.
+// Safe camera-target zone: includes the verified OSM bridge while remaining inside the two published tiles.
 // These limits are VISUAL CAMERA CONTROLS, not surveyed village/cliff boundaries.
-export const CAMERA_TARGET_LIMITS=Object.freeze({minX:-140,maxX:140,minZ:-45,maxZ:45});
+export const CAMERA_TARGET_LIMITS=Object.freeze({minX:-360,maxX:140,minZ:-45,maxZ:140});
 export function clampCivitaTarget(x,z){
   if(!Number.isFinite(x)||!Number.isFinite(z))throw new TypeError('Invalid camera target');
   return {x:Math.min(CAMERA_TARGET_LIMITS.maxX,Math.max(CAMERA_TARGET_LIMITS.minX,x)),z:Math.min(CAMERA_TARGET_LIMITS.maxZ,Math.max(CAMERA_TARGET_LIMITS.minZ,z))};
