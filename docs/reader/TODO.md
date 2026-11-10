@@ -193,3 +193,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-099 P1 new:** test that malformed Unicode combining-mark sequences do not hang catalog filtering; benchmark execution time on bounded 2,000-character inputs in public and protected builds.
 - [ ] **RDR-100 P2 new:** add a rights-safe catalog preview indicator that distinguishes publisher-approved sample, unavailable preview and full public-domain text, with explicit accessible labels; do not publish private works or enable checkout.
 - Benchmark: Kobo Web Reader provides in-book search, notes, table of contents, reading settings and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features).
+
+
+## 2026-11-10 — RDR-099 bounded Unicode stress regression
+- [x] **RDR-099 P1:** add four 2,000-code-unit Unicode stress fixtures to the existing executable Node reader regression, with 1,000ms per-normalization guard and direct protected/public output parity. Private test commit `1c9bc69180903a2faa6066bd2832f5ea88f84638`; public test commit `3e203b1231748c35c28139cb6736ddcd60a773a4`. No production, author, payment, or city files changed.
+- [ ] **P0 verification:** run `.github/workflows/reader-catalog-quality.yml`, capture exact passed/failed Node counts and run URL. Push-run discovery via connected GitHub tool is PR-only; CI, Pages, and real browser checks are independently unverified.
+- [ ] **RDR-101 P1 NEW:** add deterministic normalization fuzz corpus (seeded 250 cases) combining Persian/Arabic presentation forms, ZWNJ, bidi marks and malformed surrogates; compare actual deployed replacement with public function and report minimal failing input.
+- [ ] **RDR-102 P2 NEW:** verify reader typography preferences persist after closing/reopening an authorized preview and after a tab reload, without persisting unpublished book text or exposing user-specific reading history publicly.
+- Benchmark: Kobo Web Reader documents annotations, bookmarks, responsive reading settings and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features); Libby documents reduced-motion and accessibility preferences (https://help.libbyapp.com/en-us/6243.htm). Prioritize correctness and accessible reading over checkout.
