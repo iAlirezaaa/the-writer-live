@@ -206,3 +206,26 @@ if (fs.existsSync(protectedPath)) {
   }
   console.log('PASS RDR-097: ' + mutationFixtures.length + ' behavioral mutation fixtures');
 }
+
+
+// RDR-099: bounded pathological Unicode inputs must normalize promptly.
+// Check actual public and deployed replacement functions, not a stand-in.
+const { performance } = require('node:perf_hooks');
+const stressInputs = [
+  '\u0643' + '\u0650'.repeat(1999),
+  '\u064A' + '\u0640'.repeat(1999),
+  '\ud800'.repeat(2000),
+  '\u200f'.repeat(2000),
+];
+for (const input of stressInputs) {
+  const started = performance.now();
+  const baseline = key(input);
+  assert.equal(typeof baseline, 'string');
+  assert.ok(performance.now() - started < 1000, 'public search normalization exceeded 1000ms');
+  if (protectedKeyForControls) {
+    const protectedStarted = performance.now();
+    assert.equal(protectedKeyForControls(input), baseline, 'protected/public stress mismatch');
+    assert.ok(performance.now() - protectedStarted < 1000, 'protected search normalization exceeded 1000ms');
+  }
+}
+console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fixtures');
