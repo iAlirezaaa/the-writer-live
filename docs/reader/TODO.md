@@ -163,3 +163,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-090 P1 NEW:** add a fixture self-check that validates all required HTML/JS fixture inputs exist before spawning nested Node, with explicit diagnostics identifying missing inputs.
 - [ ] **RDR-091 P2 NEW:** add an accessible, rights-safe empty-library state distinguishing zero published books from network load failure, with a keyboard-reachable retry action and no private metadata.
 - Benchmark priorities: Kobo Web Reader's search, annotations and typography controls; Libby's accessibility and reduced-motion support. Favor reliable core reading and diagnostics over checkout.
+
+## RDR-090 — 2026-11-10 — isolated reader fixture prerequisite diagnostics
+- [x] **P1 scoped regression:** assert all three temporary checkout prerequisites (`tests/test_reader_unicode_boundaries.cjs`, `web/read.js`, `web/read.html`) exist before nested Node processes start. This preserves the missing-protected-asset negative control while providing an explicit filename when setup is incomplete. No runtime reader or city changes.
+- Private test commit `1b1e834d09abd53aec0ecfe0ed4086eb7a8015d0`; public test commit `c7daf73a9dd81d986e59692c9b0caeabe352c0a5`; test blob `af671019508c78efbd810518983c58dd2b34c0b1` in both.
+- [ ] **P0 execution:** Node suite and focused Actions pass/fail totals must be confirmed from a real run; GitHub Pages deployment and browser tests are separate gates. Local git clone DNS failure prevents claiming local Node execution.
+- [ ] **RDR-092 P1 NEW:** test malformed or missing protected `read.html` search landmark in an isolated fixture, requiring a clear nonzero exit and no changes to deployed assets.
+- [ ] **RDR-093 P2 NEW:** verify reading-settings changes preserve text selection and accessible focus after RTL reflow at 320px width, including reduced-motion mode.
+- Benchmark: Kobo Web Reader documents reading settings, bookmarks and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features); Libby supports reduced motion and labeled navigation (https://help.libbyapp.com/en-us/6243.htm).
