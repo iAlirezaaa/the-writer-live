@@ -1,4 +1,4 @@
-/* MAYOR-044 — non-authoritative architectural skin must not become sourced data.
+/* MAYOR-044 historical Tehran rollback-mode regression — skins must not become sourced data.
  * node --experimental-vm-modules tests/tehran_writer_block_facade_probe.mjs [site-root]
  */
 import assert from "node:assert/strict";
@@ -28,7 +28,7 @@ room.name="writer-interior-street-level";exterior.name="writer-home-exterior-v2"
 scene.add(room,exterior);
 const fakeCtx={clearRect(){},fillRect(){},fillText(){},measureText(){return{width:120}}};
 const canvasTex=(w,h,draw)=>{draw(fakeCtx,w,h);return new THREE.Texture({width:w,height:h});};
-const town=module.namespace.buildTown({THREE,scene,canvasTex});
+const town=module.namespace.buildTown({THREE,scene,canvasTex,mapMode:"source-only"});
 const result=[],meshes=[];
 for(let i=1;i<=3;i++){
   const b=town.group.getObjectByName("writer-block-building-0"+i+"-georeferenced");
