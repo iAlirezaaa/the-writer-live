@@ -291,3 +291,8 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 - A geotile index is a **reference map**, not an owner of separate Three.js meshes. One source ID crossing multiple tiles must have exactly one feature metadata record and may be referenced by multiple tile lists.
 - Added `city/tests/tehran-geotile-index.test.mjs` regression for an OSM road crossing adjacent z17 tiles. A passing metadata test would **not** establish GPU ref-count disposal correctness or physical geometry safety; those require separate runtime tests.
 - 3Dviz Pro Max/TWIN-WORLD guidance: preserve stable identity and shared-resource ownership before adding LOD mesh caches. Do not create one independently disposable GPU mesh per tile reference without ownership tracking.
+
+## MAYOR-060: cross-tile multipart footprint identity
+- A MultiPolygon may represent **one** sourced feature with disjoint rings; never split it into multiple buildings solely because rings occupy different tiles. Maintain original source ID and an index-level geometry type.
+- The current index uses bounding-box tile coverage, which may include empty intermediate tiles; do not interpret indexed tile membership as exact footprint intersection or as rendered geometry.
+- Synthetic MultiPolygon tests validate metadata consistency only, not measured Tehran footprint, valid facade, elevation, GPU disposal, or visual fidelity. Require actual source geometry and licenses before extruding.
