@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {CIVITA_TIMEZONE,CIVITA_WEATHER_URL,civitaClockParts,civitaSkyAt,parseCivitaWeather,createCivitaWeatherService,civitaWeatherLabel} from '../../web/civita-environment.js';
+import {CIVITA_TIMEZONE,CIVITA_WEATHER_URL,civitaClockParts,civitaSkyAt,parseCivitaWeather,createCivitaWeatherService,civitaWeatherLabel} from '../web/civita-environment.js';
 const date=Date.parse('2026-11-10T12:00:00Z'),summer=Date.parse('2026-07-10T12:00:00Z');
 const dataset={
  current:{time:date/1000,temperature_2m:12.4,cloud_cover:81,weather_code:3,precipitation:0,rain:0,snowfall:0,wind_speed_10m:3},
