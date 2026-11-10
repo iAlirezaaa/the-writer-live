@@ -39,17 +39,33 @@ jobs:
           node --check tests/reader-library-experience.test.cjs
           node --check tests/reader-feedback-transport.test.cjs
       - name: Catalog behavior and keyboard reset
+        shell: bash
         run: |
-          node --test tests/reader-catalog-reset.test.cjs
-          node --test tests/reader-library-experience.test.cjs
+          set -o pipefail
+          node --test tests/reader-catalog-reset.test.cjs | tee reader-catalog-reset.tap
+          node --test tests/reader-library-experience.test.cjs | tee reader-library-experience.tap
       - name: Execute reader vote and comment transports
-        run: node --test tests/reader-feedback-transport.test.cjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node --test tests/reader-feedback-transport.test.cjs | tee reader-feedback-transport.tap
       - name: Persian Unicode normalization boundaries
         run: |
           node tests/test_reader_unicode_boundaries.cjs
           node tests/test_reader_unicode_controls.cjs
       - name: Stable passage resume after typography reflow
-        run: node --test --experimental-default-type=module tests/reader-position.test.mjs
+        shell: bash
+        run: |
+          set -o pipefail
+          node --test --experimental-default-type=module tests/reader-position.test.mjs | tee reader-position.tap
+      - name: Upload focused reader TAP reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-node-tap
+          path: '*.tap'
+          if-no-files-found: warn
+          retention-days: 14
       - name: Parse production catalog module
         run: |
           cp web/read.js /tmp/reader-catalog-validated.mjs
