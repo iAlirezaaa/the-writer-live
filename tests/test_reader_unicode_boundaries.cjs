@@ -189,3 +189,20 @@ if (fs.existsSync(protectedPath)) {
     'parity assertion must reject a mutated deployed normalizer');
   console.log('PASS RDR-095: in-memory protected normalizer mutation rejected');
 }
+
+
+// RDR-097: behavioral mutation must be observable on real Persian/Arabic fixtures.
+// The mutation is evaluated in memory and never changes deployed files.
+if (fs.existsSync(protectedPath)) {
+  const protectedSource = fs.readFileSync(protectedPath, 'utf8');
+  const protectedDefinition = protectedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(protectedDefinition, 'protected search normalizer required for behavioral mutation');
+  const protectedKey = vm.runInNewContext(protectedDefinition[0] + '\nsearchKey');
+  const mutatedKey = value => String(value ?? ''); // deliberately omits Persian/Arabic folding
+  const mutationFixtures = ['كـتاب', 'ﻛﺘﺎﺏ', 'عَلِي'];
+  for (const input of mutationFixtures) {
+    assert.equal(protectedKey(input), key(input), 'deployed/public behavior must agree: ' + input);
+    assert.notEqual(mutatedKey(input), key(input), 'behavioral mutation escaped detection: ' + input);
+  }
+  console.log('PASS RDR-097: ' + mutationFixtures.length + ' behavioral mutation fixtures');
+}
