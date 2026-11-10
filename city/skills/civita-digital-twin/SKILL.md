@@ -111,3 +111,11 @@ The offline OSM fixture now tests that way versions `0`, `-2` and `n/a` are skip
 2. Add source snapshot temporal monotonicity checks (acquisition UTC vs OSM way timestamp) with warning-only treatment for clock anomalies, without modifying protected geometry.
 
 Technical learning: invalid revisions and missing revisions must remain distinct: invalid ways are rejected, missing versions are explicit null; unrelated valid ways must survive partial-source rejection.
+
+## MAYOR-074 — duplicate source identity guard (2026-11-10)
+- Reject a repeated `way/<id>` in the same bounded OSM XML response, even if versions differ. Duplicate identity must not produce duplicate rendered buildings. This is a source-integrity guard, not proof of surveyed geometry.
+- Learning: duplicate source IDs are a data-integrity error distinct from invalid version values; reject before output rather than silently choosing an arbitrary footprint.
+
+### Two backlog ideas — MAYOR-074
+1. Test duplicated way IDs where one copy has incomplete node references; decide whether rejection must occur before geometry filtering.
+2. Add a source snapshot digest and timestamp consistency audit to distinguish stale-but-valid data from identity conflicts.
