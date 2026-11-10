@@ -3,8 +3,8 @@
 from pathlib import Path
 import sys
 
-WORLD_VERSION="city-world-20261110-civita-v3"
-TOWN_VERSION="city-civita-main-20261110-v2"
+WORLD_VERSION="city-world-20261110-civita-v4"
+TOWN_VERSION="city-civita-main-20261110-v3"
 
 def inspect(root:Path):
   web=root/"web"
