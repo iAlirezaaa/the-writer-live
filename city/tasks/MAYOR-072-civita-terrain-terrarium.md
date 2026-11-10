@@ -1,9 +1,21 @@
 # MAYOR-072 — Source-grounded 3D relief for Civita OSM raster map
 Date: 2026-11-10
-Status: TODO BEFORE CODE
+Status: IMPLEMENTED AND SOURCE/UNIT TESTS AVAILABLE; FINAL PAGES TERRAIN INTEGRATION PENDING CI
 Owner requests real changes in elevation/cliffs and better building grounding while preserving documented bridge and writer identity.
 One safe bounded enhancement: acquire small Mapzen/Terrain Tiles RGB Terrarium raster from AWS Open Data, georeference it to the existing two OSM z16 tiles, build a measured-source (NOT locally surveyed 5m) height mesh with no hand-made topography. Place source footprint extrusions/bridge relative to source terrain if data is valid; otherwise leave existing flat map unchanged.
 Data: https://registry.opendata.aws/terrain-tiles/ ; https://github.com/tilezen/joerd/blob/master/docs/attribution.md. Europe EU-DEM layer attribution + USGS where relevant. Derived grid is low-precision DEM, unknown vertical accuracy at steep cliffs. Never label as Regione Lazio 5m, surveyed LiDAR or exact cliff.
 Constraints: one controlled download at GitHub Pages build (2 low-area DEM tiles), strict source/grid range and test, attribution, preserve original writer mesh, stories, private state, past backup branches and author-room navigation. Implement only when source/download validates; no synthetic terrain fallback.
 Two future backlog: (1) replace visual EU-DEM baseline with verified Lazio 5m DTM WCS layer + terrain vertical datum/age; (2) measure representative historic roof and facade one OSM way at a time, Lo Studio footprint/door first.
 Preflight: read current Civita goal/skills, 3dviz Pro Max SKILL/TWIN-WORLD/object-craft, check both frozen Tehran backup refs and manifest. Bridge published with 14 spans 13 piers in MAYOR-071; do not modify structural source data.
+
+## Execution report — 2026-11-10
+- Private-first implementation and public mirror: city/survey/build_civita_terrain.py; city/tests/test_civita_terrain.py; city/tests/civita_terrain_source_validate.mjs; web/civita-terrain.js; web/civita-geo.mjs inverse WGS84; web/town-civita.js map/building/road/bridge/visitor relative elevation draping; tests/civita_terrain_probe.mjs and Pages source and runtime checks.
+- On public GitHub Actions run 42799484279, Mapzen Terrain Tiles downloaded from AWS, pure Python Terrarium PNG converter created 97 x 49 grid, source basename 415.28 m, min relative -125.84 m, max relative +7.61 m. Validation CIVITA-TERRAIN-SOURCE-OK and artifact inclusion passed. That earlier successful run did NOT include the final runtime terrain renderer.
+- Terrain is approximate open Mapzen EU-DEM/SRTM source, NOT locally surveyed Regione Lazio 5m DTM, photogrammetry or accurate exposed tufa cliffs. It has unknown exact vertical datum and potentially large steep-slope errors. On invalid/missing source, viewer falls back to flat map with explicit status, never guessed cliff heights.
+- Existing 61 source-tagged OSM polygons can now be placed at source-sampled relative ground levels; actual building heights, roof materials, story counts remain unknown, displayed as labelled 6m provisional volumes. Anonymous footpath walkers and sourced 14-span bridge start coordinate also follow relative terrain where data is available; pier base elevations remain unverified.
+- Writer physical appearance, original furnished room, publisher/story data, citizen identities and historic backup refs untouched; explicit source credit rendered on site.
+- Relevant full CI release with source-derived 3D mesh and camera tests: pending, do NOT claim live browser validation or deployed output until exact public SHA Github Actions reports success. Browser WebGL screenshot, 3D ground contact and house/cliff/bridge structural elevations not visually verified.
+
+## New backlog ideas for release
+1. Download Civita-covering Regione Lazio licensed 5m terrain data, document actual ground elevations, horizontal/vertical CRS, datum, source year, and compare DEM-to-building and bridge pier footing errors before claiming accurate topography.
+2. Independently source a complete measured 3D envelope (roofline, number of floors, facade windows, entrance alignment) for a single OSM way, preferably the actual Lo Studio parcel once identified; test 3Dviz silhouette and writer room clickability without changing character appearance.
