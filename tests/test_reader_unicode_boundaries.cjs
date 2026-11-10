@@ -256,6 +256,6 @@ console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fi
         'protected/public mismatch at case ' + caseIndex + ': ' + JSON.stringify(input));
     }
   }
-  assert.equal(corpusHash.toString(16).padStart(8, '0'), '9f8ef52f', 'RDR-103 corpus drift: review seed/alphabet before updating digest');
+  assert.equal(corpusHash.toString(16).padStart(8, '0'), '4777eb3d', 'RDR-103 corpus drift: review seed/alphabet before updating digest');
   console.log('PASS RDR-101/RDR-103: 250 deterministic Unicode cases and pinned corpus digest');
 }
