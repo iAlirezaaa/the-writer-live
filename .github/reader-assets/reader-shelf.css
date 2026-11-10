@@ -228,7 +228,7 @@
   position:relative;
   isolation:isolate;
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(66px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,80px),1fr));
   grid-auto-rows:300px;
   align-content:start;
   gap:25px 7px;
@@ -451,7 +451,7 @@
 }
 @media(max-width:600px){
   .reader-page .covers[data-view="shelf"]{
-    grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(min(100%,68px),1fr));
     gap:25px 5px;
     padding:65px 8px 25px;
     border-width:8px;
@@ -483,4 +483,233 @@
 }
 @media(forced-colors:active){
   .reader-page .covers[data-view="shelf"] .cover:focus-visible{outline:3px solid Highlight}
+}
+
+
+/* ==============================================================
+   Interaction Library room v4 — self-contained visual experiment
+   Inspired by the reference's room -> notebook -> sample sequence.
+   Existing grid-cover cabinet is retained above; only shelf mode changes.
+   ============================================================== */
+.reader-page .library-room{display:contents}
+.reader-page .library-room__window,.reader-page .library-room__lamp,
+.reader-page .library-room__clock,.reader-page .library-room__floor{display:none}
+.reader-page .library-room[data-mode="shelf"]{
+  --room-wood:#694630;--room-ink:#f6e7cb;
+  display:block;position:relative;isolation:isolate;overflow:clip;direction:ltr;
+  min-height:625px;padding:162px clamp(11px,2.5vw,36px) 85px;
+  border:1px solid #b79b728a;border-radius:22px;
+  background:radial-gradient(ellipse at 20% 6%,#d1aa7466,transparent 52%),
+    linear-gradient(110deg,#655d4d 0%,#605342 48%,#3b382f 100%);
+  box-shadow:inset 0 0 95px #161a144f,0 20px 45px #202e2855;
+  perspective:1100px;
+}
+.reader-page .library-room[data-mode="shelf"]::before{
+  content:"";position:absolute;inset:auto 0 0;height:93px;
+  background:linear-gradient(147deg,#70563e,#29221d 72%);
+  clip-path:polygon(0 12%,100% 0,100% 100%,0 100%);pointer-events:none;
+}
+.reader-page .library-room[data-mode="shelf"]::after{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(110deg,#e9c17e2d,transparent 45%),
+    radial-gradient(ellipse at 90% 95%,#1013118c,transparent 53%);
+}
+.reader-page .library-room[data-mode="shelf"] .library-room__window{
+  display:block;position:absolute;z-index:1;top:89px;left:5%;
+  width:clamp(120px,21%,247px);height:clamp(190px,29vw,315px);
+  background:linear-gradient(155deg,#c7dad1,#aebfc6 57%,#dfcfaf);
+  border:13px solid #6f543c;border-radius:85px 85px 6px 6px;
+  box-shadow:0 0 0 5px #312a238c,inset 0 0 22px #8faeb280,18px 25px 29px #1c191677;
+  transform:perspective(950px) rotateY(9deg);overflow:hidden;
+}
+.reader-page .library-room__window::before,.reader-page .library-room__window::after{
+  content:"";position:absolute;z-index:1;background:#6f543c;box-shadow:inset 2px 1px #e9d6b570
+}
+.reader-page .library-room__window::before{top:0;bottom:0;left:49%;width:10px}
+.reader-page .library-room__window::after{left:0;right:0;top:51%;height:10px}
+.reader-page .library-room[data-mode="shelf"] .library-room__lamp{
+  display:block;position:absolute;z-index:4;top:26px;right:8%;
+  width:17px;height:82px;border-radius:9px 9px 3px 3px;
+  background:linear-gradient(90deg,#7f6449,#d9b994,#856246);
+  box-shadow:0 0 50px 18px #eabe793c
+}
+.reader-page .library-room__lamp::before{
+  content:"";position:absolute;top:-16px;left:-31px;width:80px;height:36px;
+  border-radius:45px 45px 6px 6px;background:linear-gradient(#e7c68f,#a77e56);
+  box-shadow:0 16px 47px 8px #e9ba747e
+}
+.reader-page .library-room[data-mode="shelf"] .library-room__clock{
+  display:flex;position:absolute;top:45px;left:34%;z-index:4;
+  align-items:center;justify-content:center;width:54px;height:54px;
+  border:5px solid #6e543c;border-radius:50%;background:#e3cfa8;
+  color:#74563d;box-shadow:3px 7px 15px #17130f55;
+  font:700 .67rem ui-serif,Georgia,serif
+}
+.reader-page .library-room[data-mode="shelf"] .library-room__floor{
+  display:block;position:absolute;left:14%;bottom:16px;z-index:1;
+  width:45%;height:46px;border-radius:50%;background:#b78a4a35;
+  transform:rotate(-7deg);filter:blur(11px)
+}
+/* Every new grid row yields another solid wood shelf; nothing is capped. */
+.reader-page .library-room[data-mode="shelf"] .covers[data-view="shelf"]{
+  position:relative;z-index:2;isolation:isolate;direction:rtl;
+  width:min(790px,76%);margin-left:auto;margin-right:0;overflow:visible;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));
+  grid-auto-rows:292px;gap:18px 5px;
+  min-height:345px;padding:53px 20px 17px;
+  border:14px solid var(--room-wood);border-radius:5px;
+  background:repeating-linear-gradient(to bottom,
+    #171b17da 0 204px,#c09a6a 205px 211px,#865d3f 212px 222px,
+    #35251e 223px 234px,#181e19ee 235px 291px);
+  background-size:100% 310px;
+  box-shadow:inset 0 0 0 6px #2e211b84,inset 0 15px 28px #050807b3,
+    16px 23px 32px #14180f9e,0 35px 40px #161a1155;
+  transform:rotateY(-4deg);transform-origin:70% 30%;
+}
+.reader-page .library-room[data-mode="shelf"] .covers[data-view="shelf"]::before{
+  content:"THE WRITER / LIBRARY";top:-48px;inset-inline:0;
+  color:#f0ddb6;letter-spacing:.19em;text-align:center;
+  font:700 .79rem ui-sans-serif,system-ui,sans-serif;
+  text-shadow:0 2px 9px #211612
+}
+.reader-page .library-room[data-mode="shelf"] .covers[data-view="shelf"]::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  border:11px solid #32241d7e;
+  box-shadow:inset 14px 0 29px #060b08a0,inset -11px 0 24px #050907b0
+}
+.reader-page .library-room[data-mode="shelf"] .cover-item{height:292px;z-index:1}
+.reader-page .library-room[data-mode="shelf"] .cover-item:hover,
+.reader-page .library-room[data-mode="shelf"] .cover-item:focus-within{z-index:25}
+.reader-page .library-room[data-mode="shelf"] .cover{bottom:63px;height:min(var(--spine-h),224px)}
+.reader-page .library-room[data-mode="shelf"] .cover:hover,
+.reader-page .library-room[data-mode="shelf"] .cover:focus-visible{
+  transform:translateX(50%) translateY(-31px) translateZ(40px) rotateY(-5deg) rotateZ(0);
+  box-shadow:inset 4px 0 #0006,13px 20px 23px #030a07dc,0 0 27px #f7cb8c4d
+}
+.reader-page .library-room[data-mode="shelf"] .cover-caption{top:247px}
+.reader-page .library-room[data-mode="shelf"] .shelf-floating-sample{
+  position:absolute;pointer-events:none;z-index:33;left:50%;
+  bottom:calc(100% - 13px);width:clamp(160px,20vw,246px);
+  padding:13px 17px;border:1px solid #bca27a;border-radius:7px;
+  color:#392e23;background:linear-gradient(142deg,#f8edd8,#e7d2ae);
+  box-shadow:0 18px 29px #07100ad9;
+  opacity:0;visibility:hidden;direction:rtl;text-align:center;
+  transform:translateX(-50%) translateY(18px) rotateX(-8deg) scale(.94);
+  transition:opacity .2s,transform .34s cubic-bezier(.16,.88,.17,1),visibility .2s
+}
+.reader-page .library-room[data-mode="shelf"] .shelf-floating-sample::after{
+  content:"";position:absolute;bottom:-9px;left:calc(50% - 9px);
+  width:16px;height:16px;background:#e7d2ae;transform:rotate(45deg);
+  border-right:1px solid #bca27a;border-bottom:1px solid #bca27a
+}
+.reader-page .library-room[data-mode="shelf"] .cover-item:hover .shelf-floating-sample,
+.reader-page .library-room[data-mode="shelf"] .cover-item:focus-within .shelf-floating-sample{
+  visibility:visible;opacity:1;
+  transform:translateX(-50%) translateY(0) rotateX(0deg) scale(1)
+}
+.reader-page .shelf-floating-sample strong,.reader-page .shelf-floating-sample small{display:block}
+.reader-page .shelf-floating-sample strong{
+  font:700 .85rem/1.7 "Vazirmatn",Tahoma,sans-serif;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden
+}
+.reader-page .shelf-floating-sample small{font-size:.72rem;color:#795a39;line-height:1.7;margin-top:4px}
+.reader-page .library-room[data-light="night"]{
+  background:radial-gradient(ellipse at 20% 15%,#546d7a77,transparent 50%),
+    linear-gradient(110deg,#3e4c56,#303a46 65%,#202c3b)
+}
+.reader-page .library-room[data-light="night"] .library-room__window{
+  background:radial-gradient(circle at 77% 18%,#f3eee0 0 9px,transparent 10px),
+    linear-gradient(154deg,#21375a,#405773 75%,#7e8091)
+}
+.reader-page .library-room[data-light="night"] .library-room__lamp{box-shadow:0 0 56px 24px #eec1776b}
+/* Book opens into a real native modal, not a second WebGL view. */
+.reader-page .shelf-notebook-dialog{
+  color:#344037;background:#efe3c8;width:min(925px,calc(100vw - 24px));
+  max-width:925px;max-height:calc(100dvh - 28px);overflow:auto;
+  padding:0;border:1px solid #b5a078;border-radius:14px;
+  box-shadow:0 42px 90px #030a07dc;overscroll-behavior:contain
+}
+.reader-page .shelf-notebook-dialog::backdrop{
+  background:radial-gradient(ellipse at center,#0c1a15be,#030a07ef);
+  backdrop-filter:blur(9px)
+}
+.reader-page .shelf-notebook-spread{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  min-height:535px;transform-style:preserve-3d;transform-origin:center;
+  background:linear-gradient(90deg,#e9dcbf,#fff8e9 47%,#c0ab89 49.5%,
+    #857054 50%,#f2e3c6 51%,#f8ecdb)
+}
+.reader-page .shelf-notebook-information{
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+  min-width:0;padding:clamp(24px,4vw,60px);direction:rtl;text-align:right;
+  box-shadow:inset -9px 0 16px #453a231c
+}
+.reader-page .shelf-notebook-kicker,.reader-page .shelf-notebook-paper-label{
+  font:700 .67rem ui-sans-serif,system-ui,sans-serif;letter-spacing:.18em;color:#93784b
+}
+.reader-page .shelf-notebook-title{font-size:clamp(1.5rem,2.8vw,2.5rem);margin:15px 0 8px;line-height:1.5}
+.reader-page .shelf-notebook-subtitle{margin:0;color:#94714b;font-weight:700}
+.reader-page .shelf-notebook-summary{color:#657063;line-height:2.05;margin:21px 0 12px;font-size:.9rem}
+.reader-page .shelf-notebook-stat{font-size:.78rem;color:#7d7767}
+.reader-page .shelf-notebook-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:21px}
+.reader-page .shelf-notebook-actions button{
+  padding:9px 17px;min-height:46px;border-radius:8px;cursor:pointer;
+  font:650 .87rem "Vazirmatn",Tahoma,sans-serif
+}
+.reader-page .shelf-notebook-read{border:1px solid #3e5343;background:#3e5343;color:#fff}
+.reader-page .shelf-notebook-close{border:1px solid #ae9980;background:transparent;color:#52442e}
+.reader-page .shelf-notebook-actions button:focus-visible{outline:3px solid #ae7c43;outline-offset:3px}
+.reader-page .shelf-notebook-visual{
+  display:grid;place-items:center;min-width:0;padding:35px 25px
+}
+.reader-page .shelf-notebook-page{
+  width:100%;min-height:400px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;box-shadow:inset 9px 0 18px #40382319
+}
+.reader-page .shelf-notebook-front{
+  display:block;flex:none;position:relative;width:min(255px,74%);
+  height:auto;aspect-ratio:.715;opacity:1;pointer-events:none;
+  transform:rotateY(-8deg);box-shadow:-5px 5px 0 #dfd4bb,
+    -11px 12px 0 #8c7f66,0 24px 40px #2e231c7d;transition:none
+}
+.reader-page .shelf-notebook-front .shelf-spine{display:none}
+@media(max-width:800px){
+  .reader-page .library-room[data-mode="shelf"]{min-height:545px;padding:135px 9px 42px}
+  .reader-page .library-room[data-mode="shelf"] .library-room__window{
+    top:28px;left:5%;width:22%;height:127px;border-width:8px;border-radius:50px 50px 4px 4px
+  }
+  .reader-page .library-room[data-mode="shelf"] .library-room__lamp{right:11%;top:20px}
+  .reader-page .library-room[data-mode="shelf"] .library-room__clock{top:19px;left:40%;width:42px;height:42px}
+  .reader-page .library-room[data-mode="shelf"] .covers[data-view="shelf"]{
+    width:min(100%,690px);margin:auto;transform:none;
+    padding:44px 10px 14px;border-width:10px;gap:16px 4px
+  }
+}
+@media(max-width:520px){
+  .reader-page .library-room[data-mode="shelf"]{padding:117px 4px 35px}
+  .reader-page .library-room[data-mode="shelf"] .covers[data-view="shelf"]{
+    grid-template-columns:repeat(auto-fill,minmax(51px,1fr));
+    padding:40px 3px 12px;border-width:7px;gap:17px 2px
+  }
+  .reader-page .library-room[data-mode="shelf"] .cover-item:nth-child(n) .cover{--spine-w:45px}
+  .reader-page .library-room[data-mode="shelf"] .shelf-floating-sample{display:none}
+  .reader-page .shelf-notebook-spread{grid-template-columns:1fr;min-height:0;background:linear-gradient(#f5e7cb,#f9efd9)}
+  .reader-page .shelf-notebook-information{padding:24px 22px;box-shadow:none}
+  .reader-page .shelf-notebook-visual{padding:0 14px 24px}
+  .reader-page .shelf-notebook-page{min-height:295px}
+  .reader-page .shelf-notebook-front{width:min(173px,66%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .reader-page .library-room[data-mode="shelf"] .cover,
+  .reader-page .library-room[data-mode="shelf"] .cover:hover,
+  .reader-page .library-room[data-mode="shelf"] .cover:focus-visible{
+    transform:translateX(50%)!important;transition:none!important
+  }
+  .reader-page .library-room[data-mode="shelf"] .shelf-floating-sample{
+    transition:none!important;transform:translateX(-50%)!important
+  }
+}
+@media(forced-colors:active){
+  .reader-page .shelf-notebook-dialog,
+  .reader-page .library-room[data-mode="shelf"] .covers{border:2px solid CanvasText}
 }

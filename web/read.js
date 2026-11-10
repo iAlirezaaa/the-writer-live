@@ -66,6 +66,14 @@ function updateLibraryControls() {
   $("library-list").setAttribute("aria-pressed",String(libraryView==="list"));
   $("library-shelf").setAttribute("aria-pressed",String(libraryView==="shelf"));
   $("covers").dataset.view=libraryView;
+  const room=$("library-room");
+  if(room){
+    room.dataset.mode=libraryView==="shelf"?"shelf":"plain";
+    const hour=new Date().getHours();
+    room.dataset.light=libraryTheme==="dark"||(hour<7||hour>=18)?"night":"day";
+    const clock=$("library-room-clock");
+    if(clock)clock.textContent=new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit"}).format(new Date());
+  }
   $("library-stories-count").textContent=nfa(stories.length);
   $("library-progress-count").textContent=nfa(stories.filter(story=>{const p=savedProgress(story.id);return p>0 && p<1}).length);
   $("library-saved-count").textContent=nfa(stories.filter(story=>isFavorite(story.id)).length);
@@ -142,16 +150,27 @@ function makeCover(story) {
         else location.hash=encodeURIComponent(id);
       }catch{location.hash=encodeURIComponent(id)}
     };
-    // The removable bookshelf has a short book-pull transition. Other modes
-    // navigate immediately; motion-sensitive readers never wait for animation.
-    if(libraryView==="shelf" && !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches){
-      if(button.classList.contains("shelf-opening"))return; // suppress repeated activation
-      button.classList.add("shelf-opening");
-      button.setAttribute("aria-busy","true");
-      window.setTimeout(enter,540); // pull, turn to front, reveal cover, then open reader
+    // Load the removable room interaction only when a shelf book is selected.
+    // Grid/list keep their immediate, familiar reader navigation.
+    if(libraryView==="shelf"){
+      import("./interaction-library/reader-shelf-room.js?v=shelf-room-v4")
+        .then(({openShelfBook})=>{
+          if(libraryView==="shelf"&&button.isConnected)openShelfBook(button,story,enter);
+        })
+        .catch(()=>{if(libraryView==="shelf"&&button.isConnected)enter();});
     }else enter();
   });
   item.append(button,meta);
+  if(libraryView==="shelf"){
+    const preview=make("aside","shelf-floating-sample");
+    preview.setAttribute("aria-hidden","true");
+    preview.append(
+      make("strong","",story.title||"اثر بی‌عنوان"),
+      make("small","",story.stage||"داستان"),
+      make("small","",`${nfa(story.words||0)} واژه · برای دیدن کتاب انتخاب کنید`)
+    );
+    item.append(preview);
+  }
   return item;
 }
 function renderShelf() {

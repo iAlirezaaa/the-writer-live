@@ -16,3 +16,18 @@ Verification evidence: 11 source-backed V8 DOM-mock tests passed privately; no b
 - Implemented only in the removable `web/interaction-library/reader-shelf.css`, pinned Pages counterpart, `read.js` and paired HTML versions. No new API, library, image resources, backend or public/private story-content transfer.
 - Private source-backed V8 DOM-mock regression: 12/12 checks passed, including actual per-story spine titles and existing grid/list/favorites; **not browser testing**. Private GitHub CI runner reports failure without job steps/logs, so the cause is undetermined.
 - Reviewer must verify actual narrow/mobile spines, readable titles, cover extraction, focus/favorites and Pages deployment before claiming browser signoff.
+
+
+## 2026-11-10 — immersive room & continuous notebook handoff (v4)
+
+Reference https://library.jjangik.kr/ uses a 3D room, notebook spines, floating previews and a camera-to-live-sample transition (Three.js, custom shaders, GSAP). The Writer's **independently written** lightweight interpretation is deliberately restricted to the opt-in \`قفسهٔ تعاملی\` view. It is not a copy of the reference source/artwork, nor a pixel-exact or WebGL-identical rebuild.
+
+- Scenic window, wooden bookcase, lamp, decorative clock displaying Persian local time, daytime/evening light.
+- On hover/focus: an accessible real-story book and a visual tooltip sample, with no extra data request.
+- On selection: lazy-load \`web/interaction-library/reader-shelf-room.js\`, use a native dialog and a geometry-derived FLIP camera move to a two-page notebook. On phones use a one-column spread; Escape/return closes and restores focus.
+- On \`باز کردن و مطالعه\`: hand off to the **existing** book reader with stored progress, favorites and all publication safeguards. Reduced motion skips all staging animation.
+- Self-contained scene styles in \`web/interaction-library/reader-shelf.css\`. CSS grid supplies as many shelf rows as the filtered catalog needs, and the default \`جلدی\` / \`فهرستی\` modes do not import the optional animation module.
+- Tests cover 0,1,5,12,50,200 book records and three switchable modes; public Pages copies pinned CSS, JS and HTML and the separately pinned animation module before checks.
+- Rollback: delete optional room module and associated pinned file, revert only \`library-room\` wrapper and \`shelf\` branch in the two paired HTML/JS files, remove the appended v4 styles, restore prior cache guards/pin copy. Preserve all story data.
+
+Status: private source-backed V8 DOM test 14/14 passed; public CI, Pages deployment and real browser visual fidelity must be verified separately. Do not call the visual replica exact.

@@ -54,7 +54,7 @@ function fixture(initial=new Map(),broken=false){
   const ids=Object.fromEntries([
     "story-search","story-status","story-sort","story-reset","story-favorites","reading-filter",
     "library-theme","library-grid","library-list","library-shelf","library-stories-count","library-progress-count",
-    "library-saved-count","shelf-count","covers"
+    "library-saved-count","shelf-count","covers","library-room","library-room-clock"
   ].map(id=>[id,new Node("div")]));
   ids["story-status"].value="all";ids["story-sort"].value="newest";ids["reading-filter"].value="all";
   const body=new Node("body");
@@ -153,6 +153,35 @@ test("shelf has real titled spines and preserves complete reader labels",()=>{
     assert.ok(cover.attributes["aria-label"].includes(story.title),"Keep accessible full titles");
   }
 });
+test("immersive room is opt-in, local-time aware and leaves other modes intact",()=>{
+  const f=fixture();f.renderShelf();
+  assert.equal(f.ids["library-room"].dataset.mode,"plain");
+  f.setLibraryView("shelf");
+  assert.equal(f.ids["library-room"].dataset.mode,"shelf");
+  assert.ok(["day","night"].includes(f.ids["library-room"].dataset.light));
+  assert.match(f.ids["library-room-clock"].textContent,/[۰-۹]/);
+  f.setLibraryView("list");
+  assert.equal(f.ids["library-room"].dataset.mode,"plain");
+  assert.equal(f.ids.covers.dataset.view,"list");
+});
+test("shelf grows from 0 to 200 books without losing a title or favorite control",()=>{
+  for(const total of [0,1,5,12,50,200]){
+    const f=fixture();
+    const library=Array.from({length:total},(_,i)=>({
+      id:"shelf-"+i,title:"کتاب شماره "+i,stage:"داستان",
+      status:"accepted",created:"2026-11-10",words:1000+i
+    }));
+    f.setStories(library);f.setLibraryView("shelf");
+    const cards=f.ids.covers.children;
+    assert.equal(cards.length,total||1);
+    if(total){
+      assert.equal(findByClass(cards[0],"shelf-spine").textContent,library[0].title);
+      assert.equal(findByClass(cards.at(-1),"shelf-spine").textContent,library.at(-1).title);
+      assert.ok(findByClass(cards[0],"cover-favorite"));
+      assert.ok(findByClass(cards.at(-1),"shelf-floating-sample"));
+    }
+  }
+});
 test("dark theme changes only catalog theme, persists and toggles",()=>{
   const f=fixture();f.renderShelf();
   f.toggleLibraryTheme();
@@ -196,16 +225,24 @@ test("new HTML controls and visible editorial styling are installed",()=>{
     "library-stories-count","library-progress-count","library-saved-count"])
     assert.ok(html.includes('id="'+id+'"'),"missing control "+id);
   assert.match(html,/id="library-saved-count"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
+  const roomModule=fs.readFileSync(path.join(__dirname,"../web/interaction-library/reader-shelf-room.js"),"utf8");
+  assert.match(roomModule,/export function openShelfBook/);
+  assert.match(roomModule,/dialog\.showModal\(\)/);
+  assert.match(roomModule,/prefers-reduced-motion/);
+  assert.match(roomModule,/readStory\(\)/);
+  assert.ok(html.includes('id="library-room"'));
+  assert.ok(source.includes('import("./interaction-library/reader-shelf-room.js?v=shelf-room-v4")'));
   const shelfCss=path.join(__dirname,"../web/interaction-library/reader-shelf.css");
   assert.ok(fs.existsSync(shelfCss),"The removable shelf must be a separate stylesheet");
   const immersive=fs.readFileSync(shelfCss,"utf8");
   assert.match(immersive,/\.covers\[data-view="shelf"\]/);
   assert.match(immersive,/\.covers\[data-view="grid"\]/,"Original cinematic cabinet must be the cover view");
   assert.match(immersive,/\.shelf-spine/,"New shelf should show readable side spines");
-  assert.match(immersive,/\.cover\.shelf-opening/,"Shelf needs a distinct book-opening animation");
+  assert.match(immersive,/\.shelf-notebook-spread/,"Shelf must open into a real notebook spread");
+  assert.match(immersive,/\.library-room\[data-mode="shelf"\]/,"Dedicated room layout missing");
 
   assert.match(immersive,/@media \(prefers-reduced-motion:reduce\)/);
-  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v2"));
+  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v4"));
   for(const selector of ['.covers[data-view="list"]','data-library-theme="dark"','.library-statbar'])
     assert.ok(css.includes(selector),"missing style "+selector);
 });

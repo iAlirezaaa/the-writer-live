@@ -8,7 +8,7 @@
   <meta name="description" content="کتابخانهٔ آثار نویسنده؛ جلدهای اختصاصی، مطالعهٔ آرام و ادامه از آخرین صفحه.">
   <link rel="stylesheet" href="../web/style.css">
   <link rel="stylesheet" href="../web/book.css?v=reader-20261109-library-v2">
-  <link rel="stylesheet" href="../web/interaction-library/reader-shelf.css?v=reader-shelf-v2">
+  <link rel="stylesheet" href="../web/interaction-library/reader-shelf.css?v=reader-shelf-v4">
 </head>
 <body class="reader-page">
   <header class="top reading-top">
@@ -59,10 +59,16 @@
         </div>
         <button id="story-reset" class="reader-reset" type="button" hidden>پاک‌کردن فیلترها</button>
       </div>
-      <div class="covers" id="covers" aria-label="جلد کتاب‌ها"></div>
+      <div class="library-room" id="library-room" data-mode="plain" data-light="day">
+        <div class="library-room__window" aria-hidden="true"></div>
+        <div class="library-room__lamp" aria-hidden="true"></div>
+        <div class="library-room__clock" id="library-room-clock" aria-hidden="true"></div>
+        <div class="library-room__floor" aria-hidden="true"></div>
+        <div class="covers" id="covers" aria-label="جلد کتاب‌ها"></div>
+      </div>
       <p class="reading-endnote">هر جلد از شناسهٔ خود داستان ساخته می‌شود؛ رنگ و طراحی آن با مرتب‌سازی تغییر نمی‌کند.</p>
     </section>
   </main>
-  <script type="module" src="../web/read.js?v=reader-20261110-shelf-v2"></script>
+  <script type="module" src="../web/read.js?v=reader-20261110-shelf-v4"></script>
 </body>
 </html>

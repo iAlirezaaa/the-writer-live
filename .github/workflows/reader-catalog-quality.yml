@@ -7,6 +7,10 @@ on:
       - ".github/reader-assets/book.js"
       - "tests/reader-feedback-transport.test.cjs"
       - "web/read.js"
+      - "web/interaction-library/reader-shelf-room.js"
+      - "web/interaction-library/reader-shelf.css"
+      - ".github/reader-assets/reader-shelf-room.js"
+      - ".github/reader-assets/reader-shelf.css"
       - "web/read.html"
       - "web/book.css"
       - "read/index.html"
@@ -70,3 +74,4 @@ jobs:
         run: |
           cp web/read.js /tmp/reader-catalog-validated.mjs
           node --check /tmp/reader-catalog-validated.mjs
+          node --check web/interaction-library/reader-shelf-room.js

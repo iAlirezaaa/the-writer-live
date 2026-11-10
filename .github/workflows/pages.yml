@@ -68,6 +68,8 @@ jobs:
           done
           cp .github/reader-assets/read.html _site/read/index.html
           cp .github/reader-assets/reader-shelf.css _site/web/interaction-library/reader-shelf.css
+          cp .github/reader-assets/reader-shelf-room.js _site/web/interaction-library/reader-shelf-room.js
+          node --check _site/web/interaction-library/reader-shelf-room.js
           python3 .github/scripts/prepare_reader_deploy.py _site
           python3 .github/scripts/prepare_citizens_deploy.py _site
           # Check the observer shell without replacing the current index/style.

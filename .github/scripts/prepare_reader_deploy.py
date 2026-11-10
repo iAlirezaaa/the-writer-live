@@ -12,7 +12,7 @@ import sys
 
 
 VERSION = "reader-20261109-v8"
-CATALOG_VERSION = "reader-20261110-shelf-v2"
+CATALOG_VERSION = "reader-20261110-shelf-v4"
 
 
 def patch_site(root: Path) -> None:
@@ -30,9 +30,18 @@ def patch_site(root: Path) -> None:
     immersive_css = immersive_css_path.read_text(encoding="utf-8")
     if 'data-view="shelf"' not in immersive_css or 'prefers-reduced-motion' not in immersive_css:
         raise RuntimeError("Reader shelf motion and view styles missing")
+    room_module = web / "interaction-library" / "reader-shelf-room.js"
+    pinned_room_module = Path(".github/reader-assets/reader-shelf-room.js")
+    if (not room_module.is_file() or not pinned_room_module.is_file()
+            or room_module.read_bytes() != pinned_room_module.read_bytes()):
+        raise RuntimeError("Interactive notebook module missing or diverged from pinned deployment asset")
+    if 'export function openShelfBook' not in room_module.read_text(encoding="utf-8"):
+        raise RuntimeError("Interactive notebook handoff was not installed")
     if not all([
+        'id="library-room"' in html,
+        'shelf-room-v4' in reader,
         'id="library-shelf"' in html,
-        'reader-shelf.css?v=reader-shelf-v2' in html,
+        'reader-shelf.css?v=reader-shelf-v4' in html,
         'libraryView==="shelf"' in reader,
         "createCoverArt" in book,
         f'./book-cover.js?v={VERSION}' in book,
