@@ -112,7 +112,8 @@ console.log('PASS RDR-072: ' + controlInputs.length + ' fixtures');
 // Use an isolated temporary checkout; never remove files from the real repository.
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
-if (process.env.READER_GATE_FIXTURE !== '1') {\nconst fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'reader-protected-gate-'));
+if (process.env.READER_GATE_FIXTURE !== '1') {
+const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'reader-protected-gate-'));
 try {
   fs.mkdirSync(path.join(fixtureRoot, 'tests'));
   fs.mkdirSync(path.join(fixtureRoot, 'web'));
