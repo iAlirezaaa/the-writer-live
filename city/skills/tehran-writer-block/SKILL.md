@@ -306,3 +306,7 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 - Existing `lonLatTile` checks finite coordinate values; regression is test-only. A passing test still does not validate polygon topology, licensed source completeness, mesh geometry, visual appearance or Pages deployment.
 - Historical backup branch-ref fetch returned 404 for both repositories during this run: treat recovery branch presence as unverified and block map/building/prop changes until independently confirmed. Do not modify or recreate the frozen backup refs.
 - 3Dviz Pro Max SKILL.md and TWIN-WORLD.md reviewed; no asset changed, so kit/recipe and before/after captures are not applicable this run.
+
+## MAYOR-063 — GeoJSON coordinate-shape safety (2026-11-10)
+- Run `node --test city/tests/tehran-geotile-index.test.mjs` when Node is available before accepting new sourced tile metadata. The synthetic regression covers empty Point/LineString/MultiPolygon, empty Polygon rings and nonnumeric ordinates.
+- A missing second Point ordinate remains a separate upstream validation gap: never claim complete GeoJSON schema validation from this regression alone. Source-only renderer and citizen collision gates remain mandatory for any subsequent runtime change.
