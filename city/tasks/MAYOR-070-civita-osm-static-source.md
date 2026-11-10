@@ -1,6 +1,6 @@
 # MAYOR-070 — stable small-area Civita OSM roofprints in the deployed scene
 Date: 2026-11-10
-Status: BUILD-TIME SOURCE INTEGRATION TESTED; Pages deployment release check outstanding
+Status: IMPLEMENTED / OSM SOURCE AND GEO TESTS PASS / FIRST GITHUB PAGES DEPLOY SUCCESS
 
 ## Why
 The Civita world and original writer room deploy successfully (GitHub Actions #42789255435), but its 3D building footprints require every browser visitor to receive a successful Overpass query. Public Overpass servers can rate-limit or fail; the user may therefore see almost no buildings despite successful Pages deployment. The main OSM editing API can deliver one tiny area as XML, then a site build can convert it into a static, provenance-labelled source snapshot.
@@ -31,3 +31,9 @@ Status: CODE AND OFFLINE/CI SOURCE TESTS PASSED; PAGES DEPLOYMENT PENDING IN NEW
 - Actual deploy #42790684330 failed **outside model/OSM tests**. Attempt 1: deploy-pages returned 0 artifact metadata records immediately after successful artifact upload; attempt 2 (same workflow run) returned duplicate `github-pages` metadata records. The job was NOT a successful Pages deployment. For a clean run, add metadata propagation delay before deploy; do not retry the same artifact-stale job.
 - Existing room, character appearance, historical backups, private publisher data and citizen identities/routes remain untouched. No full surveyed Civita 3D, cliffs or Lo Studio parcel claim. No actual browser screenshot yet.
 - Backlog: versioned ODbL snapshot with legal audit; measured 5m Lazio DEM coverage/datum (see skill).
+
+## Verified deployment follow-up — 2026-11-10 09:29 UTC
+- Public GitHub Actions `Deploy living world` run **42791057815**, commit `e9acdc35bf54587821d388a3cd812d1e94f6dcc5`, completed **SUCCESS**, including a source snapshot with **66 OSM ways: 61 sourced building footprints + 5 footpath ways**, zero rejected. CI log: `CIVITA-OSM-SNAPSHOT-OK`, `CIVITA-STATIC-SOURCE-OK`, `CIVITA-STATIC-OSM-ARTIFACT-READY`, `CIVITA-CITY-BUILD-OK 14 checks`; `actions/deploy-pages@v4` completed and emitted the public site URL.
+- Source/renderer test suites from the same CI run passed. The source file was packaged under `_site/web/data/civita-osm-snapshot.json`; actual client rendering, interactive navigation, remote-page availability of that JSON and visual screenshots **still not independently inspected**.
+- A later run `42790684330` failed due to transient GitHub Pages artifact metadata race: zero artifacts initially, then duplicate artifacts after rerunning the same run. A separate fresh run and a Pages metadata indexing delay were applied (public commit `8c1d9fb362771d39406677906dc5642b4a5b8643`); later runs may complete or be cancelled by concurrent commits. Only the verified successful run above is asserted.
+- This phase restores reliable source geometry, not full surveyed building heights or a scanned Lo Studio; the protected author actor, author/publisher records and historic recovery branches were untouched.
