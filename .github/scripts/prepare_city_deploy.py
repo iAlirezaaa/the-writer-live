@@ -11,7 +11,7 @@ def inspect(root:Path):
   needed=[
     "world.js","town.js","town-civita.js","civita-geo.mjs",
     "civita-osm-vectors.mjs","civita-osm-render.js",
-    "civita-pedestrians.js","civita-writer-house.js","civita-terrain.js",
+    "civita-pedestrians.js","civita-writer-house.js","civita-writer-location.js","civita-terrain.js",
     "civita-room-plan.js","civita-place-catalog.js","civita-environment.js"
   ]
   missing=[name for name in needed if not (web/name).is_file()]
@@ -33,6 +33,7 @@ def inspect(root:Path):
      and "writerInteriorWorldRoot.add(expandedWriterRoomShell)" in world,
    "Lo Studio study is not falsely surveyed": "matchedToActualLoStudio:false" in home,
    "exterior builder active": "buildCivitaWriterExterior(THREE,writerExterior," in world,
+   "writer parcel cannot fall back to arbitrary location": "loadCivitaWriterParcel()" in world and "writerExterior.visible=outdoors && Boolean(writerParcelSite)" in world and (web/"civita-writer-location.js").is_file(),
    "live local Italian weather": "createCivitaWeatherService()" in world
      and "./civita-environment.js" in world,
    "old Tehran weather not imported": "tehran-environment.js" not in world,
