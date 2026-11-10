@@ -185,3 +185,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-098 P2 new:** verify keyboard focus returns to the originating book card after closing a catalog detail preview when sorting or filtering changed. Acceptance: stable focus target and no keyboard trap, including RTL.
 - Benchmark: Kobo Web Reader documents bookmarks, notes, search, typography and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features).
 - Validation caveat: the GitHub connector cannot enumerate push-triggered CI runs for this commit; Node pass/fail counts and Pages/browser status are unverified until an actual workflow result is retrieved.
+
+
+## 2026-11-10 — RDR-097 behavioral search mutation regression
+- [x] **RDR-097 P1:** in-memory deliberately unnormalized Arabic/Persian input is contrasted with the production and protected `searchKey` implementations (3 fixtures: Arabic kaf/tatweel, Arabic presentation forms, Arabic yeh/diacritics). Public source and protected normalizer must agree. Test authored in private before mirroring to live. No runtime, story, payment or city changes.
+- CI workflow: `.github/workflows/reader-catalog-quality.yml`; Node execution / CI result not yet verified for this change. GitHub Pages publication and real-browser QA are separate, unverified gates.
+- [ ] **RDR-099 P1 new:** test that malformed Unicode combining-mark sequences do not hang catalog filtering; benchmark execution time on bounded 2,000-character inputs in public and protected builds.
+- [ ] **RDR-100 P2 new:** add a rights-safe catalog preview indicator that distinguishes publisher-approved sample, unavailable preview and full public-domain text, with explicit accessible labels; do not publish private works or enable checkout.
+- Benchmark: Kobo Web Reader provides in-book search, notes, table of contents, reading settings and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features).
