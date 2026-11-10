@@ -51,3 +51,21 @@ test("Reject invalid lon, lat and huge unsplit OSM ways",()=>{
     geometry:{type:"LineString",coordinates:[[51.0,35.5],[52.0,35.5]]}}]);
   assert.throws(()=>makeTehranTileIndex(wide,{maxTilesPerFeature:1}),/Unsplit feature/);
 });
+
+test("A cross-tile road keeps one source identity and no duplicated tile references",()=>{
+  const west=51.360,east=51.370,lat=35.715;
+  const a=lonLatTile(west,lat,17),b=lonLatTile(east,lat,17);
+  assert.notEqual(a.x,b.x,"Fixture must span more than one tile");
+  const id="osm:way:cross-tile";
+  const feature={type:"Feature",id,geometry:{type:"LineString",
+    coordinates:[[west,lat],[east,lat]]},properties:{kind:"road",heightEvidence:"unknown"}};
+  const index=makeTehranTileIndex(sample([feature]));
+  assert.equal(index.featureCount,1);
+  assert.deepEqual(Object.keys(index.features),[id]);
+  const tileKeys=Object.keys(index.tiles).filter(key=>index.tiles[key].includes(id));
+  assert.ok(tileKeys.length>=2,"Feature must be referenced by multiple tiles");
+  for(const key of tileKeys)assert.deepEqual(index.tiles[key],[id]);
+  assert.equal(index.features[id].geometryType,"LineString");
+  assert.deepEqual(index.features[id].bbox,{west,south:lat,east,north:lat});
+  assert.equal(index.mode,"provenance-metadata-only");
+});
