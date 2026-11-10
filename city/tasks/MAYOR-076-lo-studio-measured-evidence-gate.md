@@ -1,6 +1,6 @@
 # MAYOR-076 — Lo Studio / Il Nuovo architectural evidence gate
 
-Status: TODO registered before code — 2026-11-10 (Europe/Rome).
+Status: partial — machine-verifiable evidence implemented; measured geometry and browser release remain pending (2026-11-10).
 Active city: Civita di Bagnoregio, Italy. This task is one metadata/validation improvement, not a new construction project.
 
 ## Evidence from original sources
@@ -19,3 +19,17 @@ Add machine-readable provenance to the writer exterior scene evidence: D/E names
 - [ ] Run feasible automated validation; distinguish tests unavailable without full browser/asset runtime.
 - [ ] Mirror reviewed city-only changes to public, verify SHA/CI/Pages status.
 - [ ] Add two novel backlog proposals and technical learning to city skill.
+
+## Outcome — 2026-11-10, observed only
+- [x] Task registered first at private commit `992a2800218ba7b17fd9f1cd19f4f58763005fa8`.
+- [x] Private implementation `web/civita-writer-house.js` preserved every builder/mesh operation and added Institute D/E property and upper-door existence evidence with explicit nulls for unpublished dimensions.
+- [x] Private existing regression `tests/civita_writer_location_probe.mjs` extended with historical/surveyed/collision distinction, no unverified upstairs corridor.
+- [x] Four touched files mirrored byte-for-byte to public; repository blob SHAs matched.
+- [x] Executed 14 checks in isolated JavaScript V8 against the **actual private GitHub module source** (blob `8d41bd489ff9ea9e0c07a141f3fe7ac22ef450d8`) with a lightweight Three.js interface mock: PASS, 37 generated mesh nodes, evidence attached, no invented Il Nuovo passage; negative room-clearance input rejected. This is **NOT a real Three.js GPU render or a browser screenshot**.
+- [ ] Current public Pages deploy/CI success: NOT VERIFIED. The direct new Pages run `42820787348` was cancelled by concurrency. The subsequent run `42820804100` on a newer commit failed **before** reaching the writer-location test: `prepare_observer_deploy.py`: `Observatory validation failed: reader cache`. Out of scope: do not modify readers/observer to force a city-only pass.
+- [ ] Pixel/WebGL validation in a real browser: NOT DONE. Container DNS cannot resolve the Pages host, and Chromium navigation to even a local data URL is blocked by administrator. No screenshot claim.
+- [ ] Cadastral lot D verification, exact facade/door measurements, second-level door geometry and surveyed threshold elevation: NOT DONE without authorized cadastral/survey/plan measurements. The historical connection itself IS documented.
+
+No authorized changes to Tehran history, actual writer room, author identity, text, publisher, citizens or road paths. No pinned Pages copy of `civita-writer-house.js` exists; the workflow copies `web/` into `_site/web/`, then pins only `objects.js` and `town.js`. No protected pinned asset was modified.
+
+Final state: documentation and release gate implemented; exact geometry and final live visual proof pending authorized data and a clean CI run.
