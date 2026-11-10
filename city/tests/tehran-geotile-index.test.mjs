@@ -105,3 +105,15 @@ test("MultiPolygon tile budget rejects oversized coverage without splitting sour
   assert.ok(index.tileCount>1);
   assert.ok(Object.values(index.tiles).every(ids=>ids.length===1&&ids[0]===id));
 });
+
+
+test("Reject non-finite coordinate ordinates before assigning a tile",()=>{
+  for(const invalid of [NaN,Infinity,-Infinity]){
+    const fixture=sample([point("synthetic:invalid-ordinate",invalid,35.7153)]);
+    assert.throws(()=>makeTehranTileIndex(fixture),/Invalid EPSG:4326/);
+  }
+  for(const invalid of [NaN,Infinity,-Infinity]){
+    const fixture=sample([point("synthetic:invalid-latitude",51.3642,invalid)]);
+    assert.throws(()=>makeTehranTileIndex(fixture),/Invalid EPSG:4326/);
+  }
+});
