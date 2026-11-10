@@ -1779,7 +1779,7 @@ async function loadWardrobe() {
   applyWardrobe(w);
 }
 const VIEWS = {
-  town:     { pos: [-145, 220, 265], target: [-150, -1, 75] }, // aerial city and sourced Ponte Fellini-Sordi bridge
+  town:     { pos: [10, 175, 160], target: [12, -1, -5] }, // source-derived village and mapped writer home candidate (bridge in Civita overhead view)
   civita:   { pos: [-155, 300, 185], target: [-150, -1, 70] }, // both sourced medieval town and bridge route
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
