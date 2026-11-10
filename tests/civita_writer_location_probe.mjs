@@ -78,9 +78,32 @@ assert.match(worldCode,/loadCivitaWriterParcel\(/);
 assert.match(worldCode,/town\.setWriterPlacement/);
 assert.match(worldCode,/writerInteriorWorldRoot\.matrixWorld/);
 assert.match(worldCode,/writerExterior\.visible=outdoors && Boolean\(writerParcelSite\)/);
+/* The default outdoor view must actually contain the sourced house. Prior
+ * camera centered on bridge, putting the new site beyond screen right.
+ * This is a Three.js frustum test, NOT a browser screenshot. */
+const cameraContract=worldCode.match(/town:\s*\{\s*pos:\s*\[([^\]]+)\],\s*target:\s*\[([^\]]+)\]/);
+assert.ok(cameraContract,'Default town camera contract missing');
+const numbers=text=>text.split(',').map(x=>Number(x.trim()));
+const cameraPos=numbers(cameraContract[1]),cameraTarget=numbers(cameraContract[2]);
+assert.ok([...cameraPos,...cameraTarget].every(Number.isFinite));
+const camera=new THREE.PerspectiveCamera(40,1.65,.1,950);
+camera.position.set(...cameraPos);
+camera.lookAt(new THREE.Vector3(...cameraTarget));
+camera.updateMatrixWorld(true);
+const parcelOnScreen=new THREE.Vector3(site.x,.2,site.z).project(camera);
+const centerOnScreen=new THREE.Vector3(0,0,0).project(camera);
+assert.ok(Math.abs(parcelOnScreen.x)<.8&&Math.abs(parcelOnScreen.y)<.8,
+ 'Mapped writer house must be visible in default city framing');
+assert.ok(Math.abs(centerOnScreen.x)<.85&&Math.abs(centerOnScreen.y)<.85,
+ 'Town center must remain visible around writer house');
+const frameDistance=camera.position.distanceTo(new THREE.Vector3(...cameraTarget));
+const houseDistance=camera.position.distanceTo(new THREE.Vector3(site.x,.2,site.z));
+assert.ok(houseDistance<frameDistance+93,
+ 'Camera fog must not completely erase the georeferenced house');
+
 console.log('CIVITA-REAL-WRITER-PARCEL-CANDIDATE-OK',JSON.stringify({
  officialPlan:'D',osmWay:site.sourceWay,roomFootprintFit:true,
  relativeMapX:Math.round(site.x),relativeMapZ:Math.round(site.z),
  buildingM2:Math.round(site.footprintAreaM2),
- writerAppearancePreserved:true,cadastralVerification:false,exteriorVerticesChecked:verticesChecked,lotBoundaryViolations:0
+ writerAppearancePreserved:true,cadastralVerification:false,exteriorVerticesChecked:verticesChecked,lotBoundaryViolations:0,defaultCameraHomeInFrame:true
 }));
