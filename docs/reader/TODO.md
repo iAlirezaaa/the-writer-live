@@ -131,3 +131,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-080 P1 NEW:** introduce a standalone `node --check tests/test_reader_unicode_boundaries.cjs` CI step before behavioral suites, with a fixture that rejects escaped line-break tokens outside JS strings; record exact parser failure location.
 - [ ] **RDR-081 P2 NEW:** add a rights-aware public catalog preview indicator with explicit `sampleAvailable` metadata and accessible Persian labels, ensuring unavailable or unpublished samples never become clickable.
 - Benchmark: Kobo Web Reader documents in-book search, annotations, bookmarks, and adjustable reading layout; Libby documents reduced-motion accessibility settings. Favor correctness and accessibility before commercial checkout.
+
+
+## RDR-080 — 2026-11-10 — early Node syntax gate
+- [x] **P1 one scoped CI improvement:** insert an early `node --check` step for five existing reader `.cjs` test scripts in `.github/workflows/reader-catalog-quality.yml`, before behavioral suites. No production reader, public catalog data, protected assets, payment, or city files changed. Private commit `654471613193a7f2f149040a79ce7c046ad567a7`; public commit `1e6e002d9ee372ff6272b6ff864f78ab059bdb6d`.
+- [ ] **P0 executable verification:** confirm actual Actions run URL and exact passed/failed Node totals for the public workflow. Static workflow inspection is not a substitute. GitHub Pages and real browser testing require independent verification.
+- [ ] **RDR-082 P1 NEW:** test that the protected catalog's HTML `lang`, `dir`, and search-field accessible name remain identical after Pages asset replacement; fail on missing protected asset. Acceptance: executable Node parity regression with zero mismatches.
+- [ ] **RDR-083 P2 NEW:** add a rights-cleared catalog metadata test for ISBN/edition and publication eligibility, rejecting unpublished records and keeping purchase actions disabled. Acceptance: public fixture only, no real payments or unpublished metadata.
+- Benchmark: Kobo Web Reader supports in-book search, saved bookmarks, typography and keyboard page turning; Libby supports device reduced-motion preferences. Source: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features and https://help.libbyapp.com/en-us/6243.htm .
