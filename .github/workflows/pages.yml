@@ -73,7 +73,7 @@ jobs:
           python3 .github/scripts/prepare_observer_deploy.py _site
           python3 .github/scripts/prepare_city_deploy.py _site
           # Validate only active Civita scripts, not the retired Tehran build.
-          for name in town town-civita civita-bridge civita-terrain civita-environment civita-writer-house civita-pedestrians civita-room-plan civita-place-catalog world; do
+          for name in town town-civita civita-bridge civita-terrain civita-environment civita-writer-house civita-writer-location civita-pedestrians civita-room-plan civita-place-catalog world; do
             cp "_site/web/$name.js" "/tmp/civita-$name.mjs"
             node --check "/tmp/civita-$name.mjs"
           done
@@ -88,6 +88,7 @@ jobs:
           node --test city/tests/civita_osm_vectors.test.mjs
           node --test city/tests/civita_osm_renderer.test.mjs
           node tests/civita_writer_home_probe.mjs _site
+          node tests/civita_writer_location_probe.mjs _site
           node tests/civita_pedestrians_probe.mjs _site
           node tests/writer_house_consistency_probe.mjs _site
           for name in observer-ui persian-display; do
