@@ -53,8 +53,16 @@ def convert(xml_bytes: bytes, *, acquired_at: str) -> dict:
         except (KeyError, ValueError):
             skipped += 1
             continue
+        raw_version = way.attrib.get("version")
+        try:
+            version = int(raw_version) if raw_version is not None else None
+            if version is not None and version < 1:
+                raise ValueError("OSM way version must be positive")
+        except ValueError:
+            skipped += 1
+            continue
         elements.append({
-            "type": "way", "id": way_id, "tags": tags,
+            "type": "way", "id": way_id, "version": version, "tags": tags,
             "timestamp": way.attrib.get("timestamp"),
             "geometry": [{"lat": nodes[ref][0], "lon": nodes[ref][1]}
                          for ref in refs],
