@@ -201,3 +201,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-101 P1 NEW:** add deterministic normalization fuzz corpus (seeded 250 cases) combining Persian/Arabic presentation forms, ZWNJ, bidi marks and malformed surrogates; compare actual deployed replacement with public function and report minimal failing input.
 - [ ] **RDR-102 P2 NEW:** verify reader typography preferences persist after closing/reopening an authorized preview and after a tab reload, without persisting unpublished book text or exposing user-specific reading history publicly.
 - Benchmark: Kobo Web Reader documents annotations, bookmarks, responsive reading settings and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features); Libby documents reduced-motion and accessibility preferences (https://help.libbyapp.com/en-us/6243.htm). Prioritize correctness and accessible reading over checkout.
+
+
+## 2026-11-10 — RDR-101 deterministic Unicode parity corpus
+- [x] **RDR-101 P1:** add 250 reproducible seeded mixed-script cases to Node reader normalization regression; compare actual public/protected normalizers when the protected asset exists. Includes ZWNJ, bidi controls, presentation forms, diacritics, and malformed surrogate units. Test-only; private commit `3994d0fd4185665fe52753d8d09e0019f6ba334f`; public commit `b8b7baf50291ea5fceb99844f09f9d1c37cd2779`; identical blob `efe817fe844bdd46591e8a66b9ccbe0d52f796bf`.
+- [ ] **P0 CI gate:** obtain actual Node results and exact pass/fail counts for `.github/workflows/reader-catalog-quality.yml`. No fresh CI success, Pages deployment, or browser QA is claimed.
+- [ ] **RDR-103 P1 NEW:** test seed reproducibility by snapshotting a stable digest of the 250 generated cases; fail if corpus changes unintentionally, without storing private text.
+- [ ] **RDR-104 P2 NEW:** test safe recovery from corrupt browser-local reader theme/font preferences; fall back to defaults without losing reading progress or exposing stored notes.
+- Benchmark: Kobo Web Reader documents saved bookmarks, adjustable typography, in-book search and keyboard navigation: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features .
