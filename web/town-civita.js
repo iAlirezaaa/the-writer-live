@@ -6,6 +6,7 @@
 import {MAP_TILES,MAP_ZOOM,mapTileRect,CIVITA_ORIGIN,SANTA_MARIA_GATE,geoToCivita,CAMERA_TARGET_LIMITS} from './civita-geo.mjs';
 import {attachCivitaVectors} from './civita-osm-render.js';
 import {createCivitaPedestrians} from './civita-pedestrians.js';
+import {attachCivitaBridge} from './civita-bridge.js';
 
 export function buildCivitaTown({THREE,scene,streetY=-3}){
  if(!THREE?.Group||!scene?.add||!Number.isFinite(streetY))throw new TypeError('Civita needs existing Three.js scene');
@@ -40,6 +41,7 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
  marker.userData={source:SANTA_MARIA_GATE.source,license:'ODbL-1.0',architecturalModel:false};
  group.add(marker);
  const status=new THREE.Group();status.name='civita-source-volumes';group.add(status);
+ const bridgeLayer=new THREE.Group();bridgeLayer.name='civita-verified-viaduct-study';group.add(bridgeLayer);
  let ambientPedestrians=null;
  // Node geometry tests have no browser images; do not load tiles there.
  if(typeof window!=='undefined'&&typeof Image!=='undefined'){
@@ -50,6 +52,17 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
        texture=>{texture.colorSpace=THREE.SRGBColorSpace;material.map=texture;material.needsUpdate=true;},
        undefined,()=>{group.userData.cityBuild.tileLoadErrors=(group.userData.cityBuild.tileLoadErrors||0)+1;});
    }
+   // The actual viaduct is a separately provenance-gated, 14-span geometric
+   // model. If the documented OSM centerline is missing, never draw a fake bridge.
+   void attachCivitaBridge(THREE,bridgeLayer,{onStatus:message=>{
+     group.userData.cityBuild.bridgeStatus=message;
+   }}).then(result=>{
+     if(!result.error){
+       group.userData.cityBuild.bridgeOSMWay=result.source.sourceId;
+       group.userData.cityBuild.bridgeStructuralSpanCount=14;
+       group.userData.cityBuild.bridgePierFootingElevationSurveyed=false;
+     }
+   });
    // One bounded Overpass request for sourced polygons. No unlicensed fallback geometry.
    void attachCivitaVectors(THREE,status,{onStatus:message=>{
      group.userData.cityBuild.vectorStatus=message;
