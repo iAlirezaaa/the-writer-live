@@ -1746,8 +1746,8 @@ async function loadWardrobe() {
   applyWardrobe(w);
 }
 const VIEWS = {
-  town:     { pos: [22, 86, 125], target: [-10, -1, 2] }, // Civita OSM village foreground, writer room preserved
-  civita:   { pos: [0, 148, 75], target: [-8, -1, 0] }, // authentic Civita OSM overhead view
+  town:     { pos: [-145, 220, 265], target: [-150, -1, 75] }, // aerial city and sourced Ponte Fellini-Sordi bridge
+  civita:   { pos: [-155, 300, 185], target: [-150, -1, 70] }, // both sourced medieval town and bridge route
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
@@ -1761,8 +1761,8 @@ const VIEWS = {
 let view = "town";
 let camGoal = { pos: new THREE.Vector3(...VIEWS.town.pos), target: new THREE.Vector3(...VIEWS.town.target) };
 camera.position.copy(camGoal.pos);controls.target.copy(camGoal.target);setWriterSceneMode("town");
-scene.fog.near=56;scene.fog.far=270;camera.far=500;camera.updateProjectionMatrix();
-controls.maxDistance=150;controls.update();
+scene.fog.near=80;scene.fog.far=520;camera.far=900;camera.updateProjectionMatrix();
+controls.maxDistance=370;controls.update();
 let camMoving = false;
 function setView(name) {
   if (name !== "follow" && !VIEWS[name]) return;
@@ -1771,9 +1771,9 @@ function setView(name) {
   view = name;
   setWriterSceneMode(name);
   // Aerial geographic inspection only; other cameras retain their original contract.
-  controls.maxDistance = name === "civita" ? 150 : name === "town" ? 150 : 140;
+  controls.maxDistance = name === "civita" ? 370 : name === "town" ? 370 : 140;
   controls.maxPolarAngle = (name==="town" || name==="civita") ? 1.08 : Math.PI*0.49;
-  camera.far = name === "civita" ? 420 : name === "town" ? 360 : 200;
+  camera.far = name === "civita" ? 950 : name === "town" ? 950 : 200;
   // Only outdoor geographic views need city-scale visibility. Restore the
   // original interior fog without touching author-room geometry or content.
   scene.fog.near = name === "civita" ? 95 : name === "town" ? 56 : 38;
