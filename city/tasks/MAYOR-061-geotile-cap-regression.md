@@ -16,4 +16,9 @@ Status: TODO BEFORE CHANGE. Scope: one synthetic metadata-only test verifying a 
 2. Add a licensed-survey provenance completeness report for height, levels, entrances and facade unknowns before geometry import.
 
 ## Results
-Pending implementation and mirror. No deployment authorized.
+- Synthetic regression appended to city/tests/tehran-geotile-index.test.mjs; test content blob parity private/public: 09451b71a12b02548d245010e24f5f15f51b77fb.
+- Private test commit: 8fe37e64e03a7b52abb33eb9cb2864a14b2fbee1; public: 51dc6f57c2882026cc5b2df178c85f0af034f315.
+- Skill updated with shared blob 59f5959662c5e9a73c802b2052daee5bcea5cb28 (private 736058805d0a215c0e4e28555703b946794bcaeb; public ca54066a8ee0109e74b25d9b456f075ba681af06).
+- Node test execution: NOT VERIFIED; no checkout/CI execution evidence. Source-only, legacy collision, screenshot, performance, Pages deployment: NOT VERIFIED. No runtime geometry or assets modified. No claim of successful deployment.
+- Backup branch direct fetch via connector returned 404 for both repos; main backup manifest exists, but immutable refs were not independently verified.
+- Two follow-up backlog items above remain open. No deployment authorized.
