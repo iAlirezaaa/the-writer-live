@@ -34,6 +34,15 @@ jobs:
             rm -f _site/web/data/civita-osm-snapshot.json
             echo "::warning::Civita official OSM snapshot unavailable; city will request bounded live OSM with no invented fallback"
           fi
+          # MAYOR-072: one bounded open-elevation snapshot; never claim 5m Lazio or field survey.
+          python3 city/tests/test_civita_terrain.py
+          if python3 city/survey/build_civita_terrain.py _site/web/data/civita-terrain-grid.json \
+             && node city/tests/civita_terrain_source_validate.mjs _site/web/data/civita-terrain-grid.json; then
+            echo "CIVITA-TERRAIN-SOURCE-GRID-READY"
+          else
+            rm -f _site/web/data/civita-terrain-grid.json
+            echo "::warning::No valid Mapzen terrain grid; retain flat map without guessed relief"
+          fi
           # MAYOR-071: read source-identified OSM footways and bridge tags near
           # Civita's suspended viaduct; missing data must not fabricate a bridge.
           python3 city/tests/test_civita_bridge_source.py
