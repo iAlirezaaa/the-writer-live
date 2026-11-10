@@ -171,3 +171,10 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-092 P1 NEW:** test malformed or missing protected `read.html` search landmark in an isolated fixture, requiring a clear nonzero exit and no changes to deployed assets.
 - [ ] **RDR-093 P2 NEW:** verify reading-settings changes preserve text selection and accessible focus after RTL reflow at 320px width, including reduced-motion mode.
 - Benchmark: Kobo Web Reader documents reading settings, bookmarks and keyboard navigation (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features); Libby supports reduced motion and labeled navigation (https://help.libbyapp.com/en-us/6243.htm).
+
+## 2026-11-10 — RDR-094: protected Unicode control parity
+- [x] Correct the Unicode-control regression to execute the **actual protected** `searchKey` function, rather than evaluating the public normalizer twice. The existing source-string parity assertion remains. Private test commit `9f3ef171f1b0a5f23f315d2b525f0bef3abb8c4f`; public test commit `6ccf649857c58a7c5d3ecb010fc8dacb4f33555b`. No production or private author data changed.
+- [ ] CI run for these commits and full Node pass/fail counts **not yet verified**; Pages deployment and browser QA independently unverified.
+- [ ] **RDR-095 P1 new:** add a mutation regression that deliberately changes the protected normalizer in an isolated fixture and proves Unicode parity detects the difference (without touching release assets).
+- [ ] **RDR-096 P2 new:** define a public, rights-allowlisted `sampleAvailable` catalog metadata flag with a clear disabled preview affordance for titles without an authorized sample; no unpublished text or checkout.
+- Benchmark: Kobo Web Reader supports in-book search, bookmarks, notes, table of contents, and adjustable reading settings: https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features . Prioritize test integrity before commerce features.
