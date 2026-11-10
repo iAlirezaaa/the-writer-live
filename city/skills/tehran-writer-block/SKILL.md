@@ -300,3 +300,9 @@ All four Overture ML roofprint candidates in `city/buildings/manifest.json` stil
 ## MAYOR-061 — bounded tile budget
 - MultiPolygon bbox coverage must respect `maxTilesPerFeature` before any mesh or cache allocation; a large cross-tile feature must fail explicitly, not silently be duplicated or dropped.
 - Preserve canonical source IDs in every tile reference. The synthetic test in `city/tests/tehran-geotile-index.test.mjs` is not geographic survey evidence; runtime GPU disposal remains unimplemented and unverified.
+
+## MAYOR-062 — Non-finite WGS84 input gate (2026-11-10)
+- Tile-index fixtures must reject NaN, +Infinity and -Infinity in both longitude and latitude; these are synthetic safety cases, not surveyed Tehran features.
+- Existing `lonLatTile` checks finite coordinate values; regression is test-only. A passing test still does not validate polygon topology, licensed source completeness, mesh geometry, visual appearance or Pages deployment.
+- Historical backup branch-ref fetch returned 404 for both repositories during this run: treat recovery branch presence as unverified and block map/building/prop changes until independently confirmed. Do not modify or recreate the frozen backup refs.
+- 3Dviz Pro Max SKILL.md and TWIN-WORLD.md reviewed; no asset changed, so kit/recipe and before/after captures are not applicable this run.
