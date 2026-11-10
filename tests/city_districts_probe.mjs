@@ -290,7 +290,7 @@ const parseCameraVector=(label)=>{
 const cameraPos=parseCameraVector("pos: "),targetPos=parseCameraVector("target: ");
 assert.ok(cameraPos.length===3&&targetPos.length===3&&
   [...cameraPos,...targetPos].every(Number.isFinite)&&
-  cameraPos[1]>80&&cameraPos[2]>130&&
+  cameraPos[1]>40&&cameraPos[2]>110&&
   targetPos[0]>=-55&&targetPos[0]<=0&&targetPos[2]>=0&&targetPos[2]<=60,
   "City camera must show the sourced Tehran block instead of an obsolete city grid");
 assert.ok(world.includes('target: [-10, 9.6, 0]'),"Publisher camera misses the upper floor");

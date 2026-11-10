@@ -120,7 +120,7 @@ assert.ok(html.includes('href="./read/"')||html.includes('href="/read"'),
   "Public/privately mounted book link must have a complete quoted href");
 assert.ok(!html.includes('href="./read/>'),
   "Reject accidentally truncated read href caused by URL rewrite");
-assert.ok(html.includes("city-world-20261110-visible-neighborhood-v1"),
+assert.ok(html.includes("city-world-20261110-visible-neighborhood-v2"),
   "Live Tehran skyline, animated sidewalk crowd and source-aligned town camera must invalidate old public 3D-world cache");
 assert.ok(world.includes("solarDate(String(e.at).slice(0, 10))"));
 assert.ok(world.includes("observerUI=initObserverUI("));

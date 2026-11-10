@@ -1780,7 +1780,7 @@ async function loadWardrobe() {
   applyWardrobe(w);
 }
 const VIEWS = {
-  town:     { pos: [-14, 104, 165], target: [-27, -1, 30] }, // show entire sourced writer block, not the former 20m imaginary village
+  town:     { pos: [-16, 54, 123], target: [-25, -1, 44] }, // show entire sourced writer block, not the former 20m imaginary village
   tehran:   { pos: [-30, 175, 64], target: [-30, -1.2, 35] }, // full sourced block, not fictional city grid
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
