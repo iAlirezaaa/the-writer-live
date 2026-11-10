@@ -27,7 +27,7 @@ scene.add(room,exterior);
 const g={clearRect(){},fillRect(){},strokeRect(){},fillText(){},
   measureText(){return {width:120}}};
 const canvasTex=(w,h,fn)=>{fn(g,w,h);return new THREE.Texture({width:w,height:h});};
-const city=entry.namespace.buildTown({THREE,scene,canvasTex});
+const city=entry.namespace.buildTown({THREE,scene,canvasTex,mapMode:"source-only"});
 assert.equal(city.group.userData.cityBuild.urbanLayout,"clean-source-only-from-scratch");
 assert.equal(city.group.userData.cityBuild.visibleProxyUpperBuildings,3);
 assert.equal(city.group.userData.cityBuild.realBuildingHeightsMeasured,false);
