@@ -11,7 +11,7 @@ def inspect(root:Path):
   needed=[
     "world.js","town.js","town-civita.js","civita-geo.mjs",
     "civita-osm-vectors.mjs","civita-osm-render.js",
-    "civita-pedestrians.js","civita-writer-house.js",
+    "civita-pedestrians.js","civita-writer-house.js","civita-terrain.js",
     "civita-room-plan.js","civita-place-catalog.js","civita-environment.js"
   ]
   missing=[name for name in needed if not (web/name).is_file()]
@@ -27,6 +27,7 @@ def inspect(root:Path):
      and "buildCivitaTown" in town and "buildTehranReconstructionTown" not in town,
    "same origin on map": "42.6277" in geo and "12.1137" in geo,
    "source-only 3D city layer": "attachCivitaVectors" in city,
+   "source terrain available for OSM map": "loadCivitaTerrain" in city and (web/"civita-terrain.js").is_file(),
    "pedestrians anchored to source ways": "createCivitaPedestrians" in city,
    "room root retained": "writerInteriorWorldRoot.add(baseWriterRoomShell)" in world
      and "writerInteriorWorldRoot.add(expandedWriterRoomShell)" in world,
