@@ -20,7 +20,10 @@ export function buildCivitaWriterExterior(THREE,parent,{
  shell.name='civita-writer-house-tufa-exterior-study';
  shell.userData.cityArchitectureEvidence={...CIVITA_WRITER_HOUSE_EVIDENCE,roomWidth,roomDepth,unit:'meters'};
  parent.add(shell);
- const w=roomWidth+.55,d=roomDepth+.65,h=storeyHeight*2,y0=streetY-parentOffsetY;
+ // The sourced candidate parcel is narrow. Keep the entire exterior, eaves,
+ // plinth and threshold within its validated OSM way/464102189 outline at stage 0.
+ // These are adaptive study dimensions, not surveyed historical facade widths.
+ const w=roomWidth+.32,d=roomDepth+.28,h=storeyHeight*2,y0=streetY-parentOffsetY;
  const tufa=new THREE.MeshStandardMaterial({color:0xbca17d,roughness:1}),
        tufaEdge=new THREE.MeshStandardMaterial({color:0x9a7a5c,roughness:1}),
        stone=new THREE.MeshStandardMaterial({color:0x8a8a82,roughness:.92}),
@@ -33,7 +36,7 @@ export function buildCivitaWriterExterior(THREE,parent,{
   m.userData.architectureStudy=true;shell.add(m);return m;
  }
  // Continuous foundation and stone side/rear walls (single shared material).
- box('tufa-ground-plinth',w+.20,.23,d+.20,tufaEdge,0,y0+.10,0);
+ box('tufa-ground-plinth',w+.06,.23,d+.06,tufaEdge,0,y0+.10,0);
  for(const x of [-w/2,w/2])box('tufa-side-wall',.23,h,d,tufa,x,y0+h/2,0);
  box('tufa-rear-wall',w,h,.23,tufa,0,y0+h/2,-d/2);
  const front=d/2+.04;
@@ -65,17 +68,17 @@ export function buildCivitaWriterExterior(THREE,parent,{
  const entrance=box('civita-writer-front-door',doorW-.12,doorH,.10,timber,doorX,y0+doorH/2,front+.17);
  box('peperino-door-lintel',doorW+.28,.20,.40,stone,doorX,y0+doorH+.07,front+.14);
  for(const side of [-1,1])box('peperino-door-jamb',.15,doorH,.34,stone,doorX+side*(doorW/2+.03),y0+doorH/2,front+.14);
- box('tufa-entry-step',doorW+.48,.14,1.05,stone,doorX,y0+.07,front+.55);
+ box('tufa-entry-step',doorW+.26,.14,.18,stone,doorX,y0+.07,front+.06);
  // Clay roof has two connected planes, proper eaves and readable silhouette.
- const overhang=.48,halfSpan=w/2+overhang,rise=1.12,sloped=Math.hypot(halfSpan,rise),theta=Math.atan2(rise,halfSpan);
+ const overhang=.08,halfSpan=w/2+overhang,rise=1.12,sloped=Math.hypot(halfSpan,rise),theta=Math.atan2(rise,halfSpan);
  const eaveY=y0+h+.12;
  for(const dir of [-1,1]){
-  const r=box('terracotta-sloped-roof-'+dir,sloped,.20,d+1.02,terra,dir*halfSpan/2,eaveY+rise/2,0);
+  const r=box('terracotta-sloped-roof-'+dir,sloped,.20,d+.20,terra,dir*halfSpan/2,eaveY+rise/2,0);
   r.rotation.z=-dir*theta;
   // A timber eave line makes the structural join visually legible.
-  box('chestnut-eave-'+dir,.13,.17,d+1.03,timber,dir*halfSpan,eaveY-.10,0);
+  box('chestnut-eave-'+dir,.13,.17,d+.22,timber,dir*halfSpan,eaveY-.10,0);
  }
- box('terracotta-ridge',.24,.26,d+1.08,tufaEdge,0,eaveY+rise+.02,0);
+ box('terracotta-ridge',.24,.26,d+.25,tufaEdge,0,eaveY+rise+.02,0);
  // True one-floor stair access has not been surveyed, so only an interaction marker.
  const clickArea=box('civita-writer-house-interactive-front',w,h,.05,
    new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,y0+h/2,front+.37);
