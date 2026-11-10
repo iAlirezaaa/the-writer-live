@@ -123,3 +123,11 @@ References: [Kobo Web Reader](https://help.kobo.com/hc/en-us/articles/3599623952
 - [ ] **RDR-078 P2 NEW:** test accessible keyboard focus recovery after closing an RTL book preview and returning to its catalog card, including when sorting changes.
 - Benchmarks: Kobo Web Reader supports saved bookmarks, search and typography controls (https://help.kobo.com/hc/en-us/articles/35996239522967-Kobo-Web-Reader-Navigation-Reading-Features); Libby respects reduced motion and labeled navigation (https://help.libbyapp.com/en-us/6243.htm).
 - Priority: CI runtime verification, then RTL keyboard accessibility, then future rights-cleared storefront metadata; no payment, city or private content changes.
+
+
+## RDR-079 — 2026-11-10 — repair Node parser failure in reader gate test
+- [x] **P0 test repair:** replace literal `\\n` following the `READER_GATE_FIXTURE` guard with an actual newline in `tests/test_reader_unicode_boundaries.cjs`. This was a JavaScript syntax error that prevented any of the Unicode or protected-asset assertions from executing. Private commit `2b7bef2ec71afe7c2c88820e728c7c917dba7244`; public commit `92cb85b776384d4ac1219aad70b1d8990046f797`; matching blob `cfd086c5775c9bd11a40cbc3c1c15ec8d6687742`.
+- [ ] **P0 runtime verification:** GitHub commit-associated workflow lookup returned zero runs and combined commit statuses returned zero checks; this connector does not enumerate push-triggered runs. No CI test totals, Pages deployment success, or browser verification are claimed. Full Node suite remains to be verified.
+- [ ] **RDR-080 P1 NEW:** introduce a standalone `node --check tests/test_reader_unicode_boundaries.cjs` CI step before behavioral suites, with a fixture that rejects escaped line-break tokens outside JS strings; record exact parser failure location.
+- [ ] **RDR-081 P2 NEW:** add a rights-aware public catalog preview indicator with explicit `sampleAvailable` metadata and accessible Persian labels, ensuring unavailable or unpublished samples never become clickable.
+- Benchmark: Kobo Web Reader documents in-book search, annotations, bookmarks, and adjustable reading layout; Libby documents reduced-motion accessibility settings. Favor correctness and accessibility before commercial checkout.
