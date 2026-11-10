@@ -555,13 +555,13 @@
   position:relative;z-index:2;isolation:isolate;direction:rtl;
   width:min(790px,76%);margin-left:auto;margin-right:0;overflow:visible;
   display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));
-  grid-auto-rows:292px;gap:18px 5px;
+  grid-auto-rows:320px;gap:20px 5px;
   min-height:345px;padding:53px 20px 17px;
   border:14px solid var(--room-wood);border-radius:5px;
   background:repeating-linear-gradient(to bottom,
-    #171b17da 0 204px,#c09a6a 205px 211px,#865d3f 212px 222px,
-    #35251e 223px 234px,#181e19ee 235px 291px);
-  background-size:100% 310px;
+    #171b17da 0 276px,#c09a6a 277px 284px,#865d3f 285px 297px,
+    #35251e 298px 311px,#181e19ee 312px 339px);
+  background-size:100% 340px;
   box-shadow:inset 0 0 0 6px #2e211b84,inset 0 15px 28px #050807b3,
     16px 23px 32px #14180f9e,0 35px 40px #161a1155;
   transform:rotateY(-4deg);transform-origin:70% 30%;
@@ -577,16 +577,16 @@
   border:11px solid #32241d7e;
   box-shadow:inset 14px 0 29px #060b08a0,inset -11px 0 24px #050907b0
 }
-.reader-page .library-room[data-mode="shelf"] .cover-item{height:292px;z-index:1}
+.reader-page .library-room[data-mode="shelf"] .cover-item{height:320px;z-index:1}
 .reader-page .library-room[data-mode="shelf"] .cover-item:hover,
 .reader-page .library-room[data-mode="shelf"] .cover-item:focus-within{z-index:25}
-.reader-page .library-room[data-mode="shelf"] .cover{bottom:63px;height:min(var(--spine-h),224px)}
+.reader-page .library-room[data-mode="shelf"] .cover{bottom:92px;height:min(var(--spine-h),224px)}
 .reader-page .library-room[data-mode="shelf"] .cover:hover,
 .reader-page .library-room[data-mode="shelf"] .cover:focus-visible{
   transform:translateX(50%) translateY(-31px) translateZ(40px) rotateY(-5deg) rotateZ(0);
   box-shadow:inset 4px 0 #0006,13px 20px 23px #030a07dc,0 0 27px #f7cb8c4d
 }
-.reader-page .library-room[data-mode="shelf"] .cover-caption{top:247px}
+.reader-page .library-room[data-mode="shelf"] .cover-caption{top:262px}
 .reader-page .library-room[data-mode="shelf"] .shelf-floating-sample{
   position:absolute;pointer-events:none;z-index:33;left:50%;
   bottom:calc(100% - 13px);width:clamp(160px,20vw,246px);

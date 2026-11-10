@@ -242,7 +242,7 @@ test("new HTML controls and visible editorial styling are installed",()=>{
   assert.match(immersive,/\.library-room\[data-mode="shelf"\]/,"Dedicated room layout missing");
 
   assert.match(immersive,/@media \(prefers-reduced-motion:reduce\)/);
-  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v4"));
+  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v5"));
   for(const selector of ['.covers[data-view="list"]','data-library-theme="dark"','.library-statbar'])
     assert.ok(css.includes(selector),"missing style "+selector);
 });

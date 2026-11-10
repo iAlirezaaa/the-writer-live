@@ -41,7 +41,7 @@ def patch_site(root: Path) -> None:
         'id="library-room"' in html,
         'shelf-room-v4' in reader,
         'id="library-shelf"' in html,
-        'reader-shelf.css?v=reader-shelf-v4' in html,
+        'reader-shelf.css?v=reader-shelf-v5' in html,
         'libraryView==="shelf"' in reader,
         "createCoverArt" in book,
         f'./book-cover.js?v={VERSION}' in book,
