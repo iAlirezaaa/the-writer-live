@@ -121,6 +121,10 @@ try {
   fs.writeFileSync(path.join(fixtureRoot, 'web/read.js'), source);
   // The nested private test also reads catalog HTML; keep the fixture complete.
   fs.writeFileSync(path.join(fixtureRoot, 'web/read.html'), fs.readFileSync(path.join(__dirname, '../web/read.html'), 'utf8'));
+  // RDR-090: verify fixture prerequisites before spawning child Node processes.
+  for (const required of ['tests/test_reader_unicode_boundaries.cjs', 'web/read.js', 'web/read.html']) {
+    assert.ok(fs.existsSync(path.join(fixtureRoot, required)), 'incomplete reader fixture: missing ' + required);
+  }
   const child = spawnSync(process.execPath, [path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs')], {
     encoding: 'utf8',
     env: { ...process.env, GITHUB_REPOSITORY: 'iAlirezaaa/the-writer-live', READER_GATE_FIXTURE: '1' },
