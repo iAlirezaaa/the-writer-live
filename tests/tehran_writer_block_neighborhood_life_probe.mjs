@@ -80,9 +80,9 @@ for(const o of renderables){
  assert.notEqual(o.userData.physicalCollider,true,"Visual model accidentally changed physical geometry "+o.name);
 }
 const world=read("web/world.js");
-assert.ok(world.includes("town:     { pos: [-16, 54, 123], target: [-25, -1, 44] }"),"Geographic city framing not published");
-assert.ok(world.includes('scene.fog.far = name === "tehran" ? 680 : name === "town" ? 270 : 115'),
-  "City fog will hide documented building locations");
+assert.ok(world.includes("town:     { pos: [22, 86, 125], target: [-10, -1, 2] }"),"Active Civita city framing not published");
+assert.ok(world.includes("clampCivitaTarget") && world.includes("city-civita-main-20261110-v1"),
+  "Active Civita camera safety/import missing");
 console.log("TEHRAN-LIVED-IN-BLOCK-OK",JSON.stringify({
   sourcedProxyBuildings:3,anonymousVisualWalkers:count,
   sourceOnly:true,renderables:renderables.length,
