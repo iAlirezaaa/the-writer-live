@@ -141,6 +141,18 @@ test("interactive bookshelf is an optional third mode and resets cleanly",()=>{
   assert.equal(f.ids["library-shelf"].attributes["aria-pressed"],"false");
   assert.equal(f.ids.covers.children.length,2);
 });
+test("shelf has real titled spines and preserves complete reader labels",()=>{
+  const f=fixture();f.renderShelf();f.setLibraryView("shelf");
+  for(const [i,story] of library.entries()){
+    const card=f.ids.covers.children[i];
+    const spine=findByClass(card,"shelf-spine");
+    const cover=findByClass(card,"cover");
+    assert.ok(spine,"Each live story needs a visible side spine");
+    assert.equal(spine.textContent,story.title);
+    assert.equal(spine.attributes["aria-hidden"],"true");
+    assert.ok(cover.attributes["aria-label"].includes(story.title),"Keep accessible full titles");
+  }
+});
 test("dark theme changes only catalog theme, persists and toggles",()=>{
   const f=fixture();f.renderShelf();
   f.toggleLibraryTheme();
@@ -188,8 +200,12 @@ test("new HTML controls and visible editorial styling are installed",()=>{
   assert.ok(fs.existsSync(shelfCss),"The removable shelf must be a separate stylesheet");
   const immersive=fs.readFileSync(shelfCss,"utf8");
   assert.match(immersive,/\.covers\[data-view="shelf"\]/);
+  assert.match(immersive,/\.covers\[data-view="grid"\]/,"Original cinematic cabinet must be the cover view");
+  assert.match(immersive,/\.shelf-spine/,"New shelf should show readable side spines");
+  assert.match(immersive,/\.cover\.shelf-opening/,"Shelf needs a distinct book-opening animation");
+
   assert.match(immersive,/@media \(prefers-reduced-motion:reduce\)/);
-  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v1"));
+  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v2"));
   for(const selector of ['.covers[data-view="list"]','data-library-theme="dark"','.library-statbar'])
     assert.ok(css.includes(selector),"missing style "+selector);
 });

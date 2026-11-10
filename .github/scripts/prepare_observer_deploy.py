@@ -12,7 +12,7 @@ import sys
 
 VERSION="observatory-20261109-first-paint-v1"
 WORLD_VERSION="city-world-20261110-civita-v4"
-READER_VERSION="reader-20261110-shelf-v1"
+READER_VERSION="reader-20261110-shelf-v2"
 ROOT=Path(".github/observer-assets")
 
 

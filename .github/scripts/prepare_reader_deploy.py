@@ -12,7 +12,7 @@ import sys
 
 
 VERSION = "reader-20261109-v8"
-CATALOG_VERSION = "reader-20261110-shelf-v1"
+CATALOG_VERSION = "reader-20261110-shelf-v2"
 
 
 def patch_site(root: Path) -> None:
@@ -32,7 +32,7 @@ def patch_site(root: Path) -> None:
         raise RuntimeError("Reader shelf motion and view styles missing")
     if not all([
         'id="library-shelf"' in html,
-        'reader-shelf.css?v=reader-shelf-v1' in html,
+        'reader-shelf.css?v=reader-shelf-v2' in html,
         'libraryView==="shelf"' in reader,
         "createCoverArt" in book,
         f'./book-cover.js?v={VERSION}' in book,

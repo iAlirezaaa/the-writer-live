@@ -95,7 +95,9 @@ function makeCover(story) {
   const signature=make("span","cover-signature","یک داستان از جهان نویسنده");
   const base=make("span","cover-bottom");
   base.append(make("span","cover-issue",`TW — ${visual.edition}`),make("span","cover-symbol","●"));
-  button.append(heading,createCoverArt(),title,subject,signature,base);
+  const spine=make("span","shelf-spine",story.title||"اثر بی‌عنوان");
+  spine.setAttribute("aria-hidden","true");
+  button.append(heading,createCoverArt(),title,subject,signature,base,spine);
   const meta=make("div","cover-caption");
   const metaTop=make("div","cover-meta-top");
   const status=make("span",`c-status ${story.status||"pending"}`,STATUS[story.status]||story.status||"نامشخص");
@@ -143,8 +145,10 @@ function makeCover(story) {
     // The removable bookshelf has a short book-pull transition. Other modes
     // navigate immediately; motion-sensitive readers never wait for animation.
     if(libraryView==="shelf" && !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches){
+      if(button.classList.contains("shelf-opening"))return; // suppress repeated activation
       button.classList.add("shelf-opening");
-      window.setTimeout(enter,260);
+      button.setAttribute("aria-busy","true");
+      window.setTimeout(enter,540); // pull, turn to front, reveal cover, then open reader
     }else enter();
   });
   item.append(button,meta);
