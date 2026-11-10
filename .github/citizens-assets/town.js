@@ -10,6 +10,7 @@ import { buildWriterBlockBuildingMasses } from "./writer-block-buildings.js?v=wr
 import { buildWriterBlockBuilding01 } from "./writer-block-building-01.js?v=tehran-building-by-building-01-20261109-v1";
 import { buildWriterBlockStreetFrame } from "./writer-block-street-frame.js?v=writer-block-4-roads-20261109-v1";
 import { buildTehranReconstructionTown } from "./town-tehran-rebuild.js?v=writer-block-source-only-20261110-v9";
+import { buildCivitaTown } from "./town-civita.js?v=civita-main-20261110-v1";
 
 export const STREET_Y = -3;
 export const TOWN_BUILDINGS = [
@@ -25,10 +26,12 @@ export function nightLighting(day) {
     fill: 0.45 + (1 - daylight) * 0.25, street: (1 - daylight) * 7 };
 }
 
-export function buildTown({ THREE, scene, clickable, canvasTex, mapMode="source-only" }) {
-  // New default is the real licensed Tehran writer block, built from scratch.
-  // The old invented city remains only as an opt-in, reversible diagnostic.
+export function buildTown({ THREE, scene, clickable, canvasTex, mapMode="civita" }) {
+  // The ACTIVE city is Civita di Bagnoregio. Tehran source-only and old fictional
+  // city are explicit rollback/test modes only (never the public default).
   // The writer's room and exterior are separate world.js-owned scene groups.
+  if(mapMode==="civita")
+    return buildCivitaTown({THREE,scene,streetY:STREET_Y});
   if(mapMode==="source-only")
     return buildTehranReconstructionTown({THREE,scene,canvasTex,streetY:STREET_Y});
   if(mapMode!=="legacy")
