@@ -3,6 +3,7 @@
  * OSM tile policy: only two initial view tiles, no bulk prefetch/offline/caching overrides.
  */
 import * as THREE from 'three';
+import {attachCivitaVectors} from './civita-osm-render.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {CIVITA_ORIGIN,SANTA_MARIA_GATE,MAP_ZOOM,MAP_TILES,mapTileRect,geoToCivita,clampCivitaTarget} from './civita-geo.mjs';
 const canvas=document.getElementById('civita-canvas');
@@ -12,6 +13,11 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0xb2b8ad);
+// Neutral preview lighting; geo altitude, material roughness and facade shapes
+// are still unverified. Lighting changes no physical map/house state.
+scene.add(new THREE.AmbientLight(0xf4eddf,1.35));
+const mapSun=new THREE.DirectionalLight(0xffe3bb,1.85);
+mapSun.position.set(-80,120,45);scene.add(mapSun);
 const camera=new THREE.PerspectiveCamera(38,1,0.5,600);
 camera.position.set(-80,105,130);
 const controls=new OrbitControls(camera,canvas);
@@ -26,8 +32,8 @@ controls.enablePan=true;
 const mapGroup=new THREE.Group();mapGroup.name='civita-osm-basemap-phase0';scene.add(mapGroup);
 mapGroup.userData={origin:CIVITA_ORIGIN,source:'OpenStreetMap standard raster tiles',license:'ODbL; OSMF tile usage policy',geometryConfidence:'2D raster reference only',terrainElevationsMeasured:false,buildingCountModeled:0};
 const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
-let loaded=0,failed=0;
-function showStatus(){status.textContent=`نقشهٔ Civita · ${loaded} کاشی بارگذاری‌شده${failed?' · '+failed+' کاشی ناموفق':''} · دادهٔ ساختمان‌های سه‌بعدی هنوز وارد نشده است`;}
+let loaded=0,failed=0,vectorStatus='برداشت برداری هنوز بارگذاری نشده';
+function showStatus(){status.textContent=`نقشهٔ Civita · ${loaded} کاشی بارگذاری‌شده${failed?' · '+failed+' کاشی ناموفق':''} · ${vectorStatus}`;}
 for(const [tx,ty] of MAP_TILES){
  const rect=mapTileRect(tx,ty);
  const material=new THREE.MeshBasicMaterial({color:0xd8d2bc,side:THREE.DoubleSide});
@@ -65,3 +71,6 @@ resize();showStatus();
 let last=0;
 function animate(t){requestAnimationFrame(animate);if(t-last<16)return;last=t;controls.update();clampOrbitTarget();renderer.render(scene,camera);}
 requestAnimationFrame(animate);
+
+// This model layer belongs ONLY to the isolated city preview, not the protected author room.
+attachCivitaVectors(THREE,scene,{onStatus:message=>{vectorStatus=message;showStatus();}});
