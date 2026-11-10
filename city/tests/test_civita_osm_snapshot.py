@@ -36,6 +36,13 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(data["source"]["license"],"ODbL-1.0")
         self.assertEqual(data["source"]["crs"],"EPSG:4326")
         json.dumps(data)
+    def test_invalid_way_versions_are_skipped_without_losing_valid_ways(self):
+        for invalid in ("0", "-2", "n/a"):
+            xml = XML.replace(b'version="7"', ('version="' + invalid + '"').encode())
+            data = SOURCE.convert(xml, acquired_at="2026-11-10T09:00:00+00:00")
+            self.assertEqual([way["id"] for way in data["elements"]], [993])
+            self.assertEqual(data["source"]["ways_without_full_nodes"], 2)
+
     def test_empty_and_broken_data_are_rejected(self):
         with self.assertRaises(ValueError):
             SOURCE.convert(b"<osm version='0.6'/>", acquired_at="test")
