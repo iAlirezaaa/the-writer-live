@@ -62,11 +62,12 @@ jobs:
           # Do not inject legacy geo/height/traffic files into the new Civita Pages artifact.
           # The snapshot exporter may copy stale reader files from a local checkout.
           # Always ship the reviewed, versioned reading assets from this repository.
-          mkdir -p _site/read _site/web
+          mkdir -p _site/read _site/web _site/web/interaction-library
           for name in book.css book.js read.js book-cover.js feedback.js; do
             cp ".github/reader-assets/$name" "_site/web/$name"
           done
           cp .github/reader-assets/read.html _site/read/index.html
+          cp .github/reader-assets/reader-shelf.css _site/web/interaction-library/reader-shelf.css
           python3 .github/scripts/prepare_reader_deploy.py _site
           python3 .github/scripts/prepare_citizens_deploy.py _site
           # Check the observer shell without replacing the current index/style.

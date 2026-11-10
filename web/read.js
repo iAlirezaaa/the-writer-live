@@ -15,7 +15,7 @@ let readingFilter = "all";
 let libraryView = "grid";
 let libraryTheme = "light";
 try {
-  if(localStorage.getItem("the-writer-library-view")==="list")libraryView="list";
+  if(["list","shelf"].includes(localStorage.getItem("the-writer-library-view")))libraryView=localStorage.getItem("the-writer-library-view");
   if(localStorage.getItem("the-writer-library-theme")==="dark")libraryTheme="dark";
 }catch{}
 const favoriteMemory = new Map();
@@ -46,11 +46,11 @@ function toggleFavoritesFilter() {
 }
 
 function setLibraryView(view) {
-  if(view!=="grid" && view!=="list")return;
+  if(!["grid","list","shelf"].includes(view))return;
   libraryView=view;
   try{localStorage.setItem("the-writer-library-view",view)}catch{}
   renderShelf();
-  $(view==="list"?"library-list":"library-grid").focus();
+  $(view==="list"?"library-list":view==="shelf"?"library-shelf":"library-grid").focus();
 }
 function toggleLibraryTheme() {
   libraryTheme=libraryTheme==="dark"?"light":"dark";
@@ -64,6 +64,7 @@ function updateLibraryControls() {
   $("library-theme").textContent=libraryTheme==="dark"?"حالت روشن":"حالت شب";
   $("library-grid").setAttribute("aria-pressed",String(libraryView==="grid"));
   $("library-list").setAttribute("aria-pressed",String(libraryView==="list"));
+  $("library-shelf").setAttribute("aria-pressed",String(libraryView==="shelf"));
   $("covers").dataset.view=libraryView;
   $("library-stories-count").textContent=nfa(stories.length);
   $("library-progress-count").textContent=nfa(stories.filter(story=>{const p=savedProgress(story.id);return p>0 && p<1}).length);
@@ -133,10 +134,18 @@ function makeCover(story) {
   button.addEventListener("click",()=>{
     const id=String(story.id||"");
     if(!id)return;
-    try {
-      if(decodeURIComponent(location.hash.slice(1))===id) route();
-      else location.hash=encodeURIComponent(id);
-    }catch{location.hash=encodeURIComponent(id)}
+    const enter=()=>{
+      try {
+        if(decodeURIComponent(location.hash.slice(1))===id) route();
+        else location.hash=encodeURIComponent(id);
+      }catch{location.hash=encodeURIComponent(id)}
+    };
+    // The removable bookshelf has a short book-pull transition. Other modes
+    // navigate immediately; motion-sensitive readers never wait for animation.
+    if(libraryView==="shelf" && !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches){
+      button.classList.add("shelf-opening");
+      window.setTimeout(enter,260);
+    }else enter();
   });
   item.append(button,meta);
   return item;
@@ -205,6 +214,7 @@ $("reading-filter").addEventListener("change",value=>{
 });
 $("library-grid").addEventListener("click",()=>setLibraryView("grid"));
 $("library-list").addEventListener("click",()=>setLibraryView("list"));
+$("library-shelf").addEventListener("click",()=>setLibraryView("shelf"));
 $("library-theme").addEventListener("click",toggleLibraryTheme);
 $("library-explore").addEventListener("click",()=>{
   const reduce=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;

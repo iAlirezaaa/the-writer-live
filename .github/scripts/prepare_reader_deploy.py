@@ -12,7 +12,7 @@ import sys
 
 
 VERSION = "reader-20261109-v8"
-CATALOG_VERSION = "reader-20261109-library-v3"
+CATALOG_VERSION = "reader-20261110-shelf-v1"
 
 
 def patch_site(root: Path) -> None:
@@ -22,7 +22,18 @@ def patch_site(root: Path) -> None:
     reader = (web / "read.js").read_text(encoding="utf-8")
     css = (web / "book.css").read_text(encoding="utf-8")
     html = (root / "read" / "index.html").read_text(encoding="utf-8")
+    immersive_css_path = web / "interaction-library" / "reader-shelf.css"
+    pinned_immersive_css = Path(".github/reader-assets/reader-shelf.css")
+    if (not immersive_css_path.is_file() or not pinned_immersive_css.is_file()
+            or immersive_css_path.read_bytes() != pinned_immersive_css.read_bytes()):
+        raise RuntimeError("Reader interactive shelf stylesheet missing or diverged from reviewed pin")
+    immersive_css = immersive_css_path.read_text(encoding="utf-8")
+    if 'data-view="shelf"' not in immersive_css or 'prefers-reduced-motion' not in immersive_css:
+        raise RuntimeError("Reader shelf motion and view styles missing")
     if not all([
+        'id="library-shelf"' in html,
+        'reader-shelf.css?v=reader-shelf-v1' in html,
+        'libraryView==="shelf"' in reader,
         "createCoverArt" in book,
         f'./book-cover.js?v={VERSION}' in book,
         "export function coverVisual" in cover,

@@ -1,0 +1,220 @@
+/* THE WRITER — opt-in interaction-library bookshelf (v1).
+   This stylesheet is isolated from the grid/list modes, reader overlay and city.
+   Remove this file + the third view control to roll back. No assets or JS deps. */
+
+.reader-page .covers[data-view="shelf"] {
+  --shelf-wood:#6f4b33;
+  --shelf-wall:#203832;
+  display:grid;
+  position:relative;
+  isolation:isolate;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));
+  align-items:stretch;
+  gap:32px 14px;
+  min-height:420px;
+  padding:70px clamp(13px,3vw,38px) 32px;
+  overflow:clip;
+  border:11px solid #5b402d;
+  border-radius:15px;
+  background:
+    radial-gradient(ellipse at 13% 0%,rgba(252,223,153,.28),transparent 58%),
+    linear-gradient(128deg,#354d42 0%,var(--shelf-wall) 62%,#132720 100%);
+  box-shadow:inset 0 0 0 4px #e0b47e23,inset 0 26px 46px #060d0a55,
+    0 24px 44px #162b2440;
+  perspective:1050px;
+}
+.reader-page .covers[data-view="shelf"]::before {
+  content:"آرشیو آثار  ·  دفترچه‌های نویسنده";
+  position:absolute;
+  top:17px;
+  inset-inline:22px;
+  font:600 .77rem "Vazirmatn",Tahoma,sans-serif;
+  letter-spacing:.025em;
+  text-align:center;
+  color:#f2dfb9;
+  text-shadow:0 2px 13px #081a18;
+  pointer-events:none;
+}
+.reader-page .covers[data-view="shelf"]::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:11px;
+  left:13%;
+  width:clamp(35px,12%,145px);
+  height:60%;
+  transform:skewX(-18deg);
+  background:linear-gradient(90deg,rgba(243,212,159,.1),transparent);
+  filter:blur(15px);
+  pointer-events:none;
+}
+.reader-page .covers[data-view="shelf"] .cover-item {
+  position:relative;
+  z-index:0;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  min-width:0;
+  min-height:410px;
+  padding:10px 8px 20px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  transform:none;
+  transition:none;
+}
+.reader-page .covers[data-view="shelf"] .cover-item:hover,
+.reader-page[data-library-theme="dark"] .covers[data-view="shelf"] .cover-item:hover {
+  transform:none;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.reader-page .covers[data-view="shelf"] .cover-item::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset-inline:-10px;
+  top:calc(10px + min(100%,236px));
+  height:17px;
+  background:linear-gradient(#b38a59 0 28%,var(--shelf-wood) 30% 65%,#3b2a21 100%);
+  border-radius:2px;
+  box-shadow:0 13px 17px #09130dc0;
+  pointer-events:none;
+}
+.reader-page .covers[data-view="shelf"] .cover {
+  display:block;
+  flex:none;
+  align-self:center;
+  width:min(100%,168px);
+  max-height:236px;
+  aspect-ratio:.715;
+  transform-origin:17% 95%;
+  transform:rotateY(-17deg) rotateZ(-1.4deg);
+  box-shadow:-7px 3px 0 #d6c5a5,-11px 9px 0 #7c715d,
+    -13px 16px 24px #07130eae,0 23px 35px #0c1715a8;
+  transition:transform .44s cubic-bezier(.18,.82,.2,1),
+    box-shadow .44s ease;
+  backface-visibility:hidden;
+}
+.reader-page .covers[data-view="shelf"] .cover::before {
+  width:13px;
+}
+.reader-page .covers[data-view="shelf"] .cover:hover,
+.reader-page .covers[data-view="shelf"] .cover:focus-visible {
+  transform:translateY(-22px) rotateY(0deg) rotateZ(0deg) scale(1.055);
+  box-shadow:-4px 3px 0 #d6c5a5,-8px 9px 0 #7c715d,
+    -18px 28px 35px #06110eaf,0 0 24px #e6cb8a3b;
+}
+.reader-page .covers[data-view="shelf"] .cover.shelf-opening {
+  animation:shelf-cover-open .27s cubic-bezier(.16,.8,.25,1) forwards;
+}
+@keyframes shelf-cover-open {
+  from{transform:translateY(-18px) rotateY(-3deg) scale(1.05)}
+  to{transform:translateY(-30px) rotateY(-55deg) scale(1.12)}
+}
+.reader-page .covers[data-view="shelf"] .cover:focus-visible {
+  outline:3px solid #ffe1a4;
+  outline-offset:5px;
+}
+.reader-page .covers[data-view="shelf"] .cover-caption {
+  position:relative;
+  z-index:1;
+  display:grid;
+  align-content:start;
+  gap:6px;
+  flex:1;
+  margin-top:21px;
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid #e2c89940;
+  color:#f7eadd;
+  background:linear-gradient(160deg,#24392fef,#142923ec);
+  box-shadow:0 8px 22px #0a19165c;
+}
+.reader-page .covers[data-view="shelf"] .c-status {
+  border-color:#c9b88c66;
+  background:#314d3d;
+  color:#e6dfc7;
+}
+.reader-page .covers[data-view="shelf"] .c-status.rejected {
+  background:#5c4137;
+  color:#f7dcc8;
+  border-color:#aa7c64;
+}
+.reader-page .covers[data-view="shelf"] .c-meta,
+.reader-page .covers[data-view="shelf"] .c-score,
+.reader-page .covers[data-view="shelf"] .cover-estimate,
+.reader-page .covers[data-view="shelf"] .cover-reading-label {
+  color:#e2d8c5;
+}
+.reader-page .covers[data-view="shelf"] .cover-favorite {
+  background:#f3e5c9;
+  color:#365448;
+  border-color:#f3e5c9;
+  min-height:38px;
+}
+.reader-page .covers[data-view="shelf"] .cover-favorite:focus-visible {
+  outline:3px solid #ffe1a4;
+  outline-offset:3px;
+}
+.reader-page .covers[data-view="shelf"] .c-progress-track {
+  background:#607465;
+}
+.reader-page .covers[data-view="shelf"] .c-progress-track > span {
+  background:#ebca8d;
+}
+.reader-page .covers[data-view="shelf"] .reading-empty {
+  align-self:start;
+  color:#f4e9d5;
+  background:#263c34;
+  border-color:#b7a48088;
+  min-height:120px;
+}
+.reader-page[data-library-theme="dark"] .covers[data-view="shelf"] {
+  --shelf-wall:#172831;
+  --shelf-wood:#5b463e;
+  background:
+    radial-gradient(ellipse at 82% 0%,rgba(143,180,200,.18),transparent 56%),
+    linear-gradient(130deg,#293b46 0%,var(--shelf-wall) 66%,#0c1b23 100%);
+  border-color:#40342e;
+}
+@media (max-width:700px) {
+  .reader-page .covers[data-view="shelf"] {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px 10px;
+    padding:67px 11px 20px;
+    border-width:7px;
+    border-radius:12px;
+  }
+  .reader-page .covers[data-view="shelf"] .cover-item {
+    min-height:360px;
+    padding:6px 3px 10px;
+  }
+  .reader-page .covers[data-view="shelf"] .cover {
+    width:min(100%,142px);
+    max-height:202px;
+  }
+  .reader-page .covers[data-view="shelf"] .cover-item::after {top:210px}
+  .reader-page .covers[data-view="shelf"] .cover-caption {
+    margin-top:15px;
+    padding:10px 7px;
+    gap:5px;
+  }
+  .reader-page .covers[data-view="shelf"] .cover-meta-top {gap:5px}
+  .reader-page .covers[data-view="shelf"] .cover-favorite {min-height:44px}
+}
+@media (prefers-reduced-motion:reduce) {
+  .reader-page .covers[data-view="shelf"] .cover,
+  .reader-page .covers[data-view="shelf"] .cover.shelf-opening {
+    transition:none!important;
+    animation:none!important;
+    transform:none!important;
+  }
+}
+@media (forced-colors:active) {
+  .reader-page .covers[data-view="shelf"] .cover-caption {border:1px solid CanvasText}
+  .reader-page .covers[data-view="shelf"] .cover:focus-visible {outline:3px solid Highlight}
+}

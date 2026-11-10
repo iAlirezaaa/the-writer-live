@@ -53,7 +53,7 @@ const library=[
 function fixture(initial=new Map(),broken=false){
   const ids=Object.fromEntries([
     "story-search","story-status","story-sort","story-reset","story-favorites","reading-filter",
-    "library-theme","library-grid","library-list","library-stories-count","library-progress-count",
+    "library-theme","library-grid","library-list","library-shelf","library-stories-count","library-progress-count",
     "library-saved-count","shelf-count","covers"
   ].map(id=>[id,new Node("div")]));
   ids["story-status"].value="all";ids["story-sort"].value="newest";ids["reading-filter"].value="all";
@@ -126,6 +126,21 @@ test("grid/list switch keeps books and stores preference",()=>{
   f.setLibraryView("grid");
   assert.equal(f.ids.covers.dataset.view,"grid");
 });
+test("interactive bookshelf is an optional third mode and resets cleanly",()=>{
+  const f=fixture();f.renderShelf();
+  f.setLibraryView("shelf");
+  assert.equal(f.ids.covers.dataset.view,"shelf");
+  assert.equal(f.ids.covers.children.length,2);
+  assert.equal(f.ids["library-shelf"].attributes["aria-pressed"],"true");
+  assert.equal(f.ids["library-grid"].attributes["aria-pressed"],"false");
+  assert.equal(f.ids["library-list"].attributes["aria-pressed"],"false");
+  assert.equal(f.ids["library-shelf"].focused,true);
+  assert.equal(f.initial.get("the-writer-library-view"),"shelf");
+  f.setLibraryView("grid");
+  assert.equal(f.ids.covers.dataset.view,"grid");
+  assert.equal(f.ids["library-shelf"].attributes["aria-pressed"],"false");
+  assert.equal(f.ids.covers.children.length,2);
+});
 test("dark theme changes only catalog theme, persists and toggles",()=>{
   const f=fixture();f.renderShelf();
   f.toggleLibraryTheme();
@@ -165,10 +180,16 @@ test("new HTML controls and visible editorial styling are installed",()=>{
   const publicHtml=path.join(__dirname,"../read/index.html");
   const html=fs.readFileSync(fs.existsSync(privateHtml)?privateHtml:publicHtml,"utf8");
   const css=fs.readFileSync(path.join(__dirname,"../web/book.css"),"utf8");
-  for(const id of ["story-favorites","reading-filter","library-grid","library-list","library-theme","library-explore",
+  for(const id of ["story-favorites","reading-filter","library-grid","library-list","library-shelf","library-theme","library-explore",
     "library-stories-count","library-progress-count","library-saved-count"])
     assert.ok(html.includes('id="'+id+'"'),"missing control "+id);
   assert.match(html,/id="library-saved-count"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
+  const shelfCss=path.join(__dirname,"../web/interaction-library/reader-shelf.css");
+  assert.ok(fs.existsSync(shelfCss),"The removable shelf must be a separate stylesheet");
+  const immersive=fs.readFileSync(shelfCss,"utf8");
+  assert.match(immersive,/\.covers\[data-view="shelf"\]/);
+  assert.match(immersive,/@media \(prefers-reduced-motion:reduce\)/);
+  assert.ok(html.includes("reader-shelf.css?v=reader-shelf-v1"));
   for(const selector of ['.covers[data-view="list"]','data-library-theme="dark"','.library-statbar'])
     assert.ok(css.includes(selector),"missing style "+selector);
 });
