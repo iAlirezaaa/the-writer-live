@@ -14,7 +14,7 @@ XML = b"""<?xml version="1.0"?><osm version="0.6">
 <node id="2" lat="42.62761" lon="12.11371" />
 <node id="3" lat="42.62771" lon="12.11371" />
 <node id="4" lat="42.62771" lon="12.11361" />
-<way id="881" timestamp="2026-10-05T09:00:00Z">
+<way id="881" version="7" timestamp="2026-10-05T09:00:00Z">
  <nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/>
  <tag k="building" v="yes"/><tag k="name" v="Do not copy this"/>
 </way>
@@ -28,6 +28,8 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(len(data["elements"]),2)
         self.assertEqual([e["id"] for e in data["elements"]],[881,993])
         self.assertEqual(len(data["elements"][0]["geometry"]),5)
+        self.assertEqual(data["elements"][0]["version"],7)
+        self.assertIsNone(data["elements"][1]["version"])
         self.assertEqual(data["elements"][0]["timestamp"],"2026-10-05T09:00:00Z")
         self.assertNotIn("name",data["elements"][0]["tags"])
         self.assertEqual(data["source"]["ways_without_full_nodes"],1)
