@@ -13,11 +13,41 @@ class Mesh{constructor(geometry,materials){this.geometry=geometry;this.materials
 class Line extends Mesh{}
 const THREE={Group,MeshStandardMaterial,LineBasicMaterial,Shape,ExtrudeGeometry,Vector2,Vector3,BufferGeometry,Mesh,Line};
 const poly=[{lat:42.6275,lon:12.1135},{lat:42.6275,lon:12.1136},{lat:42.6276,lon:12.1136},{lat:42.6276,lon:12.1135},{lat:42.6275,lon:12.1135}];
-test('build one sourced mass and one OSM centerline, never physic colliders',async()=>{
- const source={elements:[{type:'way',id:101,tags:{building:'yes'},geometry:poly},{type:'way',id:102,tags:{highway:'footway'},geometry:poly.slice(0,2)}]};
- const before=globalThis.fetch;globalThis.fetch=async(url,opts)=>{assert.match(url,/overpass-api.de/);assert.ok(opts.signal);return {ok:true,text:async()=>JSON.stringify(source)};};
- try{const scene=new Group();const out=await attachCivitaVectors(THREE,scene);assert.equal(scene.children.length,1);assert.equal(out.layer.children.length,2);assert.equal(out.layer.userData.buildingFootprintCount,1);assert.equal(out.layer.children[0].userData.heightProxy,true);assert.equal(out.layer.children[0].userData.physicalCollider,false);assert.equal(out.layer.children[1].userData.roadWidthM,null);assert.equal(out.layer.children[0].geometry.rotationX,-Math.PI/2);}
- finally{globalThis.fetch=before;}
+test('built snapshot loads before Overpass and preserves OSM IDs',async()=>{
+ const source={source:{url:'https://api.openstreetmap.org/api/0.6/map?bbox=1',license:'ODbL-1.0',acquired_at:'2026-11-10T09:00:00Z'},elements:[
+  {type:'way',id:101,tags:{building:'yes'},geometry:poly},
+  {type:'way',id:102,tags:{highway:'footway'},geometry:poly.slice(0,2)}
+ ]};
+ let called=0;
+ const before=globalThis.fetch;globalThis.fetch=async(url,opts)=>{
+  called++;assert.match(url,/civita-osm-snapshot\.json$/);assert.ok(opts.signal);
+  return {ok:true,text:async()=>JSON.stringify(source)};
+ };
+ try{
+  const scene=new Group(),out=await attachCivitaVectors(THREE,scene);
+  assert.equal(called,1);assert.equal(scene.children.length,1);
+  assert.equal(out.layer.children.length,2);
+  assert.equal(out.layer.userData.buildingFootprintCount,1);
+  assert.equal(out.layer.userData.sourceMode,'static-licensed-snapshot');
+  assert.equal(out.layer.userData.acquiredAt,'2026-11-10T09:00:00Z');
+  assert.equal(out.layer.children[0].userData.heightProxy,true);
+  assert.equal(out.layer.children[0].userData.physicalCollider,false);
+  assert.equal(out.layer.children[1].userData.roadWidthM,null);
+  assert.equal(out.layer.children[0].geometry.rotationX,-Math.PI/2);
+ }finally{globalThis.fetch=before;}
+});
+test('missing snapshot permits one live fallback, never invented geometry',async()=>{
+ const source={elements:[{type:'way',id:101,tags:{building:'yes'},geometry:poly}]},requested=[];
+ const before=globalThis.fetch;globalThis.fetch=async(url)=>{
+  requested.push(url);
+  if(url.includes('civita-osm-snapshot.json'))return {ok:false,status:404};
+  assert.match(url,/overpass-api\.de/);return {ok:true,text:async()=>JSON.stringify(source)};
+ };
+ try{
+  const scene=new Group(),out=await attachCivitaVectors(THREE,scene);
+  assert.equal(requested.length,2);assert.equal(out.layer.children.length,1);
+  assert.equal(out.layer.userData.sourceMode,'live-overpass-fallback');
+ }finally{globalThis.fetch=before;}
 });
 test('network outage cannot fabricate unsourced geometry',async()=>{
  const before=globalThis.fetch;globalThis.fetch=async()=>{throw new Error('offline');};
