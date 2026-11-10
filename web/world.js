@@ -7,7 +7,8 @@ import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
 import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main-20261110-v1";
 import {clampCivitaTarget} from "./civita-geo.mjs?v=civita-main-20261110-v1";
-import { createTehranWeatherService, tehranWeatherLabel } from "./tehran-environment.js?v=tehran-environment-20261108-v1";
+import {buildCivitaWriterExterior} from "./civita-writer-house.js?v=civita-house-20261110-v1";
+import { createCivitaWeatherService, civitaWeatherLabel } from "./civita-environment.js?v=civita-environment-20261110-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./urban-plan.js?v=urban-plan-20261108-v3";
 import { apartmentFloorElevation, WRITER_APARTMENT_LEVEL_OFFSET, buildWriterApartmentLowerStoreys } from "./writer-apartment-third-floor.js?v=writer-apartment-floor3-20261109-v1";
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./town-districts.js?v=city-districts-20261108-v3";
@@ -1293,7 +1294,7 @@ const interiorSceneObjects = scene.children.filter(node => !citySceneBaseline.ha
 // the actual street-level origin instead of supporting it with a fake lower floor.
 const writerInteriorWorldRoot = new THREE.Group();
 writerInteriorWorldRoot.name = "writer-interior-street-level";
-writerInteriorWorldRoot.position.y = apartmentFloorElevation(STREET_Y);
+writerInteriorWorldRoot.position.y = STREET_Y + 3.2; // Civita: furnished room is unchanged, on an interpretive second floor
 scene.add(writerInteriorWorldRoot);
 for (const node of interiorSceneObjects) writerInteriorWorldRoot.add(node);
 // The two architectural shell groups were created BEFORE citySceneBaseline,
@@ -1307,8 +1308,8 @@ writerInteriorWorldRoot.updateMatrixWorld(true);
 writerMeshParent = writerInteriorWorldRoot;
 const writerExterior = new THREE.Group();
 writerExterior.name = "writer-home-exterior-v2";
-writerExterior.position.y = WRITER_APARTMENT_LEVEL_OFFSET;
-writerExterior.userData.cityApartmentEvidence={kind:"OWNER_AUTHORED_SCENARIO",floorIndex:3,actualFloorsVerified:false,sourceRoomPreserved:true};
+writerExterior.position.y = 3.2; // historic reference shell upper floor, source height unverified
+writerExterior.userData.cityApartmentEvidence={kind:"CIVITA_INTERPRETIVE_ARCHITECTURE",floorIndex:1,actualFloorsVerified:false,realLoStudioParcelMatched:false,sourceRoomPreserved:true};
 scene.add(writerExterior);
 let currentWriterHouseLevel = -1;
 let currentWriterSceneMode = "town";
@@ -1325,65 +1326,29 @@ const exteriorGreen = new THREE.MeshStandardMaterial({color:0x5b7956,roughness:1
 // Both facades are drawn from WRITER_HOME_BLUEPRINT. All coordinates below are
 // local to the floor, with only the city view offset down to STREET_Y.
 function rebuildWriterExterior(level=0){
-  for(const node of [...writerExterior.children]){
-    const index=clickables.indexOf(node);if(index>=0)clickables.splice(index,1);
-    writerExterior.remove(node);
-    node.traverse?.(part=>{part.geometry?.dispose?.();});
+  // Only the exterior gets replaced; never rebuild/delete the writer rig,
+  // authored interior walls, furniture, memory, identity or authored scene.
+  for (const child of [...writerExterior.children]) {
+    child.traverse?.(part=>{
+      const hit=clickables.indexOf(part);if(hit>=0)clickables.splice(hit,1);
+      part.geometry?.dispose?.();
+    });
+    writerExterior.remove(child);
   }
   const [w,d]=writerHouseDimensions(level);
-  const apartment=buildWriterApartmentLowerStoreys(THREE,writerExterior,{streetY:STREET_Y,roomWidth:w,roomDepth:d});
-  const home=WRITER_HOME_BLUEPRINT,h=home.room.height,front=d/2,back=-d/2;
-  const door=home.facade.door,frontGlass=home.facade.frontWindow,rear=home.facade.rearWindow;
-  const b=(bw,bh,bd,mat,x,y,z)=>exteriorPart(new THREE.BoxGeometry(bw,bh,bd),mat,x,STREET_Y+y,z);
-  const rearFrame=new THREE.MeshStandardMaterial({color:0xe8e1d3,roughness:.6});
-  // Each actual wall has real openings. A fake glass decal on a solid cube
-  // would hide the correspondence with the interior room.
-  b(w+.24,.18,d+.24,exteriorWood,0,.01,0);
-  for(const side of [-1,1]) b(.12,h,d,exteriorWall,side*w/2,h/2,0);
-  const rearLeft=rear.x0,rearRight=rear.x1;
-  b(rearLeft+w/2,h,.12,exteriorWall,(rearLeft-w/2)/2,h/2,back);
-  b(w/2-rearRight,h,.12,exteriorWall,(rearRight+w/2)/2,h/2,back);
-  b(rearRight-rearLeft,rear.y0,.12,exteriorWall,(rearLeft+rearRight)/2,rear.y0/2,back);
-  b(rearRight-rearLeft,h-rear.y1,.12,exteriorWall,(rearLeft+rearRight)/2,(h+rear.y1)/2,back);
-  b(rearRight-rearLeft,rear.y1-rear.y0,.045,exteriorGlass,(rearLeft+rearRight)/2,(rear.y0+rear.y1)/2,back-.065);
-  for(const x of [rearLeft,rearRight,(rearLeft+rearRight)/2])
-    b(.075,rear.y1-rear.y0,.18,rearFrame,x,(rear.y0+rear.y1)/2,back-.11);
-  for(const y of [rear.y0,rear.y1])b(rearRight-rearLeft+.18,.075,.20,rearFrame,(rearLeft+rearRight)/2,y,back-.11);
-  const dl=door.x-door.width/2,dr=door.x+door.width/2;
-  const wl=frontGlass.x-frontGlass.width/2,wr=frontGlass.x+frontGlass.width/2;
-  const continuous=[[-w/2,dl],[dr,wl],[wr,w/2]];
-  for(const [a,z] of continuous) if(z>a) b(z-a,h,.12,exteriorWall,(z+a)/2,h/2,front);
-  b(door.width,h-door.height,.12,exteriorWall,door.x,(door.height+h)/2,front);
-  const whTop=frontGlass.sill+frontGlass.height;
-  b(frontGlass.width,frontGlass.sill,.12,exteriorWall,frontGlass.x,frontGlass.sill/2,front);
-  b(frontGlass.width,h-whTop,.12,exteriorWall,frontGlass.x,(whTop+h)/2,front);
-  b(frontGlass.width,frontGlass.height,.04,exteriorGlass,frontGlass.x,
-    frontGlass.sill+frontGlass.height/2,front+.075);
-  for(const x of [wl,wr,frontGlass.x])
-    b(.08,frontGlass.height+.09,.19,rearFrame,x,frontGlass.sill+frontGlass.height/2,front+.12);
-  for(const y of [frontGlass.sill,whTop])
-    b(frontGlass.width+.18,.08,.20,rearFrame,frontGlass.x,y,front+.12);
-  const portal=b(door.width,door.height,.09,exteriorWood,door.x,door.height/2,front+.075);
-  b(door.width+.2,.12,.23,exteriorWood,door.x,door.height+.06,front+.14);
-  b(.05,.07,.09,frameMat,door.x+door.width*.34,1.03,front+.19);
-  // Owner-defined apartment THIRD FLOOR: a flat concrete roof replaces
-  // the old gabled one-room cottage roof. Actual Tehran roof form unknown.
-  b(w+.58,.24,d+.58,exteriorRoof,0,h+.15,0);
-  for(const side of [-1,1]) b(.17,.42,d+.58,exteriorWall,side*(w/2+.20),h+.42,0);
-  b(w+.58,.42,.17,exteriorWall,0,h+.42,-(d/2+.20));
-  b(w+.58,.42,.17,exteriorWall,0,h+.42,d/2+.20);
-  // The elevated third-floor door meets an owner-authored access landing.
-  // Ground-level entry is separately rendered by the apartment support.
-  const lobby=apartment.group.getObjectByName("writer-apartment-street-lobby");
-  if(!lobby)throw new Error("Apartment ground lobby missing");
-  lobby.userData.writerExterior=true;
-  clickable(lobby,"p-status","ورودی آپارتمان نویسنده — طبقه سوم");
-  const hit=b(w,h,d,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),0,h/2,0);
-  hit.userData.writerExterior=true;
-  clickable(hit,"p-status","خانهٔ نویسنده — ورود به اتاق");
-  portal.userData.writerExterior=true;
-  clickable(portal,"p-status","در ورودی اتاق نویسنده");
-  writerExterior.userData.plan=home;
+  const exterior=buildCivitaWriterExterior(THREE,writerExterior,{
+    roomWidth:w,roomDepth:d,streetY:STREET_Y,parentOffsetY:writerExterior.position.y
+  });
+  for(const [mesh,description] of [
+    [exterior.entrance,"درِ سنگی خانهٔ نویسنده — بازدید از اتاق"],
+    [exterior.clickArea,"نمای تاریخی الهام‌گرفته از Civita — خانهٔ نویسنده"]
+  ]){
+    mesh.userData.writerExterior=true;
+    clickable(mesh,"p-status",description);
+  }
+  writerExterior.userData.plan=WRITER_HOME_BLUEPRINT;
+  writerExterior.userData.exteriorStyle="Civita tufa and terracotta, interpretive Lo Studio study";
+  writerExterior.userData.actualLoStudioParcelMatched=false;
   currentWriterHouseLevel=level;
 }
 function rebuildWriterInteriorShell(level=0){
@@ -1866,11 +1831,11 @@ function setFocus(f) {
 
 // ============ the loop ============
 // City weather is independent of author/citizen simulation time and previewHour.
-const cityWeatherService=createTehranWeatherService();
+const cityWeatherService=createCivitaWeatherService();
 let cityAtmosphere=cityWeatherService.snapshot();
 let lastCityWeatherTick=-2;
 const cityWeatherNotice=document.createElement("p");
-cityWeatherNotice.id="tehran-weather-status";
+cityWeatherNotice.id="civita-weather-status";
 cityWeatherNotice.className="small muted";
 cityWeatherNotice.setAttribute("role","status");
 const cityWeatherText=document.createElement("span");
@@ -1878,10 +1843,10 @@ const cityWeatherCredit=document.createElement("a");
 cityWeatherCredit.href="https://open-meteo.com/en/docs";
 cityWeatherCredit.target="_blank";
 cityWeatherCredit.rel="noopener noreferrer";
-cityWeatherCredit.textContent=" · داده: Open-Meteo";
+cityWeatherCredit.textContent=" · مدل آب‌وهوا: Open-Meteo";
 cityWeatherNotice.append(cityWeatherText,cityWeatherCredit);
 document.getElementById("town-summary")?.insertAdjacentElement("afterend",cityWeatherNotice);
-cityWeatherText.textContent=tehranWeatherLabel(cityAtmosphere);
+cityWeatherText.textContent=civitaWeatherLabel(cityAtmosphere);
 const clock = new THREE.Clock();
 let state = { asleep: false, status: "idle", library_books: 0, accepted_count: 0, rejected_count: 0 };
 let lastClock = 0;
@@ -1895,6 +1860,14 @@ function animate() {
   const t = clock.elapsedTime;
   const now = worldNow();
   citizens.update(dt, t, now, town.trafficState());
+  // Retire the former Tehran-layout citizen VISUALS without mutating roster,
+  // identities, stories, publisher state, simulation routes or writer figure.
+  // The active Civita town supplies independent OSM-footway ambient walkers.
+  const showingCivitaOutdoors=["town","tehran","cars","publisher","bookstore"].includes(view);
+  if(showingCivitaOutdoors){
+    for(const node of scene.children)
+      if(node.userData?.citizenId)node.visible=false;
+  }
 
   // the notebook turns its own pages; the core drawer slides when it is opened
   nb.update(dt);
@@ -2057,11 +2030,11 @@ function animate() {
     z.s.material.opacity = sleepiness > 0.9 ? Math.sin(z.t * Math.PI) : 0;
   });
 
-  // --- City outdoors follow actual Tehran time and model weather, NOT author clock.
+  // --- Outdoors follow Europe/Rome city time and model weather, independently of author core.
   if(t-lastCityWeatherTick>=1){
     lastCityWeatherTick=t;
     cityAtmosphere=cityWeatherService.snapshot();
-    cityWeatherText.textContent=tehranWeatherLabel(cityAtmosphere);
+    cityWeatherText.textContent=civitaWeatherLabel(cityAtmosphere);
     void cityWeatherService.refreshIfDue();
   }
   const { sunAngle, day, dusk } = cityAtmosphere.sky;
