@@ -138,3 +138,30 @@ try {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 }
+
+// RDR-082: deployed HTML must retain Persian RTL and a labeled catalog search.
+// The public Pages replacement is authoritative; private checkout has no protected asset.
+const htmlPath = fs.existsSync(path.join(__dirname, '../read/index.html'))
+  ? path.join(__dirname, '../read/index.html')
+  : path.join(__dirname, '../web/read.html');
+const publicHtml = fs.readFileSync(htmlPath, 'utf8');
+const protectedHtmlPath = path.join(__dirname, '../.github/reader-assets/read.html');
+const isPublicCI = process.env.GITHUB_REPOSITORY?.toLowerCase() === 'ialirezaaa/the-writer-live';
+if (isPublicCI) assert.ok(fs.existsSync(protectedHtmlPath), 'public CI requires protected read.html');
+const htmlSemantics = html => {
+  const root = html.match(/<html\\b[^>]*>/i)?.[0] || '';
+  const landmark = html.match(/<div\\b[^>]*role="search"[^>]*>[\\s\\S]*?<\\/div>/i)?.[0] || '';
+  const label = landmark.match(/<label\\b[^>]*>[\\s\\S]*?<input\\b[^>]*id="story-search"[^>]*>/i)?.[0] || '';
+  assert.match(root, /\\blang="fa"/i, 'reader language must be Persian');
+  assert.match(root, /\\bdir="rtl"/i, 'reader direction must be RTL');
+  assert.match(landmark, /aria-label="[^"]+"/, 'search landmark must have an accessible name');
+  assert.match(label, /جست‌وجو/, 'search input must have a visible associated label');
+  return [root.match(/lang="([^"]+)"/i)[1], root.match(/dir="([^"]+)"/i)[1],
+    landmark.match(/aria-label="([^"]+)"/)[1], label.replace(/<[^>]*>/g, '').trim().split(/\\s+/)[0]];
+};
+const htmlBaseline = htmlSemantics(publicHtml);
+if (fs.existsSync(protectedHtmlPath)) {
+  const protectedSemantics = htmlSemantics(fs.readFileSync(protectedHtmlPath, 'utf8'));
+  assert.deepEqual(protectedSemantics, htmlBaseline, 'protected/public HTML accessibility semantics differ');
+}
+console.log('PASS RDR-082: Persian RTL and accessible search HTML parity');
