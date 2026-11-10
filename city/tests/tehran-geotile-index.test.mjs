@@ -117,3 +117,17 @@ test("Reject non-finite coordinate ordinates before assigning a tile",()=>{
     assert.throws(()=>makeTehranTileIndex(fixture),/Invalid EPSG:4326/);
   }
 });
+
+test("Reject empty or malformed GeoJSON coordinate shapes before tile assignment",()=>{
+  const malformed=[
+    {type:"Point",coordinates:[]},
+    {type:"Point",coordinates:[51.3642,"35.7153"]},
+    {type:"LineString",coordinates:[]},
+    {type:"Polygon",coordinates:[[]]},
+    {type:"MultiPolygon",coordinates:[]}
+  ];
+  for(const geometry of malformed){
+    const fixture=sample([{type:"Feature",id:"synthetic:malformed-shape",geometry}]);
+    assert.throws(()=>makeTehranTileIndex(fixture),/Empty geometry|Invalid EPSG:4326|Cannot read properties|Geometry without coordinates/);
+  }
+});
