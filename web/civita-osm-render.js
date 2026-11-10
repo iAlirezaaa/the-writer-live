@@ -15,10 +15,38 @@ export async function attachCivitaVectors(THREE,scene,{onStatus=()=>{},signal}={
  try{
   onStatus('دریافت یک مجموعهٔ محدود دادهٔ برداری OSM…');
   timeout=setTimeout(()=>abort.abort(),23000);
-  const response=await fetch(REQUEST_URL,{headers:{Accept:'application/json'},signal:abort.signal,cache:'default'});
-  if(!response.ok)throw new Error('OSM HTTP '+response.status);
-  const raw=await response.text();if(raw.length>3_000_000)throw new Error('OSM payload too large');
+  // Prefer the bounded, once-per-Pages-build OSM API snapshot. This avoids a
+  // per-visitor Overpass query; if the optional file is absent, fall back to
+  // exactly ONE live request, with no synthetic street/building geometry.
+  const base=(typeof import.meta.url==='string'&&import.meta.url)
+    || (typeof document!=='undefined'?document.baseURI:'https://example.invalid/web/civita-osm-render.js');
+  const snapshotUrl=new URL('./data/civita-osm-snapshot.json',base).href;
+  let raw,sourceMode,acquiredAt=null,sourceUrl=REQUEST_URL;
+  try{
+    const response=await fetch(snapshotUrl,{headers:{Accept:'application/json'},signal:abort.signal,cache:'default'});
+    if(!response.ok)throw new Error('OSM snapshot HTTP '+response.status);
+    raw=await response.text();
+    if(raw.length>3_000_000)throw new Error('OSM snapshot payload too large');
+    const source=JSON.parse(raw);
+    if(source?.source?.license!=='ODbL-1.0'||!source.source.url?.includes('openstreetmap.org/api/0.6/map'))
+      throw new Error('OSM snapshot provenance missing');
+    const parsed=parseCivitaVectors(source);
+    if(parsed.buildings.length+parsed.paths.length<1)throw new Error('OSM snapshot has no valid ways');
+    acquiredAt=source.source.acquired_at??null;
+    sourceUrl=source.source.url;
+    sourceMode='static-licensed-snapshot';
+  }catch(error){
+    onStatus('فایل منبع محلی موجود نیست؛ یک تلاش محدود برای دریافت زندهٔ OSM…');
+    const response=await fetch(REQUEST_URL,{headers:{Accept:'application/json'},signal:abort.signal,cache:'default'});
+    if(!response.ok)throw new Error('OSM live HTTP '+response.status);
+    raw=await response.text();
+    if(raw.length>3_000_000)throw new Error('OSM live payload too large');
+    sourceMode='live-overpass-fallback';
+  }
   const data=parseCivitaVectors(JSON.parse(raw));
+  layer.userData.sourceMode=sourceMode;
+  layer.userData.sourceURL=sourceUrl;
+  layer.userData.acquiredAt=acquiredAt;
   for(const b of data.buildings){
    const origin=b.points[0],outline=b.points.slice(0,-1).map(p=>new THREE.Vector2(p.x-origin.x,origin.z-p.z));
    const shape=new THREE.Shape(outline);
@@ -39,7 +67,7 @@ export async function attachCivitaVectors(THREE,scene,{onStatus=()=>{},signal}={
   layer.userData.buildingFootprintCount=data.buildings.length;
   layer.userData.footpathWayCount=data.paths.length;
   layer.userData.rejectedSourceCount=data.rejected;
-  onStatus(`${data.buildings.length} ردپای ساختمان و ${data.paths.length} مسیر پیاده با شناسهٔ OSM · ارتفاع‌های نامعلوم پروکسی ۶ متری‌اند`);
+  onStatus(`${data.buildings.length} ردپای ساختمان و ${data.paths.length} مسیر پیاده با شناسهٔ OSM · ${sourceMode==='static-licensed-snapshot'?'نسخهٔ منبع‌دار سایت':'دریافت زنده'} · ارتفاع‌های نامعلوم پروکسی ۶ متری‌اند`);
   return {layer,...data};
  }catch(error){onStatus('دادهٔ برداری در دسترس نیست؛ نمایش ساختمان‌های ساختگی ممنوع است ('+String(error.message||error).slice(0,65)+')');return {layer,error:String(error.message||error)};}
  finally{clearTimeout(timeout);}
