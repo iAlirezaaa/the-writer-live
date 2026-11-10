@@ -13,6 +13,10 @@ export function geoToCivita(latitude,longitude){
   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180)throw new TypeError('Invalid WGS84 coordinates');
   return {x:(longitude-CIVITA_ORIGIN.longitude)*LON_METERS,z:(CIVITA_ORIGIN.latitude-latitude)*LAT_METERS};
 }
+export function civitaToGeo(x,z){
+  if(!Number.isFinite(x)||!Number.isFinite(z))throw new TypeError('Invalid local coordinates');
+  return {latitude:CIVITA_ORIGIN.latitude-z/LAT_METERS,longitude:CIVITA_ORIGIN.longitude+x/LON_METERS};
+}
 export function tileLon(x,zoom=MAP_ZOOM){return x/2**zoom*360-180;}
 export function tileLat(y,zoom=MAP_ZOOM){return Math.atan(Math.sinh(Math.PI*(1-2*y/2**zoom)))/RAD;}
 export function mapTileRect(x,y,zoom=MAP_ZOOM){
