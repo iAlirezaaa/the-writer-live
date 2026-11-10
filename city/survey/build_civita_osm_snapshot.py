@@ -38,6 +38,7 @@ def convert(xml_bytes: bytes, *, acquired_at: str) -> dict:
             continue
     elements = []
     skipped = 0
+    seen_way_ids = set()
     for way in root.findall("way"):
         tags = {tag.get("k"): tag.get("v") for tag in way.findall("tag")
                 if tag.get("k") in TAGS}
@@ -53,6 +54,9 @@ def convert(xml_bytes: bytes, *, acquired_at: str) -> dict:
         except (KeyError, ValueError):
             skipped += 1
             continue
+        if way_id in seen_way_ids:
+            raise ValueError(f"Duplicate OSM way identity: way/{way_id}")
+        seen_way_ids.add(way_id)
         raw_version = way.attrib.get("version")
         try:
             version = int(raw_version) if raw_version is not None else None
