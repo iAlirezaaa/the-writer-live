@@ -176,3 +176,16 @@ if (fs.existsSync(protectedHtmlPath)) {
   assert.deepEqual(protectedSemantics, htmlBaseline, 'protected/public HTML accessibility semantics differ');
 }
 console.log('PASS RDR-082: Persian RTL and accessible search HTML parity');
+
+// RDR-095: a deliberately corrupted deployed normalizer must be caught by parity.
+// Mutation stays in memory; neither production nor protected assets are modified.
+if (fs.existsSync(protectedPath)) {
+  const deployed = fs.readFileSync(protectedPath, 'utf8');
+  const deployedMatch = deployed.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(deployedMatch, 'protected normalizer must be available for mutation test');
+  const mutatedDefinition = deployedMatch[0].replace('searchKey', 'searchKeyMutated');
+  assert.notEqual(mutatedDefinition, deployedMatch[0], 'mutation must change the protected definition');
+  assert.throws(() => assert.equal(mutatedDefinition, match[0], 'protected normalizer mutation detected'), /protected normalizer mutation detected/,
+    'parity assertion must reject a mutated deployed normalizer');
+  console.log('PASS RDR-095: in-memory protected normalizer mutation rejected');
+}
