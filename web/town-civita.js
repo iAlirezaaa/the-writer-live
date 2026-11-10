@@ -44,6 +44,16 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
  const status=new THREE.Group();status.name='civita-source-volumes';group.add(status);
  const bridgeLayer=new THREE.Group();bridgeLayer.name='civita-verified-viaduct-study';group.add(bridgeLayer);
  let ambientPedestrians=null,sourceRelief=null,bridgeModel=null,vectorModel=null;
+ let writerPlacedWayId=null;
+ const suppressWriterParcelProxy=()=>{
+   if(!writerPlacedWayId||!vectorModel?.layer)return;
+   for(const mesh of vectorModel.layer.children){
+     if(mesh.isMesh&&mesh.userData?.source_id===writerPlacedWayId){
+       mesh.visible=false;
+       mesh.userData.suppressedForPlanCorrelatedWriterHome=true;
+     }
+   }
+ };
  const groundSourceGeometry=()=>{
    if(!sourceRelief)return;
    const height=sourceRelief.heightAtLocal;
@@ -119,15 +129,8 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
    }}).then(result=>{
      if(result.error)return;
      vectorModel=result;groundSourceGeometry();
-     // The original writer room/exterior occupies a protected temporary anchor.
-     // Do not draw an unrelated OSM building across it until Lo Studio is geolocated.
-     for(const child of result.layer.children){
-       if(!child.isMesh)continue;
-       const bbox=new THREE.Box3().setFromObject(child);
-       if(bbox.min.x<8&&bbox.max.x>-8&&bbox.min.z<8&&bbox.max.z>-8){
-         child.visible=false;child.userData.suppressedForUnlocatedWriterRoom=true;
-       }
-     }
+     // Suppress ONLY the sourced polygon if the independent writer-location gate succeeds.
+     suppressWriterParcelProxy();
      // Source-backed, anonymous ambient pedestrians: old Tehran resident identities/routes are untouched.
      ambientPedestrians=createCivitaPedestrians(THREE,status,result.paths,{maxPeople:18});
      group.userData.cityBuild.ambientPedestrianCount=ambientPedestrians.count;
@@ -135,6 +138,15 @@ export function buildCivitaTown({THREE,scene,streetY=-3}){
  }
  scene.add(group);
  return {group,districts:null,growth:null,trafficState(){return [];},
+   setWriterPlacement(site){
+     if(!site||site.sourceWay!=='way/464102189'||!site.footprintInteriorClear)
+       throw new TypeError('Sourced writer parcel match required');
+     writerPlacedWayId=464102189;
+     group.userData.cityBuild.writerSourceWayId=writerPlacedWayId;
+     group.userData.cityBuild.authorHomeLocation='official Institute plan D / candidate OSM way/464102189';
+     group.userData.cityBuild.writerParcelCadastralVerified=false;
+     suppressWriterParcelProxy();
+   },
    update(day,elapsed,_crossingDemand,_weather){
      ambientPedestrians?.update(day,elapsed);
      if(sourceRelief&&ambientPedestrians){
