@@ -21,7 +21,21 @@ Add a deterministic, original procedurally-painted translucent **facade surface 
 
 Checklist
 - [x] TODO created before implementation
-- [ ] Source-bound surface shader/decal implemented
-- [ ] Automated smoke + polygon/room regression executed
-- [ ] Mirrored to public and vetted CI/Pages status
-- [ ] Browser capture checked / explicitly marked unavailable
+- [x] Source-bound surface shader/decal implemented
+- [x] Automated smoke + polygon/room regression executed
+- [x] Mirrored to public and vetted CI/Pages status
+- [x] Browser capture checked / explicitly marked unavailable
+
+## Run outcome (2026-11-10, actual evidence)
+- [x] Registered first in private GitHub: `bc3d6407a87fe36dbbd8205701b2aa8d6cb7e404`.
+- [x] Added **a real visible procedural stone/ivy facade surface** to the public-author-house builder, not merely prose. Two small noncolliding planes show on front and on opposite wall actually facing the default city camera; no real building survey/cadastral claim. All previously modeled structural boxes, entrance and original writer room untouched.
+- [x] Source photography was visually consulted **only**, not downloaded into code, traced, or used as a redistributed texture. 768² original atlas, deterministic seed, 2 cached textures; adaptive window/door exclusion masks on front, transparent non-browser fallback.
+- [x] Executed isolated JavaScript material/geometry smoke with actual GitHub module text: PASS, 39 mesh objects in a mocked Three.js interface, 2 procedural canvas images, 8,250 drawing operations, visible atlas and invisible headless fallback, existing clickable front door retained. This **is not** a browser/WebGL screenshot or a real Three.js draw.
+- [x] Executed `Deploy living world` public GitHub Actions run **42823482139**, complete and **SUCCESS** for public commit `3762c10a2a2fa561b756f0758d763c11985b65fd`; checked deployment status from GitHub API, not inferred from push only.
+- [x] Real Three.js `tests/civita_writer_location_probe.mjs` on Pages workflow: `CIVITA-REAL-WRITER-PARCEL-CANDIDATE-OK`, **872 vertices tested / 0 out of candidate OSM polygon**, preserved writer appearance and camera home in frame. Other CI checks completed. Bounded official source: **66 ways / 61 building polygons / 5 footpaths**; source terrain grid 97×49 model-derived (NOT a measured plateau).
+- [x] Mirrored private source, regression and skills to public with identical blob SHAs. Pinned `town.js` and `objects.js` were deliberately NOT edited; the workflow copies changed `web/civita-writer-house.js` into the Pages artifact, and the new tests ran against that staged asset.
+- [ ] Live-site real WebGL photographic inspection **BLOCKED** in this environment: Playwright Chromium on `https://ialirezaaa.github.io/the-writer-live/` returned `net::ERR_BLOCKED_BY_ADMINISTRATOR`. Do not claim screenshot/visual pixel validation.
+- [ ] Exact historical masonry positions, vegetation spread, real terrace geometry, actual cadastral identity or measured doorway/threshold remain **unknown**; this is a clearly identified interpretive material pass, not 1:1 architectural completion.
+- [x] Two follow-up items and technical learning appended in `city/skills/civita-digital-twin/SKILL.md`.
+
+Final assessment: a visible facade detail upgrade passed geometry and release CI, but resemblance to the specific historic building and final visual QA need an authenticated street-facing capture. No Tehran/new street/citizen/author/publisher work was touched. No changes to existing scheduled tasks.
