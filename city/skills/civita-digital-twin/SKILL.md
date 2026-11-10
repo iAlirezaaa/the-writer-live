@@ -102,3 +102,12 @@ Technical learning: OSM `timestamp` alone is not a stable revision key; `way/@ve
 ### Two new nonduplicate backlog tasks — MAYOR-072
 1. Resolve licensed Regione Lazio DTM 5m exact Civita bounding tile, official vertical/horizontal datum and acquisition date, then perform spatial cross-checks of 61 OSM building ground contacts and bridge pier base elevations; publish discrepancy report before replacing relief.
 2. Obtain legally reusable measured architectural data for a single Civita house, ideally Lo Studio with precise OSM footprint match, actual roof/entrance/floor heights and facade windows; build and visually test a reversible exterior while retaining original author appearance and room.
+
+## MAYOR-073 — invalid upstream way revisions regression (2026-11-10)
+The offline OSM fixture now tests that way versions `0`, `-2` and `n/a` are skipped, while valid unversioned pedestrian ways remain. This verifies the converter's source-integrity policy only; it is not a terrain, WebGL or deployment test. Record whether Python unittest actually ran before claiming success.
+
+### Two fresh backlog ideas — MAYOR-073
+1. Add fixture coverage for duplicate OSM way IDs with conflicting versions, and reject ambiguous source identity before renderer ingestion.
+2. Add source snapshot temporal monotonicity checks (acquisition UTC vs OSM way timestamp) with warning-only treatment for clock anomalies, without modifying protected geometry.
+
+Technical learning: invalid revisions and missing revisions must remain distinct: invalid ways are rejected, missing versions are explicit null; unrelated valid ways must survive partial-source rejection.
