@@ -236,10 +236,16 @@ console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fi
   let seed = 0x51f15e;
   const next = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 0x100000000);
   const alphabet = ['ک', 'ك', 'ی', 'ي', 'ا', 'ﻛ', 'ﺎ', '\\u200c', '\\u200f', '\\u2067', '\\u2069', '\\u0650', '\\u0640', '\\ud800', '\\udc00', ' ', '۳'];
+  // RDR-103: pin the exact generated corpus (UTF-16 code units, FNV-1a).
+  let corpusHash = 2166136261;
   for (let caseIndex = 0; caseIndex < 250; caseIndex++) {
     const size = 1 + Math.floor(next() * 48);
     let input = '';
     for (let i = 0; i < size; i++) input += alphabet[Math.floor(next() * alphabet.length)];
+    for (let unit = 0; unit < input.length; unit++) {
+      corpusHash = Math.imul(corpusHash ^ input.charCodeAt(unit), 16777619) >>> 0;
+    }
+    corpusHash = Math.imul(corpusHash ^ 0xffff, 16777619) >>> 0;
     const expected = key(input);
     assert.equal(key(input), expected, 'non-deterministic search key at case ' + caseIndex);
     assert.equal(key(expected), expected, 'non-idempotent search key at case ' + caseIndex + ': ' + JSON.stringify(input));
@@ -248,5 +254,6 @@ console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fi
         'protected/public mismatch at case ' + caseIndex + ': ' + JSON.stringify(input));
     }
   }
-  console.log('PASS RDR-101: 250 deterministic Unicode cases');
+  assert.equal(corpusHash.toString(16).padStart(8, '0'), '4777eb3d', 'RDR-103 corpus drift: review seed/alphabet before updating digest');
+  console.log('PASS RDR-101/RDR-103: 250 deterministic Unicode cases and pinned corpus digest');
 }
