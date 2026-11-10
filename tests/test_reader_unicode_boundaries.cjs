@@ -149,15 +149,15 @@ const protectedHtmlPath = path.join(__dirname, '../.github/reader-assets/read.ht
 const isPublicCI = process.env.GITHUB_REPOSITORY?.toLowerCase() === 'ialirezaaa/the-writer-live';
 if (isPublicCI) assert.ok(fs.existsSync(protectedHtmlPath), 'public CI requires protected read.html');
 const htmlSemantics = html => {
-  const root = html.match(/<html\\b[^>]*>/i)?.[0] || '';
-  const landmark = html.match(/<div\\b[^>]*role="search"[^>]*>[\\s\\S]*?<\\/div>/i)?.[0] || '';
-  const label = landmark.match(/<label\\b[^>]*>[\\s\\S]*?<input\\b[^>]*id="story-search"[^>]*>/i)?.[0] || '';
-  assert.match(root, /\\blang="fa"/i, 'reader language must be Persian');
-  assert.match(root, /\\bdir="rtl"/i, 'reader direction must be RTL');
+  const root = html.match(/<html\b[^>]*>/i)?.[0] || '';
+  const landmark = html.match(/<div\b[^>]*role="search"[^>]*>[\s\S]*?<\/div>/i)?.[0] || '';
+  const label = landmark.match(/<label\b[^>]*>[\s\S]*?<input\b[^>]*id="story-search"[^>]*>/i)?.[0] || '';
+  assert.match(root, /\blang="fa"/i, 'reader language must be Persian');
+  assert.match(root, /\bdir="rtl"/i, 'reader direction must be RTL');
   assert.match(landmark, /aria-label="[^"]+"/, 'search landmark must have an accessible name');
   assert.match(label, /جست‌وجو/, 'search input must have a visible associated label');
   return [root.match(/lang="([^"]+)"/i)[1], root.match(/dir="([^"]+)"/i)[1],
-    landmark.match(/aria-label="([^"]+)"/)[1], label.replace(/<[^>]*>/g, '').trim().split(/\\s+/)[0]];
+    landmark.match(/aria-label="([^"]+)"/)[1], label.replace(/<[^>]*>/g, '').trim().split(/\s+/)[0]];
 };
 const htmlBaseline = htmlSemantics(publicHtml);
 if (fs.existsSync(protectedHtmlPath)) {
