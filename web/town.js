@@ -3,7 +3,7 @@
  * Its complete recoverable source is preserved solely in historical Git backups.
  * This town module never edits the author figure, publisher data or stories.
  */
-import {buildCivitaTown} from './town-civita.js?v=civita-main-20261110-v2';
+import {buildCivitaTown} from './town-civita.js?v=civita-main-20261110-v3';
 export const STREET_Y=-3;
 export const ACTIVE_CITY='Civita di Bagnoregio';
 export function nightLighting(day){
