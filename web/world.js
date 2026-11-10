@@ -8,6 +8,7 @@ import { initPanels } from "./panels.js";
 import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main-20261110-v3";
 import {clampCivitaTarget} from "./civita-geo.mjs?v=civita-main-20261110-v1";
 import {buildCivitaWriterExterior} from "./civita-writer-house.js?v=civita-house-20261110-v1";
+import {loadCivitaWriterParcel} from "./civita-writer-location.js?v=civita-location-20261110-v1";
 import { createCivitaWeatherService, civitaWeatherLabel } from "./civita-environment.js?v=civita-environment-20261110-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./civita-room-plan.js?v=civita-room-plan-20261110-v1";
 // Retired Tehran apartment support: the original room is now housed on a Civita second floor.
@@ -1311,6 +1312,7 @@ writerExterior.name = "writer-home-exterior-v2";
 writerExterior.position.y = 3.2; // historic reference shell upper floor, source height unverified
 writerExterior.userData.cityApartmentEvidence={kind:"CIVITA_INTERPRETIVE_ARCHITECTURE",floorIndex:1,actualFloorsVerified:false,realLoStudioParcelMatched:false,sourceRoomPreserved:true};
 scene.add(writerExterior);
+let writerGroundOffset=0, writerParcelSite=null;
 let currentWriterHouseLevel = -1;
 let currentWriterSceneMode = "town";
 function exteriorPart(geo, material, x, y, z) {
@@ -1337,7 +1339,7 @@ function rebuildWriterExterior(level=0){
   }
   const [w,d]=writerHouseDimensions(level);
   const exterior=buildCivitaWriterExterior(THREE,writerExterior,{
-    roomWidth:w,roomDepth:d,streetY:STREET_Y,parentOffsetY:writerExterior.position.y
+    roomWidth:w,roomDepth:d,streetY:STREET_Y+writerGroundOffset,parentOffsetY:writerExterior.position.y
   });
   for(const [mesh,description] of [
     [exterior.entrance,"درِ سنگی خانهٔ نویسنده — بازدید از اتاق"],
@@ -1396,7 +1398,7 @@ function updateWriterHouse(acceptedCount){
 function setWriterSceneMode(mode){
   currentWriterSceneMode=mode;
   const outdoors=["town","civita","cars","publisher","bookstore"].includes(mode);
-  writerExterior.visible=outdoors;
+  writerExterior.visible=outdoors && Boolean(writerParcelSite);
   writerInteriorWorldRoot.visible=!outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
   legacyWriterArchitecture.visible=false;
@@ -1404,6 +1406,37 @@ function setWriterSceneMode(mode){
   expandedWriterRoomShell.visible=!outdoors && currentWriterHouseLevel>0;
 }
 updateWriterHouse(0);
+// The real house belongs to the official Civita Institute property D, NOT an
+// invented position at local (0,0). The candidate OSM parcel must pass
+// building ID, source, 2014 Institute-plan topology and 6x6 room-footprint
+// tests; otherwise keep the original interior accessible but no outdoor fake.
+void loadCivitaWriterParcel().then(site=>{
+  writerParcelSite=site;
+  writerGroundOffset=site.groundRelativeM;
+  writerExterior.position.set(site.x,3.2+writerGroundOffset,site.z);
+  writerInteriorWorldRoot.position.set(site.x,STREET_Y+3.2+writerGroundOffset,site.z);
+  writerExterior.rotation.y=site.yawRadians;
+  writerInteriorWorldRoot.rotation.y=site.yawRadians;
+  writerInteriorWorldRoot.updateMatrixWorld(true);
+  writerExterior.userData.cityApartmentEvidence={
+    kind:"CIVITA_OFFICIAL_PLAN_D_OSM_WAY_CANDIDATE",
+    realOSMWayId:site.osmWayId,
+    sitePlanSource:site.officialSource,
+    cadastralMatchVerified:false,
+    approximateDEM:true,
+    writerCharacterAppearanceUntouched:true,
+    sourceRoomPreserved:true
+  };
+  town.setWriterPlacement(site);
+  // Rebuild exterior ONLY to account for sourced ground elevation; the
+  // authored room and writer mesh remain the same objects and same materials.
+  rebuildWriterExterior(currentWriterHouseLevel);
+  setWriterSceneMode(view);
+  if(!["town","civita","cars","publisher","bookstore"].includes(view))setView(view);
+}).catch(error=>{
+  writerExterior.visible=false;
+  town.group.userData.cityBuild.writerParcelStatus="unverified—no arbitrary home placement: "+String(error.message);
+});
 
 // ============ camera views ============
 function paintAchievements(rowsList) {
@@ -1787,8 +1820,9 @@ function setView(name) {
     // Room view coordinates describe the writer's local 6x6 floor.
     // The entire live room is now grounded at STREET_Y, not above the city.
     if (!["town","civita","cars","publisher","bookstore"].includes(name)) {
-      camGoal.pos.y += writerInteriorWorldRoot.position.y;
-      camGoal.target.y += writerInteriorWorldRoot.position.y;
+      writerInteriorWorldRoot.updateMatrixWorld(true);
+      camGoal.pos.applyMatrix4(writerInteriorWorldRoot.matrixWorld);
+      camGoal.target.applyMatrix4(writerInteriorWorldRoot.matrixWorld);
     }
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
     if (name === "civita") camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1,1.45/Math.max(.68,camera.aspect))).add(camGoal.target);
@@ -2091,8 +2125,9 @@ function animate() {
 
   // --- camera
   if (view === "follow") {
-    camGoal.target.set(character.position.x, 1.1 + writerInteriorWorldRoot.position.y, character.position.z);
-    camGoal.pos.set(character.position.x + 1.8, 2.4 + writerInteriorWorldRoot.position.y, character.position.z + 3.2);
+    writerInteriorWorldRoot.updateMatrixWorld(true);
+    camGoal.target.set(character.position.x, 1.1, character.position.z).applyMatrix4(writerInteriorWorldRoot.matrixWorld);
+    camGoal.pos.set(character.position.x + 1.8, 2.4, character.position.z + 3.2).applyMatrix4(writerInteriorWorldRoot.matrixWorld);
     camMoving = true;
   }
   if (camMoving) {
