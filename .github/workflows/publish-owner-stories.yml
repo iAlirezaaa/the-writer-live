@@ -6,9 +6,6 @@ on:
       - "snapshot/stories/**"
       - "snapshot/stories.json"
       - "snapshot/manifest.json"
-      - ".github/reader-assets/read.js"
-      - ".github/reader-assets/book.js"
-      - ".github/workflows/publish-owner-stories.yml"
   workflow_dispatch:
 
 permissions:
@@ -46,7 +43,7 @@ jobs:
           repository: ${{ github.repository }}
           github-token: ${{ github.token }}
           path: _prior
-      - name: Overlay only authorized literature onto the last verified site
+      - name: Overlay only authorized literature, preserve current city AND reader frontend
         run: |
           set -euo pipefail
           mkdir -p _site
@@ -55,7 +52,6 @@ jobs:
           mkdir -p _site/snapshot/stories _site/web
           cp snapshot/stories.json snapshot/manifest.json _site/snapshot/
           cp snapshot/stories/owner-20261110-jaye-doxt.json _site/snapshot/stories/
-          cp .github/reader-assets/read.js .github/reader-assets/book.js _site/web/
           python3 - <<'PY'
           import json
           from pathlib import Path

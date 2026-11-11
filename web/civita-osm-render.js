@@ -7,9 +7,9 @@ export async function attachCivitaVectors(THREE,scene,{onStatus=()=>{},signal}={
  const layer=new THREE.Group();layer.name='civita-sourced-osm-provisional-buildings';
  layer.userData={source:OSM_ATTRIBUTION,sourceURL:'https://overpass-api.de/',heightProxies:true,terrainMeshMeasured:false,buildingsRealHeightsCertified:false,collision:false,authorHouseGeolocated:false};
  scene.add(layer);
- const walls=new THREE.MeshStandardMaterial({color:0xb59a78,roughness:.98,transparent:true,opacity:.65,depthWrite:false});
- const measuredWalls=new THREE.MeshStandardMaterial({color:0xbda180,roughness:.96,transparent:true,opacity:.83,depthWrite:false});
- const tops=new THREE.MeshStandardMaterial({color:0xb46e4e,roughness:1,transparent:true,opacity:.75,depthWrite:false});
+ const walls=new THREE.MeshStandardMaterial({color:0xb59a78,roughness:.98});
+ const measuredWalls=new THREE.MeshStandardMaterial({color:0xbda180,roughness:.96});
+ const tops=new THREE.MeshStandardMaterial({color:0xb46e4e,roughness:1});
  const roadMat=new THREE.LineBasicMaterial({color:0x395b66,depthTest:false});
  let timeout;const abort=new AbortController();if(signal)signal.addEventListener('abort',()=>abort.abort(),{once:true});
  try{

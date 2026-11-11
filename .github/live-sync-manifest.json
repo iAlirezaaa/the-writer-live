@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "generated_utc": "2026-11-11T07:20:00Z",
+  "private_source_repository": "iAlirezaaa/the-writer",
+  "private_source_commit": "fd8328f60edd2973538e4d8bae255cc58c76983a",
+  "public_export_scope": [
+    "web/ public frontend modules and permitted map/survey data",
+    "index.html and read/index.html rewritten for GitHub Pages project paths",
+    "public frontend regression tests and deploy workflow"
+  ],
+  "excluded": [
+    "writer/",
+    "data/",
+    "cognition/",
+    "config.json",
+    "personal memory and internal records"
+  ],
+  "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
+  "script_version": 1
+}

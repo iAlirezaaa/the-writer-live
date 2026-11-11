@@ -3,72 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f1e9">
-  <title>کتابخانهٔ آثار | The Writer</title>
-  <meta name="description" content="کتابخانهٔ آثار نویسنده؛ جلدهای اختصاصی، مطالعهٔ آرام و ادامه از آخرین صفحه.">
+  <meta name="theme-color" content="#1b130d">
+  <title>کتابخانهٔ هادس</title>
+  <meta name="description" content="داستان‌های هادس، نویسنده‌ای که در سیویتا زندگی می‌کند.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap">
   <link rel="stylesheet" href="../web/style.css">
   <link rel="stylesheet" href="../web/book.css?v=reader-20261109-library-v2">
-  <link rel="stylesheet" href="../web/interaction-library/reader-shelf.css?v=reader-shelf-v5">
+  <link rel="stylesheet" href="../web/library.css?v=library-20261111-v4">
+  <link rel="stylesheet" href="../web/reader-room.css?v=reader-room-20261111-v4">
 </head>
-<body class="reader-page">
-  <header class="top reading-top">
-    <div class="reading-heading">
-      <span class="reading-eyebrow">THE WRITER <span aria-hidden="true">/</span> LIBRARY</span>
-      <h1>جهانی برای <em>خواندن</em> و کشف داستان‌ها</h1>
-      <p id="reader-note" class="muted small">هر داستان یک کتاب است. از جلد انتخاب کنید، ورق بزنید و هر زمان خواستید از همان صفحه ادامه دهید.</p>
-      <div class="library-hero-actions">
-        <button id="library-explore" class="library-explore" type="button">کشف کتاب‌ها <span aria-hidden="true">↙</span></button>
-        <button id="library-theme" class="library-theme-toggle" type="button" aria-pressed="false">حالت شب</button>
-      </div>
-      <div class="library-statbar" aria-label="نمای کلی کتابخانه">
-        <div class="library-stat"><strong id="library-stories-count">—</strong><span>کتاب منتشرشده</span></div>
-        <div class="library-stat"><strong id="library-progress-count">—</strong><span>در حال مطالعه</span></div>
-        <div class="library-stat"><strong id="library-saved-count" role="status" aria-live="polite" aria-atomic="true">—</strong><span>در علاقه‌مندی‌ها</span></div>
-      </div>
+<body class="reader-page lib">
+  <header class="lib-bar">
+    <a id="home-link" class="lib-home" href="../">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      شهر
+    </a>
+    <div class="lib-title-block">
+      <span class="lib-mark">کتابخانهٔ هادس</span>
+      <span class="lib-count" id="shelf-count" role="status" aria-live="polite">در حال بارگذاری</span>
     </div>
-    <a id="home-link" class="reading-home" href="../">بازگشت به جهان نویسنده <span aria-hidden="true">↗</span></a>
+    <div class="lib-actions">
+      <button id="library-filter-toggle" class="lib-icon" type="button" aria-expanded="false" aria-controls="library-filters" aria-label="جست‌وجو و چینش">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      </button>
+    </div>
   </header>
-  <main class="grid reading-main">
-    <section class="card reading-collection" id="library-collection" aria-label="مجموعهٔ داستان‌ها">
-      <div class="reading-collection-head">
-        <div>
-          <span class="reading-section-kicker">COLLECTION / 01</span>
-          <h2>قفسهٔ داستان‌ها</h2>
-          <p class="library-section-description">جست‌وجو، انتخاب نما و ادامه از آخرین صفحهٔ مطالعه</p>
-        </div>
-        <span id="shelf-count" class="reading-total" role="status" aria-live="polite">در حال بارگذاری</span>
+
+  <section class="lib-filters" id="library-filters" hidden>
+    <div class="reader-shelf-tools lib-tools" role="search" aria-label="جست‌وجو و چینش کتاب‌ها">
+      <label class="lib-search">
+        <span class="lib-visually-hidden">جست‌وجو در کتابخانه</span>
+        <input id="story-search" type="search" placeholder="نام کتاب" autocomplete="off">
+      </label>
+      <label><span class="lib-visually-hidden">وضعیت اثر</span>
+        <select id="story-status"><option value="all">همهٔ آثار</option><option value="accepted">پذیرفته‌شده‌ها</option><option value="rejected">ردشده‌ها</option></select>
+      </label>
+      <label><span class="lib-visually-hidden">پیشرفت خواندن</span>
+        <select id="reading-filter"><option value="all">هر پیشرفتی</option><option value="unread">خوانده‌نشده</option><option value="reading">در حال خواندن</option><option value="finished">تمام‌شده</option></select>
+      </label>
+      <label><span class="lib-visually-hidden">چینش</span>
+        <select id="story-sort"><option value="newest">تازه‌ترین</option><option value="oldest">قدیمی‌ترین</option><option value="title">نام اثر</option><option value="score">امتیاز</option></select>
+      </label>
+      <button id="story-favorites" class="lib-chip" type="button" aria-pressed="false">نشان‌شده‌ها</button>
+      <button id="story-reset" class="lib-reset" type="button" hidden>پاک‌کردن</button>
+    </div>
+  </section>
+
+  <div class="room-scene" aria-hidden="true">
+    <div class="room-window">
+      <svg viewBox="0 0 240 340" preserveAspectRatio="xMidYMax slice">
+        <defs><linearGradient id="sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--sky-a)"/><stop offset="1" stop-color="var(--sky-b)"/></linearGradient></defs>
+        <rect width="240" height="340" fill="url(#sky)"/>
+        <circle class="room-sun" cx="176" cy="96" r="13"/>
+        <path d="M0 232C30 216 62 226 92 214s70-6 148-22v148H0z" fill="var(--hill-far)"/>
+        <path d="M0 268c24-8 44-2 66-12 6-30 10-44 22-50l4-14 10-3 3-13 8 2 2-20 7 0 2 19 8-2 3 13 11 2 6 14c12 8 16 24 22 52 22 10 42 4 66 14v73H0z" fill="var(--hill-near)"/>
+        <path d="M0 300 88 238" stroke="var(--bridge)" stroke-width="2.4" fill="none"/>
+        <g fill="var(--window-lit)"><rect x="104" y="196" width="2" height="3"/><rect x="118" y="186" width="2" height="3"/><rect x="134" y="192" width="2" height="3"/><rect x="146" y="200" width="2" height="3"/></g>
+      </svg>
+      <span class="room-bars"></span>
+    </div>
+    <div class="room-shaft"></div>
+  </div>
+
+  <main class="lib-room" id="library-room">
+    <div class="room-lamp">
+      <span class="lamp-wire"></span><span class="lamp-shade"></span><span class="lamp-glow"></span>
+      <button id="library-theme" class="lamp-cord" type="button" aria-pressed="false" aria-label="چراغ کتابخانه: روز و شب" title="زنجیر چراغ را بکشید"><span></span></button>
+    </div>
+    <button id="lib-continue" class="lib-continue" type="button" hidden></button>
+    <div class="case">
+      <div class="case-top" aria-hidden="true">
+        <span class="top-clock"><i id="clock-h"></i><i id="clock-m"></i></span>
+        <span class="top-vase"></span>
+        <span class="top-papers"></span>
       </div>
-      <div class="reader-shelf-tools" role="search" aria-label="جست‌وجو و مرتب‌سازی کتاب‌ها">
-        <label class="reader-search-label">جست‌وجو در کتابخانه
-          <input id="story-search" type="search" placeholder="نام اثر یا گونهٔ داستان…" autocomplete="off">
-        </label>
-        <label>وضعیت اثر
-          <select id="story-status"><option value="all">همهٔ آثار</option><option value="accepted">پذیرفته‌شده‌ها</option><option value="rejected">ردشده‌ها</option></select>
-        </label>
-        <label>مرتب‌سازی
-          <select id="story-sort"><option value="newest">تازه‌ترین</option><option value="oldest">قدیمی‌ترین</option><option value="title">نام اثر</option><option value="score">امتیاز منتقد</option></select>
-        </label>
-        <label>پیشرفت مطالعه
-          <select id="reading-filter"><option value="all">همهٔ کتاب‌ها</option><option value="unread">خوانده‌نشده</option><option value="reading">در حال مطالعه</option><option value="finished">تمام‌شده</option></select>
-        </label>
-        <button id="story-favorites" class="story-favorites" type="button" aria-pressed="false" aria-label="نمایش فقط کتاب‌های علاقه‌مندی">☆ علاقه‌مندی‌های من · ۰</button>
-        <div class="library-view-switch" role="group" aria-label="شیوهٔ نمایش کتاب‌ها">
-          <button id="library-grid" type="button" aria-pressed="true">جلدی</button>
-          <button id="library-list" type="button" aria-pressed="false">فهرستی</button>
-          <button id="library-shelf" type="button" aria-pressed="false" title="نمای سه‌بعدی تعاملی از قفسهٔ کتاب‌ها">قفسهٔ تعاملی</button>
-        </div>
-        <button id="story-reset" class="reader-reset" type="button" hidden>پاک‌کردن فیلترها</button>
-      </div>
-      <div class="library-room" id="library-room" data-mode="plain" data-light="day">
-        <div class="library-room__window" aria-hidden="true"></div>
-        <div class="library-room__lamp" aria-hidden="true"></div>
-        <div class="library-room__clock" id="library-room-clock" aria-hidden="true"></div>
-        <div class="library-room__floor" aria-hidden="true"></div>
-        <div class="covers" id="covers" aria-label="جلد کتاب‌ها"></div>
-      </div>
-      <p class="reading-endnote">هر جلد از شناسهٔ خود داستان ساخته می‌شود؛ رنگ و طراحی آن با مرتب‌سازی تغییر نمی‌کند.</p>
-    </section>
+      <div class="covers" id="covers" aria-label="قفسهٔ کتاب‌ها"></div>
+    </div>
+    <nav class="shelf-rail" id="shelf-rail" aria-label="رفتن به قفسه" hidden></nav>
   </main>
-  <script type="module" src="../web/read.js?v=reader-20261110-shelf-v4"></script>
+
+  <aside class="shelf-talker" id="shelf-talker" aria-hidden="true" hidden></aside>
+
+  <footer class="lib-foot">
+    <p id="reader-note" hidden></p>
+    <p>این داستان‌ها را هادس نوشته است، یک نویسندهٔ خودکار. جای خالی قفسه‌ها مال کتاب‌هایی است که هنوز ننوشته.</p>
+    <p class="lib-foot-stats"><span id="library-stories-count">—</span> کتاب · <span id="library-progress-count">—</span> در حال خواندن · <span id="library-saved-count" role="status" aria-live="polite" aria-atomic="true">—</span> نشان‌شده</p>
+  </footer>
+  <script type="module" src="../web/read.js?v=library-20261111-v3"></script>
 </body>
 </html>

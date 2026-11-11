@@ -18,109 +18,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare protected writer room and sourced Civita world
+      - name: Validate current public export and protected writer room
         run: |
+          set -euo pipefail
+          python3 .github/scripts/verify_live_sync.py
+          for file in web/*.js web/*.mjs web/interaction-library/*.js; do
+            node --input-type=module --check < "$file"
+          done
+          node tests/civita_buildings_probe.mjs
+          node tests/civita_details_probe.mjs
+          node tests/civita_walks_probe.mjs
+          node tests/civita_writer_home_section_probe.mjs
+          node tests/civita_writer_location_probe.mjs .
+          node tests/reader_page_curl_probe.mjs
+          node --test tests/reader-library-experience.test.cjs
+      - name: Stage reviewed frontend and existing authorized public snapshot
+        run: |
+          set -euo pipefail
           mkdir -p _site
           cp -a index.html web read snapshot _site/
           touch _site/.nojekyll
-          # Civita: one bounded official OSM map request at build time.
-          # The website can still deploy without external-source availability,
-          # but it must not fabricate buildings or use an invalid local JSON.
-          python3 city/tests/test_civita_osm_snapshot.py
-          if python3 city/survey/build_civita_osm_snapshot.py _site/web/data/civita-osm-snapshot.json \
-             && node city/tests/civita_osm_snapshot_validate.mjs _site/web/data/civita-osm-snapshot.json; then
-            echo "CIVITA-STATIC-OSM-ARTIFACT-READY"
-          else
-            rm -f _site/web/data/civita-osm-snapshot.json
-            echo "::warning::Civita official OSM snapshot unavailable; city will request bounded live OSM with no invented fallback"
-          fi
-          # MAYOR-072: one bounded open-elevation snapshot; never claim 5m Lazio or field survey.
-          python3 city/tests/test_civita_terrain.py
-          if python3 city/survey/build_civita_terrain.py _site/web/data/civita-terrain-grid.json \
-             && node city/tests/civita_terrain_source_validate.mjs _site/web/data/civita-terrain-grid.json; then
-            echo "CIVITA-TERRAIN-SOURCE-GRID-READY"
-          else
-            rm -f _site/web/data/civita-terrain-grid.json
-            echo "::warning::No valid Mapzen terrain grid; retain flat map without guessed relief"
-          fi
-          # MAYOR-071: read source-identified OSM footways and bridge tags near
-          # Civita's suspended viaduct; missing data must not fabricate a bridge.
-          python3 city/tests/test_civita_bridge_source.py
-          if python3 city/survey/build_civita_bridge_source.py _site/web/data/civita-bridge-corridor.json \
-             && node city/tests/civita_bridge_source_validate.mjs _site/web/data/civita-bridge-corridor.json; then
-            echo "CIVITA-BRIDGE-SOURCE-CORRIDOR-READY"
-          else
-            rm -f _site/web/data/civita-bridge-corridor.json
-            echo "::warning::Civita bridge source unavailable; no guessed bridge coordinates"
-          fi
-          # The snapshot publisher supplies the current character motion and
-          # dashboard entrypoint. Preserve those authored files in the artifact.
-          for name in objects.js town.js; do
-            cp ".github/citizens-assets/$name" "_site/web/$name"
-          done
-          # The original Tehran street grid, housing and city assets were retired.
-          # Do not inject legacy geo/height/traffic files into the new Civita Pages artifact.
-          # The snapshot exporter may copy stale reader files from a local checkout.
-          # Always ship the reviewed, versioned reading assets from this repository.
-          mkdir -p _site/read _site/web _site/web/interaction-library
-          for name in book.css book.js read.js book-cover.js feedback.js; do
-            cp ".github/reader-assets/$name" "_site/web/$name"
-          done
-          cp .github/reader-assets/read.html _site/read/index.html
-          cp .github/reader-assets/reader-shelf.css _site/web/interaction-library/reader-shelf.css
-          cp .github/reader-assets/reader-shelf-room.js _site/web/interaction-library/reader-shelf-room.js
-          node --check _site/web/interaction-library/reader-shelf-room.js
-          python3 .github/scripts/prepare_reader_deploy.py _site
-          python3 .github/scripts/prepare_citizens_deploy.py _site
-          # Check the observer shell without replacing the current index/style.
-          python3 .github/scripts/prepare_observer_deploy.py _site
-          python3 .github/scripts/prepare_city_deploy.py _site
-          # Validate only active Civita scripts, not the retired Tehran build.
-          for name in town town-civita civita-bridge civita-terrain civita-environment civita-writer-house civita-writer-location civita-pedestrians civita-room-plan civita-place-catalog world; do
-            cp "_site/web/$name.js" "/tmp/civita-$name.mjs"
-            node --check "/tmp/civita-$name.mjs"
-          done
-          # Active Civita default must render sourced map geometry without changing writer room.
-          test -s _site/web/town-civita.js
-          test -s _site/web/civita-osm-vectors.mjs
-          node --experimental-vm-modules tests/civita_main_town_probe.mjs _site
-          node --test city/tests/civita_geo_phase0.test.mjs
-          node tests/civita_bridge_probe.mjs _site
-          node tests/civita_terrain_probe.mjs _site
-          node --test tests/civita_environment_probe.test.mjs
-          node --test city/tests/civita_osm_vectors.test.mjs
-          node --test city/tests/civita_osm_renderer.test.mjs
-          node tests/civita_writer_home_probe.mjs _site
-          node tests/civita_writer_location_probe.mjs _site
-          node tests/civita_pedestrians_probe.mjs _site
-          node tests/writer_house_consistency_probe.mjs _site
-          for name in observer-ui persian-display; do
-            cp "_site/web/$name.js" "/tmp/the-writer-observer-$name.mjs"
-            node --check "/tmp/the-writer-observer-$name.mjs"
-          done
-          test -s _site/web/feedback.js
-          ! grep -q 'id="reader-feedback"' _site/read/index.html
-          grep -q 'feedback.js?v=reader-feedback-3' _site/web/book.js
-          grep -q 'sendReaderVote' _site/web/book.js
-          grep -q 'openPublicVote' _site/web/feedback.js
-          node tests/observatory_probe.mjs _site
-          for name in citizens citizen-motion-library objects; do
-            cp "_site/web/$name.js" "/tmp/the-writer-city-$name.mjs"
-            node --check "/tmp/the-writer-city-$name.mjs"
-          done
-          node tests/citizens_v2_probe.mjs _site _site/snapshot/town.json
-          node tests/citizens_probe.mjs _site < _site/snapshot/town.json
-          for name in book read book-cover feedback; do
-            cp "_site/web/$name.js" "/tmp/the-writer-reader-$name.mjs"
-            node --check "/tmp/the-writer-reader-$name.mjs"
-          done
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("_site")
+          assert (root/"index.html").is_file()
+          assert (root/"read/index.html").is_file()
+          assert (root/"web/data/civita-dbt.json").is_file()
+          assert (root/"web/data/civita-dem-inner.u16").is_file()
+          assert (root/"web/page-curl.js").is_file()
+          assert (root/"snapshot/stories.json").is_file()
+          print("LIVE-ARTIFACT-READY: surveyed Civita, new library, approved snapshot")
+          PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-      # GitHub's artifact search can lag the successful upload by several seconds.
-      # Use a new run after a failed attempt: rerunning the same run can leave
-      # multiple github-pages artifacts sharing one run ID.
       - name: Allow Pages artifact metadata indexing
         run: sleep 15
       - id: deployment

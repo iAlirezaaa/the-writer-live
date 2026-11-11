@@ -1,5 +1,5 @@
 /* MAYOR-068: real Three.js regression for ACTIVE default Civita scene.
- * Historical Tehran smoke probes still run separately with explicit source-only.
+ * Historical retired-city smoke probes still run separately with explicit source-only.
  * node --experimental-vm-modules tests/civita_main_town_probe.mjs [site-root]
  */
 import assert from 'node:assert/strict';
@@ -53,8 +53,8 @@ assert.doesNotThrow(()=>town.update(0,0,false));
 assert.equal(town.group.getObjectByName('writer-block-source-aligned-streets'),undefined);
 const world=read('web/world.js');
 assert.match(world,/clampCivitaTarget/);
-assert.match(world,/city-civita-main-20261110-v3/);
+assert.match(world,/city-civita-measured-20261111-v15/);
 assert.match(world,/writerInteriorWorldRoot\.add\(baseWriterRoomShell\)/);
 const pubPin=resolve(root,'.github/citizens-assets/town.js');
 if(existsSync(pubPin))assert.equal(readFileSync(pubPin,'utf8'),read('web/town.js'),'public Pages town pin drift');
-console.log('CIVITA-MAIN-TOWN-OK: sourced map is the default; protected room remains separately owned; no Tehran geometry attached');
+console.log('CIVITA-MAIN-TOWN-OK: sourced map is the default; protected room remains separately owned; no retired-city geometry attached');

@@ -1,5 +1,5 @@
 /* Civita-author room plan: retain existing writer's 6x6 interior footprint and
- * camera/contact geometry exactly. The earlier Tehran street/parcels do NOT
+ * camera/contact geometry exactly. The retired fictional street/parcels do NOT
  * belong in this module. Exterior is independently built and provisional.
  */
 export const WRITER_HOME_BLUEPRINT=Object.freeze({

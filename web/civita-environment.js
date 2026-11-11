@@ -1,6 +1,7 @@
 /* Civita di Bagnoregio — live local outdoor clock and model weather.
  * Open-Meteo data are MODEL estimates, not on-site sensors.
- * Europe/Rome handles CET/CEST daylight saving; do not reuse Tehran time.
+ * Europe/Rome handles CET/CEST daylight saving; the retired prior city's clock
+ * must not be reused here.
  */
 export const CIVITA_TIMEZONE='Europe/Rome';
 export const CIVITA_WEATHER_SOURCE='Open-Meteo';

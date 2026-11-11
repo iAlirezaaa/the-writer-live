@@ -1,5 +1,6 @@
 /* Civita public map catalog. Locations are sourced WGS84 anchors or clearly
- * labelled temporary author-room anchor. Do NOT copy Tehran fictional POIs.
+ * labelled temporary author-room anchor. The retired fictional city's POIs
+ * must not be reintroduced here.
  */
 import {CIVITA_ORIGIN,SANTA_MARIA_GATE,geoToCivita} from './civita-geo.mjs';
 const gate=geoToCivita(SANTA_MARIA_GATE.latitude,SANTA_MARIA_GATE.longitude);
@@ -15,9 +16,45 @@ export const CITY_PLACE_CATALOG=Object.freeze([
  {id:'writer-civita-proxy',name:'خانهٔ نویسنده — پوستهٔ سیویتا',zone:'جایگذاری موقت اتاق نویسنده',
   kind:'مطالعهٔ معماری دوطبقه',x:0,z:0,y:0,
   description:'اتاق اصلی نویسنده حفظ شده و در یک پوستهٔ تفسیریِ سنگ توف و سفال قرار گرفته است. این محل هنوز به قطعهٔ واقعی Lo Studio متصل نشده است.',
-  activity:'نویسندگی در اتاق محفوظ',access:'ورود با دوربین؛ موقعیت جغرافیایی واقعی خانه تأیید نشده',source:'Civita Institute Lo Studio reference, unlocated model'}
+  activity:'نویسندگی در اتاق محفوظ',access:'ورود با دوربین؛ موقعیت جغرافیایی واقعی خانه تأیید نشده',source:'Civita Institute Lo Studio reference, unlocated model'},
+ {id:"piazza-san-donato",name:"میدان سان دوناتو",zone:"میدان اصلی",
+  kind:"میدان",x:-3.52,z:2.5,y:0.5,
+  description:"میدان اصلی روستا، با کلیسا و برج ناقوس در یک سو.",
+  activity:"ایستادن و تماشای کلیسا",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/161289959"},
+ {id:"chiesa-san-donato",name:"کلیسای سان دوناتو",zone:"میدان اصلی",
+  kind:"کلیسا",x:39.33,z:-19.32,y:0.5,
+  description:"کلیسای محله. ارتفاع بنا اندازه‌گیری شده؛ جزئیات نما از روی عکس مدل شده.",
+  activity:"دیدن نما و برج ناقوس",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/464102227"},
+ {id:"palazzo-alemanni",name:"کاخ آلمانی",zone:"میدان اصلی",
+  kind:"کاخ رنسانس",x:-9.31,z:26.21,y:0.2,
+  description:"کاخ رنسانسی که موزهٔ زمین‌شناسی و رانش را در خود دارد.",
+  activity:"بازدید از موزه",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/464102247"},
+ {id:"museo-frane",name:"موزهٔ زمین‌شناسی و رانش",zone:"میدان اصلی",
+  kind:"موزه",x:1.96,z:12.61,y:0.2,
+  description:"موزه‌ای دربارهٔ فرسایش صخره‌ای که روستا روی آن است.",
+  activity:"آشنایی با زمین‌شناسی صخره",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM node/4592626762"},
+ {id:"piazza-colesanti",name:"میدان کولسانتی",zone:"نزدیک دروازه",
+  kind:"میدان",x:-42.04,z:27.68,y:-1.4,
+  description:"میدان کوچک پشت دروازه.",
+  activity:"گذر از دروازه به داخل روستا",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/464106581"},
+ {id:"piazza-vescovato",name:"میدان وسکواتو",zone:"شمال روستا",
+  kind:"میدان",x:13.32,z:-32.12,y:0.6,
+  description:"میدان کنار کاخ اسقفی.",
+  activity:"قدم زدن",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/464108089"},
+ {id:"palazzo-vescovile",name:"کاخ اسقفی",zone:"شمال روستا",
+  kind:"کاخ",x:30.04,z:-41.16,y:1.1,
+  description:"کاخ اسقفی روستا.",
+  activity:"دیدن بنا از بیرون",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/464102212"},
+ {id:"belvedere",name:"چشم‌انداز",zone:"انتهای شرقی",
+  kind:"چشم‌انداز",x:137.5,z:-71.07,y:-10.6,
+  description:"چشم‌انداز رو به دره‌های فرسوده.",
+  activity:"تماشای دره",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM node/9180177539"},
+ {id:"giardino-poeta",name:"باغ شاعر",zone:"انتهای شرقی",
+  kind:"باغ",x:169.41,z:-92.57,y:-18.6,
+  description:"باغ کوچک در انتهای شرقی روستا.",
+  activity:"نشستن در باغ",access:'نام و موقعیت از OSM؛ ارتفاع زمین از نقشهٔ لاتزیو',source:"OSM way/692742596"},
 ]);
 export function auditCityPlan(){return {activeCity:'Civita di Bagnoregio',venues:CITY_PLACE_CATALOG.length,
-  verifiedAnchorCount:2,geolocatedWriterHome:false,exactCliffElevation:false,
-  buildingsSource:'OSM ODbL',verifiedBuildingFacades:0,writerRoomUntouched:true,
-  createdTehranBuildings:0,roadAndCitizenPhysicalGraphChanged:false};}
+  verifiedAnchorCount:11,geolocatedWriterHome:false,exactCliffElevation:false,surveyedTerrain:true,
+  buildingsSource:'Regione Lazio DBGT 2014 (CC BY 4.0)',verifiedBuildingFacades:0,writerRoomUntouched:true,
+  retiredFictionalBuildings:0,roadAndCitizenPhysicalGraphChanged:false};}

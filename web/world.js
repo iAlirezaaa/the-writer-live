@@ -5,17 +5,18 @@ import { openExplorer } from "./explorer.js?v=graph-structure-v1";
 import { initObjects, inspect, closeInspect, setTHREE } from "./objects.js?v=city-districts-20261108-v1";
 import { buildNotebook } from "./nb3d.js";
 import { initPanels } from "./panels.js";
-import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-main-20261110-v3";
+import { buildTown, nightLighting, STREET_Y } from "./town.js?v=city-civita-measured-20261111-v15";
 import {clampCivitaTarget} from "./civita-geo.mjs?v=civita-main-20261110-v1";
+import { anchorWriterHome, buildWriterFacade, buildWriterHomeSection, buildWriterChimney, writerHomeMaterials } from "./civita-writer-home.js?v=mayor085-v2";
 import {buildCivitaWriterExterior} from "./civita-writer-house.js?v=civita-house-20261110-v1";
-import {loadCivitaWriterParcel} from "./civita-writer-location.js?v=civita-location-20261110-v1";
+import {loadCivitaWriterParcel} from "./civita-writer-location.js?v=civita-location-20261111-v2";
 import { createCivitaWeatherService, civitaWeatherLabel } from "./civita-environment.js?v=civita-environment-20261110-v1";
 import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "./civita-room-plan.js?v=civita-room-plan-20261110-v1";
-// Retired Tehran apartment support: the original room is now housed on a Civita second floor.
-import { CITY_PLACE_CATALOG, auditCityPlan } from "./civita-place-catalog.js?v=civita-catalog-20261110-v1";
+// The original room is now housed on a Civita second floor; the retired prior-city apartment builder is gone.
+import { CITY_PLACE_CATALOG, auditCityPlan } from "./civita-place-catalog.js?v=civita-catalog-20261111-v2";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261109-v1";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261109-v1";
-import { initObserverUI } from "./observer-ui.js?v=observatory-20261109-first-paint-v2";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261111-mayor083-v1";
 import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard
@@ -91,6 +92,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 renderer.shadowMap.enabled = true;
+renderer.localClippingEnabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);
 
@@ -106,20 +108,34 @@ controls.minDistance = 1.5;
 controls.maxDistance = 140;
 
 // ============ sky, sun, moon, stars, clouds ============
+// The whole celestial rig is parented to skyGroup, which copies the camera
+// position every frame: the dome shell then always sits at exactly its radius
+// from the viewer and can never fall outside camera.far or lag behind a panning
+// city camera. The gradient reads the sphere's LOCAL direction so translation
+// cannot skew it.
+const skyGroup = new THREE.Group();
+const cloudGroup = new THREE.Group();
+skyGroup.add(cloudGroup);
+scene.add(skyGroup);
 const skyUniforms = { top: { value: new THREE.Color(0x050814) }, bottom: { value: new THREE.Color(0x1a2238) } };
 const sky = new THREE.Mesh(
   new THREE.SphereGeometry(120, 32, 16),
   new THREE.ShaderMaterial({
     uniforms: skyUniforms, side: THREE.BackSide, depthWrite: false, fog: false,
-    vertexShader: "varying vec3 vPos; void main(){ vPos = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vPos,1.0); }",
-    fragmentShader: "uniform vec3 top; uniform vec3 bottom; varying vec3 vPos; void main(){ float h = clamp(normalize(vPos).y * 1.6 + 0.12, 0.0, 1.0); gl_FragColor = vec4(mix(bottom, top, h), 1.0); }",
+    vertexShader: "varying vec3 vPos; void main(){ vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+    fragmentShader: "uniform vec3 top; uniform vec3 bottom; varying vec3 vPos; void main(){ float h = clamp(normalize(vPos).y * 1.9 + 0.04, 0.0, 1.0); gl_FragColor = vec4(mix(bottom, top, h), 1.0); }",
   }),
 );
-scene.add(sky);
+skyGroup.add(sky);
+// Background contract: the dome must paint first and never depth-test, or it
+// buries city geometry that lies between its radius and camera.far (MAYOR-081).
+sky.renderOrder = -1e3;
+sky.material.depthTest = false;
+sky.frustumCulled = false;
 
 const sun = new THREE.Mesh(new THREE.SphereGeometry(3.2, 24, 24), new THREE.MeshBasicMaterial({ color: 0xfff0c8, fog: false }));
 const moon = new THREE.Mesh(new THREE.SphereGeometry(2.0, 24, 24), new THREE.MeshBasicMaterial({ color: 0xf3ecd6, fog: false }));
-scene.add(sun, moon);
+skyGroup.add(sun, moon);
 
 const starGeo = new THREE.BufferGeometry();
 const starPos = [];
@@ -129,7 +145,8 @@ for (let i = 0; i < 700; i++) {
 }
 starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starPos, 3));
 const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0.8, fog: false });
-scene.add(new THREE.Points(starGeo, starMat));
+const stars = new THREE.Points(starGeo, starMat);
+skyGroup.add(stars);
 
 function softTexture(inner, outer) {
   const c = document.createElement("canvas"); c.width = c.height = 128;
@@ -145,7 +162,7 @@ for (let i = 0; i < 9; i++) {
   const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: 0.5, depthWrite: false, fog: false }));
   m.scale.set(18 + rand() * 14, 6 + rand() * 4, 1);
   m.position.set(-60 + rand() * 120, 22 + rand() * 10, -50 - rand() * 30);
-  scene.add(m); clouds.push(m);
+  cloudGroup.add(m); clouds.push(m);
 }
 
 // ============ lights ============
@@ -155,7 +172,7 @@ const viewFill = new THREE.DirectionalLight(0xc3d6ed, 0.65);
 scene.add(viewFill, viewFill.target);
 const celestial = new THREE.DirectionalLight(0xfff1d6, 1.0);
 celestial.castShadow = true;
-celestial.shadow.mapSize.set(1024, 1024);
+celestial.shadow.mapSize.set(2048, 2048);
 celestial.shadow.camera.left = -6; celestial.shadow.camera.right = 6;
 celestial.shadow.camera.top = 6; celestial.shadow.camera.bottom = -6;
 celestial.shadow.camera.near = 1; celestial.shadow.camera.far = 80;
@@ -255,6 +272,9 @@ const citizens = createCitizens({ THREE, scene, clickable, motionArchive });
 const citySceneBaseline = new Set(scene.children);
 let serverClockOffset = 0;
 let serverUtcOffset = -new Date().getTimezoneOffset();
+const CITY_CAMERAS = new Set(["town","civita","piazza","gate","bridge","cliffs","home"]);
+const EYE_VIEWS = new Set(["piazza","gate","bridge","cliffs","home"]);
+const OUTDOOR_VIEWS = ["town","civita","cars","publisher","bookstore","piazza","gate","bridge","cliffs","home"];
 let previewHour = null;
 function worldNow() {
   const now = new Date(Date.now() + serverClockOffset);
@@ -303,8 +323,6 @@ function curtain(x) {
 }
 const curtains = [curtain(WIN.x0 - 0.2), curtain(WIN.x1 + 0.2)];
 box(ww + 1.1, 0.03, 0.03, M.brass, wx, 2.78, -2.86);
-// radiator under the window
-for (let i = 0; i < 9; i++) box(0.1, 0.5, 0.1, new THREE.MeshStandardMaterial({ color: 0xd9d2c4, roughness: 0.5 }), WIN.x0 + 0.25 + i * 0.19, 0.45, -2.88);
 // skirting
 box(6, 0.1, 0.03, M.darkWood, 0, 0.05, -2.93, { cast: false });
 box(0.03, 0.1, 6, M.darkWood, -2.93, 0.05, 0, { cast: false });
@@ -1312,6 +1330,8 @@ writerExterior.name = "writer-home-exterior-v2";
 writerExterior.position.y = 3.2; // historic reference shell upper floor, source height unverified
 writerExterior.userData.cityApartmentEvidence={kind:"CIVITA_INTERPRETIVE_ARCHITECTURE",floorIndex:1,actualFloorsVerified:false,realLoStudioParcelMatched:false,sourceRoomPreserved:true};
 scene.add(writerExterior);
+// Stays with the roof, indoors and out.
+const writerRoof = new THREE.Group();writerRoof.name = "writer-home-roof";scene.add(writerRoof);
 let writerGroundOffset=0, writerParcelSite=null;
 let currentWriterHouseLevel = -1;
 let currentWriterSceneMode = "town";
@@ -1338,9 +1358,12 @@ function rebuildWriterExterior(level=0){
     writerExterior.remove(child);
   }
   const [w,d]=writerHouseDimensions(level);
-  const exterior=buildCivitaWriterExterior(THREE,writerExterior,{
-    roomWidth:w,roomDepth:d,streetY:STREET_Y+writerGroundOffset,parentOffsetY:writerExterior.position.y
-  });
+  // With the survey loaded the walls and roof are the town's own; only the street front is added.
+  const exterior=writerParcelSite?.home
+    ? buildWriterFacade(THREE,writerExterior,{groundAt:writerParcelSite.home.groundAt,drop:Math.max(0,writerParcelSite.home.groundRelativeM-writerParcelSite.home.streetRelativeM)})
+    : buildCivitaWriterExterior(THREE,writerExterior,{
+        roomWidth:w,roomDepth:d,streetY:STREET_Y+writerGroundOffset,parentOffsetY:writerExterior.position.y
+      });
   for(const [mesh,description] of [
     [exterior.entrance,"درِ سنگی خانهٔ نویسنده — بازدید از اتاق"],
     [exterior.clickArea,"نمای تاریخی الهام‌گرفته از Civita — خانهٔ نویسنده"]
@@ -1397,23 +1420,47 @@ function updateWriterHouse(acceptedCount){
 }
 function setWriterSceneMode(mode){
   currentWriterSceneMode=mode;
-  const outdoors=["town","civita","cars","publisher","bookstore"].includes(mode);
+  const outdoors=OUTDOOR_VIEWS.includes(mode);
   writerExterior.visible=outdoors && Boolean(writerParcelSite);
   writerInteriorWorldRoot.visible=!outdoors;
   for(const obj of interiorSceneObjects)obj.visible=!outdoors;
+  writerHomeSection.visible=!outdoors;
+  town.setHomeCut(!outdoors);
   legacyWriterArchitecture.visible=false;
   baseWriterRoomShell.visible=!outdoors && currentWriterHouseLevel===0;
   expandedWriterRoomShell.visible=!outdoors && currentWriterHouseLevel>0;
+}
+// The traditional house around the room: same materials as the town, added once and shown with the interior.
+const writerHomeSectionModel = buildWriterHomeSection(THREE, writerInteriorWorldRoot);
+const writerHomeSection = writerHomeSectionModel.group;
+for (const [target, panel, label] of writerHomeSectionModel.targets) clickable(target, panel, label);
+{
+  const K = writerHomeMaterials(THREE);
+  if (K.cotto.map) { M.floor.map = K.cotto.map; M.floor.roughness = 0.72; M.floor.needsUpdate = true; }
+  if (K.stucco.map) { M.wall.map = K.stucco.map; M.wall.color.set(0xffffff); M.wall.needsUpdate = true; }
+  frameMat.color.set(0x5b4331);
 }
 updateWriterHouse(0);
 // The real house belongs to the official Civita Institute property D, NOT an
 // invented position at local (0,0). The candidate OSM parcel must pass
 // building ID, source, 2014 Institute-plan topology and 6x6 room-footprint
 // tests; otherwise keep the original interior accessible but no outdoor fake.
-void loadCivitaWriterParcel().then(site=>{
+void Promise.all([loadCivitaWriterParcel(), town.surveyReady]).then(([parcel,survey])=>{
+  // The OSM parcel gives the neighbourhood; the surveyed wing beside it gives the real walls, height and ground.
+  let site=parcel;
+  if(survey){
+    const home=anchorWriterHome(survey.data,survey.heightAt);
+    const sx=Math.sin(home.yawRadians),cx=Math.cos(home.yawRadians);
+    site={...parcel,x:home.x,z:home.z,yawRadians:home.yawRadians,groundRelativeM:home.groundRelativeM,home};
+    const local=(x,y,z)=>[home.x+x*cx+z*sx,STREET_Y+home.groundRelativeM+3.2+y,home.z-x*sx+z*cx];
+    VIEWS.home={pos:local(-1.6,-2.5,18.5),target:local(0,.35,3)};
+  }
   writerParcelSite=site;
   writerGroundOffset=site.groundRelativeM;
-  writerExterior.position.set(site.x,3.2+writerGroundOffset,site.z);
+  // The surveyed frame is the town's, which stands at STREET_Y; the exterior must stand there with it.
+  const surveyedLift=site.home?STREET_Y:0;
+  writerExterior.position.set(site.x,surveyedLift+3.2+writerGroundOffset,site.z);
+  if(site.home){writerRoof.position.copy(writerExterior.position);writerRoof.rotation.y=site.yawRadians;writerRoof.clear();buildWriterChimney(THREE,writerRoof,{chimneyY:site.home.chimneyY,roofAt:site.home.roofAt});}
   writerInteriorWorldRoot.position.set(site.x,STREET_Y+3.2+writerGroundOffset,site.z);
   writerExterior.rotation.y=site.yawRadians;
   writerInteriorWorldRoot.rotation.y=site.yawRadians;
@@ -1431,8 +1478,8 @@ void loadCivitaWriterParcel().then(site=>{
   // Rebuild exterior ONLY to account for sourced ground elevation; the
   // authored room and writer mesh remain the same objects and same materials.
   rebuildWriterExterior(currentWriterHouseLevel);
-  setWriterSceneMode(view);
-  if(!["town","civita","cars","publisher","bookstore"].includes(view))setView(view);
+  setWriterSceneMode(sceneSpace);
+  if(!OUTDOOR_VIEWS.includes(sceneSpace))setView(sceneSpace);
 }).catch(error=>{
   writerExterior.visible=false;
   town.group.userData.cityBuild.writerParcelStatus="unverified—no arbitrary home placement: "+String(error.message);
@@ -1783,15 +1830,26 @@ const VIEWS = {
   civita:   { pos: [-155, 300, 185], target: [-150, -1, 70] }, // both sourced medieval town and bridge route
   cars:     { pos: [11.5, 4.2, 18.4], target: [1.6, -2.35, 8.5] },
   publisher:{ pos: [-5, 17.5, 21.5], target: [-10, 9.6, 0] },
+  // Eye-level views at real places. y = surveyed ground + eye height + STREET_Y.
+  piazza:   { pos: [-18, -0.9, 8], target: [16, 3.2, -11] },
+  gate:     { pos: [-99.5, -18.0, 41.5], target: [-82.0, 0.0, 30.9] },
+  bridge:   { pos: [-262, -31, 126], target: [-126, -21, 42] },
+  cliffs:   { pos: [-20, -38, 205], target: [10, -12, 0] },
   bookstore:{ pos: [14, 4.6, 11.5], target: [10, -1.3, 0] },
+  // Filled in from the survey once the house is placed.
+  home:     { pos: [60, 4, -10], target: [78, 0, -35] },
   // The old view framed a 19-unit mansion; stage zero is only one 6x6 room.
   overview: { pos: [1.4, 5.4, 14.5], target: [0, 1.3, 0] },
-  building: { pos: [1.6, 4.6, 11.5], target: [0, 1.5, 0] },
+  building: { pos: [.6, 1.5, 15.5], target: [0, -.1, 0] },
+  groundfloor: { pos: [.2, -1.25, 8.8], target: [0, -1.75, -.4] },
   desk:     { pos: [2.7, 2.0, 0.3], target: [1.35, 1.0, -2.0] },
   window:   { pos: [0.6, 1.75, 1.6], target: [-0.6, 1.9, -8] },
   library:  { pos: [0.6, 1.9, 0.8], target: [-2.6, 1.2, -0.9] },
 };
 let view = "town";
+// Where the camera is, as opposed to how it got there. Dragging turns `view` into "free" but the place is the same,
+// so fog, sky scale, sun distance and which world is shown must follow this, never `view`.
+let sceneSpace = "town";
 let camGoal = { pos: new THREE.Vector3(...VIEWS.town.pos), target: new THREE.Vector3(...VIEWS.town.target) };
 camera.position.copy(camGoal.pos);controls.target.copy(camGoal.target);setWriterSceneMode("town");
 scene.fog.near=80;scene.fog.far=520;camera.far=900;camera.updateProjectionMatrix();
@@ -1802,24 +1860,37 @@ function setView(name) {
   focus = null;
   closeInspect(false);
   view = name;
+  sceneSpace = name;
   setWriterSceneMode(name);
   // Aerial geographic inspection only; other cameras retain their original contract.
-  controls.maxDistance = name === "civita" ? 370 : name === "town" ? 370 : 140;
-  controls.maxPolarAngle = (name==="town" || name==="civita") ? 1.08 : Math.PI*0.49;
-  camera.far = name === "civita" ? 950 : name === "town" ? 950 : 200;
+  controls.maxDistance = name === "civita" ? 370 : name === "town" ? 370 : EYE_VIEWS.has(name) ? 320 : 140;
+  controls.maxPolarAngle = (name==="town" || name==="civita") ? 1.08 : EYE_VIEWS.has(name) ? 1.72 : Math.PI*0.49;
+  camera.far = CITY_CAMERAS.has(name) ? 2600 : 200;
+  const shadowHalf = EYE_VIEWS.has(name) ? 130 : CITY_CAMERAS.has(name) ? 290 : 6;
+  celestial.shadow.camera.left = -shadowHalf; celestial.shadow.camera.right = shadowHalf;
+  celestial.shadow.camera.top = shadowHalf; celestial.shadow.camera.bottom = -shadowHalf;
+  celestial.shadow.camera.far = CITY_CAMERAS.has(name) ? 1000 : 80;
+  celestial.shadow.bias = CITY_CAMERAS.has(name) ? -0.0012 : -0.0008;
+  celestial.shadow.camera.updateProjectionMatrix();
   // Only outdoor geographic views need city-scale visibility. Restore the
   // original interior fog without touching author-room geometry or content.
   scene.fog.near = name === "civita" ? 95 : name === "town" ? 56 : 38;
   scene.fog.far = name === "civita" ? 680 : name === "town" ? 270 : 115;
   camera.updateProjectionMatrix();
-  sky.scale.setScalar(name === "civita" ? 5 : 1);
+  // Both city views frame the real Civita map: the dome and stars must cover it.
+  // Room views keep the original 120/100 radii and 95-unit celestial distance.
+  const cityScale = CITY_CAMERAS.has(name) ? 5 : 1;
+  sky.scale.setScalar(cityScale);
+  stars.scale.setScalar(cityScale);
+  starMat.size = cityScale > 1 ? 2.5 : 0.5;
+  cloudGroup.scale.setScalar(cityScale > 1 ? 4 : 1);
   document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   document.getElementById("writer-block-map-view")?.setAttribute("aria-pressed",String(name==="civita"));
   if (name !== "follow") {
     camGoal = { pos: new THREE.Vector3(...VIEWS[name].pos), target: new THREE.Vector3(...VIEWS[name].target) };
     // Room view coordinates describe the writer's local 6x6 floor.
     // The entire live room is now grounded at STREET_Y, not above the city.
-    if (!["town","civita","cars","publisher","bookstore"].includes(name)) {
+    if (!OUTDOOR_VIEWS.includes(name)) {
       writerInteriorWorldRoot.updateMatrixWorld(true);
       camGoal.pos.applyMatrix4(writerInteriorWorldRoot.matrixWorld);
       camGoal.target.applyMatrix4(writerInteriorWorldRoot.matrixWorld);
@@ -1827,13 +1898,12 @@ function setView(name) {
     if (["town", "building", "publisher", "bookstore"].includes(name)) camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1, Math.min(1.8, 1.2 / camera.aspect))).add(camGoal.target);
     if (name === "civita") camGoal.pos.sub(camGoal.target).multiplyScalar(Math.max(1,1.45/Math.max(.68,camera.aspect))).add(camGoal.target);
   }
-  const names = { cars: "ماشین‌های شهر", town: "سیویتا دی بانیورجو (نقشهٔ OSM)", civita: "سیویتا از بالا — داده‌های OSM", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
+  const names = { piazza: "میدان سان دوناتو", gate: "دروازهٔ سانتا ماریا", bridge: "پل سیویتا", cliffs: "صخره‌ها و دره", cars: "ماشین‌های شهر", town: "سیویتا دی بانیورجو", civita: "سیویتا از بالا", publisher: "دفتر ناشر", bookstore: "کتاب‌فروشی", building: "ساختمان نویسنده", overview: "اتاق نویسنده", follow: "همراه نویسنده", desk: "میز کار", window: "پنجره", library: "کتابخانهٔ خانه" };
   $("location-label").textContent = names[name] || "اتاق نویسنده";
   observerUI?.syncView(name);
   camMoving = true;
 }
 document.querySelectorAll(".stage-tools button[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
-document.getElementById("writer-block-map-view")?.addEventListener("click",()=>setView("civita"));
 document.querySelectorAll("[data-inspect]").forEach((b) => b.addEventListener("click", () => {
   const object = clickables.find((c) => c.userData.view === b.dataset.inspect);
   if (object) inspect(object);
@@ -1894,10 +1964,10 @@ function animate() {
   const t = clock.elapsedTime;
   const now = worldNow();
   citizens.update(dt, t, now, town.trafficState());
-  // Retire the former Tehran-layout citizen VISUALS without mutating roster,
+  // Retire the former fictional-layout citizen VISUALS without mutating roster,
   // identities, stories, publisher state, simulation routes or writer figure.
   // The active Civita town supplies independent OSM-footway ambient walkers.
-  const showingCivitaOutdoors=["town","civita","cars","publisher","bookstore"].includes(view);
+  const showingCivitaOutdoors=OUTDOOR_VIEWS.includes(sceneSpace);
   if(showingCivitaOutdoors){
     for(const node of scene.children)
       if(node.userData?.citizenId)node.visible=false;
@@ -2072,24 +2142,35 @@ function animate() {
     void cityWeatherService.refreshIfDue();
   }
   const { sunAngle, day, dusk } = cityAtmosphere.sky;
+  skyGroup.position.copy(camera.position);
+  const cityView = CITY_CAMERAS.has(sceneSpace);
+  const celestialDist = cityView ? 480 : 95;
   const sunDir = new THREE.Vector3(Math.cos(sunAngle) * 0.6, Math.sin(sunAngle), -0.8).normalize();
   const moonDir = new THREE.Vector3(-sunDir.x, -sunDir.y, sunDir.z).normalize();
-  sun.position.copy(sunDir).multiplyScalar(95);
-  moon.position.copy(moonDir).multiplyScalar(95);
+  sun.position.copy(sunDir).multiplyScalar(celestialDist);
+  moon.position.copy(moonDir).multiplyScalar(celestialDist);
   sun.visible = sunDir.y > -0.05;
   moon.visible = day < 0.6;
   const dayTop = new THREE.Color(0x5a8fc8), nightTop = new THREE.Color(0x04060f);
-  const dayBottom = new THREE.Color(0xcfe0ee), nightBottom = new THREE.Color(0x141b2e), duskBottom = new THREE.Color(0xe39a64);
+  const dayBottom = new THREE.Color(0xcfe0ee), nightBottom = new THREE.Color(0x0c1322), duskBottom = new THREE.Color(0xe39a64);
   skyUniforms.top.value.copy(nightTop).lerp(dayTop, day).multiplyScalar(1-(cityAtmosphere.weather?.cloudCover??0)*.0025);
   skyUniforms.bottom.value.copy(nightBottom).lerp(dayBottom, day).lerp(duskBottom, dusk * 0.7);
   scene.fog.color.copy(skyUniforms.bottom.value).multiplyScalar(0.8);
   starMat.opacity = clamp01(1 - day * 1.6) * 0.85;
   const lightDir = day > 0.2 ? sunDir : moonDir;
-  celestial.position.copy(lightDir).multiplyScalar(30);
+  if (cityView) {
+    celestial.target.position.copy(controls.target);
+    celestial.position.copy(controls.target).addScaledVector(lightDir, 450);
+  } else {
+    celestial.target.position.set(0, 0, 0);
+    celestial.position.copy(lightDir).multiplyScalar(30);
+  }
+  celestial.target.updateMatrixWorld();
   celestial.color.setHex(day > 0.2 ? 0xfff1d6 : 0x9fb6e0);
   const lighting = nightLighting(day);
-  celestial.intensity = lighting.celestial;
-  hemi.intensity = lighting.hemisphere;
+  // Open air is brighter than the room the same lamps were tuned for.
+  celestial.intensity = lighting.celestial + (cityView ? day * .55 : 0);
+  hemi.intensity = lighting.hemisphere + (cityView ? day * .55 : 0);
   viewFill.intensity = lighting.fill;
   viewFill.position.copy(camera.position);
   viewFill.target.position.copy(controls.target);
@@ -2143,13 +2224,13 @@ function animate() {
   controls.update();
   // Main city camera must not pan beyond the small mapped plateau's safe viewing area.
   // Move camera and orbit target together to avoid springing or showing an empty tile edge.
-  if (view === "town" || view === "civita") {
+  if (sceneSpace === "town" || sceneSpace === "civita") {
     const clamped=clampCivitaTarget(controls.target.x,controls.target.z);
     const dx=clamped.x-controls.target.x, dz=clamped.z-controls.target.z;
     if(dx||dz){controls.target.x=clamped.x;controls.target.z=clamped.z;camera.position.x+=dx;camera.position.z+=dz;}
   }
-  scene.fog.near = (view === "town" || view === "civita") ? camera.position.distanceTo(controls.target) + 8 : 38;
-  scene.fog.far = scene.fog.near + 85;
+  scene.fog.near = CITY_CAMERAS.has(sceneSpace) ? camera.position.distanceTo(controls.target) + 60 : 38;
+  scene.fog.far = CITY_CAMERAS.has(sceneSpace) ? scene.fog.near + 1900 : scene.fog.near + 85;
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
@@ -2315,7 +2396,8 @@ let knownDiary = null;
 async function loadDiary() {
   const list = await getJSON("/api/diary");
   if (list[0]) {
-    $("thought-text").textContent = list[0].text.length > 220 ? list[0].text.slice(0, 219) + "…" : list[0].text;
+    const thoughtText = list[0].text.replace(/\*\*/g, "");
+    $("thought-text").textContent = thoughtText.length > 220 ? thoughtText.slice(0, 219) + "…" : thoughtText;
     $("thought-time").textContent = list[0].time.slice(11, 16);
     if (knownDiary !== null && list[0].time !== knownDiary) toast("یادداشت تازه در دفترچه");
     knownDiary = list[0].time;
@@ -2447,7 +2529,7 @@ function setSide(collapsed) {
   requestAnimationFrame(() => { resize(); drawGraph(); });
 }
 $("toggle-side").addEventListener("click", () => setSide(!document.body.classList.contains("side-collapsed")));
-try { if (localStorage.getItem(sideKey) === "1") setSide(true); } catch { /* ignore */ }
+setSide(true); // The page opens on the scene; the sheet comes only when asked for.
 
 $("open-explorer").addEventListener("click", () => openExplorer());
 $("graph").addEventListener("click", () => openExplorer());
@@ -2834,9 +2916,10 @@ renderCityPlaces();
 observerUI=initObserverUI({
   selectTab,setView,
   onShowPanel:(id)=>{
-    if(id)selectTab(id);
+    if(id){selectTab(id);observerUI?.openDetail();}
     setSide(id?false:true);
   },
+  onOpenSheet:()=>setSide(false),
   getSceneHour:()=>wallTime(worldNow()).getHours()
 });
 refreshAll();

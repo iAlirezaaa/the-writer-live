@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>هادس، نویسنده‌ای در سیویتا</title>
+  <script>
+    // Read stored appearance before the first stylesheet is applied to avoid startup flicker.
+    (() => {
+      const root = document.documentElement;
+      let mode = "auto";
+      try {
+        const saved = localStorage.getItem("the-writer-observer-theme-v1");
+        if (["auto", "light", "dark"].includes(saved)) mode = saved;
+      } catch {}
+      const hour = new Date().getHours(); // Matches the initial client scene clock.
+      const value = mode === "auto" ? (hour < 7 || hour >= 18 ? "dark" : "light") : mode;
+      root.dataset.theme = value;
+      root.dataset.observerBootTheme = value;
+      root.dataset.observerSideBoot = "collapsed";
+    })();
+  </script>
+  <link rel="stylesheet" href="/web/style.css?v=20261109-three-mind-layers-v1">
+  <link rel="stylesheet" href="/web/book.css?v=reader-20261109-graph-v1">
+  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261111-mayor083-v1">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/web/vendor/three.module.js",
+      "three/addons/": "/web/vendor/addons/"
+    }
+  }
+  </script>
+</head>
+<body class="app side-collapsed">
+  <main class="layout scene stage-wrap" aria-label="شهر و خانهٔ نویسنده">
+    <div id="stage"></div>
+    <div class="tooltip" id="tooltip" hidden></div>
+
+    <header class="hud-id">
+      <div class="presence" id="presence"><span class="dot" aria-hidden="true"></span></div>
+      <div class="hud-id-text">
+        <h1 id="name">هادس</h1>
+        <p><span id="presence-text">—</span><span class="hud-sep" aria-hidden="true"></span><span id="activity">در حال بارگذاری</span></p>
+      </div>
+    </header>
+
+    <div class="hud-place">
+      <strong id="location-label">شهر</strong>
+      <button id="scene-data-link" type="button">دربارهٔ اینجا</button>
+    </div>
+
+    <p class="hud-thought" id="thought"><span id="thought-text">—</span> <span class="time" id="thought-time"></span></p>
+
+    <div class="hud-hint" id="hud-hint" hidden>
+      <p>صحنه را بکشید تا بگردید. روی هر چیزی بزنید تا بدانید چیست.</p>
+      <button type="button" id="hud-hint-close">فهمیدم</button>
+    </div>
+
+    <nav class="dock" aria-label="منوی اصلی">
+      <a class="dock-primary appbar-reader-link" href="/read">خواندن داستان‌ها</a>
+      <button type="button" id="open-places" aria-expanded="false" aria-controls="places">گشتن در شهر</button>
+      <button type="button" id="open-life" aria-expanded="false" aria-controls="side">زندگی نویسنده</button>
+      <button type="button" id="open-settings" class="dock-icon" aria-expanded="false" aria-controls="settings" aria-label="تنظیمات نمایش" title="تنظیمات نمایش">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+      </button>
+    </nav>
+
+    <section class="pop places" id="places" aria-label="جاهایی که می‌شود رفت" hidden>
+      <div class="stage-tools" role="toolbar" aria-label="جاها">
+        <button data-view="town">شهر</button>
+        <button id="writer-block-map-view" type="button" data-view="civita" aria-pressed="false">شهر و پل از بالا</button>
+        <button data-view="piazza">میدان سان دوناتو</button>
+        <button data-view="gate">دروازهٔ شهر</button>
+        <button data-view="bridge">پل</button>
+        <button data-view="cliffs">صخره‌ها و دره</button>
+        <button data-view="home">جلوی خانه</button>
+        <button data-view="building">برش خانه</button>
+        <button data-view="groundfloor">طبقهٔ پایین</button>
+        <button data-view="overview" aria-pressed="true">اتاق بالا</button>
+        <button data-view="desk">میز نوشتن</button>
+        <button data-view="library">کتابخانه</button>
+        <button data-view="window">پنجره</button>
+        <button data-view="follow">همراه نویسنده</button>
+        <button data-view="publisher">دفتر ناشر</button>
+        <button data-view="bookstore">کتاب‌فروشی</button>
+      </div>
+    </section>
+
+    <section class="pop settings" id="settings" aria-label="تنظیمات نمایش" hidden>
+      <label>ظاهر
+        <select id="observer-theme" aria-label="حالت روز و شب رابط">
+          <option value="auto">هماهنگ با ساعت صحنه</option>
+          <option value="light">روز</option>
+          <option value="dark">شب</option>
+        </select>
+      </label>
+      <label>ساعت صحنه <select id="scene-time"><option value="live">زنده</option><option value="9">صبح</option><option value="17">غروب</option><option value="22">شب</option></select></label>
+      <label>روشنایی <input id="scene-exposure" type="range" min="0.8" max="2" step="0.1" value="1.1"></label>
+      <p id="time-preview-note" hidden>فقط نور و رفت‌وآمد شهر عوض می‌شود. ساعت خود نویسنده نه.</p>
+      <p class="settings-meta"><span id="clock">—</span> · <span id="observer-date">—</span></p>
+    </section>
+
+    <footer class="hud-credit">
+      <a class="civita-terrain-credit" href="https://dati.lazio.it/dataset/2014-carta-tecnica-regionale-numerica-scala-1-5-000-provincia-di-viterbo" target="_blank" rel="noopener noreferrer">Regione Lazio, DBGT 2014 · CC BY 4.0</a>
+      <a class="civita-osm-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
+    </footer>
+
+    <div hidden>
+      <button id="toggle-side" type="button" aria-controls="side" aria-expanded="false"></button>
+      <button id="observer-watch" type="button"></button>
+      <span id="observer-scene-context"></span><span id="sync-time"></span>
+      <span id="observer-mode-label"></span><span id="observer-theme-status"></span><span id="observer-scene-date"></span><span id="observer-live-action"></span>
+    </div>
+
+    <aside class="side sheet" id="side" aria-label="زندگی نویسنده" data-sheet="home">
+      <header class="sheet-head">
+        <button type="button" id="sheet-back" class="sheet-back" aria-label="برگشت به فهرست">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <div class="sheet-title"><h2 id="observer-panel-title">زندگی نویسنده</h2><p id="observer-panel-description">الان چه می‌کند و چه نوشته است</p></div>
+        <button type="button" id="sheet-close" class="sheet-close" aria-label="بستن">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </header>
+
+      <div class="sheet-scroll">
+      <section class="sheet-home">
+        <div class="today">
+          <p class="today-now" id="now-line">—</p>
+          <p class="today-next" id="next-line"></p>
+          <div class="timeline" id="timeline" aria-label="برنامهٔ امروز"></div>
+          <div class="timeline-axis"><span id="axis-start">۰۷:۰۰</span><span id="day-label"></span><span id="axis-end">۰۰:۳۰</span></div>
+        </div>
+        <dl class="stats">
+          <div><dt>داستان‌ها</dt><dd id="k-stories">—</dd><dd class="sub" id="k-stories-sub"></dd></div>
+          <div><dt>انرژی</dt><dd id="k-energy">—</dd><dd class="sub" id="k-energy-sub"></dd></div>
+          <div><dt>مرحله</dt><dd id="k-stage">—</dd><dd class="sub" id="k-stage-sub"></dd></div>
+        </dl>
+        <div class="tabbar" role="tablist" aria-label="بخش‌ها">
+          <button role="tab" data-panel="p-stories" aria-selected="true">داستان‌ها</button>
+          <button role="tab" data-panel="p-planner">برنامهٔ روز</button>
+          <button role="tab" data-panel="p-self">رشد نویسنده</button>
+          <button role="tab" data-panel="p-graph">مهارت و حافظه</button>
+          <button role="tab" data-panel="p-inner">تأمل و عادت</button>
+          <button role="tab" data-panel="p-publish">ناشر و چاپ</button>
+          <button role="tab" data-panel="p-town">مردم شهر</button>
+          <button role="tab" data-panel="p-diary">دفتر روزانه</button>
+          <button role="tab" data-panel="p-notebook">ایده‌ها</button>
+          <button role="tab" data-panel="p-books">کتاب‌ها</button>
+          <button role="tab" data-panel="p-comments">نامه‌ها</button>
+          <button role="tab" data-panel="p-flaws">موانع</button>
+          <button role="tab" data-panel="p-world">جهان داستان</button>
+          <button role="tab" data-panel="p-care">نگهداری</button>
+          <button role="tab" data-panel="p-status">حال و وضعیت</button>
+        </div>
+      </section>
+
+      <section class="sheet-detail">
+        <button id="panel-scene-link" class="scene-link" type="button">دیدن در صحنه</button>
+
+        <section class="panel" id="p-town" data-title="محله">
+          <p class="muted small">شهروندان فعلاً روتین نمایشی دارند، نه تصمیم‌گیری مستقل. برای هرکدام یک ایجنت جدا و غیرفعال رزرو شده است.</p>
+          <div class="tabs">
+            <button data-inspect="town">جمعیت و برنامه‌ها</button>
+            <button data-inspect="publisher">دفتر ناشر</button>
+            <button data-inspect="bookstore">کتاب‌فروشی</button>
+            <button data-inspect="life">زندگی نویسنده</button>
+          </div>
+          <p id="town-summary" class="small" role="status">در حال بارگذاری محله</p>
+          <section class="observer-city-directory" aria-labelledby="city-places-title">
+            <div class="observer-city-directory-head">
+              <div><span class="observer-journal-kicker">راهنمای محله‌ها</span>
+                <h3 id="city-places-title">گردش در شهر</h3></div>
+              <span id="city-places-count" class="small">—</span>
+            </div>
+            <p class="muted small">محله‌های متنوع، برج نشر، پارک‌ها و مکان‌های فرهنگی. «تماشا» دوربین را به مکان می‌برد؛ «شناخت» جزئیات آن را نشان می‌دهد.</p>
+            <div class="observer-city-grid" id="town-places" role="list"></div>
+          </section>
+          <label class="observer-resident-search" for="town-search">پیدا کردن یک شهروند
+            <input id="town-search" type="search" placeholder="نام، شغل یا هدف شخصیت…" autocomplete="off">
+          </label>
+          <p class="observer-resident-help">روی نام هر شهروند بزنید تا برنامه و هستهٔ شخصیتش باز شود. از «دیدن در صحنه» برای رفتن مستقیم به همان کاراکتر استفاده کنید.</p>
+          <div id="town-residents"></div>
+        </section>
+
+        <section class="panel active" id="p-stories" data-title="داستان‌ها">
+          <p class="muted small">هر داستان مثل یک کتاب باز می‌شود. هر کسی می‌تواند بخشی از متن را انتخاب کند و روی آن نظر بدهد.</p>
+          <ul class="list" id="stories"></ul>
+        </section>
+
+        <section class="panel" id="p-diary" data-title="دفترچه">
+          <ol class="list" id="diary"></ol>
+        </section>
+
+        <section class="panel" id="p-notebook" data-title="دفترچه‌ی ایده‌ها">
+          <p class="muted small">ایده‌های شما و ایده‌هایی که خودش نوشته. ایده‌ی شما اول برداشته می‌شود.</p>
+          <ul class="list" id="notebook"></ul>
+          <h3>ایده‌ی تازه (فقط مالک)</h3>
+          <form id="idea-form">
+            <input id="idea-token" type="password" placeholder="توکن مالک" autocomplete="off">
+            <textarea id="idea-text" maxlength="800" rows="3" placeholder="ایده‌ی داستان"></textarea>
+            <button type="submit">افزودن به دفترچه</button>
+            <p class="muted small" id="idea-status"></p>
+          </form>
+        </section>
+
+        <section class="panel" id="p-planner" data-title="پلنر">
+          <p class="muted small" id="codex-info"></p>
+          <div class="planner-overview" id="plan-progress" aria-live="polite"></div>
+          <div class="planner-tools"><label for="planner-filter">نمایش برنامه</label><select id="planner-filter"><option value="all">همهٔ کارها</option><option value="open">در انتظار و جاری</option><option value="done">انجام‌شده‌ها</option><option value="skipped">از دست‌رفته‌ها</option></select></div>
+          <ol class="list small task-list" id="plan"></ol>
+        </section>
+
+        <section class="panel" id="p-graph" data-title="حافظه">
+          <button id="open-explorer" type="button">کاوش در گراف حافظه</button>
+          <h3>مهارت‌ها</h3>
+          <div id="skills"></div>
+          <h3>گراف حافظه</h3>
+          <p class="muted small" id="graph-guide">قانون نمایش: رنگ = حوزه، شکل = نوع نود، عنوان = مفهوم، پیکان = جهت پیوند. شناسه‌ها فقط کلید داخلی‌اند.</p>
+          <p class="muted small" id="graph-counts"></p>
+          <div class="tabs" id="domains"></div>
+          <canvas id="graph" class="graph" title="برای کاوش کلیک کنید"></canvas>
+          <h3>آزمون و خطا</h3>
+          <p class="muted small">پاداش هر داستان از پذیرش، امتیاز نشر، مهارت هدف و تعداد بازنویسی‌ها می‌آید؛ سیاست، تمرین‌های مؤثرتر را بیشتر انتخاب می‌کند.</p>
+          <p class="muted small" id="reward-policy"></p>
+          <ul class="list small" id="experiments"></ul>
+          <h3>درس‌های اخیر</h3>
+          <ul class="list small" id="notes"></ul>
+          <h3>تحقیق با کامپیوتر</h3>
+          <p class="muted small" id="research-budget"></p>
+          <h3>جست‌وجوها</h3>
+          <ul class="list small" id="searches"></ul>
+          <h3>صفحه‌هایی که خوانده</h3>
+          <ul class="list" id="library"></ul>
+        </section>
+
+        <section class="panel" id="p-self" data-title="رشد نویسنده">
+          <p class="muted small">پرسونا و هسته‌اش را ببینید؛ سه لایهٔ ذهن، دانسته‌ها و نوشته‌هایش را هم جداگانه باز کنید و اثرشان بر هم را بررسی کنید.</p>
+          <div id="growth-box" class="growth-box"></div>
+          <div id="learning-progress-box" class="growth-box"></div>
+          <div id="persona-box"></div>
+          <div id="core-box"></div>
+          <div id="mind-box" class="mind-dashboard" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" id="p-inner" data-title="تأمل و عادت">
+          <p class="muted small">هیچ چیز قطعی نیست. می‌پرسد، آرزو می‌کند، عادت‌هایش را روی خودش آزمایش می‌کند.</p>
+          <div id="questions-box"></div>
+          <div id="wishes-box"></div>
+          <div id="habits-box"></div>
+          <div id="learning-box"></div>
+        </section>
+
+        <section class="panel" id="p-publish" data-title="ناشر و چاپ">
+          <p class="muted small">دلش می‌خواهد چاپ شود و خوانده شود. ناشر تصمیم می‌گیرد، نه فقط نمره می‌دهد؛ و منتقد هم قواعد خودش را ارتقا می‌دهد.</p>
+          <div id="publisher-box"></div>
+          <div id="critic-box"></div>
+          <div id="brand-box"></div>
+          <div id="letters-box"></div>
+          <div id="kinds-box"></div>
+          <div id="achievements-box"></div>
+        </section>
+
+        <section class="panel" id="p-care" data-title="نگهداری">
+          <p class="muted small">چک‌پوینت‌ها، شاهکار در حال نوشتن، دسترسی خط فرمان، و اتاقی که هیچ‌وقت تمام نمی‌شود.</p>
+          <div id="backups-box"></div>
+          <div id="masterpiece-box"></div>
+          <div id="cli-box"></div>
+          <div id="room-box"></div>
+          <div id="weave-box"></div>
+        </section>
+
+        <section class="panel" id="p-world" data-title="جهان">
+          <p class="muted small">فایل‌های متنی (یادداشت، شخصیت‌ها، مکان‌ها، قانون‌های جهان) را اینجا یا هر جای صفحه رها کنید. نویسنده آن‌ها را می‌خواند و جهان داستانی‌اش را از رویشان می‌سازد.</p>
+          <label class="dropzone" id="dropzone" tabindex="0">
+            <input type="file" id="world-file" accept=".txt,.md,.markdown,.json,.csv" multiple hidden>
+            <span>فایل را اینجا رها کنید یا برای انتخاب کلیک کنید</span>
+            <span class="time">txt، md، json، csv · حداکثر ۴۰۰ کیلوبایت</span>
+          </label>
+          <input id="world-token" type="password" placeholder="توکن مالک (برای افزودن فایل)" autocomplete="off">
+          <p class="small" id="upload-status"></p>
+          <h3>فایل‌های جهان</h3>
+          <ul class="list small" id="sources"></ul>
+          <h3>قانون‌های جهان</h3>
+          <ul class="list small" id="rules"></ul>
+          <h3>مکان‌ها</h3>
+          <ul class="list" id="world-list"></ul>
+        </section>
+
+        <section class="panel" id="p-flaws" data-title="ایرادها">
+          <p class="muted small">ایرادهایی که خودش پیدا کرده، حدس دلیلش، و کاری که برای رفعش امتحان می‌کند.</p>
+          <ul class="list" id="flaws"></ul>
+        </section>
+
+        <section class="panel" id="p-books" data-title="کتابخانه">
+          <p class="muted small" id="books-count"></p>
+          <ul class="list" id="books"></ul>
+        </section>
+
+        <section class="panel" id="p-comments" data-title="نظرها">
+          <form id="comment-form">
+            <input id="c-name" maxlength="40" placeholder="نام (اختیاری)">
+            <textarea id="c-text" maxlength="500" rows="3" placeholder="نظرتان درباره‌ی داستان یا حال نویسنده"></textarea>
+            <button type="submit">ارسال</button>
+            <p class="muted small" id="c-status"></p>
+          </form>
+          <ul class="list" id="comments"></ul>
+        </section>
+
+        <section class="panel" id="p-status" data-title="حال">
+          <dl class="stats">
+            <div><dt>حد امتیاز منتقد</dt><dd id="k-threshold">—</dd><dd class="sub" id="k-threshold-sub"></dd></div>
+            <div><dt>Codex ۵ ساعته</dt><dd id="k-codex">—</dd><dd class="sub" id="k-codex-sub"></dd></div>
+            <div><dt>ایرادهای باز</dt><dd id="k-flaws">—</dd><dd class="sub" id="k-flaws-sub"></dd></div>
+          </dl>
+          <div class="facts" style="grid-template-columns: auto 1fr; margin-bottom: 12px">
+            <span>انرژی</span><meter id="energy" min="0" max="1" value="0.5"></meter>
+            <span>اعتماد به نفس</span><meter id="m-confidence" min="0" max="1" value="0.5"></meter>
+            <span>بی‌قراری</span><meter id="m-restlessness" min="0" max="1" value="0.3"></meter>
+            <span>غرور</span><meter id="m-pride" min="0" max="1" value="0.4"></meter>
+          </div>
+          <p class="muted small">این حالت‌ها مدل‌سازی تولیدی هستند؛ ادعای احساس واقعی انسانی نیست.</p>
+          <dl class="facts" id="facts"></dl>
+          <p class="warn small" id="error" hidden></p>
+        </section>
+      </section>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+  <div class="drop-overlay" id="drop-overlay" hidden><div>فایل را رها کنید تا به جهان داستانی اضافه شود</div></div>
+  <script type="module" src="/web/world.js?v=city-world-20261111-mayor085-v2"></script>
+</body>
+</html>

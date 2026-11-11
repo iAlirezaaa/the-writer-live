@@ -132,5 +132,12 @@ export async function loadCivitaWriterParcel(){
  const ground=sampleCivitaTerrain(terrain,result.latitude,result.longitude);
  if(!finite(ground)||Math.abs(ground)>150)
   throw new Error('Writer parcel has no valid source-relative ground height');
+ // Prefer the surveyed ground; the model DEM above stays as the fallback.
+ try{
+  const {loadSurveyGround}=await import('./civita-survey-ground.js');
+  const surveyed=await loadSurveyGround(result.x,result.z);
+  if(finite(surveyed)&&Math.abs(surveyed)<60)
+   return Object.freeze({...result,groundRelativeM:surveyed,groundSource:'Regione Lazio DBGT 2014 (CC BY 4.0)'});
+ }catch{/* keep the model ground */}
  return Object.freeze({...result,groundRelativeM:ground,groundSource:'Mapzen / EU-DEM model (not cadastral surveyed)'});
 }

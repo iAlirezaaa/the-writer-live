@@ -1,0 +1,128 @@
+/* The reading room. Everything recedes except the page: chrome fades when the reader settles in. */
+.book-overlay{--tex-fibre:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+ --tex-weave:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M0 0h6M0 3h6M0 0v6M3 0v6' stroke='%23694d2a' stroke-opacity='.07'/%3E%3C/svg%3E");
+ --tex-rice:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .32' numOctaves='3' seed='6'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .3 0 0 0 .26 -.06'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+ --paper-tex:var(--tex-fibre);--lamp:.25;}
+.book-overlay[data-reader-theme="paper"]{--reader-bg:#1a130d;--reader-paper:#f7f0e0;--reader-ink:#2a2118;--reader-page-muted:#8b7a60;--reader-gutter:rgba(70,48,20,.17);--reader-edge:#c9b995;background:radial-gradient(ellipse at 50% 38%,#3a2a1b,var(--reader-bg) 74%);}
+.book-overlay[data-reader-theme="ivory"]{--reader-bg:#1c1a16;--reader-paper:#fcfaf3;--reader-ink:#24221d;--reader-page-muted:#8f897a;--reader-gutter:rgba(60,55,40,.13);--reader-edge:#d7d2c2;background:radial-gradient(ellipse at 50% 38%,#393630,var(--reader-bg) 74%);}
+.book-overlay[data-reader-theme="linen"]{--reader-bg:#181c1a;--reader-paper:#e9e6da;--reader-ink:#26302b;--reader-page-muted:#6f7a70;--reader-gutter:rgba(40,55,45,.15);--reader-edge:#bfbcae;--paper-tex:var(--tex-weave);background:radial-gradient(ellipse at 50% 38%,#333b37,var(--reader-bg) 74%);}
+.book-overlay[data-reader-theme="rice"]{--reader-bg:#191510;--reader-paper:#efe6d0;--reader-ink:#2c251a;--reader-page-muted:#85765b;--reader-gutter:rgba(70,50,20,.18);--reader-edge:#c4b593;--paper-tex:var(--tex-rice);background:radial-gradient(ellipse at 50% 38%,#3a2f20,var(--reader-bg) 74%);}
+.book-overlay[data-reader-theme="kraft"]{--reader-bg:#14100b;--reader-paper:#c9ad85;--reader-ink:#23190e;--reader-page-muted:#5f4a2e;--reader-gutter:rgba(50,30,10,.24);--reader-edge:#a48b66;background:radial-gradient(ellipse at 50% 38%,#33271a,var(--reader-bg) 74%);}
+.book-overlay[data-reader-theme="ink"]{--reader-paper:#dcdad0;--reader-edge:#aeaca2;}
+.book-overlay[data-reader-theme="night"]{--reader-bg:#0a0d10;--reader-paper:#1d2329;--reader-ink:#dfe3dc;--reader-page-muted:#8e9a97;--reader-gutter:rgba(0,0,0,.4);--reader-edge:#10151a;--paper-tex:none;background:radial-gradient(ellipse at 50% 38%,#1b242b,var(--reader-bg) 74%);}
+
+/* Lamp: a warm cast over the whole page, set by the reader */
+.book-overlay::after{content:"";position:fixed;inset:0;z-index:12;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,rgba(255,178,92,.32),rgba(60,28,0,.5) 95%);opacity:var(--lamp);mix-blend-mode:multiply;transition:opacity .3s ease;}
+
+/* Chrome */
+body.lib .book-overlay .book-bar{background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;filter:none;transform:none;min-height:54px;padding:6px clamp(12px,3vw,28px);transition:opacity .5s ease;position:relative;z-index:14;}
+body.lib .book-overlay .book-bar-title{font-family:var(--l-title);font-size:1rem;font-weight:700;color:#efe6d6;}
+body.lib .book-overlay .book-bar-title::before,body.lib .book-overlay .book-bar-title::after{content:none;display:none;}
+body.lib .book-overlay .book-tools{display:flex;align-items:center;gap:2px;}
+body.lib .book-overlay .book-tools>button,body.lib .book-overlay .book-tools>details>summary{min-height:40px;padding:0 13px;display:inline-flex;align-items:center;border:0;border-radius:9px;background:transparent;color:#d6ccb9;font-size:.84rem;box-shadow:none;list-style:none;cursor:pointer;}
+body.lib .book-overlay .book-tools>details>summary::-webkit-details-marker{display:none;}
+body.lib .book-overlay .book-tools>details>summary::after{content:none;}
+body.lib .book-overlay .book-tools>button:hover,body.lib .book-overlay .book-tools>details>summary:hover,body.lib .book-overlay .book-tools>details[open]>summary{background:rgba(255,255,255,.09);color:#fff;}
+body.lib .book-overlay .book-tools>button[aria-pressed="true"]{background:rgba(255,255,255,.12);color:#fff;border:0;}
+body.lib .book-overlay .book-footer{background:transparent;border:0;box-shadow:none;color:#a79a86;font-size:.76rem;padding:6px clamp(12px,3vw,28px) 10px;transition:opacity .5s ease;position:relative;z-index:14;}
+body.lib .book-overlay .book-footer button,body.lib .book-overlay .book-footer select{min-height:34px;background:transparent;border:0;color:#cfc4b1;font-size:.76rem;box-shadow:none;}
+body.lib .book-overlay .book-footer select option{background:#241b12;}
+body.lib .book-overlay .turn{background:transparent;border:0;box-shadow:none;color:#a79a86;font-size:1.2rem;border-radius:10px;transition:opacity .5s ease,background .2s ease;}
+body.lib .book-overlay .turn:hover:not(:disabled){background:rgba(255,255,255,.09);color:#fff;}
+body.lib .book-overlay.chrome-idle .book-bar,body.lib .book-overlay.chrome-idle .book-footer,body.lib .book-overlay.chrome-idle .turn{opacity:0;}
+body.lib .book-overlay .title-page .tp-title{font-family:var(--l-title);font-weight:700;}
+
+/* Fore-edge slider: the pages themselves */
+body.lib .book-overlay .book-progress{-webkit-appearance:none;appearance:none;height:16px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 1px,transparent 1px 4px);border-radius:2px;accent-color:#c9a063;direction:rtl;}
+body.lib .book-overlay .book-progress::-webkit-slider-thumb{-webkit-appearance:none;width:5px;height:24px;background:#c9a063;border-radius:1px;box-shadow:0 0 8px rgba(201,160,99,.7);cursor:grab;}
+body.lib .book-overlay .book-progress::-moz-range-thumb{width:5px;height:24px;border:0;background:#c9a063;border-radius:1px;cursor:grab;}
+.riffle-tip{position:fixed;z-index:15;transform:translate(-50%,-100%);padding:6px 12px;background:#f5ecd9;color:#2b1e12;font-size:.76rem;border-radius:3px;box-shadow:0 8px 18px rgba(0,0,0,.45);pointer-events:none;white-space:nowrap;}
+
+/* The book */
+.book-overlay .book{perspective:2600px;perspective-origin:50% 38%;transform-style:preserve-3d;border:0;background:var(--reader-edge);box-shadow:0 34px 70px rgba(0,0,0,.55);border-radius:3px;touch-action:pan-y;}
+.book-overlay .book::before,.book-overlay .book::after{content:"";position:absolute;top:3px;bottom:3px;z-index:-1;background:repeating-linear-gradient(90deg,#d9cdb4 0 1px,#b6a889 1px 2px);}
+.book-overlay .book::before{right:calc(-1px - var(--done,0)*11px);width:calc(1px + var(--done,0)*11px);border-radius:0 2px 2px 0;}
+.book-overlay .book::after{left:calc(-1px - (1 - var(--done,0))*11px);width:calc(1px + (1 - var(--done,0))*11px);border-radius:2px 0 0 2px;}
+.book-overlay .book[data-grab="left"]{cursor:grab;}
+.book-overlay .book[data-grab="right"]{cursor:grab;}
+.book-overlay .book.is-dragging{cursor:grabbing;user-select:none;}
+.book-overlay .page,.book-overlay .leaf-side .page{background-color:var(--reader-paper);color:var(--reader-ink);}
+.book-overlay .page-right{background-image:linear-gradient(90deg,var(--reader-gutter),transparent 7%),var(--paper-tex);}
+.book-overlay .page-left{background-image:linear-gradient(270deg,var(--reader-gutter),transparent 7%),var(--paper-tex);}
+.book-overlay .book.single .page-right{background-image:linear-gradient(270deg,var(--reader-gutter),transparent 5%),var(--paper-tex);}
+/* Corner lift, a hint that the page can be taken */
+.book-overlay .book .page-corner{position:absolute;bottom:0;width:0;height:0;z-index:5;pointer-events:none;background:linear-gradient(135deg,var(--reader-paper) 49%,rgba(0,0,0,.26) 51%,transparent 72%);transition:width .2s ease,height .2s ease;}
+.book-overlay .book .page-corner.left{left:0;transform:scaleX(-1);}
+.book-overlay .book .page-corner.right{right:0;}
+.book-overlay .book[data-grab="left"] .page-corner.left,.book-overlay .book[data-grab="right"] .page-corner.right{width:34px;height:34px;}
+
+/* The bending leaf */
+.leaf-curl{position:absolute;z-index:6;transform-style:preserve-3d;transform-origin:100% 50%;pointer-events:none;}
+.leaf-strip{position:absolute;top:0;bottom:0;transform-style:preserve-3d;transform-origin:100% 50%;}
+.leaf-side{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.leaf-back{transform:rotateY(180deg);}
+.book-overlay .leaf-side .page{position:absolute;top:0;bottom:0;height:100%;box-sizing:border-box;}
+.leaf-shade{position:absolute;inset:0;background:#20140a;opacity:0;pointer-events:none;}
+.leaf-back .leaf-shade{background:#3a2a18;}
+.cast{position:absolute;top:0;bottom:0;z-index:5;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.34),transparent);opacity:0;}
+.cast.on-left{background:linear-gradient(270deg,rgba(0,0,0,.34),transparent);}
+
+/* Ribbon */
+.book-ribbon{position:absolute;top:-6px;z-index:7;width:17px;height:calc(100% - 30px);max-height:0;background:linear-gradient(90deg,#8e2b25,#b23a32 40%,#8a2822);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 11px),0 100%);transition:max-height .55s cubic-bezier(.3,.9,.3,1);pointer-events:none;}
+.book-ribbon.on{max-height:62%;}
+
+/* Appearance: a drawer that slides in beside the book */
+body.lib .book-overlay .reader-settings-panel{position:fixed;top:0;bottom:0;left:0;right:auto;z-index:16;width:min(366px,100vw);max-height:none;margin:0;padding:22px 20px 26px;display:flex;flex-direction:column;gap:18px;overflow:auto;box-sizing:border-box;background:#211810;color:#e8dfce;border:0;border-radius:0;box-shadow:12px 0 40px rgba(0,0,0,.5);animation:drawer-in .36s cubic-bezier(.2,.8,.2,1);}
+@keyframes drawer-in{from{transform:translateX(-102%)}}
+.panel-head{display:flex;align-items:center;justify-content:space-between;}
+.panel-head h3{margin:0;font-family:"Noto Naskh Arabic",serif;font-size:1.2rem;}
+body.lib .book-overlay .panel-head button{width:36px;height:36px;padding:0;background:transparent;border:0;color:#d6ccb9;font-size:1.1rem;box-shadow:none;}
+.panel-group{display:flex;flex-direction:column;gap:11px;padding-top:15px;border-top:1px solid rgba(255,255,255,.09);}
+.panel-group h4{margin:0;font-size:.74rem;font-weight:500;color:#a59782;}
+body.lib .book-overlay .reader-setting{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.82rem;color:#d3c8b5;}
+body.lib .book-overlay .reader-setting input[type=search]{flex:1 1 150px;min-width:0;height:38px;margin:0;padding:0 10px;background:#2d2217;color:#efe6d6;border:1px solid rgba(255,255,255,.1);border-radius:8px;font:inherit;font-size:.82rem;}
+.segment{display:flex;flex-wrap:wrap;gap:3px;padding:3px;background:#2d2217;border-radius:9px;}
+body.lib .book-overlay .segment button{flex:1 1 auto;min-height:34px;padding:0 9px;background:transparent;border:0;border-radius:7px;color:#cfc4b1;font-size:.78rem;box-shadow:none;transition:background .18s ease,color .18s ease;}
+body.lib .book-overlay .segment button[aria-pressed="true"]{background:#efe6d6;color:#21180f;}
+.segment-host{display:flex;flex-direction:column;gap:6px;font-size:.8rem;color:#d3c8b5;}
+.segment-host select{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+body.lib .book-overlay .font-tiles button{flex:1 1 44%;display:flex;flex-direction:column;align-items:center;min-height:62px;line-height:1.5;}
+.font-tiles b{font-size:1.28rem;font-weight:500;}
+.font-tiles small{font-size:.66rem;opacity:.75;}
+.range-row{display:flex;align-items:center;gap:10px;font-size:.8rem;color:#d3c8b5;}
+.range-row span:first-child{flex:0 0 88px;}
+.range-row input{flex:1;min-width:0;accent-color:#c9a063;}
+body.lib .book-overlay .reader-settings-panel>.panel-group button.plain{min-height:36px;padding:0 10px;background:#2d2217;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#efe6d6;font-size:.8rem;box-shadow:none;}
+body.lib .book-overlay .reader-settings-panel button[aria-pressed="true"].plain{background:#efe6d6;color:#21180f;}
+body.lib .book-overlay .reader-votes{flex-wrap:wrap;justify-content:flex-start;}
+body.lib .book-overlay .reader-votes>span:first-child{flex:1 0 100%;}
+.reader-type-size,.reader-font{display:none!important;}
+
+/* Paper: real sheets in a fan. Take one and put it on the book, or just tap it. */
+.paper-fan{position:relative;height:138px;margin:4px 0 2px;touch-action:none;}
+.paper-sheet{position:absolute;bottom:0;left:50%;width:74px;height:106px;margin-left:-37px;padding:0;border:0;border-radius:2px;background-color:var(--sheet);background-image:var(--sheet-tex,none);box-shadow:0 3px 9px rgba(0,0,0,.42);transform-origin:50% 180%;transform:rotate(var(--fan)) translateY(0);transition:transform .32s cubic-bezier(.25,1.4,.45,1),box-shadow .2s ease;cursor:grab;}
+.paper-fan:hover .paper-sheet{transform:rotate(calc(var(--fan)*1.22));}
+body.lib .book-overlay .paper-sheet:hover,.paper-fan:hover .paper-sheet:hover{transform:rotate(calc(var(--fan)*1.22)) translateY(-16px);}
+.paper-sheet[aria-pressed="true"]{transform:rotate(var(--fan)) translateY(-11px);box-shadow:0 0 0 2px #c9a063,0 6px 14px rgba(0,0,0,.5);}
+.paper-sheet.is-lifted{visibility:hidden;}
+.paper-label{min-height:1.4em;text-align:center;font-size:.8rem;color:#d3c8b5;}
+.paper-fly{position:fixed;z-index:13;left:0;top:0;border-radius:2px;background-color:var(--sheet);background-image:var(--sheet-tex,none);box-shadow:0 26px 50px rgba(0,0,0,.5);pointer-events:none;will-change:transform;transform-origin:0 0;}
+
+/* Entering and leaving through the stage */
+.book-overlay.book-entering>.book-bar,.book-overlay.book-entering>.book-shelf,.book-overlay.book-entering>.book-footer{opacity:0;}
+.book-overlay.book-entering{background:none;}
+.book-overlay.book-entering::after{opacity:0;}
+.book-overlay>.book-shelf{transition:opacity .52s ease;}
+.book-overlay.book-leaving>.book-bar,.book-overlay.book-leaving>.book-shelf,.book-overlay.book-leaving>.book-footer{opacity:0;transition:opacity .28s ease;}
+.book-overlay.book-leaving::after{opacity:0;}
+
+@media(max-width:640px){
+ .paper-sheet{width:62px;height:92px;margin-left:-31px;}
+ .paper-fan{height:124px;}
+}
+@media(prefers-reduced-motion:reduce){.paper-sheet,.book-ribbon,body.lib .book-overlay .reader-settings-panel{transition:none;animation:none;}}
+
+/* The sheets keep their own paper whatever the panel's buttons look like. */
+body.lib .book-overlay .reader-settings-panel .paper-sheet{background-color:var(--sheet);background-image:var(--sheet-tex,none);border:0;min-height:0;padding:0;}
+body.lib .book-overlay .reader-settings-panel{overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;}
+body.lib .book-overlay .book-bar:has(details[open]){z-index:20;}

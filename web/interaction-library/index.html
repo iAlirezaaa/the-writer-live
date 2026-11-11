@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#213632">
+<title>کتابخانهٔ تعاملی | نمای آزمایشی نویسنده</title>
+<style>
+:root{--paper:#f4ead5;--text:#f3eadc;--gold:#dbc093;--wall:#3a514a;--frame:#87684a;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:#152824;color:var(--text);font:15px/1.8 Tahoma,"Segoe UI",system-ui,sans-serif}
+a,button{font:inherit}a{color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #ffe09f;outline-offset:4px}
+.shell{min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto}
+header{position:relative;z-index:1;background:#122623ee;border-bottom:1px solid #ffffff22;padding:14px clamp(16px,4vw,50px);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+header strong{font-size:1.12rem;display:block}
+.kicker{color:#cfb58f;font-size:.7rem;letter-spacing:.06em}
+nav{display:flex;gap:9px;flex-wrap:wrap}
+nav a,.actions a,.actions button,.close{display:inline-flex;justify-content:center;align-items:center;text-decoration:none;padding:7px 14px;min-height:44px;border-radius:11px;border:1px solid #e8d5ae77;background:#ffffff13;color:inherit}
+nav a:hover,.actions a:hover,.actions button:hover,.close:hover{background:#e1bc7c30}
+main{position:relative;isolation:isolate;overflow:hidden;display:grid;place-items:center;min-height:600px;padding:36px 12px 50px;background:radial-gradient(ellipse at 50% 15%,#52655c,#304440 60%,#162925)}
+main::after{content:"";position:absolute;z-index:-1;inset:auto 0 0;height:19%;background:linear-gradient(145deg,#43382d,#201c1a)}
+.window{position:absolute;left:5%;top:9%;width:clamp(110px,18vw,215px);height:clamp(180px,34vh,310px);background:linear-gradient(#a0c5c2,#e5d6ad);border:11px solid #8b6a4d;box-shadow:0 0 0 6px #1e2926aa,inset 0 0 0 2px #ffffff88;opacity:.75}
+.window::before,.window::after{content:"";position:absolute;background:#8b6a4d}.window::before{inset:0 auto 0 48%;width:10px}.window::after{inset:49% 0 auto;height:10px}
+.lamp{position:absolute;right:11%;top:11%;width:11px;height:85px;background:#c9a378;box-shadow:0 0 70px 23px #dba97633}
+.lamp::before{content:"";position:absolute;top:-23px;right:-32px;width:80px;height:38px;background:#c5a175;border-radius:60% 60% 8px 8px;box-shadow:0 16px 35px #dba97677}
+html[data-light="night"] main{background:radial-gradient(ellipse at 50% 16%,#34444d,#1c3037 70%,#101d23)}
+html[data-light="night"] .window{background:linear-gradient(#2a4166,#606f85 68%,#998a77)}
+.intro{position:relative;z-index:1;text-align:center;width:min(1040px,100%)}
+h1{font-size:clamp(1.65rem,3.9vw,3rem);margin:0;text-shadow:0 4px 25px #0006}
+.lead{margin:5px auto 33px;max-width:700px;color:#e4dacb}
+.case{position:relative;margin:auto;width:min(970px,100%);padding:30px clamp(10px,3.5vw,40px) 18px;background:linear-gradient(120deg,#563d2d,#845d42 44%,#4a3226);border:12px solid #3b2a21;box-shadow:inset 0 0 23px #100b0865,0 30px 54px #0c120db5;border-radius:8px}
+.shelf{display:flex;align-items:flex-end;justify-content:center;gap:clamp(8px,2vw,28px);min-height:300px;padding:14px 8px 27px;perspective:950px;overflow-x:auto}
+.shelf:after{content:"";position:absolute;inset:auto 0 0;height:24px;background:linear-gradient(#bb9066,#70472e 52%,#36241d);box-shadow:0 8px 15px #1e140db5;pointer-events:none}
+.book{--cover:#426259;position:relative;flex:0 0 clamp(55px,10vw,112px);height:var(--h,230px);border:0;padding:10px 5px;border-radius:3px 8px 5px 3px;background:linear-gradient(90deg,#0005,transparent 14px),linear-gradient(120deg,#fff4,transparent 40%,#0004),var(--cover);color:#ffedd2;box-shadow:inset 5px 0 #0003,8px 13px 14px #100a096e;writing-mode:vertical-rl;display:flex;align-items:center;justify-content:center;gap:12px;transform:rotateY(-14deg) rotateZ(var(--tilt,0deg));transform-origin:bottom;transition:transform .46s cubic-bezier(.2,.85,.25,1),box-shadow .46s}
+.book::before{content:"";position:absolute;inset:7px;border:1px solid #eedab052;pointer-events:none}
+.book strong{font-size:clamp(.75rem,1.3vw,1rem);letter-spacing:.08em}
+.book small{color:#eedec7c9;font-size:.67rem}
+.book:hover,.book:focus-visible,.book[aria-expanded=true]{transform:translateY(-22px) translateZ(34px) rotateY(-3deg) rotateZ(0);box-shadow:inset 5px 0 #0003,12px 21px 22px #0c0807b8}
+.hint{color:#e4d8c3;font-size:.76rem;margin:25px auto 0}
+footer{padding:11px 16px;background:#132622;color:#d5cbbf;text-align:center;font-size:.76rem}
+dialog{width:min(1050px,calc(100% - 24px));max-height:calc(100dvh - 25px);padding:0;border:1px solid #dac39c;border-radius:20px;background:var(--paper);color:#2c423b;box-shadow:0 30px 95px #000c}
+dialog::backdrop{background:#0a1919d9;backdrop-filter:blur(7px)}
+dialog[open]{animation:open-book .43s cubic-bezier(.2,.8,.2,1)}
+@keyframes open-book{from{opacity:0;transform:translateY(22px) rotateY(6deg) scale(.95)}to{opacity:1;transform:none}}
+.spread{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);min-height:min(640px,81dvh)}
+.paper{padding:clamp(22px,3vw,42px);display:flex;flex-direction:column;justify-content:center;gap:10px;background:linear-gradient(100deg,#e3d4b8,#fff9eb 17%,#f4e9d7)}
+.paper h2{margin:0;font-size:clamp(1.5rem,3vw,2.4rem)}
+.paper p{margin:0;line-height:2;color:#59665e}
+.eyebrow{font-size:.72rem;color:#8e7656;letter-spacing:.04em}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.actions button{background:#34564d;color:#fff;border-color:#34564d}
+.actions a{border-color:#917e64;color:#345047}
+.preview{display:flex;flex-direction:column;min-width:0;background:linear-gradient(140deg,#324d4b,#192e32)}
+.preview-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;color:#f3e8d3}
+.close{color:#fff;border-color:#ffffff55;background:#ffffff12}
+.viewport{display:grid;place-items:center;flex:1;min-height:370px;margin:0 14px 14px;border-radius:10px;border:1px solid #d3b78677;overflow:hidden}
+.viewport p{padding:20px;color:#eadcc3;max-width:26ch;text-align:center}
+.viewport iframe{width:100%;height:100%;min-height:500px;border:0;background:#fff;display:block}
+@media(max-width:690px){
+  header{padding:11px 14px}
+  main{min-height:560px;padding:33px 8px}
+  .window,.lamp{opacity:.3}
+  .case{border-width:7px;padding:19px 7px 16px}
+  .shelf{justify-content:flex-start;min-height:235px;padding:6px 8px 24px}
+  .book{flex-basis:clamp(52px,15vw,82px);height:clamp(170px,45vw,216px)}
+  .spread{grid-template-columns:1fr}
+  .paper{padding:18px 22px}
+  .viewport{min-height:300px}
+  .viewport iframe{min-height:410px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .book{transition:none}
+  dialog[open]{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<header><div><span class="kicker">THE WRITER · OPTIONAL VIEW</span><strong>قفسهٔ جهان نویسنده</strong></div><nav aria-label="مسیرهای اصلی"><a href="../../">نمای اصلی</a><a href="../../read/">کتاب‌خوان</a></nav></header>
+<main>
+<div class="window" aria-hidden="true"></div><div class="lamp" aria-hidden="true"></div>
+<section class="intro" aria-label="دفترچه‌های جهان نویسنده">
+<h1>هر دفترچه، یک پنجره به زندگی نویسنده</h1>
+<p class="lead">نمای آزمایشی و مستقل. دفترچه را انتخاب کنید تا به محتوای واقعی سایت وارد شوید؛ رابط فعلی بدون تغییر باقی می‌ماند.</p>
+<div class="case"><div class="shelf" role="group" aria-label="دسته‌های سایت">
+<button class="book" type="button" data-book="city" aria-haspopup="dialog" aria-expanded="false" style="--cover:#345b54;--h:238px"><strong>شهر</strong><small>01</small></button>
+<button class="book" type="button" data-book="writer" aria-haspopup="dialog" aria-expanded="false" style="--cover:#8a5c43;--h:260px;--tilt:-3deg"><strong>نویسنده</strong><small>02</small></button>
+<button class="book" type="button" data-book="stories" aria-haspopup="dialog" aria-expanded="false" style="--cover:#55526c;--h:228px"><strong>داستان‌ها</strong><small>03</small></button>
+<button class="book" type="button" data-book="reader" aria-haspopup="dialog" aria-expanded="false" style="--cover:#797146;--h:251px;--tilt:2deg"><strong>کتاب‌خوان</strong><small>04</small></button>
+<button class="book" type="button" data-book="publisher" aria-haspopup="dialog" aria-expanded="false" style="--cover:#505e65;--h:232px"><strong>ناشر و دانش</strong><small>05</small></button>
+</div></div>
+<p class="hint">Enter یا کلیک برای باز کردن · Esc برای بستن · هیچ صحنهٔ سه‌بعدی اضافی پیشاپیش بارگذاری نمی‌شود</p>
+</section></main>
+<footer>پروتوتایپ جداگانه · بدون وابستگی جدید، ذخیره‌سازی یا انتقال اطلاعات</footer></div>
+<dialog id="book-dialog" aria-labelledby="book-title">
+<div class="spread">
+<section class="paper"><span class="eyebrow">THE WRITER · NOTEBOOK</span><h2 id="book-title">دفترچه</h2><p id="book-description"></p>
+<div class="actions"><button id="enter-page" type="button">ورود به بخش</button><a id="open-original" href="../../" target="_blank" rel="noopener">نمای کامل در صفحهٔ جدا</a></div>
+<p>محتوای درون این دفترچه از صفحهٔ اصلی بارگذاری می‌شود. اطلاعات شخصی یا نسخهٔ دوم دیتابیس ساخته نمی‌شود.</p>
+</section>
+<section class="preview" aria-label="محتوای سایت"><div class="preview-bar"><span>پنجرهٔ زنده</span><button type="button" class="close" id="close-book">بستن · Esc</button></div>
+<div id="viewport" class="viewport"><p id="placeholder">با «ورود به بخش» سایت واقعی را داخل دفترچه باز کنید.</p></div>
+</section></div></dialog>
+<script>
+(() => {
+  "use strict";
+  const books=Object.freeze({
+    city:{title:"شهر",desc:"شهر، ساکنان و تمام ده نمای دوربین در محیط زندهٔ نویسنده.",href:"../../"},
+    writer:{title:"زندگی نویسنده",desc:"پانزده پنل مشاهده، وضعیت نویسنده و مسیر زندگی او.",href:"../../"},
+    stories:{title:"داستان‌ها",desc:"آثار، انتشار و بازخورد در کتاب‌خوان اصلی.",href:"../../read/"},
+    reader:{title:"کتاب‌خوان",desc:"مطالعه و صفحه‌آرایی راست‌به‌چپ در محیط فعلی کتاب‌خوان.",href:"../../read/"},
+    publisher:{title:"ناشر و دانش",desc:"ناشر، دانش و پیشرفت در داشبورد اصلی.",href:"../../"}
+  });
+  let pref="auto";
+  try{pref=localStorage.getItem("the-writer-observer-theme-v1")||"auto";}catch{}
+  const hour=new Date().getHours();
+  document.documentElement.dataset.light=pref==="dark"||(pref==="auto"&&(hour<7||hour>=18))?"night":"day";
+  const dialog=document.getElementById("book-dialog"),viewport=document.getElementById("viewport");
+  const placeholder=document.getElementById("placeholder"),enter=document.getElementById("enter-page");
+  const buttons=[...document.querySelectorAll("[data-book]")];
+  let current=null,previous=null;
+  function unload(){const frame=viewport.querySelector("iframe");if(frame)frame.remove();placeholder.hidden=false;enter.disabled=false;enter.textContent="ورود به بخش";}
+  function openBook(id,fromHistory=false){
+    if(!Object.prototype.hasOwnProperty.call(books,id))return;
+    if(dialog.open)unload();
+    current=id;previous=buttons.find(b=>b.dataset.book===id)||null;
+    buttons.forEach(b=>b.setAttribute("aria-expanded",String(b.dataset.book===id)));
+    document.getElementById("book-title").textContent=books[id].title;
+    document.getElementById("book-description").textContent=books[id].desc;
+    document.getElementById("open-original").href=books[id].href;
+    if(!dialog.open)dialog.showModal();
+    document.getElementById("close-book").focus();
+    if(!fromHistory&&location.hash!=="#"+id)history.pushState(null,"","#"+id);
+  }
+  function closeBook(){if(dialog.open)dialog.close();}
+  buttons.forEach(b=>b.addEventListener("click",()=>openBook(b.dataset.book)));
+  document.getElementById("close-book").addEventListener("click",closeBook);
+  enter.addEventListener("click",()=>{
+    if(!current||viewport.querySelector("iframe"))return;
+    const frame=document.createElement("iframe");
+    frame.title="نمای سایت: "+books[current].title;
+    frame.loading="lazy";
+    frame.src=books[current].href; // hardcoded same-origin routes only
+    placeholder.hidden=true;viewport.append(frame);
+    enter.disabled=true;enter.textContent="بخش باز است";
+  });
+  dialog.addEventListener("close",()=>{
+    unload();current=null;
+    buttons.forEach(b=>b.setAttribute("aria-expanded","false"));
+    if(location.hash)history.replaceState(null,"",location.pathname+location.search);
+    if(previous)previous.focus();
+  });
+  function syncHash(){
+    const id=decodeURIComponent(location.hash.slice(1));
+    if(Object.prototype.hasOwnProperty.call(books,id))openBook(id,true);
+    else closeBook();
+  }
+  window.addEventListener("popstate",syncHash);
+  window.addEventListener("hashchange",syncHash);
+  if(location.hash)syncHash();
+})();
+</script>
+</body></html>

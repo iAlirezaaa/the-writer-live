@@ -894,6 +894,7 @@ function buildCard() {
   cardHint = cell("p", "obj-hint", "");
   cardBody = cell("div", "obj-body");
   card.append(head, cardHint, cardBody);
+  card.hidden = true;
   ctx.stage.appendChild(card);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeInspect(true); });
 }
