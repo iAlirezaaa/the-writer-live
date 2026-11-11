@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { readerDeployment } = require('./reader-deployment.cjs');
+const deployment = readerDeployment(path.join(__dirname, '..'));
 const source = fs.readFileSync(path.join(__dirname, '../web/read.js'), 'utf8');
 const match = source.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
 assert.ok(match, 'production searchKey must exist');
@@ -34,27 +36,24 @@ for (const value of stableInputs) {
 }
 console.log('PASS RDR-065: ' + stableInputs.length + ' idempotence fixtures');
 
-// Public Pages deploys the protected asset in place of web/read.js. When that
-// asset exists, its normalizer and both search call sites must remain identical.
-const protectedPath = path.join(__dirname, '../.github/reader-assets/read.js');
-// RDR-073: public CI must never silently skip checks for the deployed replacement.
-if (process.env.GITHUB_REPOSITORY?.toLowerCase() === 'ialirezaaa/the-writer-live') {
-  assert.ok(fs.existsSync(protectedPath), 'public CI requires .github/reader-assets/read.js');
-}
-if (fs.existsSync(protectedPath)) {
-  const protectedSource = fs.readFileSync(protectedPath, 'utf8');
-  const protectedMatch = protectedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
-  assert.ok(protectedMatch, 'protected catalog must expose searchKey');
-  assert.equal(protectedMatch[0], match[0], 'protected and public normalizers diverged');
-  for (const call of ['const query=searchKey(', 'searchKey(`\u0024{story.title||""} \u0024{story.stage||""}`)']) {
-    assert.ok(protectedSource.includes(call), 'protected search wiring missing: ' + call);
+// Validate the catalog installed by the active Pages workflow. The resolver
+// checks hashes/entrypoint rewrites for direct exports and requires legacy pins
+// only when the workflow actually installs them.
+const deployedPath = deployment.catalogPath;
+{
+  const deployedSource = fs.readFileSync(deployedPath, 'utf8');
+  const deployedMatch = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(deployedMatch, 'deployed catalog must expose searchKey');
+  assert.equal(deployedMatch[0], match[0], 'deployed and source normalizers diverged');
+  for (const call of ['const query=searchKey(', 'searchKey(`${story.title||""} ${story.stage||""}`)']) {
+    assert.ok(deployedSource.includes(call), 'deployed search wiring missing: ' + call);
   }
-  console.log('PASS protected/public search parity');
+  console.log('PASS active deployment/source search parity (' + deployment.mode + ')');
 }
 
 // RDR-068: the deployed catalog must preserve numeric and punctuation distinctions.
 // These are deliberately negative fixtures: no digit folding or punctuation removal
-// is promised by searchKey. Keep the protected asset's behavior identical.
+// is promised by searchKey. Keep the deployed asset's behavior identical.
 const boundaryPairs = [
   ['کتاب ۱۲۳', 'کتاب 123'],
   ['کتاب ١٢٣', 'کتاب ۱۲۳'],
@@ -64,72 +63,78 @@ const boundaryPairs = [
 for (const [a, b] of boundaryPairs) {
   assert.notEqual(key(a), key(b), 'distinct search keys required: ' + a + ' / ' + b);
 }
-if (fs.existsSync(protectedPath)) {
-  const protectedSource = fs.readFileSync(protectedPath, 'utf8');
-  const protectedMatch = protectedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
-  assert.ok(protectedMatch, 'protected searchKey must exist');
-  const protectedKey = vm.runInNewContext(protectedMatch[0] + '\nsearchKey');
+{
+  const deployedSource = fs.readFileSync(deployedPath, 'utf8');
+  const deployedMatch = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(deployedMatch, 'deployed searchKey must exist');
+  const deployedKey = vm.runInNewContext(deployedMatch[0] + '\nsearchKey');
   for (const [a, b] of boundaryPairs) {
-    assert.equal(protectedKey(a), key(a), 'protected/public parity: ' + a);
-    assert.equal(protectedKey(b), key(b), 'protected/public parity: ' + b);
+    assert.equal(deployedKey(a), key(a), 'deployed/public parity: ' + a);
+    assert.equal(deployedKey(b), key(b), 'deployed/public parity: ' + b);
   }
 }
-console.log('PASS RDR-068: ' + boundaryPairs.length + ' numeric/punctuation boundaries and protected parity');
+console.log('PASS RDR-068: ' + boundaryPairs.length + ' numeric/punctuation boundaries and deployed parity');
 
 // RDR-069: absent catalog metadata must not become the literal title "null".
-// Primitive values and protected Pages normalizer must preserve the same behavior.
+// Primitive values and deployed Pages normalizer must preserve the same behavior.
 const missingMetadata = [[null, ''], [undefined, ''], [0, '0'], [false, 'false']];
 for (const [input, expected] of missingMetadata) {
   assert.equal(key(input), expected, 'source metadata: ' + String(input));
 }
-if (fs.existsSync(protectedPath)) {
-  const deployedSource = fs.readFileSync(protectedPath, 'utf8');
+{
+  const deployedSource = fs.readFileSync(deployedPath, 'utf8');
   const deployedMatch = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
-  assert.ok(deployedMatch, 'protected normalizer required');
+  assert.ok(deployedMatch, 'deployed normalizer required');
   const deployedKey = vm.runInNewContext(deployedMatch[0] + '\nsearchKey');
   for (const [input, expected] of missingMetadata) {
-    assert.equal(deployedKey(input), expected, 'protected metadata: ' + String(input));
+    assert.equal(deployedKey(input), expected, 'deployed metadata: ' + String(input));
   }
 }
-console.log('PASS RDR-069: ' + missingMetadata.length + ' metadata fixtures and protected parity');
+console.log('PASS RDR-069: ' + missingMetadata.length + ' metadata fixtures and deployed parity');
 
-// RDR-072: Unicode control-input stability and protected/public parity.
+// RDR-072: Unicode control-input stability and deployed/public parity.
 const controlInputs = ['کتاب\u0000', '\u200fکتاب', 'کتاب\u200e', '\u2067کتاب\u2069', '\ud800', '\udc00'];
-const protectedKeyForControls = fs.existsSync(protectedPath)
+const deployedKeyForControls = fs.existsSync(deployedPath)
   ? (() => {
-      const deployedSource = fs.readFileSync(protectedPath, 'utf8');
+      const deployedSource = fs.readFileSync(deployedPath, 'utf8');
       const deployedMatch = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
-      assert.ok(deployedMatch, 'protected control-input normalizer must exist');
+      assert.ok(deployedMatch, 'deployed control-input normalizer must exist');
       return vm.runInNewContext(deployedMatch[0] + '\nsearchKey');
     })()
   : null;
-if (protectedKeyForControls) assert.ok(fs.readFileSync(protectedPath, 'utf8').includes(match[0]), 'protected normalizer must match public');
+if (deployedKeyForControls) assert.ok(fs.readFileSync(deployedPath, 'utf8').includes(match[0]), 'deployed normalizer must match public');
 for (const input of controlInputs) {
   const output = key(input);
   assert.equal(typeof output, 'string');
   assert.equal(key(input), output, 'normalization must be deterministic');
-  if (protectedKeyForControls) assert.equal(protectedKeyForControls(input), output);
+  if (deployedKeyForControls) assert.equal(deployedKeyForControls(input), output);
 }
 console.log('PASS RDR-072: ' + controlInputs.length + ' fixtures');
 
 
-// RDR-075: prove the live CI guard fails closed when the protected asset is absent.
-// Use an isolated temporary checkout; never remove files from the real repository.
+// RDR-075: legacy publication must fail closed without its active override;
+// private source staging must still execute the complete Unicode suite.
+// Use temporary checkouts; never remove real repository files.
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 if (process.env.READER_GATE_FIXTURE !== '1') {
-const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'reader-protected-gate-'));
+const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'reader-deployment-gate-'));
 try {
   fs.mkdirSync(path.join(fixtureRoot, 'tests'));
   fs.mkdirSync(path.join(fixtureRoot, 'web'));
+  fs.mkdirSync(path.join(fixtureRoot, '.github/workflows'), { recursive: true });
   fs.copyFileSync(__filename, path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs'));
+  fs.copyFileSync(path.join(__dirname, 'reader-deployment.cjs'), path.join(fixtureRoot, 'tests/reader-deployment.cjs'));
   fs.writeFileSync(path.join(fixtureRoot, 'web/read.js'), source);
-  // The nested private test also reads catalog HTML; keep the fixture complete.
-  fs.writeFileSync(path.join(fixtureRoot, 'web/read.html'), fs.readFileSync(fs.existsSync(path.join(__dirname, '../read/index.html'))
-    ? path.join(__dirname, '../read/index.html')
-    : path.join(__dirname, '../web/read.html'), 'utf8'));
+  fs.copyFileSync(path.join(__dirname, '../web/book.js'), path.join(fixtureRoot, 'web/book.js'));
+  const sourceHTML = path.join(__dirname, '../web/read.html');
+  fs.writeFileSync(path.join(fixtureRoot, 'web/read.html'), fs.readFileSync(
+    fs.existsSync(sourceHTML) ? sourceHTML : deployment.htmlPath, 'utf8'));
+  const workflowPath = path.join(fixtureRoot, '.github/workflows/pages.yml');
+  fs.writeFileSync(workflowPath, 'jobs:\n  deploy:\n    steps:\n      - run: |\n          python3 .github/scripts/prepare_reader_deploy.py _site\n');
   // RDR-090: verify fixture prerequisites before spawning child Node processes.
-  for (const required of ['tests/test_reader_unicode_boundaries.cjs', 'web/read.js', 'web/read.html']) {
+  for (const required of ['tests/test_reader_unicode_boundaries.cjs', 'tests/reader-deployment.cjs',
+    'web/read.js', 'web/book.js', 'web/read.html', '.github/workflows/pages.yml']) {
     assert.ok(fs.existsSync(path.join(fixtureRoot, required)), 'incomplete reader fixture: missing ' + required);
   }
   const child = spawnSync(process.execPath, [path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs')], {
@@ -138,29 +143,33 @@ try {
     timeout: 10000,
   });
   assert.equal(child.error, undefined, 'temporary public guard process must start');
-  assert.notEqual(child.status, 0, 'missing protected asset must fail public CI');
-  assert.match(child.stderr, /public CI requires \.github\/reader-assets\/read\.js/);
+  assert.notEqual(child.status, 0, 'missing active legacy asset must fail public CI');
+  assert.match(child.stderr, /active reader deployment requires \.github\/reader-assets\/read\.js/);
+  fs.writeFileSync(workflowPath, [
+    'jobs:', '  build:', '    steps:', '      - run: |',
+    '          shutil.copytree(web, site / "web", dirs_exist_ok=True)',
+    '          reader = (web / "read.html").read_text(encoding="utf-8")',
+    '          (site / "read/index.html").write_text(reader, encoding="utf-8")', '',
+  ].join('\n'));
   const privateChild = spawnSync(process.execPath, [path.join(fixtureRoot, 'tests/test_reader_unicode_boundaries.cjs')], {
     encoding: 'utf8',
     env: { ...process.env, GITHUB_REPOSITORY: 'iAlirezaaa/the-writer', READER_GATE_FIXTURE: '1' },
     timeout: 10000,
   });
-  assert.equal(privateChild.status, 0, 'private checkout must run without protected asset: ' + privateChild.stderr);
-  console.log('PASS RDR-075: missing protected asset rejected in live, accepted in private');
+  assert.equal(privateChild.status, 0, 'private source staging must run without legacy overrides: ' + privateChild.stderr);
+  console.log('PASS RDR-075: missing active legacy asset rejected; private source staging accepted');
 } finally {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 }
 
 // RDR-082: deployed HTML must retain Persian RTL and a labeled catalog search.
-// The public Pages replacement is authoritative; private checkout has no protected asset.
+// Validate the active deployed HTML and the checked-in catalog semantics.
 const htmlPath = fs.existsSync(path.join(__dirname, '../read/index.html'))
   ? path.join(__dirname, '../read/index.html')
   : path.join(__dirname, '../web/read.html');
 const publicHtml = fs.readFileSync(htmlPath, 'utf8');
-const protectedHtmlPath = path.join(__dirname, '../.github/reader-assets/read.html');
-const isPublicCI = process.env.GITHUB_REPOSITORY?.toLowerCase() === 'ialirezaaa/the-writer-live';
-if (isPublicCI) assert.ok(fs.existsSync(protectedHtmlPath), 'public CI requires protected read.html');
+const deployedHtmlPath = deployment.htmlPath;
 const htmlSemantics = html => {
   const root = html.match(/<html\b[^>]*>/i)?.[0] || '';
   const landmark = html.match(/<div\b[^>]*role="search"[^>]*>[\s\S]*?<\/div>/i)?.[0] || '';
@@ -173,37 +182,37 @@ const htmlSemantics = html => {
     landmark.match(/aria-label="([^"]+)"/)[1], label.replace(/<[^>]*>/g, '').trim().split(/\s+/)[0]];
 };
 const htmlBaseline = htmlSemantics(publicHtml);
-if (fs.existsSync(protectedHtmlPath)) {
-  const protectedSemantics = htmlSemantics(fs.readFileSync(protectedHtmlPath, 'utf8'));
-  assert.deepEqual(protectedSemantics, htmlBaseline, 'protected/public HTML accessibility semantics differ');
+{
+  const deployedSemantics = htmlSemantics(fs.readFileSync(deployedHtmlPath, 'utf8'));
+  assert.deepEqual(deployedSemantics, htmlBaseline, 'deployed/public HTML accessibility semantics differ');
 }
 console.log('PASS RDR-082: Persian RTL and accessible search HTML parity');
 
 // RDR-095: a deliberately corrupted deployed normalizer must be caught by parity.
-// Mutation stays in memory; neither production nor protected assets are modified.
-if (fs.existsSync(protectedPath)) {
-  const deployed = fs.readFileSync(protectedPath, 'utf8');
+// Mutation stays in memory; neither production nor deployed assets are modified.
+{
+  const deployed = fs.readFileSync(deployedPath, 'utf8');
   const deployedMatch = deployed.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
-  assert.ok(deployedMatch, 'protected normalizer must be available for mutation test');
+  assert.ok(deployedMatch, 'deployed normalizer must be available for mutation test');
   const mutatedDefinition = deployedMatch[0].replace('searchKey', 'searchKeyMutated');
-  assert.notEqual(mutatedDefinition, deployedMatch[0], 'mutation must change the protected definition');
-  assert.throws(() => assert.equal(mutatedDefinition, match[0], 'protected normalizer mutation detected'), /protected normalizer mutation detected/,
+  assert.notEqual(mutatedDefinition, deployedMatch[0], 'mutation must change the deployed definition');
+  assert.throws(() => assert.equal(mutatedDefinition, match[0], 'deployed normalizer mutation detected'), /deployed normalizer mutation detected/,
     'parity assertion must reject a mutated deployed normalizer');
-  console.log('PASS RDR-095: in-memory protected normalizer mutation rejected');
+  console.log('PASS RDR-095: in-memory deployed normalizer mutation rejected');
 }
 
 
 // RDR-097: behavioral mutation must be observable on real Persian/Arabic fixtures.
 // The mutation is evaluated in memory and never changes deployed files.
-if (fs.existsSync(protectedPath)) {
-  const protectedSource = fs.readFileSync(protectedPath, 'utf8');
-  const protectedDefinition = protectedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
-  assert.ok(protectedDefinition, 'protected search normalizer required for behavioral mutation');
-  const protectedKey = vm.runInNewContext(protectedDefinition[0] + '\nsearchKey');
+{
+  const deployedSource = fs.readFileSync(deployedPath, 'utf8');
+  const deployedDefinition = deployedSource.match(/^const searchKey\s*=\s*value\s*=>[^;]+;/m);
+  assert.ok(deployedDefinition, 'deployed search normalizer required for behavioral mutation');
+  const deployedKey = vm.runInNewContext(deployedDefinition[0] + '\nsearchKey');
   const mutatedKey = value => String(value ?? ''); // deliberately omits Persian/Arabic folding
   const mutationFixtures = ['كـتاب', 'ﻛﺘﺎﺏ', 'عَلِي'];
   for (const input of mutationFixtures) {
-    assert.equal(protectedKey(input), key(input), 'deployed/public behavior must agree: ' + input);
+    assert.equal(deployedKey(input), key(input), 'deployed/public behavior must agree: ' + input);
     assert.notEqual(mutatedKey(input), key(input), 'behavioral mutation escaped detection: ' + input);
   }
   console.log('PASS RDR-097: ' + mutationFixtures.length + ' behavioral mutation fixtures');
@@ -224,16 +233,16 @@ for (const input of stressInputs) {
   const baseline = key(input);
   assert.equal(typeof baseline, 'string');
   assert.ok(performance.now() - started < 1000, 'public search normalization exceeded 1000ms');
-  if (protectedKeyForControls) {
-    const protectedStarted = performance.now();
-    assert.equal(protectedKeyForControls(input), baseline, 'protected/public stress mismatch');
-    assert.ok(performance.now() - protectedStarted < 1000, 'protected search normalization exceeded 1000ms');
+  if (deployedKeyForControls) {
+    const deployedStarted = performance.now();
+    assert.equal(deployedKeyForControls(input), baseline, 'deployed/public stress mismatch');
+    assert.ok(performance.now() - deployedStarted < 1000, 'deployed search normalization exceeded 1000ms');
   }
 }
 console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fixtures');
 
 // RDR-101: deterministic 250-case Unicode corpus, including malformed surrogates.
-// Compare the actual protected implementation when available, never a stand-in.
+// Compare the actual deployed implementation when available, never a stand-in.
 {
   let seed = 0x51f15e;
   const next = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 0x100000000);
@@ -251,9 +260,9 @@ console.log('PASS RDR-099: ' + stressInputs.length + ' bounded Unicode stress fi
     const expected = key(input);
     assert.equal(key(input), expected, 'non-deterministic search key at case ' + caseIndex);
     assert.equal(key(expected), expected, 'non-idempotent search key at case ' + caseIndex + ': ' + JSON.stringify(input));
-    if (protectedKeyForControls) {
-      assert.equal(protectedKeyForControls(input), expected,
-        'protected/public mismatch at case ' + caseIndex + ': ' + JSON.stringify(input));
+    if (deployedKeyForControls) {
+      assert.equal(deployedKeyForControls(input), expected,
+        'deployed/public mismatch at case ' + caseIndex + ': ' + JSON.stringify(input));
     }
   }
   assert.equal(corpusHash.toString(16).padStart(8, '0'), '4777eb3d', 'RDR-103 corpus drift: review seed/alphabet before updating digest');

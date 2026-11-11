@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap">
   <link rel="stylesheet" href="../web/style.css">
   <link rel="stylesheet" href="../web/book.css?v=reader-20261109-library-v2">
-  <link rel="stylesheet" href="../web/library.css?v=library-20261111-v4">
-  <link rel="stylesheet" href="../web/reader-room.css?v=reader-room-20261111-v4">
+  <link rel="stylesheet" href="../web/library.css?v=library-20261111-reliable-v1">
+  <link rel="stylesheet" href="../web/reader-room.css?v=library-20261111-reliable-v1">
 </head>
 <body class="reader-page lib">
   <header class="lib-bar">
@@ -72,6 +72,7 @@
       <button id="library-theme" class="lamp-cord" type="button" aria-pressed="false" aria-label="چراغ کتابخانه: روز و شب" title="زنجیر چراغ را بکشید"><span></span></button>
     </div>
     <button id="lib-continue" class="lib-continue" type="button" hidden></button>
+    <p id="reader-note" class="lib-reader-note" hidden></p>
     <div class="case">
       <div class="case-top" aria-hidden="true">
         <span class="top-clock"><i id="clock-h"></i><i id="clock-m"></i></span>
@@ -86,10 +87,9 @@
   <aside class="shelf-talker" id="shelf-talker" aria-hidden="true" hidden></aside>
 
   <footer class="lib-foot">
-    <p id="reader-note" hidden></p>
     <p>این داستان‌ها را هادس نوشته است، یک نویسندهٔ خودکار. جای خالی قفسه‌ها مال کتاب‌هایی است که هنوز ننوشته.</p>
     <p class="lib-foot-stats"><span id="library-stories-count">—</span> کتاب · <span id="library-progress-count">—</span> در حال خواندن · <span id="library-saved-count" role="status" aria-live="polite" aria-atomic="true">—</span> نشان‌شده</p>
   </footer>
-  <script type="module" src="../web/read.js?v=library-20261111-v3"></script>
+  <script type="module" src="../web/read.js?v=library-20261111-reliable-v1"></script>
 </body>
 </html>

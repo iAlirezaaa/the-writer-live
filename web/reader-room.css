@@ -30,6 +30,9 @@ body.lib .book-overlay .book-footer select option{background:#241b12;}
 body.lib .book-overlay .turn{background:transparent;border:0;box-shadow:none;color:#a79a86;font-size:1.2rem;border-radius:10px;transition:opacity .5s ease,background .2s ease;}
 body.lib .book-overlay .turn:hover:not(:disabled){background:rgba(255,255,255,.09);color:#fff;}
 body.lib .book-overlay.chrome-idle .book-bar,body.lib .book-overlay.chrome-idle .book-footer,body.lib .book-overlay.chrome-idle .turn{opacity:0;}
+body.lib .book-overlay.chrome-idle .book-bar:focus-within,body.lib .book-overlay.chrome-idle .book-footer:focus-within,body.lib .book-overlay.chrome-idle .turn:focus-visible{opacity:1;}
+/* Search and the focus toggle live inside this menu: it must stay reachable. */
+body.lib .book-overlay.reader-focus-mode .book-tools>.reader-settings{display:block;}
 body.lib .book-overlay .title-page .tp-title{font-family:var(--l-title);font-weight:700;}
 
 /* Fore-edge slider: the pages themselves */

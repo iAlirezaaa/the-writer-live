@@ -1,20 +1,17 @@
 name: Reader catalog focused tests
 on:
   push:
-    branches: [main]
+    branches: [main, "reader/**"]
     paths:
-      - "web/book.js"
-      - "web/book.css"
-      - "web/read.js"
-      - "web/read.html"
-      - "web/library.css"
-      - "web/reader-room.css"
-      - "web/library-stage.js"
+      - "web/book*"
+      - "web/read*"
+      - "web/library*"
       - "web/page-curl.js"
+      - "web/feedback.js"
       - "read/index.html"
-      - "tests/reader_page_curl_probe.mjs"
-      - "tests/reader-library-experience.test.cjs"
-      - "tests/reader-position.test.mjs"
+      - "tests/*reader*"
+      - "tests/book-session.test.cjs"
+      - "tests/shelf-behavior.test.cjs"
       - ".github/workflows/reader-catalog-quality.yml"
   workflow_dispatch:
 permissions:
@@ -28,26 +25,45 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate new integrated library and page-curl module syntax
+      - name: Parse the current reader and animation modules
         run: |
           set -euo pipefail
           for file in web/book.js web/read.js web/library-stage.js web/page-curl.js; do
             node --input-type=module --check < "$file"
           done
-      - name: Test current public bookshelf and full reader behavior
+      - name: Reader sessions, catalog, keyboard focus, bookmarks and motion
+        shell: bash
         run: |
           set -euo pipefail
-          node --test tests/reader-library-experience.test.cjs
+          node --test --test-reporter=tap \
+            tests/reader-catalog-reset.test.cjs \
+            tests/reader-library-experience.test.cjs \
+            tests/reader-feedback-transport.test.cjs \
+            tests/reader-position.test.mjs \
+            tests/book-session.test.cjs \
+            tests/shelf-behavior.test.cjs \
+            tests/reader-stage.test.mjs | tee reader-behavior.tap
           node tests/reader_page_curl_probe.mjs
-          node --test --experimental-default-type=module tests/reader-position.test.mjs
-      - name: Ensure owner-authorized stories remain labeled
+      - name: Persian Unicode normalization boundaries
+        run: |
+          node tests/test_reader_unicode_boundaries.cjs
+          node tests/test_reader_unicode_controls.cjs
+      - name: Check publication labels and current reader entrypoint
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          book=Path("web/book.js").read_text(encoding="utf-8")
-          reader=Path("web/read.js").read_text(encoding="utf-8")
-          html=Path("read/index.html").read_text(encoding="utf-8")
+          book = Path("web/book.js").read_text(encoding="utf-8")
+          reader = Path("web/read.js").read_text(encoding="utf-8")
+          html = Path("web/read.html").read_text(encoding="utf-8")
           assert "owner_shared" in book and "owner_shared" in reader
           assert 'id="covers"' in html and "library.css" in html
-          print("PUBLIC-READER-CURRENT-UI-OK")
+          print("READER-CURRENT-UI-OK")
           PY
+      - name: Upload focused reader TAP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-node-tap
+          path: '*.tap'
+          if-no-files-found: warn
+          retention-days: 14

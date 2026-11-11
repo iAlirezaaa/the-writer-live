@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { readerDeployment } = require("./reader-deployment.cjs");
 
 const root = path.resolve(__dirname, "..");
 const bookSource = fs.readFileSync(path.join(root, "web/book.js"), "utf8");
@@ -14,11 +15,14 @@ function compiled(name, next, env) {
   assert.notEqual(start, -1, name + " missing");
   const end = bookSource.indexOf("\nfunction " + next + "(", start);
   assert.ok(end > start, "missing end boundary for " + name);
-  return vm.runInNewContext(bookSource.slice(start, end) + "\n" + name, env);
+  const sessionGuard=bookSource.match(/^function currentBook\([^\n]*\)\s*\{[\s\S]*?^\}/m)?.[0];
+  assert.ok(sessionGuard,"current reader session guard");
+  return vm.runInNewContext(sessionGuard+"\n"+bookSource.slice(start, end) + "\n" + name, env);
 }
 function setup(api = "") {
   const calls = [];
   const ui = {
+    overlay: { hidden: false },
     voteStatus: { textContent: "", replaceChildren(x) { this.child = x; } },
     pop: { dataset: { quote: "selected passage" }, hidden: false },
     popName: { value: "خواننده" },
@@ -30,7 +34,7 @@ function setup(api = "") {
   const book = { story: { id: "12", title: "داستان نمونه" }, comments: [] };
   const env = {
     window: { THE_WRITER_FEEDBACK_API: api },
-    book, ui, encodeURIComponent, isGitHubPages: () => true,
+    book, ui, readerRequest: 0, encodeURIComponent, isGitHubPages: () => true,
     fetch: async (...args) => { calls.push(args); return { ok: true, json: async () => ({ id: "c1", text: ui.popText.value, updated: true }) }; },
     openPublicVote: () => ({ opened: true }), openPublicFeedback: () => ({ opened: true }),
     renderMargin: () => { calls.push(["render"]); },
@@ -84,15 +88,16 @@ test("static Pages comments still require a GitHub submission without backend", 
   assert.equal(s.calls.length, 0);
 });
 
-test("protected Pages assets and public source retain the same search and feedback logic", () => {
-  const protectedDir = path.join(root, ".github/reader-assets");
-  if (!fs.existsSync(path.join(protectedDir, "book.js"))) return; // private repo has no publication overrides
-  for (const name of ["book.js", "read.js"]) {
+test("active Pages assets retain the tested search and feedback logic", () => {
+  const deployment = readerDeployment(root);
+  for (const [name, deployedPath] of [["book.js", deployment.bookPath], ["read.js", deployment.catalogPath]]) {
     assert.equal(fs.readFileSync(path.join(root, "web", name), "utf8"),
-      fs.readFileSync(path.join(protectedDir, name), "utf8"));
+      fs.readFileSync(deployedPath, "utf8"), "deployed " + name + " differs from the tested implementation");
   }
-  assert.equal(fs.readFileSync(path.join(root, "read/index.html"), "utf8"),
-    fs.readFileSync(path.join(protectedDir, "read.html"), "utf8"));
+  if (deployment.mode === "legacy") {
+    assert.equal(fs.readFileSync(path.join(root, "read/index.html"), "utf8"),
+      fs.readFileSync(deployment.htmlPath, "utf8"));
+  }
 });
 
 test("public catalog still executes Persian/Arabic search equivalence", () => {

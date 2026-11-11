@@ -5,7 +5,51 @@ import {applyCoverVisual,createCoverArt} from './book-cover.js?v=reader-20261109
 
 const make=(cls,parent)=>{const n=document.createElement('div');n.className=cls;parent?.append(n);return n;};
 const reduced=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-const finish=a=>a.finished.catch(()=>{});
+const activeStages=new WeakMap(),sourceOwners=new WeakMap();
+const interrupted=()=>new DOMException('Reader transition cancelled','AbortError');
+
+// Attach rejection and abort handlers immediately: a failed/slow request must
+// never strand a hidden book or leave an unhandled promise during the animation.
+function waitFor(promise,signal){
+ return new Promise((resolve,reject)=>{
+  const settle=(fn,value)=>{signal.removeEventListener('abort',abort);fn(value);};
+  const abort=()=>settle(reject,interrupted());
+  Promise.resolve(promise).then(value=>settle(resolve,value),error=>settle(reject,error));
+  if(signal.aborted)abort();else signal.addEventListener('abort',abort,{once:true});
+ });
+}
+
+function transition(overlay,signal){
+ const previous=activeStages.get(overlay);
+ previous?.controller.abort();
+ const controller=new AbortController(),animations=new Set();
+ const record={controller,stage:null,source:null,visibility:'',background:previous?.background??overlay.style.background,leaving:previous?.leaving??overlay.classList.contains('book-leaving')};
+ activeStages.set(overlay,record);
+ const abort=()=>controller.abort();
+ if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+ let speed=1;
+ return {
+  signal:controller.signal,
+  attach(stage){record.stage=stage;},
+  hideSource(source){record.source=source;record.visibility=sourceOwners.get(source)?.visibility??source.style.visibility;sourceOwners.set(source,record);source.style.visibility='hidden';},
+  fast(){speed=2.6;for(const animation of animations)animation.playbackRate=speed;},
+  animate(node,frames,options){
+   if(controller.signal.aborted)return Promise.reject(interrupted());
+   const animation=node.animate(frames,options);animation.playbackRate=speed;animations.add(animation);
+   return waitFor(animation.finished,controller.signal);
+  },
+  cleanup(){
+   signal?.removeEventListener('abort',abort);
+   for(const animation of animations){animation.finished.catch(()=>{});animation.cancel();}
+   record.stage?.remove();
+   if(record.source&&sourceOwners.get(record.source)===record){record.source.style.visibility=record.visibility;sourceOwners.delete(record.source);}
+   if(activeStages.get(overlay)===record){
+    activeStages.delete(overlay);overlay.style.background=record.background;
+    overlay.classList.toggle('book-leaving',record.leaving);
+   }
+  }
+ };
+}
 
 /* Transforms for each pose. Exported for tests: the last pose must place the book exactly on the reading page. */
 export function stagePoses({spine,page,single,view,depth}){
@@ -29,6 +73,7 @@ export function stagePoses({spine,page,single,view,depth}){
 
 function buildBook(story,{w,h,depth},snapshot){
  const root=make('b3d');root.style.width=w+'px';root.style.height=h+'px';root.style.setProperty('--d',depth+'px');
+ root.setAttribute('aria-hidden','true');root.inert=true;
  applyCoverVisual(root,story);
  make('b3d-back',root);
  const inner=make('b3d-inner',root);
@@ -47,55 +92,59 @@ function buildBook(story,{w,h,depth},snapshot){
  return {root,cover,inner,inside};
 }
 
-function place(overlay,story,geometry,snapshot){
- const stage=make('stage');
+function place(overlay,story,geometry,snapshot,stage=make('stage',overlay)){
  const dim=make('stage-dim',stage);dim.style.background=geometry.background;
  const view=make('stage-view',stage);
  const parts=buildBook(story,geometry,snapshot);
  view.append(parts.root);
- overlay.append(stage);
  return {stage,dim,...parts};
 }
 
 /* Opens `source` (a spine on the shelf) into the reading page. `ready` resolves once the reader has laid out its pages. */
-export async function playOpen({overlay,source,story,measure,ready,snapshot,reveal}){
- const m=measure(),spine=source.getBoundingClientRect();
- const view={w:innerWidth,h:innerHeight};
- const page={x:m.x,y:m.y,w:m.single?m.w:m.w/2,h:m.h};
- if(reduced()){await ready;reveal();return;}
- // A book's thickness on the shelf, scaled up with the book.
- const scaleUp=page.h/Math.max(1,spine.height),depth=Math.max(26,Math.min(96,spine.width*scaleUp));
- const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:m.single,view,depth});
- const background=m.background;
- overlay.style.background='transparent';
- const s=place(overlay,story,{w:page.w,h:page.h,depth,background},{left:null,right:null});
- source.style.visibility='hidden';
- s.root.style.transform=poses.shelf;
- const fast=()=>{for(const a of s.stage.getAnimations({subtree:true}))a.playbackRate=2.6;};
- s.stage.addEventListener('pointerdown',fast,{once:true});
- s.dim.animate([{opacity:0},{opacity:1}],{duration:1500,easing:'ease-in',fill:'forwards'});
- await finish(s.root.animate([{transform:poses.shelf},{transform:poses.pulled}],{duration:420,easing:'cubic-bezier(.3,.05,.2,1)',fill:'forwards'}));
- await finish(s.root.animate([{transform:poses.pulled},{transform:poses.shown,offset:.86},{transform:poses.held}],{duration:760,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'}));
- // Text goes on the inner pages only now, when the reader knows what it is.
- await ready;
- const pages=snapshot();
- if(pages.left)s.inner.append(pages.left);
- if(pages.right)s.inside.append(pages.right);
- const opening=s.cover.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(180deg)'}],{duration:880,easing:'cubic-bezier(.5,.03,.22,1)',fill:'forwards',delay:60});
- const moving=s.root.animate([{transform:poses.held},{transform:poses.open}],{duration:940,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'});
- await Promise.all([finish(opening),finish(moving)]);
- // The open book now sits on the real page. Dissolve the stage into it.
- // The room behind the book is now the reader's own background, so nothing of the shelf shows through.
- overlay.style.background='';
- reveal();
- await finish(s.stage.animate([{opacity:1},{opacity:0}],{duration:520,easing:'ease',fill:'forwards'}));
- s.stage.remove();
- source.style.visibility='';
+export async function playOpen({overlay,source,story,measure,ready,snapshot,reveal,signal,onCancel}){
+ const run=transition(overlay,signal),stage=make('stage',overlay);run.attach(stage);
+ const controls=make('stage-controls',stage),status=make('stage-status',controls);
+ status.setAttribute('role','status');status.textContent='در حال آماده‌کردن کتاب…';
+ const cancel=document.createElement('button');cancel.className='stage-cancel';cancel.type='button';cancel.textContent='بازگشت به قفسه';
+ cancel.addEventListener('click',()=>{onCancel?.();});controls.append(cancel);cancel.focus({preventScroll:true});
+ try{
+  if(await waitFor(ready,run.signal)===false)throw interrupted();
+  if(run.signal.aborted)throw interrupted();
+  // Per-book preferences, loaded fonts and viewport changes may have changed the
+  // real page since the initial click. Measure only after layout is ready.
+  const m=measure(),spine=source?.getBoundingClientRect();
+  if(reduced()||!spine||!spine.width||!spine.height||typeof stage.animate!=='function'){
+   reveal();return true;
+  }
+  status.textContent='در حال بازکردن کتاب…';
+  const view={w:innerWidth,h:innerHeight},page={x:m.x,y:m.y,w:m.single?m.w:m.w/2,h:m.h};
+  const scaleUp=page.h/Math.max(1,spine.height),depth=Math.max(26,Math.min(96,spine.width*scaleUp));
+  const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:m.single,view,depth});
+  overlay.style.background='transparent';
+  const s=place(overlay,story,{w:page.w,h:page.h,depth,background:m.background},snapshot(),stage);
+  run.hideSource(source);s.root.style.transform=poses.shelf;
+  stage.addEventListener('pointerdown',event=>{if(!event.target.closest?.('button'))run.fast();});
+  const dim=run.animate(s.dim,[{opacity:0},{opacity:1}],{duration:900,easing:'ease-in',fill:'forwards'});dim.catch(()=>{});
+  await run.animate(s.root,[{transform:poses.shelf},{transform:poses.pulled}],{duration:260,easing:'cubic-bezier(.3,.05,.2,1)',fill:'forwards'});
+  await run.animate(s.root,[{transform:poses.pulled},{transform:poses.shown,offset:.86},{transform:poses.held}],{duration:480,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'});
+  await Promise.all([
+   run.animate(s.cover,[{transform:'rotateY(0deg)'},{transform:'rotateY(180deg)'}],{duration:600,easing:'cubic-bezier(.5,.03,.22,1)',fill:'forwards',delay:40}),
+   run.animate(s.root,[{transform:poses.held},{transform:poses.open}],{duration:640,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'}),
+   dim
+  ]);
+  // Restore the real background before revealing the page; no shelf flash.
+  overlay.style.background='';controls.hidden=true;stage.classList.add('is-revealed');reveal();
+  await run.animate(stage,[{opacity:1},{opacity:0}],{duration:220,easing:'ease',fill:'forwards'});
+  return true;
+ }finally{run.cleanup();}
 }
 
 /* The same journey backwards: the page closes and the book goes back into its gap. */
-export async function playClose({overlay,source,story,geometry,pages,hideReader}){
- if(reduced()||!source){hideReader();return;}
+export async function playClose({overlay,source,story,geometry,pages,hideReader,signal}){
+ const run=transition(overlay,signal);
+ try{
+ if(run.signal.aborted)return false;
+ if(reduced()||!source||source.isConnected===false){hideReader();return true;}
  source.scrollIntoView?.({block:'nearest'});
  const spine=source.getBoundingClientRect(),view={w:innerWidth,h:innerHeight};
  const page={x:geometry.x,y:geometry.y,w:geometry.single?geometry.w:geometry.w/2,h:geometry.h};
@@ -103,14 +152,16 @@ export async function playClose({overlay,source,story,geometry,pages,hideReader}
  const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:geometry.single,view,depth});
  overlay.classList.add('book-leaving');overlay.style.background='transparent';
  const s=place(overlay,story,{w:page.w,h:page.h,depth,background:geometry.background},pages);
- source.style.visibility='hidden';
+ run.attach(s.stage);run.hideSource(source);
  s.root.style.transform=poses.open;s.cover.style.transform='rotateY(180deg)';
- s.dim.animate([{opacity:1},{opacity:0}],{duration:1300,easing:'ease-out',fill:'forwards',delay:200});
- const closing=s.cover.animate([{transform:'rotateY(180deg)'},{transform:'rotateY(0deg)'}],{duration:640,easing:'cubic-bezier(.5,.03,.22,1)',fill:'forwards'});
- await Promise.all([finish(closing),finish(s.root.animate([{transform:poses.open},{transform:poses.held}],{duration:640,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'}))]);
- await finish(s.root.animate([{transform:poses.held},{transform:poses.pulled}],{duration:560,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'}));
- await finish(s.root.animate([{transform:poses.pulled},{transform:poses.shelf}],{duration:340,easing:'cubic-bezier(.3,.05,.2,1)',fill:'forwards'}));
- source.style.visibility='';
- s.stage.remove();overlay.style.background='';overlay.classList.remove('book-leaving');
- hideReader();
+ const dim=run.animate(s.dim,[{opacity:1},{opacity:0}],{duration:900,easing:'ease-out',fill:'forwards',delay:100});dim.catch(()=>{});
+ await Promise.all([
+  run.animate(s.cover,[{transform:'rotateY(180deg)'},{transform:'rotateY(0deg)'}],{duration:400,easing:'cubic-bezier(.5,.03,.22,1)',fill:'forwards'}),
+  run.animate(s.root,[{transform:poses.open},{transform:poses.held}],{duration:400,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'})
+ ]);
+ await run.animate(s.root,[{transform:poses.held},{transform:poses.pulled}],{duration:380,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'});
+ await run.animate(s.root,[{transform:poses.pulled},{transform:poses.shelf}],{duration:220,easing:'cubic-bezier(.3,.05,.2,1)',fill:'forwards'});
+ await dim;hideReader();return true;
+ }catch(error){if(error.name==='AbortError')return false;throw error;}
+ finally{run.cleanup();}
 }

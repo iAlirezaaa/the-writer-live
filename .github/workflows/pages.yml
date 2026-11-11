@@ -31,7 +31,7 @@ jobs:
           node tests/civita_writer_home_section_probe.mjs
           node tests/civita_writer_location_probe.mjs .
           node tests/reader_page_curl_probe.mjs
-          node --test tests/reader-library-experience.test.cjs
+          node --test tests/reader-library-experience.test.cjs tests/reader-catalog-reset.test.cjs tests/reader-feedback-transport.test.cjs tests/reader-position.test.mjs tests/book-session.test.cjs tests/shelf-behavior.test.cjs tests/reader-stage.test.mjs
       - name: Stage reviewed frontend and existing authorized public snapshot
         run: |
           set -euo pipefail

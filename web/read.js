@@ -1,7 +1,7 @@
 // The Writer: the library is one bookcase. A book leaves the shelf, opens, and dissolves into the reading page.
-import { openBook, prepareReader, readerPages, revealReader, setCloseTransition } from "./book.js?v=library-20261111-v1";
+import { openBook, prepareReader, measureReader, readerPages, revealReader, cancelReaderOpen, closeReader, setCloseTransition } from "./book.js?v=library-20261111-reliable-v1";
 import { applyCoverVisual, createCoverArt, coverVisual } from "./book-cover.js?v=reader-20261109-v7";
-import { playOpen, playClose } from "./library-stage.js?v=library-20261111-v2";
+import { playOpen, playClose } from "./library-stage.js?v=library-20261111-reliable-v1";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
 
@@ -155,7 +155,53 @@ function resetShelfFilters(){
 
 /* ---- after every render: shelves, labels, the empty places, and books gliding to their new spots ---- */
 let lastPositions=new Map(),arranging=false;
+let shelfFocus=null;
 const motionOK=()=>!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+function rememberShelfFocus(item){
+  const books=[...$("covers").querySelectorAll(".shelf-book")];
+  if(!item||!books.includes(item))return;
+  shelfFocus={key:item.dataset.key,index:books.indexOf(item),item};
+  for(const book of books)book.querySelector(".cover").tabIndex=book===item?0:-1;
+}
+function restoreShelfFocus({focus=false,key=shelfFocus?.key}={}){
+  const books=[...$("covers").querySelectorAll(".shelf-book")];
+  const active=document.activeElement?.closest?.(".shelf-book");
+  // Replacing a focused card sends focus to the body. Restore only that case:
+  // filtering from a select or the search box must keep focus on that control.
+  const lostFocus=shelfFocus?.item&&!shelfFocus.item.isConnected&&document.activeElement===document.body;
+  const item=(books.includes(active)?active:null)||books.find(book=>book.dataset.key===key)||books[Math.min(shelfFocus?.index||0,books.length-1)];
+  if(item){
+    rememberShelfFocus(item);
+    if(focus||lostFocus)item.querySelector(".cover").focus({preventScroll:!focus});
+  }else{
+    shelfFocus=null;
+    if(focus||lostFocus)$("library-filter-toggle").focus();
+  }
+}
+function onShelfKeydown(e){
+  const item=e.target.closest?.(".shelf-book");
+  if(!item||e.altKey||e.ctrlKey||e.metaKey)return;
+  if(e.key.toLowerCase()==="f"||e.key==="ب"){
+    e.preventDefault();
+    if(!e.repeat)item.querySelector(".cover-favorite").click();
+    return;
+  }
+  if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(e.key))return;
+  // At a shelf boundary arrows still belong to the bookcase, not page scrolling.
+  e.preventDefault();
+  const list=[...$("covers").querySelectorAll(".shelf-book")],i=list.indexOf(item);
+  const step={ArrowLeft:1,ArrowRight:-1,Home:-i,End:list.length-1-i}[e.key];
+  let next=step==null?null:list[i+step];
+  if(e.key==="ArrowUp"||e.key==="ArrowDown"){
+    const dir=e.key==="ArrowDown"?1:-1,x=item.offsetLeft+item.offsetWidth/2;
+    const others=list.filter(book=>Math.abs(book.offsetTop-item.offsetTop)>4&&Math.sign(book.offsetTop-item.offsetTop)===dir);
+    const row=others.length?(dir>0?Math.min(...others.map(book=>book.offsetTop)):Math.max(...others.map(book=>book.offsetTop))):null;
+    next=others.filter(book=>Math.abs(book.offsetTop-row)<=4).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-x)-Math.abs(b.offsetLeft+b.offsetWidth/2-x))[0];
+  }
+  if(!next)return;
+  rememberShelfFocus(next);
+  next.querySelector(".cover").focus();
+}
 function shelfLabel(story){
   const sort=$("story-sort").value;
   if(!story)return "";
@@ -210,8 +256,7 @@ function arrangeShelf(){
   }
   lastPositions=next;
   // Keyboard: one tab stop for the whole case, arrows move along the books.
-  const buttons=books.map(b=>b.querySelector(".cover"));
-  if(buttons.length&&!buttons.some(b=>b.tabIndex===0))buttons[0].tabIndex=0;
+  restoreShelfFocus();
   queueMicrotask(()=>{arranging=false;});
   updateContinue();
 }
@@ -256,36 +301,59 @@ function showTalker(item){
 function hideTalker(){const t=$("shelf-talker");t.classList.remove("is-on");clearTimeout(talkerTimer);talkerTimer=setTimeout(()=>{t.hidden=true;},180);}
 
 /* ---- opening ---- */
-let opening=false,openStory=null,openSource=null;
+let opening=false,openStory=null,openSource=null,journey=null;
+function beginJourney(){
+  journey?.abort();
+  journey=new AbortController();
+  return journey;
+}
+function clearReaderError(){
+  const note=$("reader-note");
+  if(note.getAttribute("role")!=="alert")return;
+  note.removeAttribute("role");note.hidden=!isGitHubPages();
+  note.textContent=isGitHubPages()?"نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. پیشرفت و نشان‌ها در مرورگر شما می‌مانند.":"";
+}
+function showReaderError(){
+  const note=$("reader-note");note.setAttribute("role","alert");note.hidden=false;
+  note.textContent="باز کردن کتاب ممکن نشد. دوباره تلاش کنید.";
+}
 async function openFromShelf(story,source){
   const id=String(story.id||"");
   if(!id||opening)return;
-  opening=true;hideTalker();
+  const current=beginJourney();
+  opening=true;hideTalker();clearReaderError();
   openStory=story;openSource=source;
   try{
     history.replaceState(null,"",`#${encodeURIComponent(id)}`);
-    const measure=()=>prepareReader();
-    const geometry=measure();
+    const geometry=prepareReader();
     const ready=openBook(id,{staged:true});
-    await playOpen({overlay:geometry.overlay,source,story,measure:()=>geometry,ready,snapshot:()=>readerPages(),reveal:revealReader});
-  }catch{
-    source.style.visibility="";revealReader();
-  }finally{opening=false;}
+    await playOpen({overlay:geometry.overlay,source,story,measure:measureReader,ready,snapshot:readerPages,reveal:revealReader,signal:current.signal,onCancel:cancelReaderOpen});
+  }catch(error){
+    if(!current.signal.aborted&&error.name!=="AbortError"){
+      cancelReaderOpen();showReaderError();
+    }
+  }finally{if(journey===current){opening=false;journey=null;}}
 }
 async function route(){
   let id="";
-  try{id=decodeURIComponent(location.hash.slice(1))}catch{location.hash="";return}
-  if(!id||opening)return;
+  try{id=decodeURIComponent(location.hash.slice(1))}catch{history.replaceState(null,"",location.pathname+location.search);await closeReader();return;}
+  if(!id){await closeReader();return;}
+  const current=beginJourney();opening=true;hideTalker();clearReaderError();
   try{
     const story=stories.find(s=>String(s.id)===id);
     openStory=story||null;openSource=story?sourceFor(story):null;
     await openBook(id);
-  }catch{location.hash="";}
+  }catch(error){
+    if(!current.signal.aborted&&error.name!=="AbortError"){
+      cancelReaderOpen();showReaderError();history.replaceState(null,"",location.pathname+location.search);
+    }
+  }finally{if(journey===current){opening=false;journey=null;}}
 }
 setCloseTransition(async({overlay,geometry,pages,hideReader})=>{
+  const current=beginJourney();opening=false;
   const source=openSource?.isConnected?openSource:openStory?sourceFor(openStory):null;
-  await playClose({overlay,source,story:openStory||{},geometry,pages,hideReader});
-  history.replaceState(null,"",location.pathname+location.search);
+  try{await playClose({overlay,source,story:openStory||{},geometry,pages,hideReader,signal:current.signal});}
+  finally{if(journey===current)journey=null;}
 });
 
 async function showShelf(){
@@ -305,7 +373,14 @@ new MutationObserver(records=>{
 let resizeTimer=null;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{lastPositions=new Map();arrangeShelf();},180);});
 window.addEventListener("hashchange",route);
-window.addEventListener("writer:reading-closed",()=>{renderShelf();});
+window.addEventListener("writer:reading-error",showReaderError);
+window.addEventListener("writer:reading-closed",()=>{
+  journey?.abort();journey=null;opening=false;
+  history.replaceState(null,"",location.pathname+location.search);
+  const key=openSource?.closest?.(".shelf-book")?.dataset.key;
+  renderShelf();
+  restoreShelfFocus({focus:true,key});
+});
 if(isGitHubPages()){
   $("reader-note").hidden=false;$("reader-note").textContent="نسخهٔ عمومی فقط آثار مجاز به انتشار را نمایش می‌دهد. پیشرفت و نشان‌ها در مرورگر شما می‌مانند.";
   $("story-status").querySelector('option[value="rejected"]')?.remove();
@@ -340,26 +415,9 @@ $("library-filter-toggle").addEventListener("click",()=>{
 const covers=$("covers");
 covers.addEventListener("pointerover",e=>{const b=e.target.closest(".shelf-book");if(b)showTalker(b);});
 covers.addEventListener("pointerout",e=>{if(!e.relatedTarget?.closest?.(".shelf-book"))hideTalker();});
-covers.addEventListener("focusin",e=>{const b=e.target.closest(".shelf-book");if(b)showTalker(b);});
+covers.addEventListener("focusin",e=>{const b=e.target.closest(".shelf-book");if(b){rememberShelfFocus(b);showTalker(b);}});
 covers.addEventListener("focusout",hideTalker);
-covers.addEventListener("keydown",e=>{
-  const item=e.target.closest?.(".shelf-book");
-  if(!item)return;
-  if(e.key==="f"||e.key==="ب"){item.querySelector(".cover-favorite").click();return;}
-  const list=[...covers.querySelectorAll(".shelf-book")],i=list.indexOf(item);
-  const step={ArrowLeft:1,ArrowRight:-1,Home:-i,End:list.length-1-i}[e.key];
-  let next=step==null?null:list[i+step];
-  if(e.key==="ArrowUp"||e.key==="ArrowDown"){
-    const dir=e.key==="ArrowDown"?1:-1,x=item.getBoundingClientRect().left;
-    const others=list.filter(b=>Math.sign(b.offsetTop-item.offsetTop)===dir);
-    const row=others.length?(dir>0?others[0].offsetTop:others.at(-1).offsetTop):null;
-    next=others.filter(b=>b.offsetTop===row).sort((a,b)=>Math.abs(a.getBoundingClientRect().left-x)-Math.abs(b.getBoundingClientRect().left-x))[0];
-  }
-  if(!next)return;
-  e.preventDefault();
-  item.querySelector(".cover").tabIndex=-1;
-  const button=next.querySelector(".cover");button.tabIndex=0;button.focus();
-});
+covers.addEventListener("keydown",onShelfKeydown);
 installPersianPresentation(document.body);
 updateLibraryControls();
 showShelf().then(route).catch(()=>{

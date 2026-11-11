@@ -1,0 +1,61 @@
+name: Reader browser regression
+
+on:
+  push:
+    branches: [main, "reader/**"]
+    paths:
+      - "web/book.js"
+      - "web/book.css"
+      - "web/book-cover.js"
+      - "web/read.js"
+      - "web/read.html"
+      - "web/reader-room.css"
+      - "web/reader-position.js"
+      - "web/library-stage.js"
+      - "web/library.css"
+      - "web/page-curl.js"
+      - "web/snapshot.js"
+      - "web/style.css"
+      - "read/index.html"
+      - "tests/reader-browser-regression.cjs"
+      - ".github/workflows/reader-browser.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - "read/index.html"
+      - "tests/reader-browser-regression.cjs"
+      - ".github/workflows/reader-browser.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Playwright and Chromium
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Check browser harness syntax
+        run: node --check tests/reader-browser-regression.cjs
+      - name: Exercise the reader on desktop and mobile
+        run: node tests/reader-browser-regression.cjs
+      - name: Upload browser results and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-chromium-regression
+          path: reader-browser-artifacts/
+          if-no-files-found: warn
+          retention-days: 14

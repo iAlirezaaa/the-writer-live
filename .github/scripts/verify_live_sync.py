@@ -1,10 +1,26 @@
 #!/usr/bin/env python3
 """Verify public frontend export without exposing private writer data."""
 from pathlib import Path
-import re, json
+import re, json, hashlib
 ROOT=Path(__file__).resolve().parents[2]
 WEB=ROOT/"web"
-SOURCE_COMMIT="fd8328f60edd2973538e4d8bae255cc58c76983a"
+MANIFEST=json.loads((ROOT/".github/live-sync-manifest.json").read_text(encoding="utf-8"))
+SOURCE_COMMIT=MANIFEST["private_source_commit"]
+if not re.fullmatch(r"[0-9a-f]{40}",SOURCE_COMMIT):
+    raise RuntimeError("Invalid committed private source reference")
+READER_ASSETS={"web/book.js","web/read.js","web/library-stage.js","web/library.css","web/reader-room.css","web/read.html"}
+reader_assets=MANIFEST.get("reader_assets",{})
+if set(reader_assets)!=READER_ASSETS:
+    raise RuntimeError("Reviewed reader asset hashes are missing or unexpected")
+for name,expected in reader_assets.items():
+    if not isinstance(expected,str) or not re.fullmatch(r"[0-9a-f]{64}",expected):
+        raise RuntimeError("Invalid reviewed reader asset hash: "+name)
+    asset=ROOT/name
+    if not asset.is_file() or hashlib.sha256(asset.read_bytes()).hexdigest()!=expected:
+        raise RuntimeError("Reader asset differs from the reviewed private commit: "+name)
+expected_reader=(WEB/"read.html").read_text(encoding="utf-8").replace('href="/web/','href="../web/').replace('src="/web/','src="../web/').replace('href="/"','href="../"')
+if (ROOT/"read/index.html").read_text(encoding="utf-8")!=expected_reader:
+    raise RuntimeError("Deployed reader entrypoint differs from the reviewed source")
 NEEDED={
     "civita-buildings.js", "civita-crowd.js", "civita-details.js",
     "civita-measured-terrain.js", "civita-street-furnishing.js",

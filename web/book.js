@@ -27,6 +27,10 @@ let book = null;        // { story, comments, pages, index, turning }
 let flipMs = 460;
 let closeTransition = null;
 let closing = false;
+let readerRequest = 0;
+let loadingRequest = null;
+let readerOpener = null;
+const readerBackground = new Map();
 const PAPERS = [["paper","کرم","#f7f0e0",""],["ivory","عاج","#fcfaf3",""],["linen","کتان","#e9e6da","var(--tex-weave)"],["rice","دست‌ساز","#efe6d0","var(--tex-rice)"],["kraft","کرافت","#c9ad85",""],["ink","سنگ","#dcdad0",""],["night","شب","#1d2329",""]];
 const PAPER_NAMES = PAPERS.map(p=>p[0]);
 
@@ -47,8 +51,9 @@ async function ownerPost(path, body) {
 function build() {
   const overlay = el("div", "book-overlay"); overlay.hidden = true;
   overlay.setAttribute("role", "dialog"); overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-labelledby", "reader-book-title"); overlay.tabIndex = -1;
   const bar = el("div", "book-bar");
-  const title = el("span", "book-bar-title");
+  const title = el("span", "book-bar-title"); title.id = "reader-book-title";
   const tools = el("div", "book-tools");
   const marginBtn = el("button", "", "حاشیه‌ها");
   const voteUp = el("button","reader-vote","پسندیدم");voteUp.type="button";
@@ -227,17 +232,7 @@ function build() {
     goTo(Math.floor(index/per)*per);
   });
   find.addEventListener("keydown", e => { if(e.key==="Enter"){e.preventDefault();findText(find.value);} });
-  document.addEventListener("keydown", (e) => {
-    if (overlay.hidden || overlay.classList.contains("book-entering")) return;
-    if ((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();ui.find.focus();ui.find.select();return;}
-    if (e.target.closest?.("input, textarea, select, summary, details")) return;
-    if (e.key === "Escape") close();
-    if (e.key === "ArrowLeft") turn(1);
-    if (e.key === "ArrowRight") turn(-1);
-    if (e.key === " ") { e.preventDefault(); turn(e.shiftKey ? -1 : 1); }
-    if (e.key === "Home") goTo(0);
-    if (e.key === "End") goTo(Math.max(0, book.pages.length - spread()));
-  });
+  document.addEventListener("keydown", readerKeydown);
   bookEl.addEventListener("pointermove", hoverGrab);
   bookEl.addEventListener("pointerleave", () => { delete bookEl.dataset.grab; });
   bookEl.addEventListener("pointerdown", grabStart);
@@ -248,10 +243,15 @@ function build() {
   const wake = () => {
     overlay.classList.remove("chrome-idle");
     clearTimeout(idle);
-    idle = setTimeout(() => { if (!settings.open && margin.hidden && pop.hidden && !grab) overlay.classList.add("chrome-idle"); }, 3400);
+    idle = setTimeout(() => {
+      const focused=document.activeElement;
+      const onControls=bar.contains(focused)||footer.contains(focused)||focused===prev||focused===next;
+      if (!settings.open && margin.hidden && pop.hidden && !grab && !onControls) overlay.classList.add("chrome-idle");
+    }, 3400);
   };
   overlay.addEventListener("pointermove", wake);
   overlay.addEventListener("keydown", wake);
+  overlay.addEventListener("focusin", wake);
   bookEl.addEventListener("mouseup", (e) => { if (!onSelect(e)) edgeTurn(e); });
   bookEl.addEventListener("touchend", () => setTimeout(onSelect, 50));
   selBtn.addEventListener("mousedown", (e) => e.preventDefault());
@@ -262,7 +262,14 @@ function build() {
   window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(() => { if (book && !overlay.hidden) repaginate(); }, 200); });
   // the reader keeps its own preferred flip speed; the room's polish loop can set it
   const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
-  rm.addEventListener?.("change", () => { if (book && !overlay.hidden) show(); });
+  rm.addEventListener?.("change", () => {
+    if (!book || overlay.hidden) return;
+    if (rm.matches && book.turning) {
+      const turn = book.turning;
+      finishTurn(turn, !turn.dragging);
+      grab = null;
+    } else show();
+  });
   // Reflow after webfonts load: first layout may use fallback metrics.
   if(document.fonts?.ready){
     document.fonts.ready.then(()=>{
@@ -272,6 +279,70 @@ function build() {
   overlay.addEventListener("click",e=>{
     if(settings.open && !settings.contains(e.target))settings.open=false;
   });
+}
+
+function setReaderModal(active) {
+  if (active) {
+    if (ui.overlay.hidden) readerOpener = document.activeElement;
+    for (const node of document.body.children) {
+      if (node === ui.overlay || readerBackground.has(node)) continue;
+      readerBackground.set(node, node.inert);
+      node.inert = true;
+    }
+    document.body.classList.add("book-open");
+  } else {
+    for (const [node, inert] of readerBackground) node.inert = inert;
+    readerBackground.clear();
+    document.body.classList.remove("book-open");
+  }
+}
+function readerKeydown(e) {
+  if (!ui || ui.overlay.hidden) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    if (loadingRequest !== null || ui.overlay.classList.contains("book-entering")) { close(); return; }
+    if (!ui.pop.hidden) { ui.pop.hidden = true; ui.marginBtn.focus(); return; }
+    if (ui.settings.open) { ui.settings.open = false; ui.settings.querySelector("summary")?.focus(); return; }
+    if (!ui.margin.hidden) { ui.margin.hidden = true; ui.marginBtn.setAttribute("aria-pressed", "false"); ui.marginBtn.focus(); return; }
+    close(); return;
+  }
+  if (e.key === "Tab") {
+    const scope = ui.settings.open ? ui.settings : ui.overlay;
+    const selector=ui.overlay.classList.contains("book-entering")?'.stage-cancel':'button, a[href], input, select, textarea, summary, [tabindex]';
+    const focusable = [...scope.querySelectorAll(selector)]
+      .filter(node => !node.disabled && node.tabIndex >= 0 && node.getClientRects().length && !node.closest('[hidden], [inert]'));
+    const first = focusable[0], last = focusable[focusable.length - 1], active = document.activeElement;
+    if (!first) { e.preventDefault(); ui.overlay.focus(); }
+    else if (e.shiftKey && (active === first || !focusable.includes(active))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (active === last || !focusable.includes(active))) { e.preventDefault(); first.focus(); }
+    return;
+  }
+  if (!book || closing || ui.overlay.classList.contains("book-entering")) return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+    e.preventDefault(); ui.settings.open = true; ui.find.focus(); ui.find.select(); return;
+  }
+  if (e.target.closest?.("input, textarea, select, summary, details") || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === " " && e.target.closest?.("button, a[href]")) return;
+  if (["ArrowLeft", "ArrowRight", " ", "Home", "End"].includes(e.key)) e.preventDefault();
+  if (e.key === "ArrowLeft") turn(1);
+  if (e.key === "ArrowRight") turn(-1);
+  if (e.key === " ") turn(e.shiftKey ? -1 : 1);
+  if (e.key === "Home") goTo(0);
+  if (e.key === "End") goTo(Math.max(0, book.pages.length - spread()));
+}
+function currentBook(current, request) {
+  return book === current && readerRequest === request && !ui.overlay.hidden;
+}
+function hideReaderOverlay() {
+  ui.overlay.hidden = true;
+  ui.overlay.classList.remove("book-entering", "book-leaving", "chrome-idle");
+  ui.overlay.style.background = "";
+  ui.overlay.removeAttribute("aria-busy");
+  ui.settings.open = false; ui.selBtn.hidden = true; ui.pop.hidden = true;
+  setReaderModal(false);
+  closing = false;
+  window.dispatchEvent(new Event("writer:reading-closed"));
+  if (readerOpener?.isConnected && (document.activeElement === document.body || ui.overlay.contains(document.activeElement))) readerOpener.focus({preventScroll:true});
 }
 
 const READER_DEFAULTS=Object.freeze({
@@ -341,10 +412,10 @@ function applyReaderAppearance(){
 }
 function ensureReaderFont(){
   if(!book||!document.fonts?.load)return;
-  const sid=book.story.id,family=book.fontFamily;
+  const current=book,request=readerRequest,family=book.fontFamily;
   document.fonts.load(`16px ${READER_FONTS[family]||READER_FONTS.naskh}`,"متن فارسی کتاب")
     .then(()=>{
-      if(book?.story.id===sid&&book.fontFamily===family&&!ui.overlay.hidden)repaginate();
+      if(currentBook(current,request)&&book.fontFamily===family)repaginate();
     }).catch(()=>{});
 }
 function setReaderOption(name,value,repaginateText=false){
@@ -377,15 +448,16 @@ async function sendServerReading(storyId,state){
   return response.json();
 }
 function scheduleServerReading(storyId,state,immediate=false){
-  if(!book?.syncConnected||isGitHubPages())return;
+  if(!book?.syncConnected||closing||ui.overlay.hidden||isGitHubPages())return;
+  const current=book,request=readerRequest;
   if(syncTimer)clearTimeout(syncTimer);
   syncTimer=setTimeout(()=>{
     syncTimer=null;
     // Serialize writes so slow network responses cannot put older pages after
     // later ones. Local progress remains usable when server sync fails.
     syncQueue=syncQueue.catch(()=>{}).then(()=>sendServerReading(storyId,state))
-      .then(()=>{if(book?.story.id===storyId)updateSyncState();})
-      .catch(()=>{if(book?.story.id===storyId){book.syncConnected=false;
+      .then(()=>{if(currentBook(current,request))updateSyncState();})
+      .catch(()=>{if(currentBook(current,request)){book.syncConnected=false;
         updateSyncState("سرور در دسترس نیست؛ پیشرفت محلی حفظ شد");}});
   },immediate?0:1100);
 }
@@ -394,11 +466,17 @@ function readProgress(id=book?.story?.id){
   try{return JSON.parse(localStorage.getItem(`the-writer-reading:${id}`)||"null");}
   catch{return null}
 }
+function readingProgress() {
+  const last = Math.max(0, book.pages.length - spread());
+  if (!last) return book.pages.some(page => page.kind === "body") ? 1 : 0;
+  return Math.min(1, book.index / last);
+}
 function readerState(){
-  const progress=book.pages.length<=1?0:book.index/(book.pages.length-1);
+  const progress=readingProgress();
   book.progress=progress;
   return {
-    progress,anchor:anchorOf(book.pages[book.index]),bookmark:book.bookmark,fontSize:book.fontSize,fontFamily:book.fontFamily,
+    progress,anchor:anchorOf(book.pages[book.index]),bookmark:book.bookmark,
+    bookmarkAnchor:book.bookmark==null?null:book.bookmarkAnchor||anchorOf(book.pages[book.bookmark]),fontSize:book.fontSize,fontFamily:book.fontFamily,
     theme:book.theme,leading:book.leading,align:book.align,margins:book.margins,mode:book.mode,focus:book.focus,
     turnStyle:book.turnStyle,turnSpeed:book.turnSpeed,sound:book.sound,ambient:book.ambient,
     updated:new Date().toISOString()
@@ -430,6 +508,7 @@ function adoptStoredState(data){
     if(data[field]!==undefined)book[field]=data[field];
   }
   book.bookmark=data.bookmark??null;
+  book.bookmarkAnchor=data.bookmarkAnchor??null;
   const resumeProgress=Math.max(0,Math.min(1,Number(data.progress)||0));
   book.progress=resumeProgress;
   applyReaderAppearance();
@@ -440,6 +519,7 @@ function adoptStoredState(data){
 }
 async function connectReaderOwner(){
   if(!book||isGitHubPages())return;
+  const current=book,request=readerRequest;
   let token=ownerToken();
   if(!token){
     const entered=window.prompt("توکن مالک برای ذخیرهٔ پیشرفت در سرور خصوصی:");
@@ -451,7 +531,8 @@ async function connectReaderOwner(){
   }
   updateSyncState("در حال بررسی اتصال…");
   try{
-    const remote=await fetchServerReading(book.story.id);
+    const remote=await fetchServerReading(current.story.id);
+    if(!currentBook(current,request))return;
     book.syncConnected=true;
     if(remote?.state){
       const local=readProgress(book.story.id);
@@ -462,6 +543,7 @@ async function connectReaderOwner(){
     scheduleServerReading(book.story.id,state,true);
     updateSyncState();
   }catch{
+    if(!currentBook(current,request))return;
     book.syncConnected=false;
     updateSyncState("توکن یا ارتباط سرور معتبر نیست؛ پیشرفت محلی محفوظ است");
   }
@@ -469,6 +551,7 @@ async function connectReaderOwner(){
 /* Lay the reader out invisibly so the shelf animation can aim at the real page. */
 export function prepareReader(){
   if(!ui)build();
+  setReaderModal(true);
   const prefs=readGlobalReadingOptions(),theme=opt(prefs.theme,PAPER_NAMES,"paper");
   ui.overlay.hidden=false;
   ui.overlay.classList.remove("book-entering");
@@ -485,22 +568,67 @@ function readerGeometry(single){
   const right=ui.pageR.getBoundingClientRect(),left=(single?ui.pageR:ui.pageL).getBoundingClientRect();
   return {x:left.left,y:right.top,w:right.right-left.left,h:right.height,single};
 }
+export function measureReader(){
+  if(!ui)return null;
+  const entering=ui.overlay.classList.contains("book-entering"),background=ui.overlay.style.background;
+  ui.overlay.classList.remove("book-entering");ui.overlay.style.background="";
+  const measured={...readerGeometry(spread()===1),background:getComputedStyle(ui.overlay).background,overlay:ui.overlay};
+  ui.overlay.style.background=background;
+  if(entering)ui.overlay.classList.add("book-entering");
+  return measured;
+}
 /* Copies of what is on the page now, for the book on the stage. */
 export function readerPages(){
   const single=spread()===1;
   return single?{left:ui.pageR.cloneNode(true),right:null}:{left:ui.pageL.cloneNode(true),right:ui.pageR.cloneNode(true)};
 }
-export function revealReader(){ui?.overlay.classList.remove("book-entering");}
+export function revealReader(){
+  if(!ui||ui.overlay.hidden)return;
+  ui.overlay.classList.remove("book-entering");
+  ui.closeBtn.focus({preventScroll:true});
+}
 export function setCloseTransition(fn){closeTransition=fn;}
+function flushServerReading(){
+  if(syncTimer){
+    clearTimeout(syncTimer);syncTimer=null;
+    if(book?.syncConnected){
+      const sid=book.story.id,state=readerState();
+      syncQueue=syncQueue.catch(()=>{}).then(()=>sendServerReading(sid,state)).catch(()=>{});
+    }
+  }
+}
+export function cancelReaderOpen(){
+  readerRequest++;
+  const opening=loadingRequest!==null||ui?.overlay.classList.contains("book-entering");
+  loadingRequest=null;
+  if(opening){endTurn();grab=null;cancelPaper();hideReaderOverlay();}
+}
 export async function openBook(storyId,{staged=false}={}) {
   if(!ui)build();
+  flushServerReading();endTurn();grab=null;cancelPaper();
+  const request=++readerRequest;
+  loadingRequest=request;closing=false;book=null;
+  setReaderModal(true);
+  ui.overlay.hidden=false;ui.overlay.setAttribute("aria-busy","true");
+  ui.title.textContent="در حال باز کردن کتاب…";
+  ui.pageR.replaceChildren();ui.pageL.replaceChildren();
+  ui.prev.disabled=true;ui.next.disabled=true;
+  ui.settings.open=false;ui.margin.hidden=true;ui.marginBtn.setAttribute("aria-pressed","false");
+  ui.selBtn.hidden=true;ui.pop.hidden=true;
   if(!staged)ui.overlay.classList.remove("book-entering");
-  if(syncTimer){clearTimeout(syncTimer);syncTimer=null;}
-  const [story,notes,publicNotes]=await Promise.all([
-    getJSON(`/api/stories/${encodeURIComponent(storyId)}`),
-    getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(()=>[]),
-    isGitHubPages()?loadPublicStoryNotes(storyId).catch(()=>[]):Promise.resolve([])
-  ]);
+  let story,notes,publicNotes;
+  try{
+    [story,notes,publicNotes]=await Promise.all([
+      getJSON(`/api/stories/${encodeURIComponent(storyId)}`),
+      getJSON(`/api/stories/${encodeURIComponent(storyId)}/comments`).catch(()=>[]),
+      isGitHubPages()?loadPublicStoryNotes(storyId).catch(()=>[]):Promise.resolve([])
+    ]);
+  }catch(error){
+    if(request!==readerRequest)return false;
+    window.dispatchEvent(new CustomEvent("writer:reading-error",{detail:{storyId}}));
+    cancelReaderOpen();throw error;
+  }
+  if(request!==readerRequest)return false;
   const stored=readProgress(storyId)||{};
   const prefs=readGlobalReadingOptions();
   let remoteState=null,connected=false;
@@ -509,15 +637,17 @@ export async function openBook(storyId,{staged=false}={}) {
       remoteState=result?.state||null;connected=true;
     }catch{}
   }
+  if(request!==readerRequest)return false;
   const hasNewerServer=remoteState&&Date.parse(remoteState.updated||0)>Date.parse(stored.updated||0);
   const saved=hasNewerServer?{...prefs,...stored,...remoteState}:{...prefs,...stored};
   const resumeProgress=Math.max(0,Math.min(1,Number(saved.progress)||0));
   book={
     story,comments:[...(Array.isArray(notes)?notes:[]),...publicNotes],pages:[],index:0,turning:null,
-    repaginateLater:false,bookmark:saved.bookmark??null,progress:0,
+    repaginateLater:false,bookmark:saved.bookmark??null,bookmarkAnchor:saved.bookmarkAnchor??null,progress:0,
     ...READER_DEFAULTS,...saved,syncConnected:connected
   };
   ui.title.textContent=story.title;
+  loadingRequest=null;ui.overlay.removeAttribute("aria-busy");
   ui.voteStatus.textContent=isGitHubPages()?"رأی با تأیید نهایی در GitHub ثبت می‌شود":"";
   ui.voteUp.textContent="پسندیدم";ui.voteDown.textContent="نپسندیدم";
   ui.overlay.hidden=false;
@@ -531,21 +661,25 @@ export async function openBook(storyId,{staged=false}={}) {
   repaginate();
   restoreReadingLocation(saved,resumeProgress);
   ensureReaderFont();
+  if(!staged)revealReader();
+  return true;
 }
 
 async function refreshReaderVotes(storyId){
   if(isGitHubPages())return;
+  const current=book,request=readerRequest;
   try{
     const response=await fetch("/api/stories/"+encodeURIComponent(storyId)+"/votes",{cache:"no-store"});
     if(!response.ok)return;
     const counts=await response.json();
-    if(book?.story.id!==storyId)return;
+    if(!currentBook(current,request)||book.story.id!==storyId)return;
     ui.voteUp.textContent="پسندیدم ("+Number(counts.likes||0)+")";
     ui.voteDown.textContent="نپسندیدم ("+Number(counts.dislikes||0)+")";
   }catch{/* static/offline readers still work */}
 }
 async function sendReaderVote(value){
   if(!book)return;
+  const current=book,request=readerRequest;
   const sid=book.story.id;
   ui.voteStatus.textContent="";
   if(isGitHubPages()){
@@ -559,9 +693,10 @@ async function sendReaderVote(value){
           body:JSON.stringify({value})
         });
         const data=await response.json().catch(()=>({}));
+        if(!currentBook(current,request))return;
         if(!response.ok)throw new Error(data.error||"ثبت رأی ممکن نشد");
         ui.voteStatus.textContent=data.updated?"رأی شما ثبت شد.":"رأی شما از قبل ثبت شده بود.";
-      }catch(error){ui.voteStatus.textContent="ثبت مستقیم ناموفق بود: "+String(error.message||error);}
+      }catch(error){if(currentBook(current,request))ui.voteStatus.textContent="ثبت مستقیم ناموفق بود: "+String(error.message||error);}
       return;
     }
     try{
@@ -583,10 +718,10 @@ async function sendReaderVote(value){
     });
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(String(data.error||"ثبت رأی ممکن نشد"));
-    if(book?.story.id!==sid)return;
+    if(!currentBook(current,request))return;
     ui.voteStatus.textContent=data.updated?"رأی شما ثبت شد.":"رأی شما از قبل ثبت شده بود.";
     await refreshReaderVotes(sid);
-  }catch(error){ui.voteStatus.textContent=String(error.message||error);}
+  }catch(error){if(currentBook(current,request))ui.voteStatus.textContent=String(error.message||error);}
 }
 
 function adjustFont(delta){
@@ -598,39 +733,37 @@ function adjustFont(delta){
 }
 function toggleBookmark(){
   if(!book)return;
-  if(book.bookmark===book.index)book.bookmark=null;
-  else if(book.bookmark!=null){book.index=Math.min(book.bookmark,Math.max(0,book.pages.length-spread()));show();}
-  else book.bookmark=book.index;
-  if(book.bookmark==null){ui.bookmark.textContent="ثبت نشانک";ui.bookmark.setAttribute("aria-pressed","false");}
-  else{ui.bookmark.textContent=book.bookmark===book.index?"نشانک اینجاست":"بازگشت به نشانک";ui.bookmark.setAttribute("aria-pressed",String(book.bookmark===book.index));}
-  writeProgress();
+  if(book.bookmark!=null&&book.bookmark>=book.index&&book.bookmark<book.index+spread()){
+    book.bookmark=null;book.bookmarkAnchor=null;
+  }else if(book.bookmark!=null){
+    const per=spread();goTo(Math.floor(book.bookmark/per)*per);return;
+  }else{
+    book.bookmark=book.index;book.bookmarkAnchor=anchorOf(book.pages[book.index]);
+  }
+  show();
 }
 
 async function close() {
-  if(!ui||ui.overlay.hidden||closing||ui.overlay.classList.contains("book-entering"))return;
+  if(!ui||ui.overlay.hidden||closing)return;
+  if(loadingRequest!==null||ui.overlay.classList.contains("book-entering")){cancelReaderOpen();return;}
+  const request=++readerRequest;
   closing=true;
-  endTurn();
-  if(syncTimer){clearTimeout(syncTimer);syncTimer=null;
-    if(book?.syncConnected){
-      const sid=book.story.id,state=readerState();
-      syncQueue=syncQueue.catch(()=>{}).then(()=>sendServerReading(sid,state)).catch(()=>{});
-    }
-  }
+  endTurn();grab=null;cancelPaper();
+  flushServerReading();
   ui.settings.open=false;
   ui.selBtn.hidden = true; ui.pop.hidden = true;
   const hideReader=()=>{
-    ui.overlay.hidden = true;
-    document.body.classList.remove("book-open");
-    closing=false;
-    window.dispatchEvent(new Event("writer:reading-closed"));
+    if(request!==readerRequest)return;
+    hideReaderOverlay();
   };
   if(closeTransition){
     show();
     const geometry={...readerGeometry(spread()===1),background:getComputedStyle(ui.overlay).background};
     try{await closeTransition({overlay:ui.overlay,geometry,pages:readerPages(),hideReader});}
-    catch{ui.overlay.classList.remove("book-leaving");ui.overlay.style.background="";hideReader();}
+    catch{if(request===readerRequest)hideReader();}
   }else hideReader();
 }
+export function closeReader(){return close();}
 
 export function setTurnSpeed(ms) {
   if (Number.isFinite(ms) && ms >= 120 && ms <= 1400) flipMs = ms;
@@ -773,8 +906,10 @@ function refreshReaderSections(){
 }
 
 function repaginate() {
+  if (!book) return;
   if (book.turning) { book.repaginateLater = true; return; }
   const anchor = anchorOf(book.pages[book.index]);
+  const bookmarkAnchor = book.bookmarkAnchor || (book.bookmark == null ? null : anchorOf(book.pages[book.bookmark]));
   const per = spread();
   ui.bookEl.classList.toggle("single", per === 1);
   // size the measuring page exactly like a real page
@@ -797,6 +932,13 @@ function repaginate() {
     book.pages.push({ node: el("div", "page-content blank"), kind: "blank", firstPara: null, firstWord: null });
   }
   book.index = locate(anchor, per);
+  if(bookmarkAnchor){
+    book.bookmarkAnchor=bookmarkAnchor;book.bookmark=locate(bookmarkAnchor,1);
+  }else if(book.bookmark!=null){
+    const legacy=Number(book.bookmark);
+    book.bookmark=Number.isSafeInteger(legacy)&&legacy>=0?Math.min(legacy,book.pages.length-1):null;
+    book.bookmarkAnchor=book.bookmark==null?null:anchorOf(book.pages[book.bookmark]);
+  }
   refreshReaderSections();
   show();
   if (book.repaginateLater) { book.repaginateLater = false; repaginate(); }
@@ -818,18 +960,19 @@ function show() {
   ui.prev.disabled = book.index === 0;
   ui.next.disabled = book.index + per >= book.pages.length;
   const last = Math.min(book.pages.length, book.index + per);
-  const remain=Math.max(0,Math.ceil((Number(book.story.words)||0)*
-    (1-Math.min(1,book.index/Math.max(1,book.pages.length-1)))/210));
+  const progress=readingProgress();
+  const remain=Math.max(0,Math.ceil((Number(book.story.words)||0)*(1-progress)/210));
   ui.counter.textContent = `صفحهٔ ${book.index + 1}${per===2&&last>book.index+1?`–${last}`:""} از ${book.pages.length}`;
   ui.counter.title=remain?`حدود ${remain} دقیقه مطالعه باقی مانده`:"پایان مطالعه";
   if(ui.jump?.options?.length){
     const available=[...ui.jump.options].map(o=>Number(o.value)).filter(i=>i<=book.index);
     ui.jump.value=String(available[available.length-1]??0);
   }
-  ui.progress.value=String(Math.round(book.pages.length<=1?0:book.index/(book.pages.length-1)*100));
+  ui.progress.value=String(Math.round(progress*100));
   ui.progress.title=`پیشرفت مطالعه: ${ui.progress.value}٪`;
-  ui.bookmark.textContent=book.bookmark==null?"ثبت نشانک":book.bookmark===book.index?"نشانک اینجاست":"بازگشت به نشانک";
-  ui.bookmark.setAttribute("aria-pressed",String(book.bookmark===book.index));
+  const bookmarkHere=book.bookmark!=null&&book.bookmark>=book.index&&book.bookmark<book.index+per;
+  ui.bookmark.textContent=book.bookmark==null?"ثبت نشانک":bookmarkHere?"نشانک اینجاست":"بازگشت به نشانک";
+  ui.bookmark.setAttribute("aria-pressed",String(bookmarkHere));
   ui.bookEl.style.setProperty("--done",ui.progress.value/100);
   const marked=book.bookmark!=null&&(book.bookmark===book.index||(per===2&&book.bookmark===book.index+1));
   ui.ribbon.classList.toggle("on",marked);
@@ -847,6 +990,7 @@ function endTurn() {
     book.turning = null;
     ui.bookEl.classList.remove("is-dragging");
   }
+  if(book)book.queuedTurn=0;
 }
 
 const turnFactor = () => ({ slow: 2.4, normal: 1.75, fast: 1.05 }[book?.turnSpeed] || 1.75);
@@ -915,15 +1059,16 @@ function runTurn(t, { to, duration, curl, commit }) {
 }
 function finishTurn(t, commit) {
   if (book?.turning !== t) return;
+  const queued=book.queuedTurn;
   if (commit) book.index = t.target;
   endTurn();
   show();
   if (book.repaginateLater) { book.repaginateLater = false; repaginate(); }
-  if (book.queuedTurn) { const dir = book.queuedTurn; book.queuedTurn = 0; turn(dir); }
+  if (queued) turn(queued);
 }
 
 function turn(dir) {
-  if (!book) return;
+  if (!book || closing || ui.overlay.hidden) return;
   if (book.turning) { if (!book.turning.dragging) book.queuedTurn = dir; return; }
   const target = book.index + dir * spread();
   if (target < 0 || target >= book.pages.length) return;
@@ -931,7 +1076,10 @@ function turn(dir) {
 }
 /* Any move through the book. Distant jumps use one quick sheet: the reader sees the book move, not every page. */
 function goTo(target) {
-  if (!book || book.turning || target === book.index) return;
+  if (!book || closing || ui.overlay.hidden || book.turning) return;
+  const per=spread();
+  target=Math.max(0,Math.min(Math.floor((Number(target)||0)/per)*per,Math.max(0,book.pages.length-per)));
+  if(target===book.index)return;
   ui.selBtn.hidden = true; ui.pop.hidden = true;
   if (book.turnStyle === "none" || reducedMotion()) { book.index = target; show(); return; }
   if (book.turnStyle === "slide") {
@@ -961,17 +1109,25 @@ function hoverGrab(e) {
   if (side) ui.bookEl.dataset.grab = side; else delete ui.bookEl.dataset.grab;
 }
 function grabStart(e) {
-  if (e.button || book?.turning || e.target.closest("mark, button, a, input, textarea")) return;
+  if (!book || closing || e.button || book.turning || e.target.closest("mark, button, a, input, textarea")) return;
+  book.justDragged=false;
   if (window.getSelection()?.toString()) return;
-  const side = grabSide(e);
+  const side = e.pointerType==="touch"?"touch":grabSide(e);
   if (!side) return;
   if (e.pointerType !== "touch") e.preventDefault();
-  grab = { id: e.pointerId, x: e.clientX, y: e.clientY, dir: side === "left" ? 1 : -1, t: null };
+  grab = { id: e.pointerId, x: e.clientX, y: e.clientY, touch:e.pointerType==="touch",dir: side === "left" ? 1 : -1, t: null };
 }
 function grabMove(e) {
   if (!grab || e.pointerId !== grab.id || !book) return;
+  const dx=e.clientX-grab.x,dy=e.clientY-grab.y;
   if (!grab.t) {
-    if (Math.hypot(e.clientX - grab.x, e.clientY - grab.y) < 6 || book.turnStyle !== "curl" || reducedMotion()) return;
+    if(window.getSelection()?.toString()){grab=null;return;}
+    if(Math.hypot(dx,dy)<6)return;
+    if(grab.touch){
+      if(Math.abs(dy)>Math.abs(dx)){grab=null;return;}
+      grab.dir=dx>0?1:-1;
+    }
+    if(book.turnStyle!=="curl"||reducedMotion())return;
     const target = book.index + grab.dir * spread();
     if (target < 0 || target >= book.pages.length) { grab = null; return; }
     grab.t = startTurn(target);
@@ -983,7 +1139,14 @@ function grabMove(e) {
     rustle();
     dragFrame(grab.t);
   }
-  const t = grab.t, raw = (t.hinge - e.clientX) / t.width, u = t.per === 2 ? raw : raw * 2 - 1;
+  const t = grab.t;
+  // Touch may begin anywhere on a page. Carry the sheet from its flat pose by
+  // the finger's displacement; absolute coordinates would make a tiny movement
+  // near the spine jump past the release threshold. Mouse grips remain physical.
+  const raw = (t.hinge - e.clientX) / t.width;
+  const u = grab.touch
+    ? (t.forward ? 1 : -1) - dx / (t.per === 2 ? t.width : t.width / 2)
+    : t.per === 2 ? raw : raw * 2 - 1;
   grab.goal = angleFromPointer(u);
   const r = ui.bookEl.getBoundingClientRect();
   grab.tilt = ((e.clientY - r.top) / r.height - .5) * -9;
@@ -1001,9 +1164,16 @@ function dragFrame(t) {
 }
 function grabEnd(e) {
   if (!grab || e.pointerId !== grab.id) return;
-  const t = grab.t;
+  const gesture=grab,t = grab.t;
   grab = null;
-  if (!t || book?.turning !== t) return;
+  if(!t){
+    const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
+    if(book&&e.type==="pointerup"&&gesture.touch&&Math.abs(dx)>=36&&Math.abs(dx)>Math.abs(dy)*1.3&&!window.getSelection()?.toString()){
+      book.justDragged=true;turn(dx>0?1:-1);
+    }
+    return;
+  }
+  if (book?.turning !== t) return;
   book.justDragged = true;
   t.dragging = false;
   ui.bookEl.classList.remove("is-dragging");
@@ -1035,6 +1205,7 @@ function composePanel(c) {
   closePanel.addEventListener("click", () => { c.settings.open = false; });
   head.append(el("h3", "", "ظاهر کتاب"), closePanel);
   const segment = (select, tiles) => {
+    select.tabIndex=-1;select.setAttribute("aria-hidden","true");
     const label = select.closest("label"); label.className = "segment-host";
     const bar = el("div", `segment${tiles ? " font-tiles" : ""}`);
     const buttons = [...select.options].map((o) => {
@@ -1081,6 +1252,14 @@ function composePanel(c) {
 }
 
 /* A sheet can be tapped, or carried over and put down on the book. */
+let paperChange=0;
+let activePaper=null;
+const paperDrags=new Set();
+function cancelPaper(){
+  paperChange++;
+  for(const cancel of [...paperDrags])cancel();
+  if(activePaper){for(const animation of activePaper.getAnimations())animation.cancel();activePaper.remove();activePaper=null;}
+}
 function bindSheet(sheet, value, colour, texture) {
   let start = null, ghost = null;
   const makeGhost = (r) => {
@@ -1092,33 +1271,45 @@ function bindSheet(sheet, value, colour, texture) {
     return g;
   };
   const move = (e) => {
-    if (!start) return;
+    if (!start || e.pointerId!==start.id) return;
     const dx = e.clientX - start.x, dy = e.clientY - start.y;
     if (!ghost) { if (Math.hypot(dx, dy) < 6) return; ghost = makeGhost(start.r); sheet.classList.add("is-lifted"); }
     ghost.style.transform = `translate(${start.r.left + dx}px,${start.r.top + dy}px) rotate(${Math.max(-14, Math.min(14, dx * .04))}deg) scale(1.08)`;
   };
+  const cancel=()=>{
+    window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);window.removeEventListener("pointercancel",up);
+    paperDrags.delete(cancel);start=null;ghost?.remove();ghost=null;sheet.classList.remove("is-lifted");
+  };
   const up = (e) => {
+    if (!start || e.pointerId!==start.id) return;
     window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
-    if (!start) return;
+    paperDrags.delete(cancel);
+    if(e.type==="pointercancel"||!currentBook(start.book,start.request)){cancel();return;}
     const r = start.r; start = null;
     if (!ghost) { layPaper(value, makeGhost(r), r); return; }
     const g = ghost, b = ui.bookEl.getBoundingClientRect(), box = g.getBoundingClientRect(); ghost = null;
     sheet.classList.remove("is-lifted");
     const over = e.type === "pointerup" && e.clientX > b.left && e.clientX < b.right && e.clientY > b.top && e.clientY < b.bottom;
     if (over) layPaper(value, g, box);
-    else g.animate([{ transform: g.style.transform }, { transform: `translate(${r.left}px,${r.top}px)` }], { duration: 260, easing: "cubic-bezier(.3,.9,.3,1)" }).finished.finally(() => g.remove());
+    else if(reducedMotion())g.remove();
+    else g.animate([{ transform: g.style.transform }, { transform: `translate(${r.left}px,${r.top}px)` }], { duration: 260, easing: "cubic-bezier(.3,.9,.3,1)" }).finished.catch(()=>{}).finally(() => g.remove());
   };
   sheet.addEventListener("pointerdown", (e) => {
-    if (e.button) return;
+    if (e.button || !book || closing) return;
     e.preventDefault();
-    start = { x: e.clientX, y: e.clientY, r: sheet.getBoundingClientRect() };
+    cancelPaper();
+    start = { id:e.pointerId,x: e.clientX, y: e.clientY, r: sheet.getBoundingClientRect(),book,request:readerRequest };
+    paperDrags.add(cancel);
     window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
   });
-  sheet.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setReaderOption("theme", value); } });
+  sheet.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); cancelPaper();setReaderOption("theme", value); } });
 }
 async function layPaper(value, sheet, from) {
   if (!book) { sheet.remove(); return; }
-  if (value === book.theme || reducedMotion()) { sheet.remove(); setReaderOption("theme", value); return; }
+  cancelPaper();
+  const current=book,request=readerRequest,change=paperChange;
+  activePaper=sheet;
+  if (value === book.theme || reducedMotion()) { sheet.remove();activePaper=null; setReaderOption("theme", value); return; }
   const b = ui.bookEl.getBoundingClientRect(), sx = b.width / from.width, sy = b.height / from.height;
   const start = `translate(${from.left}px,${from.top}px) rotate(-7deg)`;
   const fly = sheet.animate([
@@ -1127,9 +1318,11 @@ async function layPaper(value, sheet, from) {
     { transform: `translate(${b.left}px,${b.top}px) rotate(0deg) scale(${sx},${sy})`, offset: 1 },
   ], { duration: 640, easing: "cubic-bezier(.45,.05,.2,1)", fill: "forwards" });
   await fly.finished.catch(() => {});
+  if(change!==paperChange||!currentBook(current,request)){sheet.remove();return;}
   setReaderOption("theme", value);
   await sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: "ease", fill: "forwards" }).finished.catch(() => {});
   sheet.remove();
+  if(activePaper===sheet)activePaper=null;
 }
 
 // ---------- notes ----------
@@ -1168,6 +1361,8 @@ function openNoteForm(quote) {
 }
 async function sendNote(e) {
   e.preventDefault();
+  if(!book)return;
+  const current=book,request=readerRequest;
   if (isGitHubPages()) {
     const endpoint=String(window.THE_WRITER_FEEDBACK_API||"").replace(/[/]$/,"");
     if(endpoint){
@@ -1177,10 +1372,11 @@ async function sendNote(e) {
           body:JSON.stringify({name:ui.popName.value,text:ui.popText.value,quote:ui.pop.dataset.quote})
         });
         const data=await response.json().catch(()=>({}));
+        if(!currentBook(current,request))return;
         if(!response.ok)throw new Error(data.error||"ثبت نظر ممکن نشد");
         ui.popStatus.textContent="نظر شما ثبت شد.";
         book.comments.push(data);ui.pop.hidden=true;renderMargin();repaginate();
-      }catch(error){ui.popStatus.textContent="ثبت مستقیم ناموفق بود: "+String(error.message||error);}
+      }catch(error){if(currentBook(current,request))ui.popStatus.textContent="ثبت مستقیم ناموفق بود: "+String(error.message||error);}
       return;
     }
     try {
@@ -1191,11 +1387,13 @@ async function sendNote(e) {
     }catch(error){ui.popStatus.textContent=String(error.message||error);}
     return;
   }
-  const r = await fetch(`/api/stories/${encodeURIComponent(book.story.id)}/comments`, {
+  try{
+  const r = await fetch(`/api/stories/${encodeURIComponent(current.story.id)}/comments`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: ui.popName.value, text: ui.popText.value, quote: ui.pop.dataset.quote }),
   });
   const data = await r.json().catch(() => ({}));
+  if(!currentBook(current,request))return;
   if (!r.ok) { ui.popStatus.textContent = r.status === 429 ? "کمی صبر کنید" : (data.error || "ثبت نشد"); return; }
   book.comments.push(data);
   ui.pop.hidden = true;
@@ -1204,6 +1402,7 @@ async function sendNote(e) {
   repaginate();
   ui.margin.hidden = false;
   focusNote(data.id);
+  }catch(error){if(currentBook(current,request))ui.popStatus.textContent="ثبت نظر ناموفق بود: "+String(error.message||error);}
 }
 function renderMargin() {
   const m = ui.margin;
@@ -1254,25 +1453,31 @@ function noteState(c) {
   return row;
 }
 async function checkNote(cid, btn) {
+  const current=book,request=readerRequest;
   btn.disabled = true; btn.textContent = "…";
   try {
     const res = await ownerPost("/api/margins/check", { id: cid });
+    if(!currentBook(current,request))return;
     const c = book.comments.find((x) => x.id === cid);
     if (c) { c.state = res.state; c.check = res.check; c.suspect = res.state === "suspect"; }
     renderMargin();
   } catch (err) {
+    if(!currentBook(current,request))return;
     btn.disabled = false; btn.textContent = "بسنج";
     btn.closest(".note-actions")?.append(el("span", "time", String(err.message || err)));
   }
 }
 async function removeNote(cid, btn) {
+  const current=book,request=readerRequest;
   btn.disabled = true;
   try {
     await ownerPost("/api/margins/remove", { id: cid, by: "مالک", reason: "حاشیه‌ای که دیگر نباید خوانده شود" });
+    if(!currentBook(current,request))return;
     book.comments = book.comments.filter((c) => c.id !== cid);
     renderMargin();
     repaginate();          // the note's highlight must leave the page too
   } catch (err) {
+    if(!currentBook(current,request))return;
     btn.disabled = false; btn.textContent = "پاکش کنم";
     btn.closest(".note-actions")?.append(el("span", "time", String(err.message || err)));
   }

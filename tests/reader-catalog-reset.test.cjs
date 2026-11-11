@@ -7,6 +7,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { readerDeployment, projectReaderHTML, REVIEWED_READER_ASSETS } = require("./reader-deployment.cjs");
+const deployment = readerDeployment(path.join(__dirname, ".."));
 
 const source = fs.readFileSync(path.join(__dirname, "../web/read.js"), "utf8");
 const capture = (pattern, label) => {
@@ -128,9 +130,7 @@ test("Escape from search resets without reloading the document", () => {
 });
 
 test("catalog HTML retains named search region and labeled reset button", () => {
-  const privateHtml = path.join(__dirname, "../web/read.html");
-  const publicHtml = path.join(__dirname, "../read/index.html");
-  const html = fs.readFileSync(fs.existsSync(privateHtml) ? privateHtml : publicHtml, "utf8");
+  const html = fs.readFileSync(deployment.htmlPath, "utf8");
   assert.match(html, /lang="fa"\s+dir="rtl"/);
   assert.match(html, /role="search"\s+aria-label="[^"]+"/);
   assert.match(html, /<button[^>]*id="story-reset"[^>]*type="button"[^>]*hidden>/);
@@ -139,33 +139,26 @@ test("catalog HTML retains named search region and labeled reset button", () => 
   assert.match(html, /id="story-status"/);
 });
 
-test("public protected assets retain catalog behavior and semantic HTML", () => {
-  const pinnedJS = path.join(__dirname, "../.github/reader-assets/read.js");
-  const pinnedHTML = path.join(__dirname, "../.github/reader-assets/read.html");
-  if (!fs.existsSync(pinnedJS)) return; // private source does not have public deployment assets
-  const pinned = fs.readFileSync(pinnedJS, "utf8");
-  const html = fs.readFileSync(pinnedHTML, "utf8");
+test("the active deployment retains catalog behavior and semantic HTML", () => {
+  const deployed = fs.readFileSync(deployment.catalogPath, "utf8");
+  const html = fs.readFileSync(deployment.htmlPath, "utf8");
   const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
-  assert.equal(pinned.match(expression)?.[0], source.match(expression)?.[0], "deployed Persian search must match source");
-  // Prevent the protected Pages replacement from silently diverging from tested catalog behavior.
+  assert.equal(deployed.match(expression)?.[0], source.match(expression)?.[0], "deployed Persian search must match source");
+  // Check active overrides when used; direct exports additionally verify manifest hashes.
   for (const name of ["renderShelf", "resetShelfFilters"]) {
     const pattern = new RegExp("^function " + name + "\\(\\)\\s*\\{[\\s\\S]*?^\\}", "m");
-    assert.equal(pinned.match(pattern)?.[0], source.match(pattern)?.[0], "protected " + name + " differs from public source");
+    assert.equal(deployed.match(pattern)?.[0], source.match(pattern)?.[0], "deployed " + name + " differs from tested source");
   }
   for (const symbol of ["function renderShelf()", "function resetShelfFilters()", "story-reset", "const query=searchKey("]) {
-    assert.ok(pinned.includes(symbol), "missing from public pinned reader: " + symbol);
+    assert.ok(deployed.includes(symbol), "missing from deployed reader: " + symbol);
   }
   assert.match(html, /role="search"\s+aria-label="[^"]+"/);
   assert.match(html, /id="story-reset"/);
-  assert.match(html, /read\.js\?v=reader-20261110-shelf-v\d+/);
+  assert.match(html, /read\.js\?v=[^"&]+/);
 });
 
-test("catalog entry points share the protected script cache version and reset controls", () => {
-  const privateEntry = path.join(__dirname, "../web/read.html");
-  const publicEntry = path.join(__dirname, "../read/index.html");
-  const protectedEntry = path.join(__dirname, "../.github/reader-assets/read.html");
-  const entry = fs.existsSync(publicEntry) ? publicEntry : privateEntry;
-  const html = fs.readFileSync(entry, "utf8");
+test("active catalog entry points share the script cache version and reset controls", () => {
+  const html = fs.readFileSync(deployment.htmlPath, "utf8");
   const extractVersion = value => {
     const match = value.match(/src="[^"]*read[.]js[?]v=([^"&]+)"/);
     assert.ok(match, "missing versioned catalog script");
@@ -173,18 +166,15 @@ test("catalog entry points share the protected script cache version and reset co
   };
   const version = extractVersion(html);
   assert.match(html, /id="story-reset"/, "entry point must expose reset");
-  if (fs.existsSync(protectedEntry)) {
-    const pinnedHtml = fs.readFileSync(protectedEntry, "utf8");
-    assert.equal(version, extractVersion(pinnedHtml), "root and protected catalog versions diverge");
-    assert.match(pinnedHtml, /id="story-reset"/);
+  for (const entry of deployment.entryPaths) {
+    const entryHtml = fs.readFileSync(entry, "utf8");
+    assert.equal(version, extractVersion(entryHtml), "source and deployed catalog versions diverge");
+    assert.match(entryHtml, /id="story-reset"/);
   }
 });
 
-test("RDR-041: public and protected catalog entry points preserve one named search landmark and unique controls", () => {
-  const entries = ["../read/index.html", "../.github/reader-assets/read.html"]
-    .map(relative => path.join(__dirname, relative)).filter(fs.existsSync);
-  if (!entries.length) return; // private repository may not include public entry points
-  for (const entry of entries) {
+test("RDR-041: active catalog entry points preserve one named search landmark and unique controls", () => {
+  for (const entry of deployment.entryPaths) {
     const html = fs.readFileSync(entry, "utf8");
     const regions = html.match(/role="search"\s+aria-label="[^"]+"/g) || [];
     assert.equal(regions.length, 1, entry + ": expected exactly one named search region");
@@ -202,13 +192,11 @@ test("RDR-041: public and protected catalog entry points preserve one named sear
   }
 });
 
-test("RDR-048: deployed protected search normalizer executes Persian/Arabic equivalence fixtures", () => {
-  const pinnedPath = path.join(__dirname, "../.github/reader-assets/read.js");
-  if (!fs.existsSync(pinnedPath)) return; // private repo has no protected public assets
-  const pinned = fs.readFileSync(pinnedPath, "utf8");
+test("RDR-048: deployed search normalizer executes Persian/Arabic equivalence fixtures", () => {
+  const deployed = fs.readFileSync(deployment.catalogPath, "utf8");
   const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
-  const implementation = pinned.match(expression)?.[0];
-  assert.ok(implementation, "protected catalog must expose searchKey");
+  const implementation = deployed.match(expression)?.[0];
+  assert.ok(implementation, "deployed catalog must expose searchKey");
   const normalize = new Function(implementation + "\nreturn searchKey;")();
   for (const [query, title] of [
     ["عَلِي", "علی"], ["كـِتاب", "کتاب"], ["ﻛﺘﺎﺏ", "کتاب"], ["TEST", "test"]
@@ -216,17 +204,13 @@ test("RDR-048: deployed protected search normalizer executes Persian/Arabic equi
 });
 
 
-test("RDR-059: source and protected Persian search preserve distinct words", () => {
-  const pinnedPath = path.join(__dirname, "../.github/reader-assets/read.js");
+test("RDR-059: source and deployed Persian search preserve distinct words", () => {
   const expression = /^const searchKey\s*=\s*value\s*=>[^\n]+;/m;
   const sourceImplementation = source.match(expression)?.[0];
   assert.ok(sourceImplementation, "missing source search normalizer");
-  const implementations = [sourceImplementation];
-  if (fs.existsSync(pinnedPath)) {
-    const pinnedImplementation = fs.readFileSync(pinnedPath, "utf8").match(expression)?.[0];
-    assert.equal(pinnedImplementation, sourceImplementation, "protected normalizer differs");
-    implementations.push(pinnedImplementation);
-  }
+  const deployedImplementation = fs.readFileSync(deployment.catalogPath, "utf8").match(expression)?.[0];
+  assert.equal(deployedImplementation, sourceImplementation, "deployed normalizer differs");
+  const implementations = [sourceImplementation, deployedImplementation];
   for (const implementation of implementations) {
     const normalize = new Function(implementation + "\nreturn searchKey;")();
     for (const [query, title] of [
@@ -236,4 +220,68 @@ test("RDR-059: source and protected Persian search preserve distinct words", () 
       ["کتاب", "کباب"], ["علی", "عالی"], ["گل", "کل"], ["کتاب", "کتابخانه"]
     ]) assert.notEqual(normalize(query), normalize(title), query + " must remain distinct from " + title);
   }
+});
+
+function deploymentFixture(t) {
+  const os = require("node:os"), { createHash } = require("node:crypto");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reader-deployment-contract-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const write = (relative, content) => {
+    const file = path.join(root, relative);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  };
+  const html = '<html lang="fa" dir="rtl"><a href="/">Home</a><script src="/web/read.js?v=fixture"></script></html>';
+  write(".github/workflows/pages.yml", "jobs:\n  deploy:\n    steps:\n      - run: |\n          cp -a index.html web read snapshot _site/\n");
+  const hashes = {};
+  for (const asset of REVIEWED_READER_ASSETS) {
+    const content = asset.endsWith("read.html") ? html : "/* reviewed " + asset + " */\n";
+    write(asset, content);
+    hashes[asset] = createHash("sha256").update(content).digest("hex");
+  }
+  write("read/index.html", projectReaderHTML(html));
+  const manifest = {
+    private_source_repository: "iAlirezaaa/the-writer", private_source_commit: "a".repeat(40),
+    reader_assets: hashes, reader_entrypoint: "read/index.html",
+  };
+  write(".github/live-sync-manifest.json", JSON.stringify(manifest));
+  return { root, write, manifest };
+}
+
+test("direct Pages deployment validates reviewed assets while ignoring dormant legacy archives", t => {
+  const f = deploymentFixture(t);
+  for (const name of ["read.js", "book.js", "read.html"]) f.write(".github/reader-assets/" + name, "obsolete archive");
+  const active = readerDeployment(f.root, { repository: "iAlirezaaa/the-writer-live" });
+  assert.equal(active.mode, "direct");
+  assert.equal(active.catalogPath, path.join(f.root, "web/read.js"));
+  assert.equal(active.htmlPath, path.join(f.root, "read/index.html"));
+});
+
+test("direct Pages deployment rejects changed assets and an incomplete review manifest", t => {
+  const f = deploymentFixture(t), file = path.join(f.root, "web/read.js");
+  const original = fs.readFileSync(file);
+  fs.appendFileSync(file, "changed after review");
+  assert.throws(() => readerDeployment(f.root), /reviewed reader asset hash mismatch: web\/read.js/);
+  fs.writeFileSync(file, original);
+  delete f.manifest.reader_assets["web/library-stage.js"];
+  f.write(".github/live-sync-manifest.json", JSON.stringify(f.manifest));
+  assert.throws(() => readerDeployment(f.root), /missing reviewed reader asset hash: web\/library-stage.js/);
+});
+
+test("direct Pages deployment rejects stale or incorrectly rewritten reader HTML", t => {
+  const f = deploymentFixture(t);
+  f.write("read/index.html", fs.readFileSync(path.join(f.root, "web/read.html")));
+  assert.throws(() => readerDeployment(f.root), /deployed reader HTML must match the reviewed source/);
+});
+
+test("legacy override assets remain mandatory only when the active workflow installs them", t => {
+  const f = deploymentFixture(t);
+  f.write(".github/workflows/pages.yml", "jobs:\n  deploy:\n    steps:\n      - run: |\n          python3 .github/scripts/prepare_reader_deploy.py _site\n");
+  assert.throws(() => readerDeployment(f.root), /active reader deployment requires \.github\/reader-assets\/read.js/);
+  for (const name of ["read.js", "book.js", "read.html"]) {
+    f.write(".github/reader-assets/" + name, fs.readFileSync(path.join(f.root, "web", name)));
+  }
+  const active = readerDeployment(f.root, { repository: "iAlirezaaa/the-writer-live" });
+  assert.equal(active.mode, "legacy");
+  assert.equal(active.catalogPath, path.join(f.root, ".github/reader-assets/read.js"));
 });
