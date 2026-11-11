@@ -1,5 +1,8 @@
 /* One bookcase in a lamplit room. Walnut, brass, cloth spines; the empty places are dust outlines of books not yet written. */
-:root{scrollbar-gutter:stable;--l-title:"Noto Naskh Arabic","Amiri","Vazirmatn",serif;}
+/* Paint the reserved scrollbar gutter too; it belongs to the root canvas, not
+   the themed body. Keep its width stable when the reader locks page scrolling. */
+:root{scrollbar-gutter:stable;background:#150e09;color-scheme:dark;--l-title:"Noto Naskh Arabic","Amiri","Vazirmatn",serif;}
+:root:has(> body.lib[data-library-theme="light"]:not(.book-open)){background:#e9dfcd;color-scheme:light;}
 body.lib{
  --bg-room:#150e09;--wood:#3a2415;--wood-hi:#6b4427;--wood-lo:#1d110a;--back:#23150c;--glow:rgba(255,190,110,.2);
  --ink:#efe5d3;--muted:#a8967e;--line:rgba(239,229,211,.14);--brass:#c9a063;--surface:#2a1b10;

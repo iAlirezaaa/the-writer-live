@@ -912,6 +912,10 @@ function repaginate() {
   const bookmarkAnchor = book.bookmarkAnchor || (book.bookmark == null ? null : anchorOf(book.pages[book.bookmark]));
   const per = spread();
   ui.bookEl.classList.toggle("single", per === 1);
+  // Remove the second grid item before measuring a single-page layout. Leaving
+  // it in grid-column:2 would create an implicit column and squeeze the measured
+  // page, even though show() subsequently makes the visible page full width.
+  ui.pageL.hidden = per === 1;
   // size the measuring page exactly like a real page
   const r = ui.pageR.getBoundingClientRect();
   ui.measure.style.width = `${r.width}px`;

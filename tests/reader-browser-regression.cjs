@@ -122,7 +122,7 @@ async function readingState(page, id = "long") { return page.evaluate(key => JSO
 async function checkGeometry(page, single) {
   const geometry = await page.evaluate(() => {
     const box = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom }; };
-    return { book: box(".book-overlay .book"), close: box(".reader-close"), right: box(".book .page-right"),
+    return { book: box(".book-overlay .book"), close: box(".reader-close"), right: box(".book .page-right"), measure: box(".page-measure"),
       single: document.querySelector(".book").classList.contains("single"), width: innerWidth, height: innerHeight,
       documentWidth: document.documentElement.scrollWidth };
   });
@@ -133,6 +133,8 @@ async function checkGeometry(page, single) {
     assert.ok(rect.y >= -1 && rect.bottom <= geometry.height + 1, name + " stays inside viewport vertically: " + JSON.stringify(geometry));
   }
   assert.ok(geometry.right.width > 100 && geometry.right.height > 100, "readable page size");
+  assert.ok(Math.abs(geometry.measure.width - geometry.right.width) <= 1, "pagination measures the visible page width: " + JSON.stringify(geometry));
+  assert.ok(Math.abs(geometry.measure.height - geometry.right.height) <= 1, "pagination measures the visible page height: " + JSON.stringify(geometry));
   assert.ok(geometry.documentWidth <= geometry.width + 1, "no document horizontal overflow");
   return geometry;
 }
@@ -276,10 +278,13 @@ async function main() {
       assert.deepEqual(await page.evaluate(() => window.readerAnimationEvidence), { books3d: 0, leaves: 0 });
       await close(page);
     });
-    await scenario("escape-cancels-staged-loading", {}, async ({ page, capture, server }) => {
+    await scenario("escape-cancels-staged-loading", {}, async ({ page, capture, server, row }) => {
       const gate = server.hold("slow");
       await cover(page, "slow").click(); await within(gate.requested, "delayed story request");
-      await page.locator(".stage-cancel").waitFor(); await capture("loading");
+      await page.locator(".stage-cancel").waitFor();
+      row.loadingChrome = await page.locator(".book-overlay > .book-bar, .book-overlay > .book-shelf, .book-overlay > .book-footer").evaluateAll(nodes => nodes.map(node => ({visibility:getComputedStyle(node).visibility,opacity:getComputedStyle(node).opacity})));
+      assert.ok(row.loadingChrome.every(node => node.visibility === "hidden" && Number(node.opacity) === 0), "staged loading never flashes empty reader pages or controls");
+      await capture("loading");
       await page.keyboard.press("Escape"); await readerClosed(page);
       assert.equal(await page.evaluate(() => location.hash), "");
       const response = page.waitForResponse(value => new URL(value.url()).pathname === "/api/stories/slow");
@@ -340,7 +345,7 @@ async function main() {
       assert.equal(await page.locator(".book-overlay").evaluate(node => node.contains(document.activeElement)), true);
       await page.keyboard.press("Escape"); await readerClosed(page);
     });
-    await scenario("bookmark-persists-through-font-and-mobile-reflow", { reduce: true }, async ({ page, capture }) => {
+    await scenario("bookmark-persists-through-font-and-mobile-reflow", { reduce: true }, async ({ page, capture, row }) => {
       await open(page);
       await page.locator(".reader-close").focus(); await page.keyboard.press("ArrowLeft"); await page.keyboard.press("ArrowLeft");
       await page.locator(".book-bookmark").click();
@@ -354,12 +359,19 @@ async function main() {
       await page.setViewportSize({ width: 375, height: 812 });
       await page.waitForFunction(() => document.querySelector(".book").classList.contains("single"));
       await settled(page);
+      row.mobileReflowGeometry = await checkGeometry(page, true);
+      row.mobileReflowCounter = await page.locator(".book-counter").textContent();
       assert.deepEqual((await readingState(page)).bookmarkAnchor, marked.bookmarkAnchor);
       await page.locator(".reader-close").focus(); await page.keyboard.press("End");
       await page.locator(".book-bookmark").click();
       await page.waitForFunction(() => document.querySelector(".book-bookmark").getAttribute("aria-pressed") === "true");
       assert.deepEqual((await readingState(page)).bookmarkAnchor, marked.bookmarkAnchor);
-      await capture("mobile-bookmark"); await close(page);
+      await capture("mobile-bookmark");
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.waitForFunction(() => !document.querySelector(".book").classList.contains("single"));
+      await settled(page); row.desktopReflowGeometry = await checkGeometry(page, false);
+      assert.deepEqual((await readingState(page)).bookmarkAnchor, marked.bookmarkAnchor);
+      await close(page);
     });
     await scenario("failed-book-can-reopen", {}, async ({ page, capture, server }) => {
       server.fail("error"); await cover(page, "error").click();

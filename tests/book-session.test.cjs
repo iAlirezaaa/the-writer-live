@@ -151,6 +151,22 @@ test("legacy numeric bookmarks acquire a stable passage anchor",()=>{
   assert.equal(f.getBook().bookmark,3);
   assert.deepEqual(plain(f.getBook().bookmarkAnchor),{kind:"body",firstPara:1,firstWord:0});
 });
+test("responsive reflow establishes page visibility before measuring the grid",()=>{
+  const f=fixture(),visibilityAtMeasurement=[];
+  f.setBook({story:story("reflow-grid"),pages:[title(),page(0),page(1),page(2)],index:2,mode:"auto",bookmark:null});
+  f.ui.pageL.hidden=false;
+  f.ui.pageR.getBoundingClientRect=()=>{
+    visibilityAtMeasurement.push(f.ui.pageL.hidden);
+    // A visible second grid item must not occupy an implicit column when the
+    // viewport switches to one page. Measurement is the observable contract.
+    return {left:0,right:600,top:0,width:f.ui.pageL.hidden?600:300,height:800};
+  };
+  f.window.innerWidth=375;f.reflow([page(0),page(1),page(2)]);
+  assert.equal(f.ui.measure.style.width,"600px");
+  f.window.innerWidth=1440;f.reflow([page(0),page(1),page(2)]);
+  assert.equal(f.ui.measure.style.width,"300px");
+  assert.deepEqual(visibilityAtMeasurement,[true,false]);
+});
 test("the final two-page spread records complete progress",()=>{
   const f=fixture();f.window.innerWidth=1440;
   f.setBook({story:story("spread"),pages:[title(),page(0),page(1),page(2),page(3),{kind:"blank"}],index:4,mode:"spread",bookmark:null});
