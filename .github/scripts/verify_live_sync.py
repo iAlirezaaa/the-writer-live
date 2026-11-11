@@ -43,7 +43,7 @@ if not all(x in home for x in ('id="stage"', 'data-panel=', 'src="./web/world.js
     raise RuntimeError("Public city entrypoint missing observer, panel or import-map")
 if not all(x in reader for x in ('id="covers"', 'library.css', 'reader-room.css', '../web/read.js')):
     raise RuntimeError("New reader/bookcase entrypoint missing")
-if not all(x in world for x in ('writerInteriorWorldRoot','buildCivitaTown', 'anchorWriterHome', 'loadCivitaWriterParcel')):
+if not all(x in world for x in ('writerInteriorWorldRoot','buildTown', 'anchorWriterHome', 'loadCivitaWriterParcel')):
     raise RuntimeError("New world entrypoint lost protected room or surveyed city")
 if "owner_shared" not in book or "owner_shared" not in (WEB/"read.js").read_text(encoding="utf-8"):
     raise RuntimeError("Owner-authorized story status lost")
