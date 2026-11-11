@@ -15,7 +15,7 @@ import { writerHouseLevel, writerHouseDimensions, WRITER_HOME_BLUEPRINT } from "
 import { CITY_PLACE_CATALOG, auditCityPlan } from "./civita-place-catalog.js?v=civita-catalog-20261110-v1";
 import { createCitizens, ROLE_LABELS, ACTIVITY_LABELS, PLACE_LABELS } from "./citizens.js?v=citizens-20261109-v1";
 import * as motionArchive from "./citizen-motion-library.js?v=citizens-20261109-v1";
-import { initObserverUI } from "./observer-ui.js?v=observatory-20261109-first-paint-v1";
+import { initObserverUI } from "./observer-ui.js?v=observatory-20261109-first-paint-v2";
 import { solarDate, persianDigits, displayText } from "./persian-display.js?v=observatory-20261108-v2";
 
 /* The writer's world: one room in a quiet town, seen as a dollhouse. Everything on the dashboard

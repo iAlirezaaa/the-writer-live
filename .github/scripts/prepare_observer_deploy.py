@@ -10,7 +10,7 @@ from pathlib import Path
 from shutil import copy2
 import sys
 
-VERSION="observatory-20261109-first-paint-v1"
+VERSION="observatory-20261109-first-paint-v2"
 WORLD_VERSION="city-world-20261110-civita-v4"
 READER_VERSION="reader-20261110-shelf-v4"
 ROOT=Path(".github/observer-assets")

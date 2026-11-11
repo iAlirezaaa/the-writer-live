@@ -32,6 +32,11 @@ html[data-observer-boot-theme="dark"] body.app:not([data-observer-theme]){
 body.app *{scrollbar-color:var(--faint) transparent;scrollbar-width:thin;}
 body.app button,body.app a,body.app select{transition:background-color .15s,border-color .15s,color .15s;}
 body.app :focus-visible{outline:2px solid var(--lamp);outline-offset:3px;}
+/* Respect system Reduce Motion without changing normal navigation feedback. */
+@media (prefers-reduced-motion: reduce){
+  body.app button,body.app a,body.app select{transition:none;}
+}
+
 body.app .appbar{
   position:relative;z-index:9;
   min-height:var(--appbar);height:auto;

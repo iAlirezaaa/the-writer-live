@@ -79,8 +79,8 @@ export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
   nav.setAttribute("role","navigation");
   nav.replaceChildren();
   for(const group of PANEL_GROUPS){
-    const sec=document.createElement("section");sec.className="observer-nav-group";
-    const header=document.createElement("div");header.className="observer-nav-header";
+    const sec=document.createElement("details");sec.className="observer-nav-group";
+    const header=document.createElement("summary");header.className="observer-nav-header";
     const title=document.createElement("h3");title.textContent=group.title;
     const hint=document.createElement("span");hint.textContent=group.hint;
     header.append(title,hint);
@@ -153,7 +153,9 @@ export function initObserverUI({selectTab,setView,onShowPanel,getSceneHour}){
     if($("observer-panel-description"))$("observer-panel-description").textContent=details.description;
     if($("panel-scene-link"))$("panel-scene-link").textContent="دیدن «"+details.label+"» در صحنه";
     nav.querySelectorAll(".observer-nav-group").forEach(g=>{
-      g.classList.toggle("has-selection",g.querySelector('button[aria-selected="true"]')!==null);
+      const active=g.querySelector('button[aria-selected="true"]')!==null;
+      g.classList.toggle("has-selection",active);
+      g.open=active;
     });
   }
   function syncView(view){

@@ -23,7 +23,7 @@
   </script>
   <link rel="stylesheet" href="./web/style.css?v=20261109-three-mind-layers-v1">
   <link rel="stylesheet" href="./web/book.css?v=reader-20261109-graph-v1">
-  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261109-first-paint-v1">
+  <link rel="stylesheet" href="./web/observer.css?v=observatory-20261109-first-paint-v2">
   <script type="importmap">
   {
     "imports": {
@@ -171,7 +171,9 @@
           <button id="panel-scene-link" type="button">دیدن «میز کار» در صحنه</button>
         </div>
         <p id="observer-panel-description" class="observer-panel-description">داستان‌ها و دست‌نوشته‌های واقعی</p>
-        <div class="tabbar" role="tablist" aria-label="همهٔ بخش‌های دفتر مشاهده">
+        <details class="observer-nav-shell">
+          <summary>بخش‌ها و پرونده‌ها <span>۱۵ بخش در ۵ گروه</span></summary>
+          <div class="tabbar" role="tablist" aria-label="همهٔ بخش‌های دفتر مشاهده">
           <button role="tab" data-panel="p-stories" aria-selected="true">داستان‌ها</button>
           <button role="tab" data-panel="p-planner">برنامهٔ روز</button>
           <button role="tab" data-panel="p-self">رشد نویسنده</button>
@@ -188,6 +190,7 @@
           <button role="tab" data-panel="p-care">نگهداری</button>
           <button role="tab" data-panel="p-status">حال و وضعیت</button>
         </div>
+        </details>
 
         <section class="panel" id="p-town" data-title="محله">
           <p class="muted small">شهروندان فعلاً روتین نمایشی دارند، نه تصمیم‌گیری مستقل. برای هرکدام یک ایجنت جدا و غیرفعال رزرو شده است.</p>
