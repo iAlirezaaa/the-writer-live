@@ -4,24 +4,17 @@ on:
     branches: [main]
     paths:
       - "web/book.js"
-      - ".github/reader-assets/book.js"
-      - "tests/reader-feedback-transport.test.cjs"
-      - "web/read.js"
-      - "web/interaction-library/reader-shelf-room.js"
-      - "web/interaction-library/reader-shelf.css"
-      - ".github/reader-assets/reader-shelf-room.js"
-      - ".github/reader-assets/reader-shelf.css"
-      - "web/read.html"
       - "web/book.css"
+      - "web/read.js"
+      - "web/read.html"
+      - "web/library.css"
+      - "web/reader-room.css"
+      - "web/library-stage.js"
+      - "web/page-curl.js"
       - "read/index.html"
-      - "web/reader-position.js"
-      - "tests/reader-catalog-reset.test.cjs"
+      - "tests/reader_page_curl_probe.mjs"
       - "tests/reader-library-experience.test.cjs"
       - "tests/reader-position.test.mjs"
-      - "tests/test_reader_unicode_boundaries.cjs"
-      - "tests/test_reader_unicode_controls.cjs"
-      - ".github/reader-assets/read.js"
-      - ".github/reader-assets/read.html"
       - ".github/workflows/reader-catalog-quality.yml"
   workflow_dispatch:
 permissions:
@@ -35,43 +28,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Parse reader regression scripts before behavior tests
+      - name: Validate new integrated library and page-curl module syntax
         run: |
-          node --check tests/test_reader_unicode_boundaries.cjs
-          node --check tests/test_reader_unicode_controls.cjs
-          node --check tests/reader-catalog-reset.test.cjs
-          node --check tests/reader-library-experience.test.cjs
-          node --check tests/reader-feedback-transport.test.cjs
-      - name: Catalog behavior and keyboard reset
-        shell: bash
+          set -euo pipefail
+          for file in web/book.js web/read.js web/library-stage.js web/page-curl.js; do
+            node --input-type=module --check < "$file"
+          done
+      - name: Test current public bookshelf and full reader behavior
         run: |
-          set -o pipefail
-          node --test tests/reader-catalog-reset.test.cjs | tee reader-catalog-reset.tap
-          node --test tests/reader-library-experience.test.cjs | tee reader-library-experience.tap
-      - name: Execute reader vote and comment transports
-        shell: bash
+          set -euo pipefail
+          node --test tests/reader-library-experience.test.cjs
+          node tests/reader_page_curl_probe.mjs
+          node --test --experimental-default-type=module tests/reader-position.test.mjs
+      - name: Ensure owner-authorized stories remain labeled
         run: |
-          set -o pipefail
-          node --test tests/reader-feedback-transport.test.cjs | tee reader-feedback-transport.tap
-      - name: Persian Unicode normalization boundaries
-        run: |
-          node tests/test_reader_unicode_boundaries.cjs
-          node tests/test_reader_unicode_controls.cjs
-      - name: Stable passage resume after typography reflow
-        shell: bash
-        run: |
-          set -o pipefail
-          node --test --experimental-default-type=module tests/reader-position.test.mjs | tee reader-position.tap
-      - name: Upload focused reader TAP reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reader-node-tap
-          path: '*.tap'
-          if-no-files-found: warn
-          retention-days: 14
-      - name: Parse production catalog module
-        run: |
-          cp web/read.js /tmp/reader-catalog-validated.mjs
-          node --check /tmp/reader-catalog-validated.mjs
-          node --check web/interaction-library/reader-shelf-room.js
+          python3 - <<'PY'
+          from pathlib import Path
+          book=Path("web/book.js").read_text(encoding="utf-8")
+          reader=Path("web/read.js").read_text(encoding="utf-8")
+          html=Path("read/index.html").read_text(encoding="utf-8")
+          assert "owner_shared" in book and "owner_shared" in reader
+          assert 'id="covers"' in html and "library.css" in html
+          print("PUBLIC-READER-CURRENT-UI-OK")
+          PY

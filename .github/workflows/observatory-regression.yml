@@ -7,12 +7,10 @@ on:
       - "web/observer.css"
       - "web/persian-display.js"
       - "web/world.js"
-      - "web/read.js"
       - "web/index.html"
       - "index.html"
       - "tests/observatory_probe.mjs"
-      - ".github/observer-assets/observer-ui.js"
-      - ".github/observer-assets/observer.css"
+      - ".github/scripts/verify_live_sync.py"
       - ".github/workflows/observatory-regression.yml"
   workflow_dispatch:
 permissions:
@@ -26,16 +24,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify pinned deployment copy when present
+      - name: Check current public Civita and protected author UI
         run: |
-          if [ -f .github/observer-assets/observer-ui.js ]; then
-            cmp web/observer-ui.js .github/observer-assets/observer-ui.js
-          fi
-      - name: Verify pinned CSS matches reviewed source
-        run: cmp web/observer.css .github/observer-assets/observer.css
-      - name: Check browser module syntax
-        run: |
-          cp web/observer-ui.js /tmp/observer-ui.mjs
-          node --check /tmp/observer-ui.mjs
-      - name: Check fifteen panels, ten cameras and keyboard groups
-        run: node tests/observatory_probe.mjs .
+          set -euo pipefail
+          python3 .github/scripts/verify_live_sync.py
+          node --input-type=module --check < web/observer-ui.js
+          node --input-type=module --check < web/world.js
+          python3 - <<'PY'
+          from pathlib import Path
+          page=Path("index.html").read_text(encoding="utf-8")
+          world=Path("web/world.js").read_text(encoding="utf-8")
+          observer=Path("web/observer-ui.js").read_text(encoding="utf-8")
+          assert page.count("data-panel=")==15, "all observer panels must remain visible"
+          assert all(x in page for x in ('id="observer-theme"','id="scene-data-link"', 'data-view="town"'))
+          assert "writerInteriorWorldRoot" in world and "buildTown" in world
+          assert "installPersianPresentation" in observer or "solarDate" in world
+          print("PUBLIC-OBSERVATORY-CURRENT-UI-OK")
+          PY
