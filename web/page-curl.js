@@ -24,9 +24,56 @@ export function shouldCommit(theta,velocity,forward){
  return progress>.42;
 }
 
+/* Freeze the already-shaped lines once, not once per curved strip. Persian
+ * justification is expensive; rewrapping 28 full page clones stalls a turn.
+ * Only plain justified paragraphs are optimized. Rich notes, digits that need
+ * presentation conversion and unsupported geometry keep their original DOM.
+ * This affects inert animation copies only, never the real reading pages. */
+function prepareSurfaces(host, pages, width, height) {
+ if(!pages.some(page=>page.querySelector('.page-content.body > p,.page-content.report > p')))return pages;
+ const staging=document.createElement('div');
+ Object.assign(staging.style,{position:'absolute',left:'0',top:'0',width:width+'px',height:height+'px',visibility:'hidden',pointerEvents:'none'});
+ const copies=pages.map(page=>{const side=document.createElement('div');side.className='leaf-side';const copy=page.cloneNode(true);Object.assign(copy.style,{width:width+'px',height:height+'px',left:'0',top:'0',bottom:'auto'});side.append(copy);staging.append(side);return copy;});
+ host.append(staging);
+ try {
+  const plans=[];
+  // Read all geometry first. No DOM writes in the word/range measurement loop.
+  for(const page of copies)for(const p of page.querySelectorAll('.page-content.body > p,.page-content.report > p')){
+   if(p.childNodes.length!==1||p.firstChild.nodeType!==3||/[0-9\t\n]/.test(p.textContent))continue;
+   const style=getComputedStyle(p);if(style.textAlign!=='justify')continue;
+   const box=p.getBoundingClientRect(),text=p.textContent,words=[...text.matchAll(/\S+/gu)],lines=[];
+   if(!box.width||!box.height||!words.length)continue;
+   const range=document.createRange();let valid=true;
+   for(const word of words){range.setStart(p.firstChild,word.index);range.setEnd(p.firstChild,word.index+word[0].length);const rects=[...range.getClientRects()];
+    if(rects.length!==1){valid=false;break;}const r=rects[0];let line=lines.at(-1);
+    if(!line||Math.abs(r.top-line.top)>1){line={start:word.index,end:0,left:r.left,right:r.right,top:r.top,height:r.height};lines.push(line);}
+    line.end=word.index+word[0].length;line.left=Math.min(line.left,r.left);line.right=Math.max(line.right,r.right);
+   }
+   if(!valid)continue;
+   plans.push({p,box,text,lines,lineHeight:style.lineHeight,direction:style.direction});
+  }
+  const measures=[];
+  for(const plan of plans){const {p,box,text,lines,lineHeight,direction}=plan,fragment=document.createDocumentFragment();
+   for(const line of lines){const span=document.createElement('span');span.textContent=text.slice(line.start,line.end);Object.assign(span.style,{position:'absolute',display:'block',whiteSpace:'pre',width:'max-content',maxWidth:'none',margin:'0',padding:'0',textIndent:'0',textAlign:'start',wordSpacing:'0px',lineHeight,direction,top:(line.top-box.top)+'px'});
+    if(direction==='rtl')span.style.right=(box.right-line.right)+'px';else span.style.left=(line.left-box.left)+'px';
+    fragment.append(span,document.createTextNode(' '));measures.push({span,line,box,spaces:(span.textContent.match(/ /g)||[]).length});
+   }
+   p.dataset.curlLines=String(lines.length);
+   Object.assign(p.style,{position:'relative',height:box.height+'px',minHeight:'0',textIndent:'0',textAlign:'start'});p.replaceChildren(fragment);
+  }
+  // One un-justified layout gives natural widths and exact baseline offsets.
+  const adjustments=measures.map(m=>{const range=document.createRange();range.selectNodeContents(m.span);const r=range.getBoundingClientRect();return {...m,delta:m.line.right-m.line.left-r.width,dy:m.line.top-r.top};});
+  for(const m of adjustments){m.span.style.top=(m.line.top-m.box.top+m.dy)+'px';if(m.spaces)m.span.style.wordSpacing=(m.delta/m.spaces)+'px';}
+  for(const copy of copies){copy.setAttribute('aria-hidden','true');copy.inert=true;}
+  return copies;
+ } catch {return pages;} finally {staging.remove();}
+}
+
 export function createLeaf({host,left,top,width,height,front,back,strips=12}){
  const leaf=document.createElement('div');leaf.className='leaf-curl';
+ leaf.setAttribute('aria-hidden','true');leaf.inert=true;
  Object.assign(leaf.style,{left:left+'px',top:top+'px',width:width+'px',height:height+'px'});
+ const [frontSurface,backSurface]=prepareSurfaces(host,[front,back],width,height);
  const sw=width/strips,overlap=1,parts=[];
  let parent=leaf;
  for(let k=0;k<strips;k++){
@@ -40,8 +87,8 @@ export function createLeaf({host,left,top,width,height,front,back,strips=12}){
    f.append(clip,shade);strip.append(f);return shade;
   };
   // Front lies left of the hinge; its slice counts in from the right edge. Back lies right; it counts from the left.
-  const frontShade=face(front,width-(k+1)*sw-(k<strips-1?overlap:0),'leaf-front');
-  const backShade=face(back,k*sw,'leaf-back');
+  const frontShade=face(frontSurface,width-(k+1)*sw-(k<strips-1?overlap:0),'leaf-front');
+  const backShade=face(backSurface,k*sw,'leaf-back');
   parent.append(strip);parent=strip;
   parts.push({strip,frontShade,backShade});
  }

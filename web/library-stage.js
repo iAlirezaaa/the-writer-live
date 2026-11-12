@@ -32,7 +32,7 @@ function transition(overlay,signal){
   signal:controller.signal,
   attach(stage){record.stage=stage;},
   hideSource(source){record.source=source;record.visibility=sourceOwners.get(source)?.visibility??source.style.visibility;sourceOwners.set(source,record);source.style.visibility='hidden';},
-  fast(){speed=2.6;for(const animation of animations)animation.playbackRate=speed;},
+  fast(){speed=2.6;for(const animation of animations){if(animation.updatePlaybackRate)animation.updatePlaybackRate(speed);else animation.playbackRate=speed;}},
   // A viewport change invalidates the measured source and destination poses.
   // Finish any active WAAPI promises, then hand over to the already reflowed
   // real reader instead of animating toward stale screen coordinates.
@@ -190,7 +190,9 @@ export async function playClose({overlay,source,story,geometry,pages,hideReader,
  try{
  if(run.signal.aborted)return false;
  if(reduced()||!source||source.isConnected===false){hideReader();return true;}
- source.scrollIntoView?.({block:'nearest'});
+ // Resolve the shelf destination before measuring; inherited smooth scrolling
+ // would otherwise move it underneath the returning book.
+ source.scrollIntoView?.({block:'nearest',inline:'nearest',behavior:'instant'});
  const spine=source.getBoundingClientRect(),view={w:innerWidth,h:innerHeight};
  // A filtered/collapsed return destination has no physical shelf pose. Do not
  // divide by its height or animate a phantom book back to the viewport origin.

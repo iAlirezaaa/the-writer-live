@@ -1,6 +1,7 @@
 /* A single real catalog, arranged as adjoining bookcases. DOM book identity and
    reader source geometry are preserved; no synthetic books enter this module. */
-const number = value => new Intl.NumberFormat('fa-IR').format(value);
+const formatter = new Intl.NumberFormat('fa-IR');
+const number = value => formatter.format(value);
 
 export function packBooks(widths, available, rows = 3, gap = 5) {
   if (!Number.isFinite(available) || available <= 0 || !Number.isInteger(rows) || rows < 1 || !Number.isFinite(gap) || gap < 0) {
@@ -28,6 +29,8 @@ export function installLibraryAisle() {
   const previous = document.getElementById('aisle-prev'), next = document.getElementById('aisle-next');
   const status = document.getElementById('aisle-status'), hint = document.getElementById('aisle-hint');
   let count = 1, active = 0, stride = 1, frame = 0, width = 0, pendingKey = null;
+  let scrollFrame = 0, announced = '', lastScroll = NaN, lastLayout = '', lastBooks = [], cabinetLayout = '';
+  const setText = (element, text) => { if (element && element.textContent !== text) element.textContent = text; };
   const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const node = (tag, cls, text) => {
     const element = document.createElement(tag); element.className = cls;
@@ -36,10 +39,13 @@ export function installLibraryAisle() {
   };
   function announce() {
     active = Math.max(0, Math.min(count - 1, Math.round(Math.abs(viewport.scrollLeft) / stride)));
-    if (previous) previous.disabled = active === 0;
-    if (next) next.disabled = active === count - 1;
-    if (status) status.textContent = `قفسهٔ ${number(active + 1)} از ${number(count)}`;
-    if (hint) hint.textContent = count > 1 ? 'برای گشتن در کتابخانه، قفسه‌ها را به طرفین بکشید.' : 'با پر شدن این قفسه، قفسهٔ بعدی کنار آن ساخته می‌شود.';
+    const state = `${active}:${count}`;
+    if (state === announced) return;
+    announced = state;
+    if (previous && previous.disabled !== (active === 0)) previous.disabled = active === 0;
+    if (next && next.disabled !== (active === count - 1)) next.disabled = active === count - 1;
+    setText(status, `قفسهٔ ${number(active + 1)} از ${number(count)}`);
+    setText(hint, count > 1 ? 'برای گشتن در کتابخانه، قفسه‌ها را به طرفین بکشید.' : 'با پر شدن این قفسه، قفسهٔ بعدی کنار آن ساخته می‌شود.');
     viewport.dataset.activeCabinet = String(active);
   }
   function go(index, smooth = true) {
@@ -61,6 +67,11 @@ export function installLibraryAisle() {
     // Compact CSS already fits the narrowest supported viewport; retain a safe
     // native fallback rather than losing the catalog if an extension changes it.
     if (measured.some(w => w <= 0 || w > cabinetWidth - inset * 2)) return;
+    const layout = [containerWidth, rowHeight, ...measured].join(':');
+    // ResizeObserver and the legacy resize hook may report the same layout.
+    // Do not rebuild snap targets or reset momentum for an unchanged catalog.
+    if (layout === lastLayout && books.length === lastBooks.length && books.every((book, i) => book === lastBooks[i])) return;
+    lastLayout = layout; lastBooks = books;
     const plan = packBooks(measured, cabinetWidth - inset * 2, rows);
     count = plan.count; stride = cabinetWidth + gap;
     const visibleRows = Math.max(2, plan.placements.reduce((max, p) => Math.max(max, p.row + 1), 0));
@@ -69,17 +80,24 @@ export function installLibraryAisle() {
     const total = cabinetWidth * count + gap * (count - 1) + end * 2;
     const scrollWidthChanged = width !== containerWidth;
     width = containerWidth;
-    shelf.querySelectorAll('.aisle-cabinet,.shelf-ghost,.shelf-plaque,.shelf-object').forEach(n => n.remove());
+    shelf.querySelectorAll('.shelf-ghost,.shelf-plaque,.shelf-object').forEach(n => n.remove());
     shelf.style.width = total + 'px'; shelf.style.height = height + 'px';
     shelf.dataset.cabinetCount = String(count);
     shelf.classList.add('is-aisle-layout');
+    const counts = Array(count).fill(0);
+    for (const p of plan.placements) counts[p.cabinet]++;
+    const cabinetKey = [containerWidth, cabinetWidth, height, visibleRows, ...counts, ...plan.placements.map(p => p.row)].join(':');
+    // Keep cabinet/snap nodes stable across a reader close or equivalent filter.
+    if (cabinetKey !== cabinetLayout || shelf.querySelectorAll('.aisle-cabinet').length !== count) {
+    cabinetLayout = cabinetKey;
+    shelf.querySelectorAll('.aisle-cabinet').forEach(n => n.remove());
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
       const cabinet = node('div', 'aisle-cabinet'); cabinet.setAttribute('aria-hidden', 'true');
       cabinet.style.left = total - end - cabinetWidth - i * stride + 'px';
       cabinet.style.width = cabinetWidth + 'px'; cabinet.style.height = height + 'px';
       const label = node('div', 'aisle-label');
-      const used = plan.placements.filter(p => p.cabinet === i).length;
+      const used = counts[i];
       label.append(node('span', 'aisle-label-number', number(i + 1).padStart(2, '۰')), node('span', 'aisle-label-title', `قفسهٔ ${number(i + 1)}`), node('span', 'aisle-label-count', `${number(used)} کتاب`));
       cabinet.append(label);
       for (let r = 0; r < visibleRows; r++) {
@@ -92,6 +110,7 @@ export function installLibraryAisle() {
       fragment.append(cabinet);
     }
     shelf.prepend(fragment);
+    }
     plan.placements.forEach(p => {
       const book = books[p.index];
       book.style.left = total - end - p.cabinet * stride - inset - p.x - p.width + 'px';
@@ -103,6 +122,7 @@ export function installLibraryAisle() {
     // Keep the selected book's cabinet when resizing. Filtering clamps the old
     // cabinet rather than leaving the viewport beyond the new shorter track.
     go(focused ? Number(focused.dataset.cabinet) : Math.min(old, count - 1), false);
+    announce();
     viewport.classList.toggle('has-adjoining-cabinets', count > 1);
     if (scrollWidthChanged) shelf.dispatchEvent(new CustomEvent('writer:aisle-reflow', {bubbles: true}));
   }
@@ -112,8 +132,16 @@ export function installLibraryAisle() {
   previous?.addEventListener('click', () => go(active - 1));
   next?.addEventListener('click', () => go(active + 1));
   viewport.addEventListener('scroll', () => {
-    announce();
-    viewport.dispatchEvent(new CustomEvent('writer:aisle-scroll', {bubbles: true}));
+    if (scrollFrame) return;
+    scrollFrame = requestAnimationFrame(() => {
+      scrollFrame = 0;
+      const position = viewport.scrollLeft;
+      if (position === lastScroll) return;
+      lastScroll = position;
+      announce();
+      // Hidden previews require no writes or geometry reads on a scroll frame.
+      if (document.body.classList.contains('is-previewing')) viewport.dispatchEvent(new CustomEvent('writer:aisle-scroll', {bubbles: true}));
+    });
   }, {passive: true});
   viewport.addEventListener('keydown', event => {
     if (event.target !== viewport || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;

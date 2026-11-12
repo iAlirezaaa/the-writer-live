@@ -1,0 +1,45 @@
+name: Reader motion performance
+on:
+  push:
+    branches: [main, "reader/**"]
+    paths:
+      - "web/page-curl.js"
+      - "web/library-stage.js"
+      - "web/library-aisle.js"
+      - "web/book.js"
+      - "web/read.html"
+      - "read/index.html"
+      - "tests/reader-motion-performance.cjs"
+      - "tests/reader-aisle.test.mjs"
+      - ".github/workflows/reader-motion-performance.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reader-motion-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  motion:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Packing and versioned module contracts
+        run: node --test tests/reader-aisle.test.mjs
+      - name: Install pinned browser
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Scroll work, snapshot typography, real motion and restoration
+        run: node tests/reader-motion-performance.cjs
+      - name: Preserve timing and visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-motion-performance
+          path: reader-motion-artifacts/
+          retention-days: 14
