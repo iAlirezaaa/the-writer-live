@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_utc": "2026-11-12T16:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "dcea3c2fb231d4bac504a8e04e959fb90c49e5f0",
+  "private_source_commit": "8909dc3cca35374dc01eb2d324b2fe781be5a2d3",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
@@ -35,7 +35,8 @@
       "reader/index.html",
       "tests/reader-reference-room.cjs",
       ".github/workflows/reader-reference-room.yml",
-      ".github/workflows/pages.yml"
+      ".github/workflows/pages.yml",
+      ".github/workflows/reader-reference-room.yml"
     ],
     "note": "Map the first three measured notebooks to the three authorized public stories, hide names on the remaining eight placeholders, and preserve the existing full reader at /reader/ without changing story snapshot bytes."
   },
