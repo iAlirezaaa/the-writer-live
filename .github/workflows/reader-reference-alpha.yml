@@ -1,0 +1,65 @@
+name: Reference cover transparency repair
+on:
+  push:
+    branches: ["reader/reference-exact-20261112"]
+    paths: ["tools/patch_reference_alpha.py", ".github/workflows/reader-reference-alpha.yml"]
+  workflow_dispatch:
+permissions: {contents: write}
+concurrency:
+  group: reference-alpha-assets
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 'reader/reference-exact-20261112', fetch-depth: 1}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+          python -m pip install --disable-pip-version-check Pillow==12.0.0
+      - name: Read only transparent notebook cover labels, not any book body
+        run: |
+          cat > capture-labels.cjs <<'NODE'
+          const fs=require('node:fs/promises');const{chromium}=require('playwright');
+          (async()=>{const b=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+          try{const p=await b.newPage({viewport:{width:1440,height:1000}});await p.goto('https://library.jjangik.kr/?intro=curtain',{waitUntil:'domcontentloaded',timeout:60000});await p.waitForFunction(()=>window.room?.arrived,null,{timeout:120000});await p.evaluate(()=>document.fonts.ready);
+          const records=await p.evaluate(()=>{const list=[];for(let i=211;i<=221;i++)for(const sub of [[4],[1,5],[1,6],[1,7]]){const path=[i,...sub];let node=room.scene;for(const ix of path)node=node.children[ix];const texture=node?.material?.map;if(!node?.material?.transparent||!texture)continue;const image=texture.image;let canvas=image;if(!image.toDataURL){canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').drawImage(image,0,0);}list.push({path,png:canvas.toDataURL('image/png')});}return list;});await fs.writeFile('cover-labels.json',JSON.stringify(records));console.log('Captured',records.length,'cover labels with original alpha');}finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+          node capture-labels.cjs
+          python tools/patch_reference_alpha.py cover-labels.json
+          python tools/stage_reference_room.py
+      - name: Test actual repaired desktop, mobile and canonical publication
+        run: |
+          node tests/reader-reference-room.cjs
+          node tests/reader-reference-entry.cjs
+      - name: Commit verified visual-only asset without touching main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/reference-room/data/room.json.gz web/reference-room/data/room-manifest.json web/reference-room/RELEASE.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(reader): retain source alpha on all notebook cover labels'
+            ok=0
+            for attempt in 1 2 3; do
+              git fetch origin reader/reference-exact-20261112
+              git rebase origin/reader/reference-exact-20261112
+              if git push origin HEAD:reader/reference-exact-20261112; then ok=1; break; fi
+            done
+            test "$ok" = 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reference-room-alpha-reviewed
+          path: |
+            reference-room-evidence/
+            web/reference-room/data/
+            web/reference-room/RELEASE.json
+          retention-days: 14
