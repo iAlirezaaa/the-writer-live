@@ -2,13 +2,19 @@
   "schema": 1,
   "generated_utc": "2026-11-12T16:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "5b1c99862ff8fb6afe2e3a2d3ae886bdc3a4a743",
+  "private_source_commit": "dcea3c2fb231d4bac504a8e04e959fb90c49e5f0",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
     "public frontend regression tests and deploy workflow"
   ],
-  "excluded": ["writer/", "data/", "cognition/", "config.json", "personal memory and internal records"],
+  "excluded": [
+    "writer/",
+    "data/",
+    "cognition/",
+    "config.json",
+    "personal memory and internal records"
+  ],
   "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
   "script_version": 2,
   "reader_assets": {
@@ -23,14 +29,15 @@
   },
   "reader_entrypoint": "read/index.html",
   "partial_sync": {
-    "baseline_private_source_commit": "6cdc1fc1bd15f66229446833a3cb428072d2f98d",
+    "baseline_private_source_commit": "8374c2060a416f534465ad3c7cb18460b6914b73",
     "paths": [
-      "web/library-atmosphere.css", "web/library-atmosphere.js", "web/book-cover.js",
-      "web/library-aisle.js", "web/read.html", "read/index.html",
-      "tests/reader-atmosphere.test.mjs", "tests/reader-atmosphere-browser.cjs",
-      "tests/reader-aisle.test.mjs", "tests/reader-aisle-browser.cjs", ".github/workflows/reader-atmosphere.yml"
+      "web/reference-room/room.js",
+      "reader/index.html",
+      "tests/reader-reference-room.cjs",
+      ".github/workflows/reader-reference-room.yml",
+      ".github/workflows/pages.yml"
     ],
-    "note": "Private-first warm reading room, compact centered sparse-gallery shelves and existing revision-verified original story art on physical covers. Preserve button identity, canonical routes, original manuscripts, authorized snapshot, city and recent curl/stage performance fixes. Follow-up adjusts touch-test coordinates to the actual visible cabinet without changing runtime or weakening swipe assertions."
+    "note": "Map the first three measured notebooks to the three authorized public stories, hide names on the remaining eight placeholders, and preserve the existing full reader at /reader/ without changing story snapshot bytes."
   },
   "reader_preview_assets": {
     "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
