@@ -2,13 +2,13 @@
   "schema": 1,
   "mode": "reference-empty",
   "reference": "https://library.jjangik.kr/",
-  "private_source_commit": "04da7f958af226f4d61a205a8a873aa3f6cbb446",
+  "private_source_commit": "be0db4b657a84ddcb373b0b317d713bff2eb4e91",
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "f3361d7d7c6c68f23d2b4ed38fe02608248c940f",
-    "web/reference-room/room.css": "44dd1a572235dc5a2029c73079e05b280824910e",
-    "web/reference-room/room.js": "2039322d691acd273a75058d51927c2dae1b3fa4"
+    "web/reference-room/index.html": "d4b8d07989637d0d45a8365fa89622c4ecd6c455",
+    "web/reference-room/room.css": "66a63f5b3c2ccb51129f9136766116b1f5350021",
+    "web/reference-room/room.js": "79d66f98a454d164bcb8713452a5fa67650815cd"
   },
   "asset_sha256": "48790d1db5856013d6f79ebab66417d927f6077829bd5eae0113134e0c1d8633",
   "asset_bytes": 2073167,
@@ -20,5 +20,13 @@
     "city",
     "local reading storage",
     "legacy reader engine"
-  ]
+  ],
+  "cabinets": {
+    "pitch": 7.35,
+    "capacity": 11,
+    "minimum": 2,
+    "direction": "right",
+    "future_publication_source": "snapshot/stories.json",
+    "placeholder": "به‌زودی"
+  }
 }

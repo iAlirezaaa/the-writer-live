@@ -9,13 +9,14 @@
 <body class="loading" data-mode="shelf">
 <canvas id="room" aria-label="A room with a two-tier wooden bookcase under a lamp, eleven notebooks and decorative books."></canvas>
 <div class="vignette" aria-hidden="true"></div>
-<nav class="menu" aria-label="Room"><button data-view="about">About</button><button data-view="contact">Contact</button></nav>
+<nav class="menu" aria-label="Room"><button data-view="about">About</button><button data-view="contact">Contact</button><a id="world-link" href="../" lang="fa" dir="rtl">بازگشت به جهان نویسنده</a></nav>
 <nav class="views" aria-label="Library view">
 <button data-view="shelf" aria-label="The shelf" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h4v14H4zM10 3h4v17h-4zM16 8h4v12h-4z"/></svg></button>
 <button data-view="list" aria-label="A list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v3H4zM4 10h16v3H4zM4 16h16v3H4z"/></svg></button>
 </nav>
+<nav class="cabinet-nav" aria-label="کتابخانه‌های کنار هم" dir="rtl"><button id="cabinet-prev" type="button" aria-label="قفسه قبلی" disabled>←</button><span id="cabinet-status" aria-live="polite">۱ / ۲</span><button id="cabinet-next" type="button" aria-label="قفسه بعدی">→</button></nav>
 <a class="mark" href="#" aria-label="Interaction Library: back to the shelf"><strong>Interaction</strong><span>Library</span></a>
-<div id="covers" class="catalog" role="list" aria-label="Empty notebooks"></div>
+<div id="covers" class="catalog" role="list" aria-label="کتاب‌ها و دفترهای به‌زودی"></div>
 <div id="label" class="book-label" aria-hidden="true"></div>
 <p id="hint" class="step-hint"></p>
 <div id="page" class="empty-page" aria-hidden="true" role="region" aria-label="Empty notebook content"></div>
