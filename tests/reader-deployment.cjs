@@ -26,7 +26,7 @@ function readerDeployment(root, { repository = process.env.GITHUB_REPOSITORY || 
   const workflow = fs.readFileSync(required(".github/workflows/pages.yml"), "utf8")
     .split("\n").filter(line => !/^\s*#/.test(line)).join("\n");
   const legacy = /^\s*(?:python(?:3(?:\.\d+)?)?\s+["']?\.github\/scripts\/prepare_reader_deploy\.py\b|(?:cp|rsync)\s+[^\n]*\.github\/reader-assets\/)/m.test(workflow);
-  const direct = /^\s*cp\s+(?:-[^\s]+\s+)*index\.html\s+web\s+read\s+snapshot\s+_site\/?\s*$/m.test(workflow);
+  const direct = /^\s*cp\s+(?:-[^\s]+\s+)*index\.html\s+web\s+read(?:\s+reader)?\s+snapshot\s+_site\/?\s*$/m.test(workflow);
   const sourceStage = workflow.includes('shutil.copytree(web, site / "web"')
     && workflow.includes('(web / "read.html").read_text')
     && workflow.includes('(site / "read/index.html").write_text');
