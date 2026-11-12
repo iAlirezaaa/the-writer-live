@@ -1,0 +1,33 @@
+name: Reader room fidelity
+on:
+  push:
+    branches: [main, "reader/**"]
+    paths: ["web/library-preview.*", "web/read.html", "read/index.html", "tests/reader-preview-room*", ".github/workflows/reader-room-quality.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  room:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revision and presentation contracts
+        run: node --test tests/reader-preview-room.test.cjs
+      - name: Install pinned browser
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Room, art, motion, and responsive regressions
+        run: node tests/reader-preview-room-browser.cjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-room-fidelity
+          path: reader-room-artifacts/
+          retention-days: 14
