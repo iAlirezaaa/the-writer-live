@@ -18,11 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate current public export and protected writer room
+      - name: Validate preserved public export and protected writer room
         run: |
           set -euo pipefail
           python3 .github/scripts/verify_live_sync.py
-          for file in web/*.js web/*.mjs web/interaction-library/*.js; do
+          python3 tools/stage_reference_room.py
+          for file in web/*.js web/*.mjs web/interaction-library/*.js web/reference-room/*.js; do
             node --input-type=module --check < "$file"
           done
           node tests/civita_buildings_probe.mjs
@@ -32,27 +33,29 @@ jobs:
           node tests/civita_writer_location_probe.mjs .
           node tests/reader_page_curl_probe.mjs
           node --test tests/reader-library-experience.test.cjs tests/reader-catalog-reset.test.cjs tests/reader-feedback-transport.test.cjs tests/reader-position.test.mjs tests/book-session.test.cjs tests/shelf-behavior.test.cjs tests/reader-stage.test.mjs
-      - name: Stage reviewed frontend and existing authorized public snapshot
+      - name: Stage reviewed room, city and unchanged authorized stories
         run: |
           set -euo pipefail
           mkdir -p _site
           cp -a index.html web read snapshot _site/
+          python3 tools/stage_reference_room.py --site _site
           touch _site/.nojekyll
           python3 - <<'PY'
           from pathlib import Path
-          root=Path("_site")
-          assert (root/"index.html").is_file()
-          assert (root/"read/index.html").is_file()
-          assert (root/"web/data/civita-dbt.json").is_file()
-          assert (root/"web/data/civita-dem-inner.u16").is_file()
-          assert (root/"web/page-curl.js").is_file()
-          assert (root/"snapshot/stories.json").is_file()
-          print("LIVE-ARTIFACT-READY: surveyed Civita, new library, approved snapshot")
+          import hashlib
+          root=Path('_site')
+          assert (root/'index.html').read_bytes()==Path('index.html').read_bytes()
+          assert 'name="reader-mode" content="reference-empty"' in (root/'read/index.html').read_text()
+          assert (root/'web/reference-room/data/room.json.gz').is_file()
+          assert (root/'web/data/civita-dbt.json').is_file()
+          assert (root/'web/data/civita-dem-inner.u16').is_file()
+          for source in Path('snapshot').rglob('*'):
+              if source.is_file():assert source.read_bytes()==(root/source).read_bytes()
+          print('LIVE-ARTIFACT-READY: reference room, empty notebooks, unchanged city and approved manuscripts')
           PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
+        with: {path: _site}
       - name: Allow Pages artifact metadata indexing
         run: sleep 15
       - id: deployment
