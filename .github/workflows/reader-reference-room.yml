@@ -1,7 +1,7 @@
 name: Reference room browser verification
 on:
   push:
-    branches: ["reader/reference-exact-20261112", main]
+    branches: ["reader/**", main]
     paths: ["web/reference-room/**", "reader/**", "tests/reader-reference-*.cjs", "tools/stage_reference_room.py", ".github/workflows/reader-reference-room.yml"]
   workflow_dispatch:
 permissions:
