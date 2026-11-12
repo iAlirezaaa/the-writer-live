@@ -1,20 +1,14 @@
 {
   "schema": 1,
-  "generated_utc": "2026-11-12T15:14:33Z",
+  "generated_utc": "2026-11-12T16:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "6cdc1fc1bd15f66229446833a3cb428072d2f98d",
+  "private_source_commit": "19e7f2c3a0327f567969c806a82918185e37a149",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
     "public frontend regression tests and deploy workflow"
   ],
-  "excluded": [
-    "writer/",
-    "data/",
-    "cognition/",
-    "config.json",
-    "personal memory and internal records"
-  ],
+  "excluded": ["writer/", "data/", "cognition/", "config.json", "personal memory and internal records"],
   "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
   "script_version": 2,
   "reader_assets": {
@@ -23,25 +17,20 @@
     "web/library-stage.js": "48ac013ace47ef9959718570b8f16fa4a589e38d3356036891e16c341cbbf0c8",
     "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
     "web/reader-room.css": "8f76999f32c0f356e43938bf4f80b1ccce8c51ced2673ba59f31b6c9919ddefd",
-    "web/read.html": "fce4339ee3a47a3414c2ef82f967f829f0457462bd9d6757ad922990259420a4",
+    "web/read.html": "ca47d1576681b5b93360af2c45e401eb4a1743230c440c1a74de3e9ff564a235",
     "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
     "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943"
   },
   "reader_entrypoint": "read/index.html",
   "partial_sync": {
-    "baseline_private_source_commit": "4d5dcad72ac70eb5a496537ae087a44b097d79e2",
+    "baseline_private_source_commit": "6cdc1fc1bd15f66229446833a3cb428072d2f98d",
     "paths": [
-      "web/page-curl.js",
-      "web/library-stage.js",
-      "web/library-aisle.js",
-      "web/read.html",
-      "read/index.html",
-      "tests/reader-aisle.test.mjs",
-      "tests/reader-motion-performance.cjs",
-      ".github/workflows/reader-motion-performance.yml",
-      ".github/scripts/verify_live_sync.py"
+      "web/library-atmosphere.css", "web/library-atmosphere.js", "web/book-cover.js",
+      "web/library-aisle.js", "web/read.html", "read/index.html",
+      "tests/reader-atmosphere.test.mjs", "tests/reader-atmosphere-browser.cjs",
+      "tests/reader-aisle.test.mjs", ".github/workflows/reader-atmosphere.yml"
     ],
-    "note": "Private-first measured motion optimization: shape inert Persian curl lines once, coalesce scroll work and retain stable cabinet snap nodes, settle return geometry, and pin nested motion imports. Preserve original reading pages, authorized snapshot, summaries, illustrations, city and unrelated files."
+    "note": "Private-first warm reading room, compact centered sparse-gallery shelves and existing revision-verified original story art on physical covers. Preserve button identity, canonical routes, original manuscripts, authorized snapshot, city and recent curl/stage performance fixes."
   },
   "reader_preview_assets": {
     "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
@@ -49,11 +38,16 @@
     "web/reader-editorial.js": "792cbca6c3a3bafdaf6f84387879e734139a09454dc0a19f8e724fc683fcb309"
   },
   "reader_aisle_assets": {
-    "web/library-aisle.js": "8abff95a5654e69faa5bf06b78f4b3953e55c9561149ef097d1317ce5807d135",
+    "web/library-aisle.js": "9355828d471ef3e22c5bed32c7c7485a071308ffc62a44537394c8b33a03f46b",
     "web/library-aisle.css": "ec24cdb591afe71c8fcef35e0640798287aaea23446f57a8ae9e1af669e62a76",
     "web/interaction-library/index.html": "2dd04820435fc3f9206d903c1aa25f9f3ffd3355eb98fc379c719179cb3e6842"
   },
   "reader_motion_assets": {
     "web/page-curl.js": "373f522b361c9c30cbaf6b391c7b8e5af4bf4248ce25002d05cc43a399b4eef5"
+  },
+  "reader_atmosphere_assets": {
+    "web/book-cover.js": "8afd933f929e31da1bde51863df2dcce0f710bd2f9baa7f75691ff90092261ef",
+    "web/library-atmosphere.css": "b7426f52808f4986b341602ae8f1be24ebb08cb8c1bdb1ca2bd8a23d0da5eb06",
+    "web/library-atmosphere.js": "7191dcd006dd13a5c296f139c0c8f7887def44e440c1a4aeee928427efbbeb5d"
   }
 }

@@ -22,7 +22,7 @@ test('invalid geometry fails explicitly rather than discarding catalog entries',
 test('canonical source and Pages entrypoint use the same modules',async()=>{
  const html=await fs.readFile(new URL('../web/read.html',import.meta.url),'utf8');
  const page=await fs.readFile(new URL('../read/index.html',import.meta.url),'utf8').catch(()=>null);
- assert.match(html,/data-library-layout="aisles"/);assert.match(html,/library-aisle\.css\?v=aisles-20261112-v1/);assert.match(html,/library-aisle\.js\?v=motion-20261112-v2/);
+ assert.match(html,/data-library-layout="aisles"/);assert.match(html,/library-aisle\.css\?v=aisles-20261112-v1/);assert.match(html,/library-aisle\.js\?v=room-20261112-v1/);
  if(page)assert.equal(page,html.replaceAll('href="/web/','href="../web/').replaceAll('src="/web/','src="../web/').replaceAll('href="/"','href="../"'));
 });
 test('the old optional view has one canonical destination and no embedded duplicate app',async()=>{
@@ -35,12 +35,12 @@ test('scoped catalog styling never overrides the reading book or page transforms
  assert.doesNotMatch(css,/\.book(?:\s|\{|\.)|\.b3d|\.stage\s*\{/);
  assert.match(css,/prefers-reduced-motion/);assert.match(css,/\.c-title\{position:static/);
 });
-test('entrypoint pins both nested motion module aliases to reviewed new URLs',async()=>{
+test('entrypoint pins nested motion and cover aliases to reviewed new URLs',async()=>{
  const html=await fs.readFile(new URL('../web/read.html',import.meta.url),'utf8');
  const map=JSON.parse(html.match(/<script type="importmap">([\s\S]*?)<\/script>/)[1]).imports;
- assert.equal(Object.keys(map).length,2);
+ assert.equal(Object.keys(map).length,3);
  assert.ok(html.indexOf('type="importmap"')<html.indexOf('type="module"'));
- for(const [name,parent]of [['page-curl.js','book.js'],['library-stage.js','read.js']]){
+ for(const [name,parent]of [['page-curl.js','book.js'],['library-stage.js','read.js'],['book-cover.js','read.js']]){
   const source=await fs.readFile(new URL('../web/'+parent,import.meta.url),'utf8');
   const alias=source.match(new RegExp('from ["\'](\\./'+name.replace('.','\\.')+'\\?[^"\']+)["\']'))[1];
   for(const base of ['https://reader.test/read/','https://reader.test/project/read/','https://reader.test/web/read.html']){

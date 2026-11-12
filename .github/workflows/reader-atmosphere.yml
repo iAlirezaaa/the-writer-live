@@ -1,0 +1,38 @@
+name: Reader visual atmosphere
+on:
+  push:
+    branches: [main, "reader/**"]
+    paths: ["web/library-*.js", "web/library-*.css", "web/book-cover.js", "web/read.html", "read/index.html", "tests/reader-atmosphere*", ".github/live-sync-manifest.json", ".github/workflows/reader-atmosphere.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reader-atmosphere-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  atmosphere:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate verified artwork, entrypoints and reviewed asset bytes
+        env:
+          READER_PUBLIC_CHECK: '1'
+        run: node --test tests/reader-atmosphere.test.mjs tests/reader-aisle.test.mjs
+      - name: Install pinned browser
+        run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Check actual typography, artwork, shelves, themes and reading
+        run: node tests/reader-atmosphere-browser.cjs
+      - name: Preserve real screenshots and checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reader-atmosphere
+          path: reader-atmosphere-artifacts/
+          retention-days: 14

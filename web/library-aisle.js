@@ -59,7 +59,9 @@ export function installLibraryAisle() {
     const old = active;
     const containerWidth = viewport.clientWidth;
     if (!containerWidth) return;
-    const cabinetWidth = Math.min(608, Math.max(220, containerWidth - 36));
+    const shelfStyle = getComputedStyle(shelf);
+    const gallery = shelf.dataset.presentation === 'gallery';
+    const cabinetWidth = Math.min(parseFloat(shelfStyle.getPropertyValue('--cabinet-max')) || 608, Math.max(220, containerWidth - 36));
     const inset = 24, top = 48, gap = 24, rows = 3;
     const rowHeight = parseFloat(getComputedStyle(shelf).getPropertyValue('--row-h')) || 160;
     const plank = 18;
@@ -67,15 +69,15 @@ export function installLibraryAisle() {
     // Compact CSS already fits the narrowest supported viewport; retain a safe
     // native fallback rather than losing the catalog if an extension changes it.
     if (measured.some(w => w <= 0 || w > cabinetWidth - inset * 2)) return;
-    const layout = [containerWidth, rowHeight, ...measured].join(':');
+    const layout = [containerWidth, cabinetWidth, gallery, rowHeight, ...measured].join(':');
     // ResizeObserver and the legacy resize hook may report the same layout.
     // Do not rebuild snap targets or reset momentum for an unchanged catalog.
     // An empty render may replace all decorations without changing book identity.
     if (layout === lastLayout && books.length === lastBooks.length && books.every((book, i) => book === lastBooks[i]) && shelf.querySelectorAll('.aisle-cabinet').length === count) return;
     lastLayout = layout; lastBooks = books;
-    const plan = packBooks(measured, cabinetWidth - inset * 2, rows);
+    const plan = packBooks(measured, cabinetWidth - inset * 2, rows, gallery ? (containerWidth < 500 ? 8 : 22) : 5);
     count = plan.count; stride = cabinetWidth + gap;
-    const visibleRows = Math.max(2, plan.placements.reduce((max, p) => Math.max(max, p.row + 1), 0));
+    const visibleRows = Math.max(gallery ? 1 : 2, plan.placements.reduce((max, p) => Math.max(max, p.row + 1), 0));
     const height = top + visibleRows * (rowHeight + plank) + 18;
     const end = Math.max(0, (containerWidth - cabinetWidth) / 2);
     const total = cabinetWidth * count + gap * (count - 1) + end * 2;
@@ -112,9 +114,12 @@ export function installLibraryAisle() {
     }
     shelf.prepend(fragment);
     }
+    const rowEnds = new Map();
+    for (const p of plan.placements) rowEnds.set(`${p.cabinet}:${p.row}`, p.x + p.width);
     plan.placements.forEach(p => {
       const book = books[p.index];
-      book.style.left = total - end - p.cabinet * stride - inset - p.x - p.width + 'px';
+      const balance = gallery ? (cabinetWidth - inset * 2 - rowEnds.get(`${p.cabinet}:${p.row}`)) / 2 : 0;
+      book.style.left = total - end - p.cabinet * stride - inset - p.x - p.width - balance + 'px';
       book.style.top = top + p.row * (rowHeight + plank) + 'px';
       book.dataset.cabinet = String(p.cabinet); book.dataset.shelfRow = String(p.row);
     });

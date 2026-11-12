@@ -20,6 +20,12 @@ export function coverVisual(story={}) {
   const palette=PALETTES[hash%PALETTES.length];
   return {...palette, motif:(hash>>>7)%6, edition:String(100+((hash>>>13)%900)).padStart(3,"0")};
 }
+const verifiedScenes=new Map();
+const sceneKey=story=>JSON.stringify([String(story?.id??""),story?.title,story?.status]);
+// Called only after the current authorized manuscript passes editorial checks.
+export function registerCoverScene(story,image){
+ if(story&&typeof story.body==="string"&&typeof image==="string")verifiedScenes.set(sceneKey(story),{body:story.body,image});
+}
 export function applyCoverVisual(element,story) {
   const c=coverVisual(story);
   element.dataset.motif=String(c.motif);
@@ -27,6 +33,10 @@ export function applyCoverVisual(element,story) {
   element.style.setProperty("--cover-ink",c.ink);
   element.style.setProperty("--cover-soft",c.soft);
   element.style.setProperty("--cover-accent",c.accent);
+  const scene=verifiedScenes.get(sceneKey(story));
+  if(scene&&(typeof story?.body!=="string"||story.body===scene.body)){
+    element.dataset.coverScene="verified";element.style.setProperty("--cover-scene",`url(${JSON.stringify(scene.image)})`);
+  }else{delete element.dataset.coverScene;element.style.removeProperty("--cover-scene");}
   return c;
 }
 export function createCoverArt() {
