@@ -2,7 +2,7 @@ name: Reference room browser verification
 on:
   push:
     branches: ["reader/reference-exact-20261112", main]
-    paths: ["web/reference-room/**", "tests/reader-reference-*.cjs", "tools/stage_reference_room.py", ".github/workflows/reader-reference-room.yml"]
+    paths: ["web/reference-room/**", "reader/**", "tests/reader-reference-*.cjs", "tools/stage_reference_room.py", ".github/workflows/reader-reference-room.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,6 +23,8 @@ jobs:
         run: |
           python3 tools/stage_reference_room.py
           node --input-type=module --check < web/reference-room/room.js
+          test -f reader/index.html
+          grep -q '../web/read.js' reader/index.html
           node --check tests/reader-reference-room.cjs
           node --check tests/reader-reference-entry.cjs
       - name: Install browser
