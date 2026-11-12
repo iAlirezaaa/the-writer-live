@@ -129,3 +129,28 @@ body.lib .book-overlay.book-entering>.book-bar,body.lib .book-overlay.book-enter
 body.lib .book-overlay .reader-settings-panel .paper-sheet{background-color:var(--sheet);background-image:var(--sheet-tex,none);border:0;min-height:0;padding:0;}
 body.lib .book-overlay .reader-settings-panel{overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;}
 body.lib .book-overlay .book-bar:has(details[open]){z-index:20;}
+
+/* On touch screens, the existing 5px desktop hairline is too small to grasp.
+   Give the range a physical brass handle, without changing the reading geometry. */
+@media (pointer: coarse) {
+  body.lib .book-overlay .book-progress {
+    --reader-touch-thumb-size: 28px;
+    min-height: 34px;
+  }
+  body.lib .book-overlay .book-progress::-webkit-slider-thumb {
+    width: var(--reader-touch-thumb-size);
+    height: 30px;
+    border: 1px solid #ead2a5;
+    border-radius: 8px;
+    background: linear-gradient(90deg,#936633,#d1a261 28%,#f1cf92 50%,#d1a261 72%,#936633);
+    box-shadow: 0 2px 10px rgba(0,0,0,.36);
+  }
+  body.lib .book-overlay .book-progress::-moz-range-thumb {
+    width: var(--reader-touch-thumb-size);
+    height: 30px;
+    border: 1px solid #ead2a5;
+    border-radius: 8px;
+    background: linear-gradient(90deg,#936633,#d1a261 28%,#f1cf92 50%,#d1a261 72%,#936633);
+    box-shadow: 0 2px 10px rgba(0,0,0,.36);
+  }
+}

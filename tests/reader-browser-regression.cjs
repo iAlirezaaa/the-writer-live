@@ -136,6 +136,17 @@ async function checkGeometry(page, single) {
   assert.ok(Math.abs(geometry.measure.width - geometry.right.width) <= 1, "pagination measures the visible page width: " + JSON.stringify(geometry));
   assert.ok(Math.abs(geometry.measure.height - geometry.right.height) <= 1, "pagination measures the visible page height: " + JSON.stringify(geometry));
   assert.ok(geometry.documentWidth <= geometry.width + 1, "no document horizontal overflow");
+  const scrubber = await page.locator(".book-progress").evaluate(input => ({
+    coarse: matchMedia("(pointer:coarse)").matches,
+    thumbSize: getComputedStyle(input).getPropertyValue("--reader-touch-thumb-size").trim(),
+    touchHeight: input.getBoundingClientRect().height
+  }));
+  if (scrubber.coarse) {
+    assert.equal(scrubber.thumbSize, "28px", "a touch device receives the wide progress grip");
+    assert.ok(scrubber.touchHeight >= 34, "the touch progress control has enough vertical target area");
+  } else {
+    assert.equal(scrubber.thumbSize, "", "desktop mouse retains the existing thin reading cursor");
+  }
   return geometry;
 }
 async function completeBook(page) {
