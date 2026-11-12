@@ -80,7 +80,7 @@ function fixture() {
     },
     reflow(pages){
       storyParagraphs=()=>[];checkLines=()=>[];
-      titlePage=()=>({kind:"title",firstPara:0,firstWord:0});paginate=()=>pages;
+      titlePage=()=>({kind:"title",firstPara:0,firstWord:0});editorialPage=()=>null;paginate=()=>pages;
       refreshReaderSections=()=>{};actualRepaginate();
     }
   })`,context);
