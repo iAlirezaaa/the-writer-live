@@ -25,7 +25,7 @@ class FakeElement extends EventTarget {
     this.tagName=tag.toUpperCase();this.environment=environment;
     this.children=[];this.parentElement=null;this.className='';this.dataset={};
     this.attributes=new Map();this.hidden=false;this.isConnected=true;
-    this.style={background:'',visibility:'',setProperty(name,value){this[name]=String(value);}};
+    this.style={background:'',visibility:'',setProperty(name,value){this[name]=String(value);},removeProperty(name){const value=this[name]??'';delete this[name];return value;}};
     this.rect={left:80,top:180,width:36,height:220};
     const tokens=()=>new Set(this.className.split(/\s+/).filter(Boolean));
     const write=set=>{this.className=[...set].join(' ');};
