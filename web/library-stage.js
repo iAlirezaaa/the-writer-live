@@ -33,6 +33,10 @@ function transition(overlay,signal){
   attach(stage){record.stage=stage;},
   hideSource(source){record.source=source;record.visibility=sourceOwners.get(source)?.visibility??source.style.visibility;sourceOwners.set(source,record);source.style.visibility='hidden';},
   fast(){speed=2.6;for(const animation of animations)animation.playbackRate=speed;},
+  // A viewport change invalidates the measured source and destination poses.
+  // Finish any active WAAPI promises, then hand over to the already reflowed
+  // real reader instead of animating toward stale screen coordinates.
+  finish(){for(const animation of animations){try{if(animation.playState!=="finished")animation.finish();}catch{}}},
   animate(node,frames,options){
    if(controller.signal.aborted)return Promise.reject(interrupted());
    const animation=node.animate(frames,options);animation.playbackRate=speed;animations.add(animation);
@@ -113,6 +117,10 @@ function place(overlay,story,geometry,snapshot,stage=make('stage',overlay)){
 /* Opens `source` (a spine on the shelf) into the reading page. `ready` resolves once the reader has laid out its pages. */
 export async function playOpen({overlay,source,story,measure,ready,snapshot,reveal,signal,onCancel}){
  const run=transition(overlay,signal),stage=make('stage',overlay);run.attach(stage);
+ let viewportChanged=false;
+ const onViewportChange=()=>{viewportChanged=true;run.finish();};
+ window.addEventListener('resize',onViewportChange);
+ window.visualViewport?.addEventListener('resize',onViewportChange);
  const controls=make('stage-controls',stage),status=make('stage-status',controls);
  status.setAttribute('role','status');status.textContent='در حال آماده‌کردن کتاب…';
  const cancel=document.createElement('button');cancel.className='stage-cancel';cancel.type='button';cancel.textContent='بازگشت به قفسه';
@@ -136,23 +144,31 @@ export async function playOpen({overlay,source,story,measure,ready,snapshot,reve
   run.hideSource(source);s.root.style.transform=poses.shelf;
   stage.addEventListener('pointerdown',event=>{if(!event.target.closest?.('button'))run.fast();});
   const dim=run.animate(s.dim,[{opacity:0},{opacity:1}],{duration:900,easing:'ease-in',fill:'forwards'});dim.catch(()=>{});
+  const handoff=()=>{overlay.style.background='';controls.hidden=true;stage.classList.add('is-revealed');reveal();};
+  if(viewportChanged){handoff();return true;}
   await run.animate(s.root,[{transform:poses.shelf},{transform:poses.pulled}],{duration:260,easing:'cubic-bezier(.3,.05,.2,1)',fill:'forwards'});
+  if(viewportChanged){handoff();return true;}
   await run.animate(s.root,[{transform:poses.pulled},{transform:poses.shown,offset:.86},{transform:poses.held}],{duration:480,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'});
+  if(viewportChanged){handoff();return true;}
   await Promise.all([
    run.animate(s.cover,[{transform:'rotateY(0deg)'},{transform:'rotateY(180deg)'}],{duration:600,easing:'cubic-bezier(.5,.03,.22,1)',fill:'forwards',delay:40}),
    run.animate(s.root,[{transform:poses.held},{transform:poses.open}],{duration:640,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'}),
    dim
   ]);
   // Restore the real background before revealing the page; no shelf flash.
-  overlay.style.background='';controls.hidden=true;stage.classList.add('is-revealed');reveal();
+  handoff();
   await run.animate(stage,[{opacity:1},{opacity:0}],{duration:220,easing:'ease',fill:'forwards'});
   return true;
- }finally{run.cleanup();}
+ }finally{window.removeEventListener('resize',onViewportChange);window.visualViewport?.removeEventListener('resize',onViewportChange);run.cleanup();}
 }
 
 /* The same journey backwards: the page closes and the book goes back into its gap. */
 export async function playClose({overlay,source,story,geometry,pages,hideReader,signal}){
  const run=transition(overlay,signal);
+ let viewportChanged=false;
+ const onViewportChange=()=>{viewportChanged=true;run.finish();};
+ window.addEventListener('resize',onViewportChange);
+ window.visualViewport?.addEventListener('resize',onViewportChange);
  try{
  if(run.signal.aborted)return false;
  if(reduced()||!source||source.isConnected===false){hideReader();return true;}
@@ -171,9 +187,12 @@ export async function playClose({overlay,source,story,geometry,pages,hideReader,
   run.animate(s.cover,[{transform:'rotateY(180deg)'},{transform:'rotateY(0deg)'}],{duration:400,easing:'cubic-bezier(.5,.03,.22,1)',fill:'forwards'}),
   run.animate(s.root,[{transform:poses.open},{transform:poses.held}],{duration:400,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'})
  ]);
+ if(viewportChanged){hideReader();return true;}
  await run.animate(s.root,[{transform:poses.held},{transform:poses.pulled}],{duration:380,easing:'cubic-bezier(.45,.02,.2,1)',fill:'forwards'});
+ if(viewportChanged){hideReader();return true;}
  await run.animate(s.root,[{transform:poses.pulled},{transform:poses.shelf}],{duration:220,easing:'cubic-bezier(.3,.05,.2,1)',fill:'forwards'});
+ if(viewportChanged){hideReader();return true;}
  await dim;hideReader();return true;
  }catch(error){if(error.name==='AbortError')return false;throw error;}
- finally{run.cleanup();}
+ finally{window.removeEventListener('resize',onViewportChange);window.visualViewport?.removeEventListener('resize',onViewportChange);run.cleanup();}
 }

@@ -92,6 +92,35 @@ async function main(){
   try{await load(page);await page.locator('.shelf-book .cover').first().click();await page.waitForFunction(()=>document.querySelector('.book-overlay:not(.book-entering)')&&!document.querySelector('.stage'));assert.equal(await page.locator('.b3d').count(),0);await page.locator('.reader-close').click();await page.waitForFunction(()=>document.querySelector('.book-overlay').hidden);assert.deepEqual(row.errors,[]);row.status='passed';console.log('PASS',row.name);}
   catch(e){row.status='failed';row.error=String(e.stack||e);console.error('FAIL',row.name,row.error);}finally{await page.close();}
  }
+ // Changing viewport mid-pick or mid-return must not leave an old 3D pose
+ // or an invisible source book. WAAPI is deliberately paused by this fixture,
+ // so the resize must actively settle the animation, not merely wait it out.
+ for(const [start,end] of [[[1440,1000],[1280,900]],[[375,812],[812,375]]]){
+  for(const motion of ['normal','reduced']){
+   const name=`${start[0]}x${start[1]}-to-${end[0]}x${end[1]}-${motion}-resize`;
+   const row={name,errors:[]};report.cases.push(row);
+   const page=await browser.newPage({viewport:{width:start[0],height:start[1]},reducedMotion:motion==='reduced'?'reduce':'no-preference',hasTouch:start[0]<1000});
+   page.setDefaultTimeout(12000);page.on('pageerror',e=>row.errors.push(e.message));
+   try{
+    await load(page);
+    const source=page.locator('.shelf-book .cover').first();
+    await source.click();
+    if(motion==='normal')await animation(page,'b3d',0);
+    await page.setViewportSize({width:end[0],height:end[1]});
+    await page.waitForFunction(()=>document.querySelector('.book-overlay:not(.book-entering)')&&!document.querySelector('.stage'));
+    assert.equal(await page.locator('.book-overlay').evaluate(n=>n.hidden),false,'reader revealed');
+    await page.screenshot({path:path.join(out,name+'-opened.png')});
+    await page.evaluate(()=>{window.qaAnimations=[];});
+    await page.locator('.reader-close').click();
+    if(motion==='normal')await animation(page,'b3d',0);
+    await page.setViewportSize({width:start[0],height:start[1]});
+    await page.waitForFunction(()=>document.querySelector('.book-overlay').hidden&&!document.querySelector('.stage'));
+    assert.equal(await source.evaluate(n=>getComputedStyle(n).visibility),'visible','source restored');
+    assert.deepEqual(row.errors,[]);row.status='passed';console.log('PASS',name);
+   }catch(error){row.status='failed';row.error=String(error.stack||error);console.error('FAIL',name,row.error);}
+   finally{await page.close();}
+  }
+ }
  }finally{await browser.close();report.passed=report.cases.filter(r=>r.status==='passed').length;report.failed=report.cases.length-report.passed;await fs.writeFile(path.join(out,'summary.json'),JSON.stringify(report,null,2)+'\n');}
  console.log(JSON.stringify({passed:report.passed,failed:report.failed,report:path.join(out,'summary.json')}));
  if(report.failed)process.exitCode=1;
