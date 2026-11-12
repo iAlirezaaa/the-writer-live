@@ -1,7 +1,7 @@
 // The Writer: the library is one bookcase. A book leaves the shelf, opens, and dissolves into the reading page.
 import { openBook, prepareReader, measureReader, readerPages, revealReader, cancelReaderOpen, closeReader, setCloseTransition } from "./book.js?v=library-20261112-editorial-v1";
 import { applyCoverVisual, createCoverArt, coverVisual } from "./book-cover.js?v=reader-20261109-v7";
-import { playOpen, playClose } from "./library-stage.js?v=library-20261111-reliable-v1";
+import { playOpen, playClose } from "./library-stage.js?v=reader-20261112-transition-v2";
 import { appHref, getJSON, isGitHubPages } from "./snapshot.js";
 import { installPersianPresentation } from "./persian-display.js?v=observatory-20261108-v2";
 

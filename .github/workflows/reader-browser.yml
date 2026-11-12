@@ -19,6 +19,7 @@ on:
       - "read/index.html"
       - "tests/reader-browser-regression.cjs"
       - "tests/reader-selection-geometry.cjs"
+      - "tests/reader-transition-lifecycle.cjs"
       - "tests/reader_page_curl_probe.mjs"
       - ".github/workflows/reader-browser.yml"
   pull_request:
@@ -27,6 +28,7 @@ on:
       - "read/index.html"
       - "tests/reader-browser-regression.cjs"
       - "tests/reader-selection-geometry.cjs"
+      - "tests/reader-transition-lifecycle.cjs"
       - "tests/reader_page_curl_probe.mjs"
       - ".github/workflows/reader-browser.yml"
   workflow_dispatch:
@@ -55,12 +57,15 @@ jobs:
         run: |
           node --check tests/reader-browser-regression.cjs
           node --check tests/reader-selection-geometry.cjs
+          node --check tests/reader-transition-lifecycle.cjs
       - name: Exercise the reader on desktop and mobile
         run: node tests/reader-browser-regression.cjs
       - name: Verify selection geometry, portrait jackets and exact page handoff
         run: |
           node tests/reader_page_curl_probe.mjs
           node tests/reader-selection-geometry.cjs
+      - name: Verify interruption, orientation and live motion preferences
+        run: node tests/reader-transition-lifecycle.cjs
       - name: Upload browser results and screenshots
         if: always()
         uses: actions/upload-artifact@v4
