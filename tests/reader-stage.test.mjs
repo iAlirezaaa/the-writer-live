@@ -63,7 +63,11 @@ function setup(t,{reduced=false,autoFinish=false,background='rgb(24, 18, 14)',vi
   const environment={reduced,autoFinish,animations:[]};
   const document={activeElement:null,createElement:tag=>new FakeElement(tag,environment)};
   environment.document=document;
-  const replacements={document,window:{matchMedia:()=>({matches:environment.reduced})},innerWidth:1280,innerHeight:800};
+  const replacements={document,window:{
+    matchMedia:()=>({matches:environment.reduced}),
+    addEventListener:()=>{},removeEventListener:()=>{},
+    visualViewport:{addEventListener:()=>{},removeEventListener:()=>{}}
+  },innerWidth:1280,innerHeight:800};
   const saved=new Map(Object.keys(replacements).map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
   for(const [key,value]of Object.entries(replacements))Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
   const controller=new AbortController();
