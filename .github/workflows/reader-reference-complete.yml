@@ -1,0 +1,74 @@
+name: Reader complete reference evidence
+on:
+  push:
+    branches: ["reader/reference-exact-20261112"]
+    paths: [".github/workflows/reader-reference-complete.yml"]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Capture settled source geometry and interactions
+        run: |
+          cat > inspect.cjs <<'NODE'
+          const fs=require('node:fs/promises'),zlib=require('node:zlib');const {chromium}=require('playwright');
+          (async()=>{
+            await fs.mkdir('evidence',{recursive:true});
+            const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+            const errors=[];
+            try{
+              for(const [label,w,h]of [['desktop',1440,1000],['mobile',390,844]]){
+                const ctx=await browser.newContext({viewport:{width:w,height:h},hasTouch:label==='mobile',isMobile:label==='mobile',deviceScaleFactor:1,timezoneId:'Europe/Amsterdam'});
+                await ctx.addInitScript(()=>{const raf=requestAnimationFrame.bind(window);let hold=false;const pending=[];window.requestAnimationFrame=cb=>hold?(pending.push(cb),0):raf(cb);window.captureHold=value=>{hold=value;if(!hold)for(const cb of pending.splice(0))raf(cb);};});
+                const page=await ctx.newPage();page.setDefaultTimeout(90000);page.on('pageerror',e=>errors.push({label,error:e.message}));
+                await page.goto('https://library.jjangik.kr/?intro=curtain',{waitUntil:'domcontentloaded',timeout:60000});
+                await page.waitForFunction(()=>window.room?.arrived,null,{timeout:120000});
+                await page.evaluate(()=>{room.renderer.setPixelRatio(.4);room.hour(14)});
+                await page.waitForFunction(()=>Math.abs(room.hourAt-14)<.01&&!room.flying);await page.waitForTimeout(1500);
+                async function capture(name,scene=false){
+                  await page.evaluate(()=>{captureHold(true);room.renderer.setPixelRatio(1);room.renderer.render(room.scene,room.camera)});
+                  await page.waitForTimeout(100);
+                  const data=await page.evaluate(()=>{
+                    const r=room;const path=o=>{const a=[];for(let n=o;n.parent;n=n.parent)a.unshift(n.parent.children.indexOf(n));return a;};
+                    const clean=(v,depth=0)=>{if(v==null||typeof v!=='object')return typeof v==='function'?undefined:v;if(v.isObject3D)return {uuid:v.uuid,path:path(v),type:v.type};if(v.isMaterial||v.isTexture)return {uuid:v.uuid,type:v.type};if(v.toArray)return v.toArray();if(depth>3)return undefined;if(Array.isArray(v))return v.map(x=>clean(x,depth+1));return Object.fromEntries(Object.entries(v).filter(([k])=>!['el','handle','entry'].includes(k)).map(([k,x])=>[k,clean(x,depth+1)]));};
+                    const nodes=[];r.scene.traverse(o=>nodes.push({uuid:o.uuid,path:path(o),type:o.type,position:o.position.toArray(),quaternion:o.quaternion.toArray(),scale:o.scale.toArray(),visible:o.visible,intensity:o.intensity,color:o.color?.getHexString(),target:o.target?.position.toArray(),material:Array.isArray(o.material)?o.material.map(m=>m.uuid):o.material?.uuid}));
+                    return {camera:r.camera.toJSON(),nodes,items:r.items.map(x=>({id:x.entry.id,name:x.entry.name,uuid:x.g.uuid,path:path(x.g),look:clean(x.look),home:clean(x.home),data:clean(x.g.userData),still:clean(x.still),mark:clean(x.mark)})),things:clean(r.things),clock:clean(r.clock),rug:clean(r.RUG),lamp:r.lamp,listed:r.listed,list:clean(r.list),listSettings:r.LIST,reading:r.reading,entered:r.entered,shown:r.shown,sheet:r.sheet,rects:[...document.querySelectorAll('button,.rows,.row,.hint,.step-hint,.mark')].map(e=>{const b=e.getBoundingClientRect();return {cls:e.className,id:e.id,aria:e.getAttribute('aria-label'),text:e.textContent,x:b.x,y:b.y,w:b.width,h:b.height,opacity:getComputedStyle(e).opacity}})};
+                  });
+                  await fs.writeFile(`evidence/${label}-${name}.json`,JSON.stringify(data));
+                  if(scene){const json=await page.evaluate(()=>{const saved=[];room.scene.traverse(o=>{saved.push([o,o.userData]);o.userData={};});try{const j=room.scene.toJSON(),geos=new Map();room.scene.traverse(o=>{if(o.geometry&&!geos.has(o.geometry.uuid)){const g=o.geometry.clone();delete g.parameters;g.type='BufferGeometry';g.uuid=o.geometry.uuid;const item=g.toJSON();for(const a of Object.values(item.data?.attributes||{}))if(Array.isArray(a.array))a.array=a.array.map(n=>Math.round(n*1e6)/1e6);geos.set(item.uuid,item);}});j.geometries=[...geos.values()];return j;}finally{for(const[o,u]of saved)o.userData=u;}});await fs.writeFile(`evidence/${label}-${name}-scene.json.gz`,zlib.gzipSync(JSON.stringify(json),{level:9}));}
+                  await page.screenshot({path:`evidence/${label}-${name}.png`,timeout:60000}).catch(e=>errors.push({label,name,error:String(e)}));
+                  console.log('CAPTURED',label,name,data.nodes.length,data.reading,data.shown);
+                  await page.evaluate(()=>{room.renderer.setPixelRatio(.4);captureHold(false)});
+                }
+                await capture('shelf',label==='desktop');
+                await page.evaluate(()=>room.setList(true));await page.waitForFunction(()=>room.listed&&room.listK===1);await capture('list');
+                await page.evaluate(()=>room.setList(false));await page.waitForFunction(()=>room.listK===0);
+                await page.evaluate(()=>{room.point(0);room.takeOut(false)});await page.waitForFunction(()=>room.reading===0&&!room.flying,null,{timeout:120000});await capture('open',label==='desktop');
+                await page.evaluate(()=>room.leanIn());await page.waitForFunction(()=>room.entered&&!room.flying);await capture('inside');
+                await page.evaluate(()=>room.leanOut());await page.waitForFunction(()=>!room.entered&&room.reading<0&&!room.flying);
+                await page.evaluate(()=>room.show('about'));await page.waitForFunction(()=>room.shown==='about');await capture('about');
+                await page.evaluate(()=>room.unshow());await page.waitForFunction(()=>!room.shown);
+                await page.evaluate(()=>room.show('contact'));await page.waitForFunction(()=>room.shown==='contact');await page.waitForTimeout(2200);await capture('contact');
+                await page.evaluate(()=>room.unshow());await page.waitForFunction(()=>!room.shown);
+                await page.evaluate(()=>room.hour(22));await page.waitForFunction(()=>Math.abs(room.hourAt-22)<.01);await capture('night',label==='desktop');
+                await ctx.close();
+              }
+            }finally{await fs.writeFile('evidence/errors.json',JSON.stringify(errors,null,2));await browser.close();}
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+          timeout 960s node inspect.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reader-complete-reference
+          path: evidence/
+          retention-days: 3
