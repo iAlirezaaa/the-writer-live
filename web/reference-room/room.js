@@ -12,23 +12,22 @@ const nodes=new Map(),pathNodes=new Map(),ray=new THREE.Raycaster(),mouse=new TH
 let pointer={x:0,y:0},viewPointer={x:0,y:0},rows=[],targets=[],savedContact=null,autoApproach=0;
 const yRotation=a=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a),frontRotation=yRotation(-Math.PI/2);
 function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
-function storyMaterial(title,cover=false){
- const canvas=document.createElement('canvas');canvas.width=cover?1024:1536;canvas.height=cover?640:320;
- const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
- let size=cover?112:122;do{ctx.font=`600 ${size}px sans-serif`;if(ctx.measureText(title).width<=canvas.width*.84)break;size-=6;}while(size>40);
- ctx.fillStyle='rgba(69,48,32,.94)';ctx.fillText(title,canvas.width/2,canvas.height/2);
+function storyLabelSprite(root,spineTitle,title){
+ if(!spineTitle?.isObject3D||!title)return null;
+ root.updateWorldMatrix(true,true);spineTitle.updateWorldMatrix(true,false);
+ const anchor=spineTitle.getWorldPosition(new THREE.Vector3());root.worldToLocal(anchor);
+ const canvas=document.createElement('canvas');canvas.width=320;canvas.height=2048;
+ const ctx=canvas.getContext('2d');ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(-Math.PI/2);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+ let size=118;do{ctx.font=`600 ${size}px sans-serif`;if(ctx.measureText(title).width<=canvas.height*.82)break;size-=5;}while(size>54);
+ ctx.fillStyle='rgba(64,43,28,.96)';ctx.fillText(title,0,0);
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;
- return new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide});
+ const material=new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false,toneMapped:false});
+ const sprite=new THREE.Sprite(material);sprite.position.copy(anchor);sprite.scale.set(.22,1.45,1);sprite.renderOrder=50;sprite.userData.storyLabel=true;root.add(sprite);return sprite;
 }
 function addStoryLabels(root,hinge,title){
  const cover=root.children[4],spineTitle=hinge.children[6],spineSub=hinge.children[7];
  for(const mesh of [cover,spineTitle,spineSub])if(mesh?.isObject3D)mesh.visible=false;
- if(!title)return [];
- const added=[];
- for(const [template,isCover] of [[spineTitle,false],[cover,true]])if(template?.isMesh){
-  const label=template.clone(false);label.visible=true;label.material=storyMaterial(title,isCover);label.userData={...label.userData,storyLabel:true};template.parent.add(label);added.push(label);
- }
- return added;
+ const label=storyLabelSprite(root,spineTitle,title);return label?[label]:[];
 }
 function navigateStory(book){
  if(!book.storyId)return false;const href=storyHref(book);
@@ -104,12 +103,12 @@ function openFinal(book){const p=openPose(book);book.root.position.copy(p.p);boo
 function dimRoom(amount){for(const l of scene.userData.lights)l.intensity=l.userData.power*(1-amount)*(l.userData.lamp?state.lamp:1);}
 function open(index,push=true){
  if(!state.ready||state.busy||index<0||index>=books.length||!['shelf','list'].includes(state.mode))return;
- const book=books[index];state.selected=index;book.returnPose=pose(book.root);state.hover=-1;mode('opening');
+ const book=books[index];state.selected=index;book.returnPose=pose(book.root);state.hover=-1;for(const label of book.storyLabels)label.visible=false;mode('opening');
  const start=pose(book.root),pulled={p:start.p.clone().add(new THREE.Vector3(0,.12,1.2)),q:start.q.clone(),s:start.s.clone()},end=openPose(book);
  if(push)history.pushState({notebook:index},'',`#${book.name.toLowerCase()}`);
  animate(1600,t=>{if(t<.3)put(book.root,start,pulled,segment(t,0,.3));else put(book.root,pulled,end,segment(t,.3,1));book.hinge.rotation.y=Math.PI*segment(t,.3,1);if(t>.35)for(const o of book.prints)o.visible=false;book.paper.visible=true;book.inside.visible=true;dimRoom(segment(t,.2,1)*.48);},()=>{openFinal(book);mode('spread');if(navigateStory(book))return;$('close').focus({preventScroll:true});requestRender(true);});
 }
-function restoreBook(book){for(const[o,p]of book.original){o.position.copy(p.p);o.quaternion.copy(p.q);o.scale.copy(p.s);o.visible=p.visible;}book.still.visible=false;book.pull=0;}
+function restoreBook(book){for(const[o,p]of book.original){o.position.copy(p.p);o.quaternion.copy(p.q);o.scale.copy(p.s);o.visible=p.visible;}for(const label of book.storyLabels)label.visible=true;book.still.visible=false;book.pull=0;}
 function close(clearHash=true){
  if(!state.ready)return;if(clearHash&&location.hash)history.replaceState(null,'',location.pathname+location.search);
  if(['about','contact'].includes(state.mode))return backToRoom();if(state.selected<0)return;const book=books[state.selected];
