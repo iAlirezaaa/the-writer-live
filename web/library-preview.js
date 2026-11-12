@@ -66,7 +66,7 @@ export function installLibraryPreview(){
  const meta=node('p','preview-meta'),status=node('p','preview-status'),summary=node('p','preview-summary'),themes=node('p','preview-themes');
  info.append(meta,title,status,summary,themes);spread.append(jacket,info);
  const sample=node('details','preview-sample'),sampleLabel=node('summary','preview-eyebrow','خواندن نمونهٔ متن'),quote=node('blockquote','preview-excerpt');sample.append(sampleLabel,quote);
- const scene=node('img','preview-scene');scene.hidden=true;scene.width=480;scene.height=280;scene.loading='lazy';scene.decoding='async';scene.addEventListener('error',()=>{scene.hidden=true;});
+ const scene=node('img','preview-scene');scene.hidden=true;scene.width=480;scene.height=280;scene.loading='lazy';scene.decoding='async';scene.addEventListener('error',()=>{scene.hidden=true;position();});scene.addEventListener('load',position);
  const controls=node('div','preview-controls'),read=button('preview-read','شروع خواندن'),previous=button('preview-nav','→','کتاب قبلی'),next=button('preview-nav','←','کتاب بعدی'),counter=node('span','preview-counter');
  controls.append(read,previous,counter,next);panel.append(header,scene,spread,sample,controls);document.body.append(panel);
  let active=null,last=null,pinned=false,returnTo=null,timer=null,hideTimer=null,token=0,frame=0;
@@ -75,6 +75,8 @@ export function installLibraryPreview(){
  function position(){
   if(panel.hidden||!active?.isConnected)return;
   panel.classList.toggle('is-pinned',pinned);
+  // Hover is a non-modal preview; the user-pinned sheet is a keyboard dialog.
+  if(pinned)panel.setAttribute('aria-modal','true');else panel.removeAttribute('aria-modal');
   const v=window.visualViewport,w=v?.width||innerWidth,h=v?.height||innerHeight;
   const mobile=w<640||matchMedia('(hover:none)').matches;
   panel.classList.toggle('is-sheet',mobile);
@@ -93,7 +95,7 @@ export function installLibraryPreview(){
  function hide(restore=false){
   clearTimeout(timer);clearTimeout(hideTimer);token++;
   const was=returnTo;active?.classList.remove('is-previewed');active=null;pinned=false;panel.hidden=true;
-  entry.setAttribute('aria-expanded','false');document.body.classList.remove('is-previewing');
+  entry.setAttribute('aria-expanded','false');panel.removeAttribute('aria-modal');document.body.classList.remove('is-previewing');
   if(restore&&was?.isConnected)was.focus({preventScroll:true});
  }
  const scheduleHide=()=>{clearTimeout(hideTimer);if(!pinned)hideTimer=setTimeout(()=>hide(),260);};
@@ -150,6 +152,17 @@ export function installLibraryPreview(){
  panel.addEventListener('pointerenter',()=>clearTimeout(hideTimer));panel.addEventListener('pointerleave',scheduleHide);
  panel.addEventListener('focusin',()=>{pinned=true;if(!returnTo)returnTo=active?.querySelector('.cover')||entry;clearTimeout(hideTimer);position();});
  document.addEventListener('keydown',e=>{
+  if(e.key==='Tab'&&!panel.hidden&&pinned){
+   // A pinned preview is a true keyboard surface. Ignore disabled, hidden,
+   // and collapsed controls: never send focus back into the moving bookcase.
+   const controls=[...panel.querySelectorAll('button:not(:disabled),summary,[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')]
+    .filter(el=>el.getClientRects().length&&!el.closest('[hidden],[inert]'));
+   if(!controls.length){e.preventDefault();close.focus({preventScroll:true});return;}
+   const first=controls[0],last=controls[controls.length-1],current=controls.indexOf(document.activeElement);
+   if(e.shiftKey&&current<=0){e.preventDefault();last.focus({preventScroll:true});}
+   else if(!e.shiftKey&&(current<0||current===controls.length-1)){e.preventDefault();first.focus({preventScroll:true});}
+   return;
+  }
   if(e.key==='Escape'&&!panel.hidden){e.preventDefault();e.stopImmediatePropagation();hide(true);}
   else if((e.key==='i'||e.key==='I')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.target.closest?.('.shelf-book')){e.preventDefault();show(e.target.closest('.shelf-book'),{pin:true,focus:true});}
  },true);

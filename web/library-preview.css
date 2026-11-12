@@ -236,3 +236,30 @@ body.lib.has-book-previews .lib-reader-note[role="alert"]{position:relative;z-in
  body.lib.has-book-previews .lamp-cord{left:calc(26% - 17px);}
  body.lib.has-book-previews .library-preview .preview-scene{height:100px;aspect-ratio:auto;}
 }
+
+/* RDR-20261112: the synopsis is scrollable on mobile, but reading/navigation
+   must remain reachable without hunting for the bottom of a long manuscript.
+   No transform, width or depth override touches the selected physical book. */
+body.lib.has-book-previews .library-preview.is-sheet{
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+body.lib.has-book-previews .library-preview.is-sheet .preview-controls{
+  position:sticky;
+  bottom:-15px;
+  z-index:2;
+  margin:14px -15px -15px;
+  padding:11px 15px max(15px,env(safe-area-inset-bottom));
+  background:var(--preview-paper);
+  box-shadow:0 -11px 17px -11px #42342433;
+  border-top:1px solid var(--preview-line);
+}
+body.lib.has-book-previews .library-preview.is-sheet .preview-controls .preview-read{
+  min-width:0;
+}
+@media(max-height:480px){
+ body.lib.has-book-previews .library-preview.is-sheet .preview-controls{
+  margin-top:10px;
+  padding-top:9px;
+ }
+}
