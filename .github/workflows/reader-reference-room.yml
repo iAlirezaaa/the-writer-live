@@ -1,0 +1,43 @@
+name: Reference room browser verification
+on:
+  push:
+    branches: ["reader/reference-exact-20261112", main]
+    paths: ["web/reference-room/**", "tests/reader-reference-room.cjs", ".github/workflows/reader-reference-room.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: reference-room-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  room:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/download-artifact@v4
+        if: hashFiles('web/reference-room/data/room.json.gz') == ''
+        with:
+          name: reference-room-compiled
+          repository: iAlirezaaa/the-writer-live
+          run-id: 43275076916
+          github-token: ${{ github.token }}
+          path: web/reference-room/data
+      - name: Install browser and check source syntax
+        run: |
+          node --input-type=module --check < web/reference-room/room.js
+          node --check tests/reader-reference-room.cjs
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Exercise empty notebooks and actual WebGL room
+        run: node tests/reader-reference-room.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reference-room-browser
+          path: reference-room-evidence/
+          retention-days: 14
