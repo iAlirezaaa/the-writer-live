@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_utc": "2026-11-12T16:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "19e7f2c3a0327f567969c806a82918185e37a149",
+  "private_source_commit": "5b1c99862ff8fb6afe2e3a2d3ae886bdc3a4a743",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
@@ -28,9 +28,9 @@
       "web/library-atmosphere.css", "web/library-atmosphere.js", "web/book-cover.js",
       "web/library-aisle.js", "web/read.html", "read/index.html",
       "tests/reader-atmosphere.test.mjs", "tests/reader-atmosphere-browser.cjs",
-      "tests/reader-aisle.test.mjs", ".github/workflows/reader-atmosphere.yml"
+      "tests/reader-aisle.test.mjs", "tests/reader-aisle-browser.cjs", ".github/workflows/reader-atmosphere.yml"
     ],
-    "note": "Private-first warm reading room, compact centered sparse-gallery shelves and existing revision-verified original story art on physical covers. Preserve button identity, canonical routes, original manuscripts, authorized snapshot, city and recent curl/stage performance fixes."
+    "note": "Private-first warm reading room, compact centered sparse-gallery shelves and existing revision-verified original story art on physical covers. Preserve button identity, canonical routes, original manuscripts, authorized snapshot, city and recent curl/stage performance fixes. Follow-up adjusts touch-test coordinates to the actual visible cabinet without changing runtime or weakening swipe assertions."
   },
   "reader_preview_assets": {
     "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",

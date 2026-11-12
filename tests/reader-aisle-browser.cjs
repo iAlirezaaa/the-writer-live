@@ -80,7 +80,13 @@ async function main(){
   await page.screenshot({path:path.join(out,`100-books-${width}-next.png`),fullPage:true});
   await page.locator('#aisle-prev').click();await page.waitForFunction(()=>document.querySelector('.case').dataset.activeCabinet==='0');
   if(width<900){
-   const region=await page.locator('.case').boundingBox(),y=Math.min(height-60,region.y+90);
+   // Navigation may scroll the document down to its controls. A touch must
+   // start inside the visible intersection, not at an off-screen row offset.
+   const region=await page.locator('.case').boundingBox();
+   const top=Math.max(0,region.y),bottom=Math.min(height,region.y+region.height);
+   assert.ok(bottom-top>40,'cabinet has a visible touch area');
+   const y=(top+bottom)/2;
+   assert.ok(await page.evaluate(y=>Boolean(document.elementFromPoint(70,y)?.closest('.case')),y),'gesture starts on the real cabinet');
    const cdp=await page.context().newCDPSession(page);
    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:70,y}]});
    for(let x=90;x<=310;x+=20){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y}]});await page.waitForTimeout(18);}
