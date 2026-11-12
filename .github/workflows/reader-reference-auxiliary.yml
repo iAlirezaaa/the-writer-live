@@ -1,0 +1,45 @@
+name: Reader auxiliary reference
+on:
+  push:
+    branches: ["reader/reference-exact-20261112"]
+    paths: [".github/workflows/reader-reference-auxiliary.yml"]
+permissions: {contents: read}
+jobs:
+  capture:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - run: |
+          cat > capture.cjs <<'NODE'
+          const fs=require('node:fs/promises'),zlib=require('node:zlib');const {chromium}=require('playwright');
+          (async()=>{await fs.mkdir('aux',{recursive:true});const b=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+          try{for(const[label,w,h]of [['mobile',390,844],['desktop',1440,1000]]){
+            const p=await b.newPage({viewport:{width:w,height:h},hasTouch:label==='mobile',isMobile:label==='mobile'});p.setDefaultTimeout(45000);
+            await p.addInitScript(()=>{let held=false,q=[];const raf=requestAnimationFrame.bind(window);window.requestAnimationFrame=f=>held?(q.push(f),0):raf(f);window.hold=value=>{held=value;if(!value)q.splice(0).forEach(f=>raf(f));};});
+            await p.goto('https://library.jjangik.kr/?intro=curtain',{waitUntil:'domcontentloaded',timeout:60000});await p.waitForFunction(()=>window.room?.arrived,null,{timeout:120000});await p.evaluate(()=>{room.renderer.setPixelRatio(.25);room.hour(14);});await p.waitForTimeout(3000);
+            async function shot(name){
+              await p.evaluate(()=>{hold(true);room.renderer.setPixelRatio(1);room.renderer.render(room.scene,room.camera);});
+              const state=await p.evaluate(()=>{const nodes=[];room.scene.traverse(o=>{let path=[];for(let n=o;n.parent;n=n.parent)path.unshift(n.parent.children.indexOf(n));nodes.push({path,type:o.type,position:o.position.toArray(),quaternion:o.quaternion.toArray(),scale:o.scale.toArray(),visible:o.visible,intensity:o.intensity,color:o.color?.getHexString(),target:o.target?.position.toArray()});});return {camera:room.camera.toJSON(),nodes,reading:room.reading,entered:room.entered,shown:room.shown,near:room.close};});
+              await fs.writeFile(`aux/${label}-${name}.json`,JSON.stringify(state));
+              if(name==='night'){const env=await p.evaluate(()=>{const saved=[];room.scene.traverse(o=>{saved.push([o,o.userData]);o.userData={};});try{const j=room.scene.toJSON();return {materials:j.materials,textures:j.textures,images:j.images,object:j.object};}finally{for(const[o,u]of saved)o.userData=u;}});await fs.writeFile(`aux/${label}-night-environment.json.gz`,zlib.gzipSync(JSON.stringify(env)));}
+              await p.screenshot({path:`aux/${label}-${name}.png`,timeout:45000}).catch(e=>console.log('screenshot',name,String(e)));console.log('captured',label,name,state.shown);
+              await p.evaluate(()=>{room.renderer.setPixelRatio(.25);hold(false);});
+            }
+            await shot('settled');
+            await p.evaluate(()=>room.show('about'));await p.waitForFunction(()=>room.shown==='about');await shot('about');await p.evaluate(()=>room.unshow());await p.waitForFunction(()=>!room.shown);
+            await p.evaluate(()=>room.show('contact'));await p.waitForFunction(()=>room.shown==='contact');await p.waitForTimeout(2500);await shot('contact');await p.evaluate(()=>room.unshow());await p.waitForFunction(()=>!room.shown);
+            await p.evaluate(()=>room.hour(22));await p.waitForFunction(()=>Math.abs(room.hourAt-22)<.01);await shot('night');
+            try{await p.waitForFunction(()=>{if(room.reading===0||room.entered||room.flying)return true;room.point(0);room.takeOut(false);return false;},null,{timeout:20000,polling:100});await p.waitForFunction(()=>!room.flying,null,{timeout:20000});await shot('open');}catch(e){console.log('open capture incomplete',String(e));}
+            await p.close();
+          }}finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+          node capture.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: reader-reference-auxiliary, path: aux/, retention-days: 3}
