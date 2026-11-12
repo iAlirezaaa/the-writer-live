@@ -194,3 +194,12 @@ body.lib .book-overlay .editorial-summary {
  body.lib .book-overlay .editorial-image {max-height:72px}
  body.lib .book-overlay .editorial-summary {font-size:.75rem;line-height:1.7}
 }
+
+/* Keep real page-turn controls above the 3D book in single-page mobile mode.
+ * Otherwise the transformed book's stacking context can intercept tap/click even
+ * when the arrow is visibly enabled. Preserve the book geometry and hit boxes. */
+body.lib .book-overlay > .book-shelf > .turn {
+  position: relative;
+  z-index: 8;
+  pointer-events: auto;
+}
