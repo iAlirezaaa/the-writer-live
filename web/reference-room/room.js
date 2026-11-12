@@ -3,13 +3,38 @@
 import * as THREE from '../vendor/three.module.js';
 const $=id=>document.getElementById(id),clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const smooth=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2,segment=(t,a,b)=>smooth(clamp((t-a)/(b-a)));
-const titles=['Infinite 2D Grid','Cursor Wake','Velocity Reel','Depth Scroll','Index Lens','Scroll Bend','Mosaic Zoom','Spiral Wind','Light Table','Drawn Line','Strung Type'];
+const stories=[{id:'owner-20261110-jaye-doxt',title:'جای دوخت'},{id:'0005',title:'کوچه‌ی بازگشت'},{id:'0003',title:'نامی که از پل برگشت'},null,null,null,null,null,null,null,null];
+const titles=stories.map(story=>story?.title||'');
 const media=matchMedia('(prefers-reduced-motion: reduce)'),reduce=()=>media.matches;
 const state={mode:'shelf',selected:-1,hover:-1,near:0,listed:0,scroll:0,maxScroll:0,lamp:1,ready:false,busy:false,generation:0};
 let data,scene,camera,renderer,books=[],baseline,frame=0,tween=null;
 const nodes=new Map(),pathNodes=new Map(),ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),temp=new THREE.Vector3();
 let pointer={x:0,y:0},viewPointer={x:0,y:0},rows=[],targets=[],savedContact=null,autoApproach=0;
 const yRotation=a=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a),frontRotation=yRotation(-Math.PI/2);
+function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
+function storyMaterial(title,cover=false){
+ const canvas=document.createElement('canvas');canvas.width=cover?1024:1536;canvas.height=cover?640:320;
+ const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+ let size=cover?112:122;do{ctx.font=`600 ${size}px sans-serif`;if(ctx.measureText(title).width<=canvas.width*.84)break;size-=6;}while(size>40);
+ ctx.fillStyle='rgba(69,48,32,.94)';ctx.fillText(title,canvas.width/2,canvas.height/2);
+ const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;
+ return new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide});
+}
+function addStoryLabels(root,hinge,title){
+ const cover=root.children[4],spineTitle=hinge.children[6],spineSub=hinge.children[7];
+ for(const mesh of [cover,spineTitle,spineSub])if(mesh?.isObject3D)mesh.visible=false;
+ if(!title)return [];
+ const added=[];
+ for(const [template,isCover] of [[spineTitle,false],[cover,true]])if(template?.isMesh){
+  const label=template.clone(false);label.visible=true;label.material=storyMaterial(title,isCover);label.userData={...label.userData,storyLabel:true};template.parent.add(label);added.push(label);
+ }
+ return added;
+}
+function navigateStory(book){
+ if(!book.storyId)return false;const href=storyHref(book);
+ if(typeof globalThis.__ROOM_TEST_NAVIGATE==='function'){globalThis.__ROOM_TEST_NAVIGATE(href,book.storyId);return true;}
+ location.assign(href);return true;
+}
 const pose=o=>({p:o.position.clone(),q:o.quaternion.clone(),s:o.scale.clone()});
 const put=(o,a,b,t)=>{o.position.lerpVectors(a.p,b.p,t);o.quaternion.slerpQuaternions(a.q,b.q,t);o.scale.lerpVectors(a.s,b.s,t);};
 const byPath=path=>pathNodes.get(path?.join('/'))||path?.reduce((o,i)=>o?.children[i],scene);
@@ -65,7 +90,7 @@ function tick(now){
 function placeLabel(book){const r=book.bounds;if(!r)return;$('label').style.left=clamp(r.max.x+18,20,Math.max(20,innerWidth-290))+'px';$('label').style.top=clamp(r.min.y+12,70,Math.max(70,innerHeight-180))+'px';}
 function point(index){
  if(state.busy||!['shelf','list'].includes(state.mode)||index===state.hover)return;state.hover=index;$('room').classList.toggle('over',index>=0);
- if(index>=0){const book=books[index];$('label').replaceChildren(Object.assign(document.createElement('strong'),{textContent:book.name}),Object.assign(document.createElement('small'),{textContent:book.title}));$('label').classList.add('on');}else $('label').classList.remove('on');requestRender(true);
+ if(index>=0&&books[index].name){const book=books[index];$('label').replaceChildren(Object.assign(document.createElement('strong'),{textContent:book.name}));$('label').classList.add('on');}else $('label').classList.remove('on');requestRender(true);
 }
 function hit(x,y){mouse.set(x/innerWidth*2-1,1-y/innerHeight*2);ray.setFromCamera(mouse,camera);const found=ray.intersectObjects(targets,false)[0];return found?.object.userData.notebook??-1;}
 function openPose(book){
@@ -82,7 +107,7 @@ function open(index,push=true){
  const book=books[index];state.selected=index;book.returnPose=pose(book.root);state.hover=-1;mode('opening');
  const start=pose(book.root),pulled={p:start.p.clone().add(new THREE.Vector3(0,.12,1.2)),q:start.q.clone(),s:start.s.clone()},end=openPose(book);
  if(push)history.pushState({notebook:index},'',`#${book.name.toLowerCase()}`);
- animate(1600,t=>{if(t<.3)put(book.root,start,pulled,segment(t,0,.3));else put(book.root,pulled,end,segment(t,.3,1));book.hinge.rotation.y=Math.PI*segment(t,.3,1);if(t>.35)for(const o of book.prints)o.visible=false;book.paper.visible=true;book.inside.visible=true;dimRoom(segment(t,.2,1)*.48);},()=>{openFinal(book);mode('spread');$('close').focus({preventScroll:true});requestRender(true);});
+ animate(1600,t=>{if(t<.3)put(book.root,start,pulled,segment(t,0,.3));else put(book.root,pulled,end,segment(t,.3,1));book.hinge.rotation.y=Math.PI*segment(t,.3,1);if(t>.35)for(const o of book.prints)o.visible=false;book.paper.visible=true;book.inside.visible=true;dimRoom(segment(t,.2,1)*.48);},()=>{openFinal(book);mode('spread');if(navigateStory(book))return;$('close').focus({preventScroll:true});requestRender(true);});
 }
 function restoreBook(book){for(const[o,p]of book.original){o.position.copy(p.p);o.quaternion.copy(p.q);o.scale.copy(p.s);o.visible=p.visible;}book.still.visible=false;book.pull=0;}
 function close(clearHash=true){
@@ -131,17 +156,18 @@ async function start(){
   for(const o of scene.children)if(o.isMesh&&o.position.y>4.5&&o.position.y<5.1&&o.position.x>4){nodes.set('wall-title',o);break;}
   const blankPaper=new THREE.MeshBasicMaterial({color:0xf1ede3,toneMapped:false,side:THREE.DoubleSide});
   books=baseline.items.map((model,index)=>{
-   const root=byPath(model.path),hinge=byPath(model.data.hinge.path),still=byPath(model.still.path),original=new Map();
+   const root=byPath(model.path),hinge=byPath(model.data.hinge.path),still=byPath(model.still.path),original=new Map(),story=stories[index];
+   const coverDecal=root.children[4],spineTitle=hinge.children[6],spineSub=hinge.children[7];for(const mesh of [coverDecal,spineTitle,spineSub])if(mesh?.isObject3D)mesh.visible=false;
    // The reference caches its lamp shadow. Recomputed close-packed notebook
    // shadows otherwise blacken several spines after importing the measured mesh.
    root.traverse(o=>{original.set(o,{...pose(o),visible:o.visible});if(o.isMesh){o.userData.notebook=index;o.receiveShadow=false;targets.push(o);}});
-   const button=document.createElement('button');button.type='button';button.setAttribute('aria-label',`${model.name}: ${titles[index]}`);button.textContent=model.name;button.tabIndex=index===0?0:-1;$('covers').append(button);
-   const book={index,model,name:model.name,title:titles[index],root,hinge,still,original,home:pose(root),pull:0,button,prints:hinge.children.slice(2),paper:root.children[7],inside:hinge.children[1]};still.visible=false;book.paper.material=blankPaper;book.inside.material=blankPaper;
+   const button=document.createElement('button');button.type='button';button.setAttribute('aria-label',story?.title||`دفتر خالی ${index+1}`);button.textContent=story?.title||'';button.tabIndex=index===0?0:-1;$('covers').append(button);
+   const book={index,model,name:story?.title||'',title:'',storyId:story?.id||null,slug:model.name.toLowerCase(),root,hinge,still,original,home:pose(root),pull:0,button,prints:hinge.children.slice(2),paper:root.children[7],inside:hinge.children[1],storyLabels:addStoryLabels(root,hinge,story?.title||'')};still.visible=false;book.paper.material=blankPaper;book.inside.material=blankPaper;
    button.addEventListener('click',()=>open(index));button.addEventListener('focus',()=>{point(index);if(state.listed){state.scroll=clamp(index*(rows[0]?.s.x||1)*1.42*innerHeight/(2*Math.tan(27*Math.PI/360)*6.6)*1.5,0,state.maxScroll);requestRender();}});return book;
   });
   state.ready=true;resize();clockTime();renderer.render(scene,camera);$('load-progress').style.transform='scaleX(1)';document.body.classList.remove('loading');installInput();
-  window.referenceRoom={state,scene,camera,renderer,books,open,close,setList,show,enter,zoom,toggleLamp,render:()=>requestRender(true),setTestView(value){clearTimeout(autoApproach);tween=null;state.busy=false;state.near=value;pointer={x:0,y:0};viewPointer={x:0,y:0};setCamera();requestRender(true);},ready:true};
-  const named=location.hash.slice(1).toLowerCase(),index=books.findIndex(b=>b.name.toLowerCase()===named);if(index>=0)open(index,false);else if(!reduce())autoApproach=setTimeout(()=>zoom(1),2600);setInterval(clockTime,60000);
+  window.referenceRoom={state,scene,camera,renderer,books,stories,open,close,setList,show,enter,zoom,toggleLamp,render:()=>requestRender(true),setTestView(value){clearTimeout(autoApproach);tween=null;state.busy=false;state.near=value;pointer={x:0,y:0};viewPointer={x:0,y:0};setCamera();requestRender(true);},ready:true};
+  const named=location.hash.slice(1).toLowerCase(),index=books.findIndex(b=>b.slug===named);if(index>=0)open(index,false);else if(!reduce())autoApproach=setTimeout(()=>zoom(1),2600);setInterval(clockTime,60000);
  }catch(error){console.error(error);document.body.classList.remove('loading');$('failure').hidden=false;document.body.dataset.error=error.message;}
 }
 function installInput(){
