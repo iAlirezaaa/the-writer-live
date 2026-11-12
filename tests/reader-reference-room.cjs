@@ -26,10 +26,11 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'reference-room-evide
   try{
    await page.goto(base+'/web/reference-room/',{waitUntil:'load'});await page.waitForFunction(()=>window.referenceRoom?.ready||document.body.dataset.error,null,{timeout:90000});assert.equal(await page.getAttribute('body','data-error'),null);
    await page.evaluate(()=>{referenceRoom.setTestView(0);referenceRoom.renderer.setPixelRatio(.4);});await page.waitForTimeout(1000);
-   assert.equal(await page.locator('#covers button').count(),11);assert.equal(await page.locator('iframe').count(),0);await shot('shelf');
+   assert.equal(await page.locator('#covers button').count(),11);assert.deepEqual(await page.locator('#covers button').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-label'))),['جای دوخت','کوچه‌ی بازگشت','نامی که از پل برگشت','دفتر خالی 4','دفتر خالی 5','دفتر خالی 6','دفتر خالی 7','دفتر خالی 8','دفتر خالی 9','دفتر خالی 10','دفتر خالی 11']);assert.equal(await page.locator('iframe').count(),0);await shot('shelf');
    row.geometry=await page.evaluate(()=>({objects:(()=>{let n=0;referenceRoom.scene.traverse(()=>n++);return n})(),books:referenceRoom.books.map(b=>({name:b.name,position:b.root.position.toArray(),scale:b.root.scale.toArray()})),draw:referenceRoom.renderer.info.render}));assert.ok(row.geometry.objects>600);
    await page.evaluate(()=>referenceRoom.setTestView(.65));await page.waitForTimeout(200);await shot('near');await page.evaluate(()=>referenceRoom.setTestView(0));
-   const button=page.locator('#covers button').first();await button.focus();await button.press('Enter');await page.waitForTimeout(350);await shot('opening');
+   await page.evaluate(()=>{window.qaStoryLinks=[];window.__ROOM_TEST_NAVIGATE=(href,id)=>qaStoryLinks.push({href,id});});
+   const button=page.locator('#covers button').nth(3);await button.focus();await button.press('Enter');await page.waitForTimeout(350);await shot('opening');
    await page.waitForFunction(()=>referenceRoom.state.mode==='spread'&&!referenceRoom.state.busy);await shot('open');
    await page.evaluate(()=>referenceRoom.enter());await page.waitForFunction(()=>referenceRoom.state.mode==='inside');assert.equal(await page.locator('#page').innerText(),'');await shot('empty-page');
    await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);
@@ -37,7 +38,18 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'reference-room-evide
    await page.getByRole('button',{name:'The shelf',exact:true}).click();await page.waitForFunction(()=>referenceRoom.state.listed===0&&!referenceRoom.state.busy);
    for(const view of ['About','Contact']){await page.getByRole('button',{name:view,exact:true}).click();await page.waitForFunction(view=>referenceRoom.state.mode===view&&!referenceRoom.state.busy,view.toLowerCase());await shot(view.toLowerCase());await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);}
    await page.emulateMedia({reducedMotion:'reduce'});
-   for(let i=0;i<11;i++){await page.evaluate(i=>referenceRoom.open(i),i);await page.waitForFunction(()=>referenceRoom.state.mode==='spread'&&!referenceRoom.state.busy);assert.equal(await page.locator('#page').innerText(),'');await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);}
+   for(let i=0;i<3;i++){await page.evaluate(i=>referenceRoom.open(i),i);await page.waitForFunction(()=>referenceRoom.state.mode==='spread'&&!referenceRoom.state.busy);const nav=await page.evaluate(()=>qaStoryLinks.at(-1));assert.equal(nav.id,['owner-20261110-jaye-doxt','0005','0003'][i]);assert.match(nav.href,new RegExp('/reader/\\?from=room#'+encodeURIComponent(nav.id)+'
+   assert.equal(await page.locator('#covers button').nth(3).textContent(),'');assert.equal(await page.locator('#covers button').nth(10).textContent(),'');
+   await page.evaluate(()=>referenceRoom.open(3));await page.waitForFunction(()=>referenceRoom.state.mode==='spread');await page.setViewportSize({width:height,height:width});await page.waitForTimeout(200);await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);
+   row.finite=await page.evaluate(()=>referenceRoom.books.every(b=>[...b.root.position.toArray(),...b.root.scale.toArray(),...b.root.quaternion.toArray()].every(Number.isFinite)));assert.ok(row.finite);assert.deepEqual(errors,[]);assert.deepEqual(network,[]);row.status='passed';
+  }catch(error){row.status='failed';row.error=String(error.stack||error);await page.screenshot({path:path.join(out,name+'-failure.png')}).catch(()=>{});console.error(name,error);}
+  finally{row.errors=errors;row.externalRequests=network;await page.close();}
+ }
+ }finally{await browser.close();server.close();report.passed=report.cases.filter(c=>c.status==='passed').length;report.failed=report.cases.length-report.passed;await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));}
+ console.log(JSON.stringify(report,null,2));if(report.failed)process.exitCode=1;
+})().catch(e=>{console.error(e);process.exitCode=1});
+));await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);}
+   for(let i=3;i<11;i++){await page.evaluate(i=>referenceRoom.open(i),i);await page.waitForFunction(()=>referenceRoom.state.mode==='spread'&&!referenceRoom.state.busy);assert.equal(await page.locator('#page').innerText(),'');await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);}
    await page.evaluate(()=>referenceRoom.open(3));await page.waitForFunction(()=>referenceRoom.state.mode==='spread');await page.setViewportSize({width:height,height:width});await page.waitForTimeout(200);await page.keyboard.press('Escape');await page.waitForFunction(()=>referenceRoom.state.mode==='shelf'&&!referenceRoom.state.busy);
    row.finite=await page.evaluate(()=>referenceRoom.books.every(b=>[...b.root.position.toArray(),...b.root.scale.toArray(),...b.root.quaternion.toArray()].every(Number.isFinite)));assert.ok(row.finite);assert.deepEqual(errors,[]);assert.deepEqual(network,[]);row.status='passed';
   }catch(error){row.status='failed';row.error=String(error.stack||error);await page.screenshot({path:path.join(out,name+'-failure.png')}).catch(()=>{});console.error(name,error);}
