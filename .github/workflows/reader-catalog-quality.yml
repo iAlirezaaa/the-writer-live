@@ -42,7 +42,8 @@ jobs:
             tests/reader-position.test.mjs \
             tests/book-session.test.cjs \
             tests/shelf-behavior.test.cjs \
-            tests/reader-stage.test.mjs | tee reader-behavior.tap
+            tests/reader-stage.test.mjs \
+            tests/reader-editorial.test.mjs | tee reader-behavior.tap
           node tests/reader_page_curl_probe.mjs
       - name: Persian Unicode normalization boundaries
         run: |

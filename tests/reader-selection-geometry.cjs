@@ -22,7 +22,7 @@ async function load(page){
  html=html.replace(/<link\b[^>]*>/g,'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'');
  const css=await Promise.all(['style.css','book.css','library.css','reader-room.css'].map(async name=>(await fs.readFile(path.join(root,'web',name),'utf8')).replace(/@font-face\s*\{[^}]*\}|@import\s+url\([^)]*\)\s*;/g,'')));
  await page.setContent(html.replace('</head>',`<style>${css.join('\n')}</style></head>`));
- const names=['read.js','book.js','book-cover.js','library-stage.js','snapshot.js','feedback.js','persian-display.js','reader-position.js','page-curl.js'];
+ const names=['read.js','book.js','book-cover.js','library-stage.js','snapshot.js','feedback.js','persian-display.js','reader-position.js','page-curl.js','reader-editorial.js'];
  const files=Object.fromEntries(await Promise.all(names.map(async name=>[name,await fs.readFile(path.join(root,'web',name),'utf8')])));
  await page.evaluate(async({files,stories})=>{
   const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)}});

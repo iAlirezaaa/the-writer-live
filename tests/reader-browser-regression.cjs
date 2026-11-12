@@ -17,7 +17,10 @@ function story(id, title, paragraphs = 24, order = 0) {
   return { id, title, body, stage: "داستان کوتاه", status: "accepted", score: 9, threshold: 8,
     words: body.split(/\s+/).length, created: `2026-11-${String(20 - order).padStart(2, "0")}T12:00:00Z`, check: "" };
 }
+const editorialStory=story("0003","نامی که از پل برگشت",18,19);
+editorialStory.body+="\n\nسه دایره‌ی مسی کوچک\n\nکابل پاره شد.";
 const fixtures = [
+  editorialStory,
   story("long", "کتاب چراغ آبی", 24, 0),
   story("slow", "کتاب در انتظار", 18, 1),
   story("error", "کتاب دوباره بازشونده", 10, 2),
@@ -413,6 +416,32 @@ async function main() {
       assert.equal(await page.locator(".book-overlay").getAttribute("data-reader-theme"), "paper");
       await page.keyboard.press("Escape"); await close(page);
     });
+    for(const mobile of [false,true]){
+      await scenario(mobile?"mobile-editorial-leaf":"desktop-editorial-leaf",{mobile,reduce:true},async({page,capture,row})=>{
+        await open(page,"0003");
+        if(mobile)await page.locator(".turn-next").click();
+        const leaf=page.locator(".editorial-leaf");
+        await leaf.waitFor({state:"visible"});
+        assert.equal(await leaf.locator(".editorial-heading").textContent(),"پیش از خواندن");
+        assert.ok((await leaf.locator(".editorial-summary").textContent()).includes("مهتاب"));
+        assert.equal(await leaf.locator("img[loading='lazy'][decoding='async']").count(),1);
+        assert.ok((await leaf.locator("img").getAttribute("alt")).length>20);
+        await leaf.locator("img").evaluate(img=>img.decode());
+        const geometry=await leaf.evaluate(node=>({
+          scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,
+          imageNaturalWidth:node.querySelector("img").naturalWidth,
+          overflow:getComputedStyle(node).overflowY,
+          bounds:(()=>{const r=node.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height};})()
+        }));
+        assert.ok(geometry.imageNaturalWidth>0,"story art loads without third-party request");
+        assert.equal(geometry.overflow,"auto");
+        assert.ok(geometry.bounds.w>100&&geometry.bounds.h>100,"intro occupies a readable page");
+        row.editorial=geometry;await capture("illustrated-introduction");
+        await page.locator(".turn-next").click();
+        await page.locator(".page-content.body").first().waitFor({state:"visible"});
+        await close(page,"0003");
+      });
+    }
     assert.deepEqual(server.writes, [], "browser tests must not issue write requests");
   } catch (error) {
     summary.fatalError = String(error.stack || error);
@@ -423,7 +452,7 @@ async function main() {
     summary.finishedAt = new Date().toISOString();
     summary.passed = summary.scenarios.filter(row => row.status === "passed").length;
     summary.failed = summary.scenarios.filter(row => row.status === "failed").length;
-    summary.status = !summary.fatalError && summary.failed === 0 && summary.passed === 12 ? "passed" : "failed";
+    summary.status = !summary.fatalError && summary.failed === 0 && summary.passed === 14 ? "passed" : "failed";
     await fs.writeFile(path.join(artifacts, "summary.json"), JSON.stringify(summary, null, 2) + "\n");
     console.log(JSON.stringify({ status: summary.status, passed: summary.passed, failed: summary.failed, fatal: Boolean(summary.fatalError), report: path.join(artifacts, "summary.json") }));
     if (summary.status !== "passed") process.exitCode = 1;
