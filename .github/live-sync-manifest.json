@@ -1,20 +1,14 @@
 {
   "schema": 1,
-  "generated_utc": "2026-11-12T11:10:35.598Z",
+  "generated_utc": "2026-11-12T12:00:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "059c002aab33d49590edc8cd1ad8f1f43c38793e",
+  "private_source_commit": "f17704f1b03109f65c37666eb3cc56020fae1793",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
     "public frontend regression tests and deploy workflow"
   ],
-  "excluded": [
-    "writer/",
-    "data/",
-    "cognition/",
-    "config.json",
-    "personal memory and internal records"
-  ],
+  "excluded": ["writer/", "data/", "cognition/", "config.json", "personal memory and internal records"],
   "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
   "script_version": 2,
   "reader_assets": {
@@ -23,7 +17,14 @@
     "web/library-stage.js": "900c3fa964d098850f7bcf530780507ec3c795cc41666ed80a4d3572525b2da2",
     "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
     "web/reader-room.css": "8f76999f32c0f356e43938bf4f80b1ccce8c51ced2673ba59f31b6c9919ddefd",
-    "web/read.html": "ddeeff9f416b1d1ac452bd71ccf4849adb188ed226535870ce5b3e1bf0953850"
+    "web/read.html": "64aa8b1a4dd86af85e109548f9968b0c28aaa85d81e4a684d7ba6ec405c6f7e4",
+    "web/library-preview.css": "e8cf68dafaf8029f4c8bc8be52232e8dd57e4d774eeb2682f89efd686304cf2f",
+    "web/library-preview.js": "2033097f9bcdc551ca99adf8a03a408b7bebde47c922f7f364e6a032feadd47b"
   },
-  "reader_entrypoint": "read/index.html"
+  "reader_entrypoint": "read/index.html",
+  "partial_sync": {
+    "baseline_private_source_commit": "059c002aab33d49590edc8cd1ad8f1f43c38793e",
+    "paths": ["web/library-preview.css", "web/library-preview.js", "web/read.html", "read/index.html", "tests/reader-preview-room.test.cjs", "tests/reader-preview-room-browser.cjs", ".github/workflows/reader-room-quality.yml"],
+    "note": "Room/discovery export only. Existing public stage, city and authorized story snapshot are preserved; independent private viewport-handoff work is not silently exported by this change."
+  }
 }

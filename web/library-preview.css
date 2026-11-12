@@ -104,3 +104,135 @@ body.lib[data-library-theme="light"] .library-preview{box-shadow:0 26px 60px #44
 }
 
 @media(max-width:639px){.preview-jacket .cover-art{height:42px;}}
+
+/* RDR-20261112-reference-room-depth. Architectural landing, not extra catalog entries.
+   The stage/page dimensions remain owned by library-stage and book.js. */
+body.lib.has-book-previews{
+ --wall:#303635;--wall-hi:#414747;--wainscot:#182523;--floor:#151310;
+ --wood:#30251c;--wood-hi:#69533c;--wood-lo:#17130f;--back:#201b16;
+ --glow:rgba(213,183,137,.15);--ink:#ebe8df;--muted:#b5b6aa;--surface:#23312e;
+ --row-h:clamp(230px,calc(31vh - 8px),320px);--plank:28px;
+ background:radial-gradient(ellipse at 24% 30%,#b4c8c014,transparent 50%),linear-gradient(var(--wall-hi),var(--wall) 56%,var(--wainscot) 56.2%,var(--wainscot) 89%,var(--floor) 89.2%) fixed;
+}
+body.lib.has-book-previews[data-library-theme="light"]{
+ --wall:#d1cfc1;--wall-hi:#e2dfd4;--wainscot:#71867b;--floor:#71634d;
+ --wood:#705236;--wood-hi:#b39365;--wood-lo:#382b20;--back:#6c533b;
+ --glow:rgba(255,231,179,.24);--ink:#26332f;--muted:#435a50;--surface:#e9e8dc;
+ background:radial-gradient(ellipse at 25% 25%,#fff9df66,transparent 60%),linear-gradient(var(--wall-hi),var(--wall) 56%,var(--wainscot) 56.2%,var(--wainscot) 89%,var(--floor) 89.2%) fixed;
+}
+body.lib.has-book-previews .lib-room{padding-top:0;min-height:0;}
+body.lib.has-book-previews .room-lamp{height:76px;}
+body.lib.has-book-previews .lamp-wire{bottom:48px;}
+body.lib.has-book-previews .lamp-shade{width:176px;height:66px;background:linear-gradient(105deg,#111612,#2b302b 50%,#0b100d);clip-path:polygon(49% 0,51% 0,100% 80%,98% 90%,80% 98%,20% 98%,2% 90%,0 80%);}
+body.lib.has-book-previews .lamp-shade::after{height:12px;bottom:4px;border-radius:50%;background:#c4b49a;opacity:.45;box-shadow:inset 0 3px 3px #000;}
+body.lib.has-book-previews .lamp-glow{width:min(950px,88vw);height:620px;background:radial-gradient(ellipse 50% 70% at 50% 0,#ffdb932d,transparent 76%);}
+body.lib.has-book-previews .lamp-cord{left:calc(50% - 17px);height:108px;}
+body.lib.has-book-previews .lamp-cord span{height:88px;background:#a99b75;}
+body.lib.has-book-previews .case{
+ margin-top:55px!important;padding:24px 24px 5px;border-radius:2px!important;
+ background:repeating-linear-gradient(91deg,#ffffff03 0 1px,transparent 1px 6px),linear-gradient(90deg,var(--wood-lo),var(--wood) 1.2%,var(--wood-lo) 3%,var(--wood) 3.5%,var(--wood) 96.5%,var(--wood-lo) 97%,var(--wood) 98.8%,var(--wood-lo));
+ box-shadow:0 32px 45px -10px #0009,0 6px 9px #0005,inset 0 2px 0 #ffffff14;
+}
+body.lib.has-book-previews .case::before{left:-9px;right:-9px;top:-17px;height:26px;border-radius:3px;background:linear-gradient(var(--wood-hi),var(--wood-lo) 13%,var(--wood) 18%,var(--wood-lo) 38%,var(--wood) 44%,var(--wood-lo) 65%,var(--wood) 72%,var(--wood-lo));box-shadow:0 6px 8px #0007;}
+body.lib.has-book-previews .case::after{content:"";position:absolute;left:-7px;right:-7px;bottom:-30px;height:36px;border-top:2px solid var(--wood-hi);background:linear-gradient(var(--wood) 0 15%,var(--wood-lo) 18%,var(--wood) 24%,var(--wood-lo) 90%);box-shadow:0 18px 20px -8px #000a;pointer-events:none;}
+body.lib.has-book-previews .case .covers{
+ min-height:calc((var(--row-h) + var(--plank))*2);padding-inline:16px;isolation:isolate;
+ background-color:var(--back);
+ background-image:linear-gradient(transparent calc(var(--row-h) - 2px),#a58c5d44 calc(var(--row-h) - 1px),var(--wood-hi) var(--row-h),var(--wood) calc(var(--row-h) + 3px),var(--wood-lo) calc(var(--row-h) + 12px),var(--wood) calc(var(--row-h) + 14px),var(--wood-lo) calc(var(--row-h) + var(--plank))),radial-gradient(ellipse at 25% 40%,var(--glow),transparent 85%),linear-gradient(#0008,#0000 28%,#0000 86%,#0006);
+ box-shadow:inset 12px 0 15px -5px #0009,inset -12px 0 15px -5px #0009,inset 0 22px 25px -8px #0009;
+}
+body.lib.has-book-previews .case-top{height:82px;top:-84px;}
+body.lib.has-book-previews .top-clock{left:auto;right:24%;width:62px;height:62px;bottom:5px;background:repeating-conic-gradient(from 0deg,#443c2c 0deg 1deg,transparent 1deg 30deg),#d8d0b9;box-shadow:0 3px 5px #0008,inset 0 0 0 5px #d8d0b9;}
+body.lib.has-book-previews .top-clock::after{content:"";position:absolute;inset:15%;border-radius:50%;background:#d8d0b9;}
+body.lib.has-book-previews .top-clock i{z-index:1;}body.lib.has-book-previews #clock-h{height:17px;}body.lib.has-book-previews #clock-m{height:24px;}
+body.lib.has-book-previews .top-vase{right:39%;width:34px;height:56px;border-radius:35% 35% 36% 36%/60% 60% 25% 25%;background:linear-gradient(100deg,#091b1a,#384b43 40%,#101d18 70%);}
+body.lib.has-book-previews .top-vase::before{height:92px;width:58px;margin-left:-29px;background:linear-gradient(78deg,transparent 47%,#756c4855 48%,#b9a77c 49%,transparent 51%),linear-gradient(99deg,transparent 48%,#a38e61 49%,transparent 51%),linear-gradient(113deg,transparent 48%,#897650 49%,transparent 51%);}
+body.lib.has-book-previews .top-papers{left:14%;width:78px;height:13px;filter:brightness(.75);}
+body.lib.has-book-previews .room-window{left:-10px;top:98px;width:14vw;max-width:215px;min-width:170px;height:42vh;min-height:330px;aspect-ratio:auto;border:12px solid #172322;border-radius:1px;box-shadow:0 0 0 3px #0e1514,inset 0 0 0 2px #b3b9ac,8px 14px 24px #0006;background:#4a6f8a;}
+body.lib.has-book-previews .room-bars{background:linear-gradient(90deg,transparent calc(50% - 2px),#162723 calc(50% - 2px),#162723 calc(50% + 2px),transparent calc(50% + 2px)),linear-gradient(transparent 31%,#162723 31%,#162723 32.5%,transparent 32.5%,transparent 64%,#162723 64%,#162723 65.5%,transparent 65.5%);box-shadow:inset 2px 2px 0 #bec9b37a;}
+body.lib.has-book-previews .room-shaft{left:auto;right:-26px;top:112px;width:300px;height:430px;clip-path:none;transform:rotate(13deg) skewX(-8deg);filter:blur(6px);opacity:calc(var(--shaft,.5)*.65);background:linear-gradient(90deg,transparent 47%,var(--wall) 48% 52%,transparent 53%),linear-gradient(transparent 47%,var(--wall) 48% 52%,transparent 53%),linear-gradient(130deg,#e5ead06b,#e5ead01c);box-shadow:0 0 30px #e5ead015;}
+.room-panels{position:absolute;inset:56% -8px 11%;display:flex;gap:28px;padding:40px 20px 25px;border-top:11px ridge #22332c;border-bottom:14px solid #111b17;box-shadow:0 -5px 0 #0b141466,inset 0 10px 18px #0004;}
+.room-panels i{flex:1;display:block;min-width:70px;border:6px ridge #1c2b25;box-shadow:inset 0 0 16px #0003;}
+body.lib[data-library-theme="light"] .room-panels{border-color:#698073;border-bottom-color:#435b4e;box-shadow:0 -5px 0 #acb5a8,inset 0 8px 14px #263d292a;}
+body.lib[data-library-theme="light"] .room-panels i{border-color:#7a9082;}
+.room-cornice{position:absolute;left:0;right:0;top:52px;height:14px;background:linear-gradient(#75837744,#151e1b 30%,#5f716344 55%,#0e161399 66%,transparent);}
+.room-rug{position:absolute;left:5%;right:5%;top:91%;height:26vh;transform:perspective(520px) rotateX(48deg);transform-origin:50% 0;border:14px double #74736638;background:repeating-linear-gradient(0deg,#a5a99805 0 1px,transparent 1px 4px),#19231f80;box-shadow:0 8px 28px #0005;}
+.case-still-life{position:absolute;left:58px;bottom:33px;width:210px;height:calc(var(--row-h)*.6);pointer-events:none;opacity:.85;}
+.case-still-life[hidden]{display:none;}
+.room-frame{position:absolute;left:0;bottom:0;width:100px;height:146px;border:8px solid #b7b7a4;outline:3px solid #392f23;background:radial-gradient(circle at 65% 24%,#e0bc70 0 5%,transparent 5.5%),linear-gradient(140deg,transparent 59%,#546c62 60% 72%,transparent 73%),linear-gradient(25deg,#243b3d 45%,transparent 46%),linear-gradient(#254450,#83a4a0);box-shadow:3px 5px 9px #0008;transform:rotate(-2deg);}
+.room-archive{position:absolute;right:0;bottom:0;width:96px;height:83px;background:linear-gradient(115deg,#aaa38d,#756f5e);border-top:14px solid #bbb39e;box-shadow:6px 4px 10px #0006,inset 0 6px 6px #0002;}
+.room-archive::after{content:"";position:absolute;left:29px;top:24px;width:32px;height:15px;border:3px solid #806c44;background:#c7c0a8;}
+body.lib.has-book-previews .shelf-book{isolation:isolate;}
+body.lib.has-book-previews .shelf-book::after{content:"";position:absolute;left:3px;right:0;top:calc(var(--row-h)*(1 - var(--book-h,.92)) + 9px);height:7px;background:repeating-linear-gradient(#c7c4ac 0 1px,#8d8b76 1px 2px);transform:skewX(-34deg);transform-origin:bottom;box-shadow:0 -1px 0 #ffffff1a;pointer-events:none;transition:translate .34s cubic-bezier(.3,.7,.2,1);z-index:-1;}
+body.lib.has-book-previews .shelf-book.is-face::after{top:9px;}
+body.lib.has-book-previews .shelf-book .cover{background-image:linear-gradient(90deg,#0007,#ffffff12 14%,#ffffff04 43%,#0001 70%,#0008),repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 3px);box-shadow:inset 2px 0 1px #fff2,inset -3px 0 3px #0006,5px 1px 6px #0007;}
+body.lib.has-book-previews .shelf-book .cover-favorite{min-width:14px;}
+body.lib.has-book-previews .shelf-book.is-face .cover-favorite{top:16px;inset-inline-start:22%;}
+body.lib.has-book-previews .shelf-book:focus-within::after{translate:0 -14px;}
+@media(hover:hover){body.lib.has-book-previews .shelf-book:hover::after{translate:0 -14px;}}
+body.lib.has-book-previews .shelf-plaque{background:linear-gradient(#958365,#594a30);color:#eee0bb;box-shadow:0 2px 3px #0008;}
+body.lib.has-book-previews .library-preview-hint{margin-top:52px;line-height:1.9;}
+body.lib.has-book-previews .lib-reader-note{font-size:.7rem;max-width:70ch;text-align:start;margin:0;opacity:.85;}
+body.lib.has-book-previews .lib-foot{position:relative;padding-top:14px;font-size:.7rem;gap:12px 30px;line-height:1.9;}
+body.lib.has-book-previews .lib-foot-stats{white-space:nowrap;}
+body.lib.has-book-previews .lib-continue{position:relative;margin:0 auto 16px;z-index:10;background:var(--surface);}
+.preview-scene{display:block;width:100%;height:auto;aspect-ratio:12/7;object-fit:cover;border-radius:3px;margin-top:14px;border:1px solid #85765733;}
+.preview-scene[hidden]{display:none;}
+.library-preview:not(.is-pinned):not(.is-sheet) .preview-scene{max-height:144px;}
+@media(min-width:1240px){
+ body.lib.has-book-previews .case{width:60vw;max-width:1160px;margin-left:14vw;margin-right:auto;}
+ body.lib.has-book-previews .room-lamp{width:60vw;margin-left:14vw;margin-right:auto;justify-content:center;}
+ body.lib.has-book-previews .lib-title-block{top:208px;right:3vw;width:21vw;align-items:flex-start;}
+ body.lib.has-book-previews .lib-mark{font-size:clamp(2.1rem,3.1vw,3.3rem);line-height:1.48;font-weight:500;}
+ body.lib.has-book-previews .lib-count{font-size:.78rem;color:var(--muted);}
+ body.lib.has-book-previews .library-preview{width:min(318px,calc(23vw - 24px));padding:14px;border-radius:4px 10px 10px 4px;}
+ body.lib.has-book-previews .preview-spread{grid-template-columns:1fr;gap:0;}
+ body.lib.has-book-previews .preview-jacket{display:none;}
+ body.lib.has-book-previews .preview-info{grid-column:1;grid-row:1;}
+ body.lib.has-book-previews .preview-title{font-size:1.35rem;}
+ body.lib.has-book-previews .preview-summary{font-size:.78rem;line-height:1.9;}
+ body.lib.has-book-previews .preview-excerpt{font-size:.83rem;}
+ body.lib.has-book-previews .library-preview-hint{max-width:60vw;margin-left:14vw;margin-right:auto;}
+}
+@media(max-width:1239px){
+ body.lib.has-book-previews .case{margin-top:24px!important;}
+ body.lib.has-book-previews .room-lamp{height:48px;}
+ body.lib.has-book-previews .lamp-cord{left:calc(50% + 54px);height:40px;top:8px;}
+ body.lib.has-book-previews .lamp-cord span{height:30px;}
+ body.lib.has-book-previews .lamp-shade{width:116px;height:40px;}
+ body.lib.has-book-previews .room-scene{display:block;z-index:-1;}
+ body.lib.has-book-previews .room-window,body.lib.has-book-previews .room-shaft{display:none;}
+}
+@media(max-width:640px){
+ body.lib.has-book-previews{--row-h:202px;--plank:24px;}
+ body.lib.has-book-previews .case{padding:18px 13px 3px;}
+ body.lib.has-book-previews .case .covers{padding-inline:8px;}
+ body.lib.has-book-previews .case-still-life{left:32px;width:170px;bottom:29px;height:110px;}
+ body.lib.has-book-previews .room-frame{width:70px;height:100px;border-width:6px;}
+ body.lib.has-book-previews .room-archive{width:78px;height:68px;}
+ body.lib.has-book-previews .room-archive::after{left:20px;top:19px;}
+ body.lib.has-book-previews .library-preview-hint{font-size:.7rem;margin-bottom:18px;}
+ body.lib.has-book-previews .lib-foot{font-size:.65rem;padding-bottom:20px;}
+}
+@media(max-height:480px){
+ body.lib.has-book-previews{--row-h:196px;}
+ body.lib.has-book-previews .case .covers{min-height:calc(var(--row-h) + var(--plank));}
+ body.lib.has-book-previews .case-still-life{display:none;}
+ .library-preview .preview-scene{display:none;}
+}
+@media(prefers-reduced-motion:reduce){body.lib.has-book-previews .shelf-book::after{transition:none;}}
+
+.preview-sample > summary{cursor:pointer;min-height:28px;line-height:28px;}
+.preview-sample[open] > summary{margin-bottom:6px;}
+.library-preview .preview-controls{position:sticky;bottom:-16px;background:var(--preview-paper);padding-bottom:8px;z-index:1;}
+body.lib.has-book-previews .lib-reader-note[role="alert"]{position:relative;z-index:10;margin:16px auto;background:var(--surface);opacity:1;}
+
+/* Keep the approved art above the fold and the lamp clear of the vase. */
+.library-preview .preview-scene{margin:0 0 12px;max-height:150px;object-fit:cover;}
+@media(min-width:1240px){
+ body.lib.has-book-previews .lamp-wire{left:26%;}
+ body.lib.has-book-previews .lamp-shade{position:absolute;left:26%;transform:translateX(-50%);}
+ body.lib.has-book-previews .lamp-glow{left:0;width:100%;transform:none;background:radial-gradient(ellipse 65% 70% at 26% 0,#ffdb932d,transparent 76%);}
+ body.lib.has-book-previews .lamp-cord{left:calc(26% - 17px);}
+ body.lib.has-book-previews .library-preview .preview-scene{height:100px;aspect-ratio:auto;}
+}
