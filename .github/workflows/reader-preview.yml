@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: '22'
       - name: Source and authorized revision checks
-        run: node --test tests/reader-preview.test.cjs
+        run: node --test tests/reader-preview.test.cjs tests/reader-editorial.test.mjs
       - name: Install pinned browser
         run: |
           npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
