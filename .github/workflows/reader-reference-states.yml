@@ -1,0 +1,71 @@
+name: Reader reference states
+on:
+  push:
+    branches: ["reader/reference-exact-20261112"]
+    paths: [".github/workflows/reader-reference-states.yml"]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    if: github.repository == 'iAlirezaaa/the-writer-live'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Observe source states and scene assets
+        run: |
+          cat > states.cjs <<'NODE'
+          const fs=require('node:fs/promises');const {chromium}=require('playwright');
+          (async()=>{
+            await fs.mkdir('reference-states',{recursive:true});
+            const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+            const errors=[];
+            try{
+              for(const [label,w,h] of [['desktop',1440,1000],['mobile',390,844]]){
+                const context=await browser.newContext({viewport:{width:w,height:h},hasTouch:label==='mobile',isMobile:label==='mobile',deviceScaleFactor:1,timezoneId:'Europe/Amsterdam'});
+                const page=await context.newPage();page.setDefaultTimeout(20000);
+                page.on('pageerror',e=>errors.push({label,error:e.message}));
+                await page.goto('https://library.jjangik.kr/?intro=curtain',{waitUntil:'domcontentloaded',timeout:60000});
+                await page.waitForFunction(()=>window.room?.arrived,{},{timeout:120000});
+                await page.evaluate(()=>window.room.hour(14));await page.waitForTimeout(1500);
+                async function state(name){
+                  await page.screenshot({path:`reference-states/${label}-${name}.png`,timeout:20000});
+                  const info=await page.evaluate(()=>{
+                    const r=window.room;const desc=(v,depth=0)=>{if(v==null||typeof v!=='object')return typeof v==='function'?undefined:v;if(v.isObject3D||v.isMaterial||v.isTexture)return {uuid:v.uuid,type:v.type};if(v.toArray)return v.toArray();if(depth>2)return Object.keys(v);if(Array.isArray(v))return v.map(x=>desc(x,depth+1));return Object.fromEntries(Object.entries(v).filter(([k])=>!['el','handle','entry'].includes(k)).map(([k,x])=>[k,desc(x,depth+1)]));};
+                    const nodes=[];r.scene.traverse(o=>nodes.push({uuid:o.uuid,type:o.type,parent:o.parent?.uuid,position:o.position.toArray(),quaternion:o.quaternion.toArray(),scale:o.scale.toArray(),visible:o.visible,intensity:o.intensity,color:o.color?.getHexString(),material:Array.isArray(o.material)?o.material.map(m=>m.uuid):o.material?.uuid}));
+                    return {camera:r.camera.toJSON(),nodes,items:r.items.map(x=>({id:x.entry.id,name:x.entry.name,uuid:x.g.uuid,look:desc(x.look),home:desc(x.home),data:desc(x.g.userData),still:desc(x.still),mark:desc(x.mark)})),lamp:r.lamp,listed:r.listed,reading:r.reading,shown:r.shown,sheet:r.sheet,html:document.body.innerHTML,rects:[...document.querySelectorAll('button,.rows,.row,.hint,.step-hint,.mark')].map(e=>{const b=e.getBoundingClientRect();return {cls:e.className,id:e.id,aria:e.getAttribute('aria-label'),text:e.textContent,x:b.x,y:b.y,w:b.width,h:b.height,opacity:getComputedStyle(e).opacity}})};
+                  });
+                  await fs.writeFile(`reference-states/${label}-${name}.json`,JSON.stringify(info));console.log(label,name,info.nodes.length,info.lamp);
+                }
+                await state('shelf');
+                if(label==='desktop'){
+                  const scene=await page.evaluate(()=>{const r=window.room,saved=[];r.scene.traverse(o=>{saved.push([o,o.userData]);o.userData={};});try{return r.scene.toJSON();}finally{for(const [o,data]of saved)o.userData=data;}});
+                  await fs.writeFile('reference-states/scene.json',JSON.stringify(scene));
+                  await page.evaluate(()=>window.room.point(0));await page.waitForTimeout(900);await state('hover');await page.evaluate(()=>window.room.point(-1));
+                }
+                await page.getByRole('button',{name:'A list',exact:true}).click();await page.waitForTimeout(1800);await state('list');
+                await page.getByRole('button',{name:'Drag: Infinite 2D Grid',exact:true}).click();await page.waitForTimeout(2100);await state('open');
+                await page.keyboard.press('Escape');await page.waitForTimeout(1800);
+                await page.getByRole('button',{name:'The shelf',exact:true}).click();await page.waitForTimeout(1800);
+                await page.getByRole('button',{name:'About',exact:true}).click();await page.waitForTimeout(1800);await state('about');
+                await page.keyboard.press('Escape');await page.waitForTimeout(1600);
+                await page.getByRole('button',{name:'Contact',exact:true}).click();await page.waitForTimeout(2200);await state('contact');
+                await page.keyboard.press('Escape');await page.waitForTimeout(1600);
+                await page.evaluate(()=>window.room.hour(22));await page.waitForTimeout(700);await state('night');
+                await context.close();
+              }
+            }finally{await fs.writeFile('reference-states/errors.json',JSON.stringify(errors,null,2));await browser.close();}
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+          timeout 600s node states.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reader-reference-states
+          path: reference-states/
+          retention-days: 3
