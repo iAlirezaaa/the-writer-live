@@ -154,3 +154,43 @@ body.lib .book-overlay .book-bar:has(details[open]){z-index:20;}
     box-shadow: 0 2px 10px rgba(0,0,0,.36);
   }
 }
+
+
+/* Rights-gated story introduction: a separate leaf after opening the jacket. */
+body.lib .book-overlay .editorial-leaf {
+ height:100%; min-height:0; box-sizing:border-box; overflow-y:auto;
+ display:flex; flex-direction:column; align-items:center; justify-content:safe center;
+ gap:clamp(5px,1.25vh,13px); padding:clamp(4px,1.5vh,16px) 2px;
+ text-align:center; overscroll-behavior:contain; scrollbar-width:thin;
+}
+body.lib .book-overlay .editorial-kicker {
+ margin:0; text-indent:0; font:600 .62rem "Vazirmatn",Tahoma,sans-serif;
+ letter-spacing:.04em; color:var(--reader-page-muted);
+}
+body.lib .book-overlay .editorial-figure {
+ flex:0 1 auto; width:min(100%,310px); min-height:0; margin:0;
+ display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+body.lib .book-overlay .editorial-image {
+ display:block; max-width:100%; width:auto; height:auto;
+ max-height:clamp(85px,26vh,196px); aspect-ratio:12/7; object-fit:contain;
+ border-radius:3px; filter:drop-shadow(0 5px 9px rgba(50,34,18,.16));
+}
+body.lib .book-overlay .editorial-credit {
+ color:var(--reader-page-muted); font:400 .58rem "Vazirmatn",Tahoma,sans-serif;
+}
+body.lib .book-overlay .editorial-heading {
+ font:600 clamp(.9rem,1.7vw,1.15rem) "Vazirmatn",Tahoma,sans-serif;
+ color:var(--reader-ink); line-height:1.5; margin:0;
+}
+body.lib .book-overlay .editorial-summary {
+ max-width:34ch; margin:0; text-indent:0; text-align:start;
+ color:var(--reader-ink); font:400 clamp(.77rem,1.35vw,.94rem)/1.94 "Vazirmatn",Tahoma,sans-serif;
+ overflow-wrap:anywhere;
+}
+@media(max-height:520px){
+ body.lib .book-overlay .editorial-leaf {justify-content:flex-start;gap:4px}
+ body.lib .book-overlay .editorial-figure {width:min(100%,175px)}
+ body.lib .book-overlay .editorial-image {max-height:72px}
+ body.lib .book-overlay .editorial-summary {font-size:.75rem;line-height:1.7}
+}

@@ -17,7 +17,8 @@ const MARGIN_STATE_FA = {
   unverified: "جای گذاره پیدا شد؛ ادعا سنجیده نشده",
   suspect: "مردود: با متن نمی‌خواند",
 };
-import { getJSON, isGitHubPages } from "./snapshot.js";
+import { getJSON, isGitHubPages, appHref } from "./snapshot.js";
+import { readerEditorial } from "./reader-editorial.js";
 import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
 import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v7";
 import { pageAnchor, locatePageByAnchor } from "./reader-position.js";
@@ -822,12 +823,31 @@ function titlePage() {
   const meta = el("div", "tp-meta");
   meta.append(
     el("div", "", `${s.stage} · ${s.words} واژه`),
-    el("div", "", `امتیاز منتقد ${s.score} از ${s.threshold}`),
+    ...(s.score==null||s.threshold==null?[]:[el("div", "", `امتیاز منتقد ${s.score} از ${s.threshold}`)]),
     el("div", "", (s.created || "").replace("T", " ").slice(0, 16)),
   );
   if (s.experiment) meta.append(el("div", "", `آزمایش این داستان: ${s.experiment}`));
   page.append(ribbon, meta, el("div", "tp-hint", "متن را انتخاب کنید تا روی آن بخش نظر بدهید."));
   return { node: page, kind: "title", firstPara: 0, firstWord: 0 };
+}
+
+function editorialPage() {
+  const editorial=readerEditorial(book.story);
+  if(!editorial)return null;
+  const page=el("section","page-content editorial-leaf");
+  page.setAttribute("aria-label","آشنایی با داستان");
+  const picture=el("figure","editorial-figure");
+  const image=el("img","editorial-image");
+  image.src=appHref("web/reader-illustrations/"+editorial.image);
+  image.alt=editorial.alt;
+  image.loading="lazy";image.decoding="async";
+  image.width=480;image.height=280;
+  picture.append(image,el("figcaption","editorial-credit","تصویرسازی اختصاصی این داستان"));
+  page.append(el("p","editorial-kicker","آشنایی با داستان"),picture,
+    el("h2","editorial-heading","پیش از خواندن"),
+    el("p","editorial-summary",editorial.summary));
+  // Reuse the title passage kind; body and report anchors stay unchanged.
+  return {node:page,kind:"title",firstPara:1,firstWord:0};
 }
 
 // Fill measured pages paragraph by paragraph; split a paragraph by words when it does not fit.
@@ -925,7 +945,8 @@ function repaginate() {
   // clips several lines at the bottom of a real page.
   ui.measure.style.padding = getComputedStyle(ui.pageR).padding;
   const text = storyParagraphs().map((t, i) => ({ text: t, index: i }));
-  book.pages = [titlePage(), ...paginate(text, "body")];
+  const introduction=editorialPage();
+  book.pages = [titlePage(), ...(introduction?[introduction]:[]), ...paginate(text, "body")];
   const report = checkLines();
   if (report.length) {
     const rp = paginate(report.map((t, i) => ({ text: t, index: i, cls: "report-line" })), "report");
