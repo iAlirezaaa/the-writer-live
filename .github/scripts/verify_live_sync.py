@@ -22,6 +22,18 @@ for name,expected in reader_assets.items():
     asset=ROOT/name
     if not asset.is_file() or hashlib.sha256(asset.read_bytes()).hexdigest()!=expected:
         raise RuntimeError("Reader asset differs from the reviewed private commit: "+name)
+# A modern aisle release must review the new layout and the retired entry route
+# together. Older exports without this layout remain valid under the old guard.
+if 'data-library-layout="aisles"' in (WEB/"read.html").read_text(encoding="utf-8"):
+    aisle_assets=MANIFEST.get("reader_aisle_assets",{})
+    if not isinstance(aisle_assets,dict) or set(aisle_assets)!={"web/library-aisle.js","web/library-aisle.css","web/interaction-library/index.html"}:
+        raise RuntimeError("Reviewed adjoining-cabinet asset hashes are missing or unexpected")
+    for name,expected in aisle_assets.items():
+        if not isinstance(expected,str) or not re.fullmatch(r"[0-9a-f]{64}",expected):
+            raise RuntimeError("Invalid reviewed aisle asset hash: "+name)
+        asset=ROOT/name
+        if not asset.is_file() or hashlib.sha256(asset.read_bytes()).hexdigest()!=expected:
+            raise RuntimeError("Aisle asset differs from the reviewed private commit: "+name)
 expected_reader=(WEB/"read.html").read_text(encoding="utf-8").replace('href="/web/','href="../web/').replace('src="/web/','src="../web/').replace('href="/"','href="../"')
 if (ROOT/"read/index.html").read_text(encoding="utf-8")!=expected_reader:
     raise RuntimeError("Deployed reader entrypoint differs from the reviewed source")

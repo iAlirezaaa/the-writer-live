@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "generated_utc": "2026-11-12T13:00:00Z",
+  "generated_utc": "2026-11-12T13:40:16Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "d4ef10bff8e823cc3ae1dac6e709a58c14e29bb5",
+  "private_source_commit": "4d5dcad72ac70eb5a496537ae087a44b097d79e2",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
@@ -19,28 +19,40 @@
   "script_version": 2,
   "reader_assets": {
     "web/book.js": "38810d5ba70aae082382f8db5ea4babf663211d3a16d7d7d408b3990c6bd6d78",
-    "web/read.js": "fa114f209796889c6bf95c8d0a2cbc30f54aea0a64fe9506c650311c5f215810",
+    "web/read.js": "409dd2b48385b6ab4b4a3765397995364ed757db255c112f49ab003a4ab34d43",
     "web/library-stage.js": "28134ed2f0b6953dd1dc38feab287739e9f249d5044172ff529dc4135af9b6d1",
     "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
     "web/reader-room.css": "8f76999f32c0f356e43938bf4f80b1ccce8c51ced2673ba59f31b6c9919ddefd",
-    "web/read.html": "6d5c2489a4d37cf78c9524bfe384d5840fca7be6feb02a3992808aa79077f07a"
+    "web/read.html": "c0cd13b49972dbc2f113bc90ad1f970578cc7f1a82f44b110fb4ef0aa27b7acd",
+    "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
+    "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943"
   },
   "reader_entrypoint": "read/index.html",
   "partial_sync": {
-    "baseline_private_source_commit": "085f11b0021761ee84bcc9dc6fb7363d85e118df",
+    "baseline_private_source_commit": "d4ef10bff8e823cc3ae1dac6e709a58c14e29bb5",
     "paths": [
-      "web/library-stage.js",
+      "web/library-aisle.js",
+      "web/library-aisle.css",
       "web/read.js",
       "web/read.html",
+      "web/library-preview.js",
+      "web/interaction-library/index.html",
       "read/index.html",
-      "tests/reader-transition-lifecycle.cjs",
-      ".github/workflows/reader-browser.yml"
+      "tests/reader-aisle.test.mjs",
+      "tests/reader-aisle-browser.cjs",
+      ".github/workflows/reader-aisles.yml",
+      ".github/scripts/verify_live_sync.py"
     ],
-    "note": "Reviewed transition lifecycle fix: live reduced-motion and viewport handoff, invalid return target guard, and versioned entrypoint/import chain. Existing preview UI, authorized snapshot, city and remaining files preserved. Source implementation committed privately before public candidate."
+    "note": "Owner-directed modern adjoining cabinets, exact measured packing and native RTL aisle navigation. Preserve existing physical reading transitions, authorized summaries/art and all snapshot and city bytes. Retire the old iframe prototype and route source aliases to the canonical reader. Private implementation committed before public candidate."
   },
   "reader_preview_assets": {
-    "web/library-preview.js": "95887fb89a01d0a84bb5688554f20c9e74207b2394f3abc822d893d5a105ec56",
+    "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
     "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943",
     "web/reader-editorial.js": "792cbca6c3a3bafdaf6f84387879e734139a09454dc0a19f8e724fc683fcb309"
+  },
+  "reader_aisle_assets": {
+    "web/library-aisle.js": "4e68c4adf649a8ec3f5d8efc2e45c08fd432ff928a94954d4af388e0e15db608",
+    "web/library-aisle.css": "ec24cdb591afe71c8fcef35e0640798287aaea23446f57a8ae9e1af669e62a76",
+    "web/interaction-library/index.html": "2dd04820435fc3f9206d903c1aa25f9f3ffd3355eb98fc379c719179cb3e6842"
   }
 }

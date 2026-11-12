@@ -111,6 +111,7 @@ export function installLibraryPreview(){
  async function show(item,{pin=false,focus=false}={}){
   if(!books().includes(item)||document.body.classList.contains('book-open'))return;
   clearTimeout(timer);clearTimeout(hideTimer);
+  if(pin&&document.body.dataset.libraryLayout==='aisles')item.scrollIntoView({block:'nearest',inline:'center',behavior:'instant'});
   if(active===item&&!panel.hidden){if(pin){pinned=true;position();}if(focus){returnTo=document.activeElement;close.focus({preventScroll:true});}return;}
   active?.classList.remove('is-previewed');active=item;last=item;pinned=pin;const current=++token;
   if(focus)returnTo=document.activeElement;else if(!pin)returnTo=null;
@@ -177,6 +178,7 @@ export function installLibraryPreview(){
  }
  new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes,...r.removedNodes].some(n=>n.classList?.contains('shelf-book')||n.classList?.contains('reading-empty')))){cancelAnimationFrame(frame);frame=requestAnimationFrame(sync);}}).observe(shelf,{childList:true});
  new MutationObserver(()=>{if(document.body.classList.contains('book-open')&&!panel.hidden)hide();}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ document.addEventListener('writer:aisle-scroll',()=>{if(!pinned)hide();else position();});
  window.addEventListener('resize',position);window.addEventListener('scroll',()=>{if(!pinned)hide();else position();},{passive:true});window.visualViewport?.addEventListener('resize',position);
  document.body.classList.add('has-book-previews');sync();
 }

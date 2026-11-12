@@ -213,6 +213,10 @@ function shelfLabel(story){
 const OBJECTS=["frame","stack","box","vase"];
 function arrangeShelf(){
   const shelf=$("covers");
+  if(document.body?.dataset?.libraryLayout==="aisles"){
+    const layout=new CustomEvent("writer:shelf-layout",{cancelable:true});
+    if(!shelf.dispatchEvent(layout)){restoreShelfFocus();updateContinue();return;}
+  }
   if(arranging)return;
   arranging=true;
   shelf.querySelectorAll(".shelf-ghost,.shelf-plaque,.shelf-object").forEach(n=>n.remove());
