@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "source_sha256": "78a7ce36d1ffce35652c5001c9bbb04aa757acb0c82ddc10b438975e981ca57b",
-  "asset_sha256": "daff9409f36c770601dcaa040e1376804645bba5ffe0feca9869b49d903c14d1",
-  "asset_bytes": 2079941,
+  "asset_sha256": "48790d1db5856013d6f79ebab66417d927f6077829bd5eae0113134e0c1d8633",
+  "asset_bytes": 2073167,
   "uncompressed_bytes": 12140408,
   "notebooks": 11,
   "content_mode": "empty",
@@ -15,5 +15,9 @@
     "bytes_after": 1494430,
     "empty_contact_cards": 2,
     "blank_demo_surfaces": 11
+  },
+  "alpha_repair": {
+    "cover_images": 44,
+    "method": "Original PNG alpha; lossless WebP; cover-only path allowlist"
   }
 }

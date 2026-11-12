@@ -10,9 +10,15 @@
     "web/reference-room/room.css": "44dd1a572235dc5a2029c73079e05b280824910e",
     "web/reference-room/room.js": "ca92f22aa4f9a34438313beb49005c89151ea5c0"
   },
-  "asset_sha256": "daff9409f36c770601dcaa040e1376804645bba5ffe0feca9869b49d903c14d1",
-  "asset_bytes": 2079941,
+  "asset_sha256": "48790d1db5856013d6f79ebab66417d927f6077829bd5eae0113134e0c1d8633",
+  "asset_bytes": 2073167,
   "notebooks": 11,
   "content": "empty",
-  "preserve": ["snapshot/", "index.html", "city", "local reading storage", "legacy reader engine"]
+  "preserve": [
+    "snapshot/",
+    "index.html",
+    "city",
+    "local reading storage",
+    "legacy reader engine"
+  ]
 }
