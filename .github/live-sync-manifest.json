@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_utc": "2026-11-12T16:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "607e18a0f6774036c46c2e790d8e6f95505567fa",
+  "private_source_commit": "983bbcd5ea6445b672616b1575b207cb2f370f8f",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
@@ -29,17 +29,12 @@
   },
   "reader_entrypoint": "read/index.html",
   "partial_sync": {
-    "baseline_private_source_commit": "8374c2060a416f534465ad3c7cb18460b6914b73",
+    "baseline_private_source_commit": "607e18a0f6774036c46c2e790d8e6f95505567fa",
     "paths": [
       "web/reference-room/room.js",
-      "reader/index.html",
-      "tests/reader-reference-room.cjs",
-      ".github/workflows/reader-reference-room.yml",
-      ".github/workflows/pages.yml",
-      ".github/workflows/reader-reference-room.yml",
       "web/reference-room/RELEASE.json"
     ],
-    "note": "Map the first three measured notebooks to the three authorized public stories, hide names on the remaining eight placeholders, and preserve the existing full reader at /reader/ without changing story snapshot bytes."
+    "note": "Replace the compressed UV text clone with camera-facing Persian story labels for the first three linked notebooks; preserve all story IDs, empty placeholders, reader route, snapshot and city bytes."
   },
   "reader_preview_assets": {
     "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
