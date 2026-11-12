@@ -9,8 +9,12 @@ SOURCE_COMMIT=MANIFEST["private_source_commit"]
 if not re.fullmatch(r"[0-9a-f]{40}",SOURCE_COMMIT):
     raise RuntimeError("Invalid committed private source reference")
 READER_ASSETS={"web/book.js","web/read.js","web/library-stage.js","web/library.css","web/reader-room.css","web/read.html"}
+# Old exports have six required assets. New discovery exports also review both
+# isolated preview files. Keep all original mandatory checks, reject unknown or
+# incomplete groups, and verify every supplied hash rather than dropping extras.
+DISCOVERY_ASSETS={"web/library-preview.css","web/library-preview.js"}
 reader_assets=MANIFEST.get("reader_assets",{})
-if set(reader_assets)!=READER_ASSETS:
+if not isinstance(reader_assets,dict) or set(reader_assets) not in (READER_ASSETS,READER_ASSETS|DISCOVERY_ASSETS):
     raise RuntimeError("Reviewed reader asset hashes are missing or unexpected")
 for name,expected in reader_assets.items():
     if not isinstance(expected,str) or not re.fullmatch(r"[0-9a-f]{64}",expected):
