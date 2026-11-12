@@ -51,29 +51,39 @@ function transition(overlay,signal){
  };
 }
 
-/* Transforms for each pose. Exported for tests: the last pose must place the book exactly on the reading page. */
-export function stagePoses({spine,page,single,view,depth}){
- const W=page.w,H=page.h;
- // At -90 degrees the spine faces the reader; the root's centre sits half a book behind it.
+/* Keep a physical portrait jacket while closed; adapt only the opened pages to
+ * the reading viewport. All three axes must scale: a 2-D scale leaves the spine
+ * thickness unscaled when the book turns sideways. */
+export function stagePoses({spine,page,single,view,depth,faceOut=false}){
+ const H=page.h,aspect=faceOut?spine.w/spine.h:.68,W=H*aspect;
  const s=spine.h/H,cx=W/2,cy=H/2;
  const spineX=spine.x+spine.w/2-cx,spineY=spine.y+spine.h/2-cy;
  const centreX=view.w/2-cx,centreY=view.h/2-cy;
- const show=Math.min(.94,(view.h*.78)/H);
- const f=(x,y,z,ry,sc,rx=0)=>`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,${z.toFixed(2)}px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${sc.toFixed(4)})`;
+ const show=Math.min(.94,view.h*.76/H,view.w*.78/W);
+ const f=(x,y,z,ry,sx,sy=sx,sz=sy,rx=0)=>`translate3d(${x.toFixed(3)}px,${y.toFixed(3)}px,${z.toFixed(3)}px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(${sx.toFixed(6)},${sy.toFixed(6)},${sz.toFixed(6)})`;
+ const shelfZ=faceOut?-depth*s/2:-s*W/2;
+ const shelfDepth=faceOut?s:spine.w/depth;
  return {
-  scale:s,
-  shelf:f(spineX,spineY,-s*W/2,-90,s),
-  pulled:f(spineX,spineY-8,-s*W/2+Math.min(240,view.w*.18),-90,s),
-  shown:f(centreX,centreY,0,-8,show,4),
-  held:f(centreX,centreY,0,0,show),
-  open:f(page.x,page.y,-depth/2,0,1),
+  scale:s,modelWidth:W,
+  shelf:f(spineX,spineY,shelfZ,faceOut?0:-90,s,s,shelfDepth),
+  pulled:f(spineX,spineY-8,shelfZ+Math.min(100,view.w*.08),faceOut?0:-90,s,s,shelfDepth),
+  shown:f(centreX,centreY,-depth*show/2,-8,show,show,show,4),
+  held:f(centreX,centreY,-depth*show/2,0,show),
+  // Centre-origin compensation keeps the left edge at page.x after widening.
+  open:f(page.x+(page.w-W)/2,page.y,-depth/2,0,page.w/W,1,1),
   single,
  };
 }
 
-function buildBook(story,{w,h,depth},snapshot){
+function buildBook(story,{w,h,depth,pageWidth=w},snapshot){
  const root=make('b3d');root.style.width=w+'px';root.style.height=h+'px';root.style.setProperty('--d',depth+'px');
  root.setAttribute('aria-hidden','true');root.inert=true;
+ // Paginated text keeps its actual final metrics. The root's final X scale
+ // cancels this adapter, so the handover does not resize or reflow the text.
+ for(const page of [snapshot.left,snapshot.right])if(page){
+  page.style.width=pageWidth+'px';page.style.left='0';page.style.right='auto';
+  page.style.transformOrigin='0 0';page.style.transform=`scaleX(${w/pageWidth})`;
+ }
  applyCoverVisual(root,story);
  make('b3d-back',root);
  const inner=make('b3d-inner',root);
@@ -118,10 +128,11 @@ export async function playOpen({overlay,source,story,measure,ready,snapshot,reve
   }
   status.textContent='در حال بازکردن کتاب…';
   const view={w:innerWidth,h:innerHeight},page={x:m.x,y:m.y,w:m.single?m.w:m.w/2,h:m.h};
-  const scaleUp=page.h/Math.max(1,spine.height),depth=Math.max(26,Math.min(96,spine.width*scaleUp));
-  const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:m.single,view,depth});
+  const faceOut=Boolean(source.closest?.('.shelf-book')?.classList.contains('is-face'));
+ const scaleUp=page.h/Math.max(1,spine.height),depth=Math.max(26,Math.min(64,(faceOut?32:spine.width)*scaleUp));
+  const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:m.single,view,depth,faceOut});
   overlay.style.background='transparent';
-  const s=place(overlay,story,{w:page.w,h:page.h,depth,background:m.background},snapshot(),stage);
+  const s=place(overlay,story,{w:poses.modelWidth,h:page.h,depth,pageWidth:page.w,background:m.background},snapshot(),stage);
   run.hideSource(source);s.root.style.transform=poses.shelf;
   stage.addEventListener('pointerdown',event=>{if(!event.target.closest?.('button'))run.fast();});
   const dim=run.animate(s.dim,[{opacity:0},{opacity:1}],{duration:900,easing:'ease-in',fill:'forwards'});dim.catch(()=>{});
@@ -148,10 +159,11 @@ export async function playClose({overlay,source,story,geometry,pages,hideReader,
  source.scrollIntoView?.({block:'nearest'});
  const spine=source.getBoundingClientRect(),view={w:innerWidth,h:innerHeight};
  const page={x:geometry.x,y:geometry.y,w:geometry.single?geometry.w:geometry.w/2,h:geometry.h};
- const scaleUp=page.h/Math.max(1,spine.height),depth=Math.max(26,Math.min(96,spine.width*scaleUp));
- const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:geometry.single,view,depth});
+ const faceOut=Boolean(source.closest?.('.shelf-book')?.classList.contains('is-face'));
+ const scaleUp=page.h/Math.max(1,spine.height),depth=Math.max(26,Math.min(64,(faceOut?32:spine.width)*scaleUp));
+ const poses=stagePoses({spine:{x:spine.left,y:spine.top,w:spine.width,h:spine.height},page,single:geometry.single,view,depth,faceOut});
  overlay.classList.add('book-leaving');overlay.style.background='transparent';
- const s=place(overlay,story,{w:page.w,h:page.h,depth,background:geometry.background},pages);
+ const s=place(overlay,story,{w:poses.modelWidth,h:page.h,depth,pageWidth:page.w,background:geometry.background},pages);
  run.attach(s.stage);run.hideSource(source);
  s.root.style.transform=poses.open;s.cover.style.transform='rotateY(180deg)';
  const dim=run.animate(s.dim,[{opacity:1},{opacity:0}],{duration:900,easing:'ease-out',fill:'forwards',delay:100});dim.catch(()=>{});

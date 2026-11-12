@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "generated_utc": "2026-11-12T09:32:11+00:00",
+  "generated_utc": "2026-11-12T10:18:54+00:00",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "d2d90d436b33a31fe1035c28ed6878b986da3b1b",
+  "private_source_commit": "9d92c9e7a3dbf4f922d546bb95367d08d453808c",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
@@ -20,7 +20,7 @@
   "reader_assets": {
     "web/book.js": "3ed6d57492eef490282810d38157ab184eb22572b26395dbf6dd257e5cab201d",
     "web/read.js": "cc59bb8cf3de5e48c2872e546f0211e6e820e91a0b0203584860dd7f19d58b6b",
-    "web/library-stage.js": "05a9385270f1262bddf9463dd8a0de6dc84d9cfb7490623af92cf6d87ed55739",
+    "web/library-stage.js": "900c3fa964d098850f7bcf530780507ec3c795cc41666ed80a4d3572525b2da2",
     "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
     "web/reader-room.css": "9c849d9852dfb3282f2757695b1418615a91471c039297d22aa82a5a31f2d8fa",
     "web/read.html": "f7568df710ed9a14283212903f7044fe548ce6076d652cd95e392ee1fa091cfd"

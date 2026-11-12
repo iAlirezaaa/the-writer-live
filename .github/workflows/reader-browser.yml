@@ -18,12 +18,16 @@ on:
       - "web/style.css"
       - "read/index.html"
       - "tests/reader-browser-regression.cjs"
+      - "tests/reader-selection-geometry.cjs"
+      - "tests/reader_page_curl_probe.mjs"
       - ".github/workflows/reader-browser.yml"
   pull_request:
     paths:
       - "web/**"
       - "read/index.html"
       - "tests/reader-browser-regression.cjs"
+      - "tests/reader-selection-geometry.cjs"
+      - "tests/reader_page_curl_probe.mjs"
       - ".github/workflows/reader-browser.yml"
   workflow_dispatch:
 
@@ -48,9 +52,15 @@ jobs:
           npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1
           npx --no-install playwright install --with-deps chromium
       - name: Check browser harness syntax
-        run: node --check tests/reader-browser-regression.cjs
+        run: |
+          node --check tests/reader-browser-regression.cjs
+          node --check tests/reader-selection-geometry.cjs
       - name: Exercise the reader on desktop and mobile
         run: node tests/reader-browser-regression.cjs
+      - name: Verify selection geometry, portrait jackets and exact page handoff
+        run: |
+          node tests/reader_page_curl_probe.mjs
+          node tests/reader-selection-geometry.cjs
       - name: Upload browser results and screenshots
         if: always()
         uses: actions/upload-artifact@v4
