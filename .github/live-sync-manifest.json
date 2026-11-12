@@ -1,30 +1,48 @@
 {
   "schema": 1,
-  "generated_utc": "2026-11-12T12:12:00Z",
+  "generated_utc": "2026-11-12T12:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "7322a4f9d5d41d97e80e8d8ae8470cc34793d4df",
+  "private_source_commit": "085f11b0021761ee84bcc9dc6fb7363d85e118df",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
     "public frontend regression tests and deploy workflow"
   ],
-  "excluded": ["writer/", "data/", "cognition/", "config.json", "personal memory and internal records"],
+  "excluded": [
+    "writer/",
+    "data/",
+    "cognition/",
+    "config.json",
+    "personal memory and internal records"
+  ],
   "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
   "script_version": 2,
   "reader_assets": {
     "web/book.js": "38810d5ba70aae082382f8db5ea4babf663211d3a16d7d7d408b3990c6bd6d78",
     "web/read.js": "e65584fc74b133a80a55c476eedb5de776024b5902a57e12667a8060d51ef38a",
-    "web/library-stage.js": "900c3fa964d098850f7bcf530780507ec3c795cc41666ed80a4d3572525b2da2",
+    "web/library-stage.js": "07d2dd5646338f203784ebe1904ec23c0c26ab7821cc71e92e7325057ff68e29",
     "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
     "web/reader-room.css": "8f76999f32c0f356e43938bf4f80b1ccce8c51ced2673ba59f31b6c9919ddefd",
-    "web/read.html": "64aa8b1a4dd86af85e109548f9968b0c28aaa85d81e4a684d7ba6ec405c6f7e4",
-    "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943",
-    "web/library-preview.js": "95887fb89a01d0a84bb5688554f20c9e74207b2394f3abc822d893d5a105ec56"
+    "web/read.html": "803ceed92e290e78afae433d35bf74d00f0cec9aa70c5fb4aa7f3564de8a6c9b"
   },
   "reader_entrypoint": "read/index.html",
   "partial_sync": {
     "baseline_private_source_commit": "059c002aab33d49590edc8cd1ad8f1f43c38793e",
-    "paths": ["web/library-preview.css", "web/library-preview.js", "web/read.html", "read/index.html", "tests/reader-preview-room.test.cjs", "tests/reader-preview-room-browser.cjs", ".github/workflows/reader-room-quality.yml"],
-    "note": "Room/discovery export with keyboard focus and image-error recovery. Existing public stage, city and authorized story snapshot are preserved; independent private viewport-handoff work is not silently exported by this change."
+    "paths": [
+      "web/library-preview.css",
+      "web/library-preview.js",
+      "web/library-stage.js",
+      "web/read.html",
+      "read/index.html",
+      "tests/reader-preview-room.test.cjs",
+      "tests/reader-preview-room-browser.cjs",
+      "tests/reader-stage.test.mjs"
+    ],
+    "note": "Public source matches private reviewed reader revision, including sizing/viewport handoff, pinned preview keyboard and image-error behavior; 20-case room test and existing authorized snapshot preserved."
+  },
+  "reader_preview_assets": {
+    "web/library-preview.js": "95887fb89a01d0a84bb5688554f20c9e74207b2394f3abc822d893d5a105ec56",
+    "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943",
+    "web/reader-editorial.js": "792cbca6c3a3bafdaf6f84387879e734139a09454dc0a19f8e724fc683fcb309"
   }
 }
