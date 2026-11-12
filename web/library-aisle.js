@@ -70,7 +70,8 @@ export function installLibraryAisle() {
     const layout = [containerWidth, rowHeight, ...measured].join(':');
     // ResizeObserver and the legacy resize hook may report the same layout.
     // Do not rebuild snap targets or reset momentum for an unchanged catalog.
-    if (layout === lastLayout && books.length === lastBooks.length && books.every((book, i) => book === lastBooks[i])) return;
+    // An empty render may replace all decorations without changing book identity.
+    if (layout === lastLayout && books.length === lastBooks.length && books.every((book, i) => book === lastBooks[i]) && shelf.querySelectorAll('.aisle-cabinet').length === count) return;
     lastLayout = layout; lastBooks = books;
     const plan = packBooks(measured, cabinetWidth - inset * 2, rows);
     count = plan.count; stride = cabinetWidth + gap;
