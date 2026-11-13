@@ -42,13 +42,13 @@
     },
     {
       "done": false,
-      "label": "ده هزار کلمه",
-      "progress": 0.2644
+      "label": "ده ساعت تحقیق",
+      "progress": 0.292
     },
     {
       "done": false,
-      "label": "ده ساعت تحقیق",
-      "progress": 0.208
+      "label": "ده هزار کلمه",
+      "progress": 0.2644
     },
     {
       "done": false,
@@ -62,8 +62,8 @@
     }
   ],
   "stats": {
-    "done": 10,
-    "pct": 23,
+    "done": 11,
+    "pct": 26,
     "total": 43
   }
 }
