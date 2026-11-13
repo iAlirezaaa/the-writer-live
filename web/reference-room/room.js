@@ -76,6 +76,7 @@ const byPath=path=>pathNodes.get(path?.join('/'))||path?.reduce((o,i)=>o?.childr
 function mode(value){
  state.mode=value;document.body.dataset.mode=value;$('covers').inert=!['shelf','list'].includes(value);
  const about=$('about-panel');about.inert=value!=='about';about.setAttribute('aria-hidden',String(value!=='about'));
+ const contact=$('contact-panel');contact.inert=value!=='contact';contact.setAttribute('aria-hidden',String(value!=='contact'));
  for(const b of document.querySelectorAll('.views button'))b.setAttribute('aria-pressed',String(b.dataset.view===(state.listed?'list':'shelf')));
  $('hint').classList.toggle('on',value==='spread');$('hint').textContent=value==='spread'?(matchMedia('(hover:none)').matches?'Tap the page to open it · tap outside to put it back':'Click the page to open it · Esc puts it back'):'';
  $('page').setAttribute('aria-hidden',String(value!=='inside'));$('label').classList.remove('on');

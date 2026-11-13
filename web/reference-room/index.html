@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d0b0a">
 <title>کتابخانهٔ هادس</title>
 <meta name="description" content="کتابخانهٔ سه‌بعدی هادس و راه ورود به صفحهٔ خوانش هر اثر.">
-<link rel="stylesheet" href="./room.css?v=reference-20261113-preview-v1">
+<link rel="stylesheet" href="./room.css?v=reference-20261113-contact-v1">
 </head>
 <body class="loading" data-mode="shelf">
 <canvas id="room" aria-label="کتابخانهٔ سه‌بعدی هادس با قفسه‌های چوبی و کتاب‌ها."></canvas>
@@ -33,11 +33,25 @@
     <p class="about-foot">این قفسه با شکل‌گرفتن نوشته‌های تازه جان می‌گیرد. <span aria-hidden="true">✦</span></p>
   </div>
 </section>
+<section id="contact-panel" class="about-panel contact-panel" aria-labelledby="contact-title" aria-hidden="true" inert>
+  <div class="about-card contact-card" dir="rtl">
+    <div class="about-ornament" aria-hidden="true"><span>✦</span><i></i><span>کتابخانهٔ هادس</span><i></i><span>✦</span></div>
+    <p class="about-kicker">درِ کتابخانه همیشه برای گفت‌وگو باز است</p>
+    <h1 id="contact-title">پیامی برای<br><em>این جهان داری؟</em></h1>
+    <p class="about-lead">اگر پیشنهادی برای کتابخانه داری یا به مشکلی برخورده‌ای، می‌توانی آن را در صفحهٔ عمومی پروژه مطرح کنی.</p>
+    <div class="about-divider" aria-hidden="true"><span>❧</span></div>
+    <div class="contact-links">
+      <a href="https://github.com/iAlirezaaa/the-writer-live/issues/new" target="_blank" rel="noopener noreferrer"><span><strong>ارسال پیشنهاد یا گزارش مشکل</strong><small>باز کردن یک درخواست عمومی در گیت‌هاب</small></span><b aria-hidden="true">↗</b></a>
+      <a href="https://github.com/iAlirezaaa/the-writer-live" target="_blank" rel="noopener noreferrer"><span><strong>صفحهٔ پروژه</strong><small>دیدن مخزن عمومی کتابخانه در گیت‌هاب</small></span><b aria-hidden="true">↗</b></a>
+    </div>
+    <p class="about-foot">برای ثبت درخواست، به حساب گیت‌هاب نیاز داری. درخواست‌ها عمومی‌اند. <span aria-hidden="true">✦</span></p>
+  </div>
+</section>
 <div id="page" class="empty-page" aria-hidden="true" role="region" aria-label="Empty notebook content"></div>
 <button id="close" aria-label="بستن و بازگشت به کتابخانه"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m8 8 16 16M24 8 8 24"/></svg></button>
 <div class="curtain" aria-hidden="true"><div class="loading-line"><i id="load-progress"></i></div></div>
 <div id="failure" class="error" hidden><p>The room could not be loaded.</p><button onclick="location.reload()">Try again</button></div>
 <div class="fallback-list" id="fallback"></div>
 <noscript><p style="position:fixed;top:35%;left:20%;right:20%;text-align:center">This three-dimensional library needs JavaScript. The existing stories have not been changed.</p></noscript>
-<script type="module" src="./room.js?v=reference-20261113-preview-v1"></script>
+<script type="module" src="./room.js?v=reference-20261113-contact-v1"></script>
 </body></html>
