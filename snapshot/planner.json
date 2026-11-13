@@ -192,184 +192,214 @@
     },
     {
       "attempts": null,
-      "end": "2026-11-13T12:20:29",
+      "end": "2026-11-13T12:23:02",
       "id": "202611131335",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T11:40:29",
-      "status": "planned",
+      "start": "2026-11-13T11:43:02",
+      "status": "done",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T13:00:29",
-      "id": "202611131415",
-      "label": "مشاورهٔ تحریریه",
-      "next_retry_at": null,
-      "start": "2026-11-13T12:20:29",
-      "status": "planned",
-      "task": "consult"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T13:40:29",
-      "id": "202611131455",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T13:00:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T14:20:29",
-      "id": "202611131535",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T13:40:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T15:00:29",
-      "id": "202611131615",
-      "label": "تحقیق",
-      "next_retry_at": null,
-      "start": "2026-11-13T14:20:29",
-      "status": "planned",
-      "task": "research"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T15:40:29",
-      "id": "202611131655",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T15:00:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T16:20:29",
-      "id": "202611131735",
-      "label": "کتابخانه",
-      "next_retry_at": null,
-      "start": "2026-11-13T15:40:29",
-      "status": "planned",
-      "task": "library"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T17:00:29",
-      "id": "202611131815",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T16:20:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T17:40:29",
-      "id": "202611131855",
-      "label": "تحقیق",
-      "next_retry_at": null,
-      "start": "2026-11-13T17:00:29",
-      "status": "planned",
-      "task": "research"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T18:20:29",
-      "id": "202611131935",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T17:40:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T19:00:29",
-      "id": "202611132015",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T18:20:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T19:40:29",
-      "id": "202611132055",
-      "label": "دفترچه‌ی ایده‌ها",
-      "next_retry_at": null,
-      "start": "2026-11-13T19:00:29",
-      "status": "planned",
-      "task": "notebook"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T20:20:29",
-      "id": "202611132135",
-      "label": "استراحت",
-      "next_retry_at": null,
-      "start": "2026-11-13T19:40:29",
-      "status": "planned",
-      "task": "rest"
-    },
-    {
-      "attempts": null,
-      "end": "2026-11-13T21:00:29",
-      "id": "202611132215",
+      "end": "2026-11-13T12:23:06",
+      "id": "202611131223",
       "label": "نوشتن داستان",
       "next_retry_at": null,
-      "start": "2026-11-13T20:20:29",
+      "start": "2026-11-13T11:43:06",
       "status": "planned",
       "task": "write"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T21:40:29",
-      "id": "202611132255",
+      "end": "2026-11-13T13:03:06",
+      "id": "202611131303",
+      "label": "رساندن خودم",
+      "next_retry_at": null,
+      "start": "2026-11-13T12:23:06",
+      "status": "planned",
+      "task": "brand"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T13:43:06",
+      "id": "202611131343",
+      "label": "دفترچه‌ی ایده‌ها",
+      "next_retry_at": null,
+      "start": "2026-11-13T13:03:06",
+      "status": "planned",
+      "task": "notebook"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T14:23:06",
+      "id": "202611131423",
+      "label": "مشاورهٔ تحریریه",
+      "next_retry_at": null,
+      "start": "2026-11-13T13:43:06",
+      "status": "planned",
+      "task": "consult"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T15:03:06",
+      "id": "202611131503",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T21:00:29",
+      "start": "2026-11-13T14:23:06",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T22:20:29",
-      "id": "202611132335",
+      "end": "2026-11-13T15:43:06",
+      "id": "202611131543",
+      "label": "کتابخانه",
+      "next_retry_at": null,
+      "start": "2026-11-13T15:03:06",
+      "status": "planned",
+      "task": "library"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T16:23:06",
+      "id": "202611131623",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T21:40:29",
+      "start": "2026-11-13T15:43:06",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T17:03:06",
+      "id": "202611131703",
+      "label": "مطالعهٔ متن کلاسیک فارسی",
+      "next_retry_at": null,
+      "start": "2026-11-13T16:23:06",
+      "status": "planned",
+      "task": "persian_reading"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T17:43:06",
+      "id": "202611131743",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-13T17:03:06",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T18:23:06",
+      "id": "202611131823",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-13T17:43:06",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T19:03:06",
+      "id": "202611131903",
+      "label": "تحقیق",
+      "next_retry_at": null,
+      "start": "2026-11-13T18:23:06",
+      "status": "planned",
+      "task": "research"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T19:43:06",
+      "id": "202611131943",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-13T19:03:06",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T20:23:06",
+      "id": "202611132023",
+      "label": "رساندن خودم",
+      "next_retry_at": null,
+      "start": "2026-11-13T19:43:06",
+      "status": "planned",
+      "task": "brand"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T21:03:06",
+      "id": "202611132103",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-13T20:23:06",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T21:43:06",
+      "id": "202611132143",
+      "label": "مشاورهٔ تحریریه",
+      "next_retry_at": null,
+      "start": "2026-11-13T21:03:06",
+      "status": "planned",
+      "task": "consult"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T22:23:06",
+      "id": "202611132223",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-13T21:43:06",
+      "status": "planned",
+      "task": "rest"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T23:03:06",
+      "id": "202611132303",
+      "label": "دفترچه‌ی مهارت‌ها",
+      "next_retry_at": null,
+      "start": "2026-11-13T22:23:06",
+      "status": "planned",
+      "task": "skills"
+    },
+    {
+      "attempts": null,
+      "end": "2026-11-13T23:43:06",
+      "id": "202611132343",
+      "label": "استراحت",
+      "next_retry_at": null,
+      "start": "2026-11-13T23:03:06",
       "status": "planned",
       "task": "rest"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-13T12:20:29",
-    "id": "202611131335",
-    "label": "استراحت",
+    "end": "2026-11-13T12:23:06",
+    "id": "202611131223",
+    "label": "نوشتن داستان",
     "next_retry_at": null,
-    "start": "2026-11-13T11:40:29",
+    "start": "2026-11-13T11:43:06",
     "status": "planned",
-    "task": "rest"
+    "task": "write"
   },
   "day": "2026-11-13",
   "next": {
     "attempts": null,
-    "end": "2026-11-13T13:00:29",
-    "id": "202611131415",
-    "label": "مشاورهٔ تحریریه",
+    "end": "2026-11-13T13:03:06",
+    "id": "202611131303",
+    "label": "رساندن خودم",
     "next_retry_at": null,
-    "start": "2026-11-13T12:20:29",
+    "start": "2026-11-13T12:23:06",
     "status": "planned",
-    "task": "consult"
+    "task": "brand"
   }
 }
