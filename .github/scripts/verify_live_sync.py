@@ -49,6 +49,8 @@ if 'page-curl.js?v=motion-' in (WEB/"read.html").read_text(encoding="utf-8"):
 expected_reader=(WEB/"read.html").read_text(encoding="utf-8").replace('href="/web/','href="../web/').replace('src="/web/','src="../web/').replace('href="/"','href="../"')
 if (ROOT/"read/index.html").read_text(encoding="utf-8")!=expected_reader:
     raise RuntimeError("Deployed reader entrypoint differs from the reviewed source")
+if (ROOT/"reader/index.html").read_text(encoding="utf-8")!=expected_reader:
+    raise RuntimeError("Standalone reader entrypoint differs from the reviewed source")
 NEEDED={
     "civita-buildings.js", "civita-crowd.js", "civita-details.js",
     "civita-measured-terrain.js", "civita-street-furnishing.js",
@@ -85,8 +87,8 @@ world=(WEB/"world.js").read_text(encoding="utf-8")
 book=(WEB/"book.js").read_text(encoding="utf-8")
 if not all(x in home for x in ('id="stage"', 'data-panel=', 'src="./web/world.js', '"three": "./web/vendor/three.module.js"')):
     raise RuntimeError("Public city entrypoint missing observer, panel or import-map")
-if not all(x in reader for x in ('id="covers"', 'library.css', 'reader-room.css', '../web/read.js')):
-    raise RuntimeError("New reader/bookcase entrypoint missing")
+if not all(x in reader for x in ('id="reader-error"', 'reader-room.css', '../web/reader-shell.js')):
+    raise RuntimeError("Standalone reader entrypoint missing")
 if not all(x in world for x in ('writerInteriorWorldRoot','buildTown', 'anchorWriterHome', 'loadCivitaWriterParcel')):
     raise RuntimeError("New world entrypoint lost protected room or surveyed city")
 if "owner_shared" not in book or "owner_shared" not in (WEB/"read.js").read_text(encoding="utf-8"):

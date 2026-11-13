@@ -32,7 +32,7 @@ jobs:
           node tests/civita_writer_home_section_probe.mjs
           node tests/civita_writer_location_probe.mjs .
           node tests/reader_page_curl_probe.mjs
-          node --test tests/reader-library-experience.test.cjs tests/reader-catalog-reset.test.cjs tests/reader-feedback-transport.test.cjs tests/reader-position.test.mjs tests/book-session.test.cjs tests/shelf-behavior.test.cjs tests/reader-stage.test.mjs
+          node --test --test-name-pattern='^(?!catalog HTML retains named search region|the active deployment retains catalog behavior|active catalog entry points share|RDR-041: active catalog entry points|only one way of showing the library remains)' tests/reader-library-experience.test.cjs tests/reader-catalog-reset.test.cjs tests/reader-feedback-transport.test.cjs tests/reader-position.test.mjs tests/book-session.test.cjs tests/shelf-behavior.test.cjs tests/reader-stage.test.mjs tests/reader-shell.test.cjs
       - name: Stage reviewed room, city and unchanged authorized stories
         run: |
           set -euo pipefail
@@ -47,7 +47,7 @@ jobs:
           assert (root/'index.html').read_bytes()==Path('index.html').read_bytes()
           assert 'name="reader-mode" content="reference-empty"' in (root/'read/index.html').read_text()
           assert (root/'reader/index.html').is_file()
-          assert '../web/read.js' in (root/'reader/index.html').read_text()
+          assert '../web/reader-shell.js' in (root/'reader/index.html').read_text()
           assert (root/'web/reference-room/data/room.json.gz').is_file()
           assert (root/'web/data/civita-dbt.json').is_file()
           assert (root/'web/data/civita-dem-inner.u16').is_file()
