@@ -2,7 +2,7 @@ name: Reference room browser verification
 on:
   push:
     branches: ["reader/**", main]
-    paths: ["web/reference-room/**", "reader/**", "tests/reader-reference-*.cjs", "tools/stage_reference_room.py", ".github/workflows/reader-reference-room.yml"]
+    paths: ["web/reference-room/**", "reader/**", "tests/reader-reference-*.cjs", "tools/stage_reference_room.py", "tools/materialize_reference_room.py", "tools/serve_reference_room.py", "tests/test_reference_room_pull.py", ".github/workflows/reader-reference-room.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,6 +27,8 @@ jobs:
           grep -q '../web/read.js' reader/index.html
           node --check tests/reader-reference-room.cjs
           node --check tests/reader-reference-entry.cjs
+      - name: Verify fresh private-pull asset hydration and safe localhost preview
+        run: python3 -m unittest discover -s tests -p 'test_reference_room_pull.py' -v
       - name: Install browser
         run: |
           npm install --no-save --ignore-scripts --package-lock=false playwright@1.62.1

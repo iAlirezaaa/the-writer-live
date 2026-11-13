@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_utc": "2026-11-12T16:20:00Z",
   "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "71e5820c82fed9f7e13effca07877fcf77af9a8d",
+  "private_source_commit": "63e7d760ae6f7f175c6e823405b42c05b8c6f7a4",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
     "index.html and read/index.html rewritten for GitHub Pages project paths",
@@ -29,15 +29,15 @@
   },
   "reader_entrypoint": "read/index.html",
   "partial_sync": {
-    "baseline_private_source_commit": "ce5709a1a93771d6745bf2bfa1f0c88bd7f4c92e",
+    "baseline_private_source_commit": "538c0bba51c09311c3322fc2a91efd8a52b301d7",
     "paths": [
-      "web/reference-room/room.js",
-      "web/reference-room/index.html",
-      "web/reference-room/room.css",
-      "web/reference-room/RELEASE.json",
-      "tests/reader-reference-room.cjs"
+      "tools/materialize_reference_room.py",
+      "tools/stage_reference_room.py",
+      "tools/serve_reference_room.py",
+      "tests/test_reference_room_pull.py",
+      ".github/workflows/reader-reference-room.yml"
     ],
-    "note": "Faithful duplicate of measured walnut cabinet to the right, capacity-based future cabinets from authorized snapshot, replacement of floating Persian sprites by original curved-spine foil printing, به‌زودی placeholders, and writer-world return link. Existing three approved story links and all snapshot and city bytes preserved."
+    "note": "Tested local pull recovery: private full server now routes /read to canonical WebGL room and auto-downloads checked public scene; safe preview tools hydrate asset and serve canonical room locally. Public Pages frontend/stories/city remain unchanged."
   },
   "reader_preview_assets": {
     "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",

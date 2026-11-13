@@ -24,6 +24,17 @@ def verify():
     if any(not i['url'].startswith('data:image/webp;base64,') for i in payload['scene']['images']):raise ValueError('Unexpected external visual asset')
     return release
 
+def canonical_html(room=ROOM):
+    """Use the same reviewed room entrypoint for Pages and the private local server."""
+    html=(Path(room)/'index.html').read_text(encoding='utf-8')
+    html=html.replace('href="./room.css?', 'href="../web/reference-room/room.css?')
+    html=html.replace('src="./room.js?', 'src="../web/reference-room/room.js?')
+    html=html.replace('<head>', '<head>\n<meta name="reader-mode" content="reference-empty">')
+    if '<iframe' in html or 'src="./room.js' in html or 'href="./room.css' in html:
+        raise ValueError('Invalid canonical room entry')
+    return html
+
+
 def stage(site):
     release=verify();site=Path(site).resolve()
     if site==ROOT:raise ValueError('Use a staging directory, not the repository root')
@@ -31,10 +42,7 @@ def stage(site):
     shutil.copytree(ROOM,target,dirs_exist_ok=True)
     vendor=site/'web/vendor';vendor.mkdir(parents=True,exist_ok=True)
     shutil.copy2(ROOT/'web/vendor/three.module.js',vendor/'three.module.js')
-    html=(ROOM/'index.html').read_text()
-    html=html.replace('href="./room.css?', 'href="../web/reference-room/room.css?').replace('src="./room.js?', 'src="../web/reference-room/room.js?')
-    html=html.replace('<head>','<head>\n<meta name="reader-mode" content="reference-empty">')
-    if '<iframe' in html or 'src="./room.js' in html or 'href="./room.css' in html:raise ValueError('Invalid canonical room entry')
+    html=canonical_html()
     destination=site/'read/index.html';destination.parent.mkdir(parents=True,exist_ok=True);destination.write_text(html)
     for asset in re.findall(r'(?:src|href)="(\.\./web/[^"?#]+)',html):
         if not (destination.parent/asset).is_file():raise ValueError('Missing published asset '+asset)
