@@ -13,3 +13,16 @@
 body.loading .cabinet-nav,body[data-mode=inside] .cabinet-nav,body[data-mode=spread] .cabinet-nav,body[data-mode=opening] .cabinet-nav,body[data-mode=closing] .cabinet-nav,body[data-mode=about] .cabinet-nav,body[data-mode=contact] .cabinet-nav,body[data-mode=list] .cabinet-nav{opacity:0;pointer-events:none}
 @media(max-width:760px){.menu{gap:11px}.menu a{font-size:11px}.cabinet-nav{right:14px;top:56px;gap:7px}.cabinet-nav button{width:30px;height:30px}}
 @media(max-width:385px){.menu{left:14px;gap:8px}.menu a{font-size:10px}}
+
+/* An editorial paper card keeps the room visible around the story of its library. */
+.about-panel{position:fixed;inset:0;z-index:12;display:grid;place-items:center;padding:64px 24px 28px;background:rgba(12,9,7,.54);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s,visibility .45s;overflow:auto}
+body[data-mode=about] .about-panel{opacity:1;visibility:visible;pointer-events:auto}
+.about-card{width:min(720px,100%);max-height:100%;overflow:auto;padding:38px clamp(26px,6vw,70px) 30px;color:#352a22;background:radial-gradient(ellipse at 80% 0%,#fffaf0,#eee2cd 72%);border:1px solid #c6ac86;box-shadow:0 28px 100px #000a,inset 0 0 0 7px #f7eedf,inset 0 0 0 8px #bfa984;text-align:right;line-height:1.9;transform:translateY(14px);transition:transform .6s var(--ease)}
+body[data-mode=about] .about-card{transform:translateY(0)}
+.about-ornament{display:flex;align-items:center;gap:12px;color:#9b7048;font-size:11px;letter-spacing:.05em}.about-ornament i{height:1px;background:#bea886;flex:1}
+.about-kicker{margin:26px 0 3px;color:#9a6b49;font-size:12px;font-weight:700;letter-spacing:.03em}
+.about-card h1{margin:0;color:#38251c;font-family:Georgia,'Times New Roman',serif;font-size:clamp(31px,5vw,52px);font-weight:500;line-height:1.45}.about-card h1 em{font-style:normal;color:#99704a}
+.about-lead{max-width:36em;font-size:15px;color:#5b4b3d;margin:16px 0 6px}.about-divider{display:flex;align-items:center;gap:12px;color:#b38c60;margin:20px 0}.about-divider:before,.about-divider:after{content:"";height:1px;background:#cbbba1;flex:1}
+.about-columns{display:grid;grid-template-columns:1fr 1fr;gap:28px}.about-number{font-family:Georgia,serif;font-size:13px;color:#ab8259}.about-columns h2{font-size:16px;color:#4a3022;margin:2px 0}.about-columns p{font-size:13px;color:#675445;margin:0;line-height:2}
+.about-foot{margin:24px 0 0;padding-top:15px;border-top:1px solid #d3c3aa;color:#876a50;font-size:12px}.about-foot span{float:left;color:#a67d52}
+@media(max-width:600px){.about-panel{padding:66px 16px 18px;align-items:start}.about-card{padding:27px 25px 24px;max-height:calc(100dvh - 84px)}.about-columns{grid-template-columns:1fr;gap:14px}.about-kicker{margin-top:18px}.about-divider{margin:12px 0}.about-lead{font-size:14px}}
