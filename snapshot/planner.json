@@ -567,20 +567,11 @@
       "label": "استراحت",
       "next_retry_at": null,
       "start": "2026-11-13T18:39:23",
-      "status": "planned",
+      "status": "done",
       "task": "rest"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-13T19:19:23",
-    "id": "202611132327",
-    "label": "استراحت",
-    "next_retry_at": null,
-    "start": "2026-11-13T18:39:23",
-    "status": "planned",
-    "task": "rest"
-  },
+  "current": null,
   "day": "2026-11-13",
   "next": null
 }
