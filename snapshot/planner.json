@@ -607,20 +607,11 @@
       "label": "مشاورهٔ تحریریه",
       "next_retry_at": null,
       "start": "2026-11-13T22:17:18",
-      "status": "planned",
+      "status": "done",
       "task": "consult"
     }
   ],
-  "current": {
-    "attempts": null,
-    "end": "2026-11-13T22:57:18",
-    "id": "202611132346",
-    "label": "مشاورهٔ تحریریه",
-    "next_retry_at": null,
-    "start": "2026-11-13T22:17:18",
-    "status": "planned",
-    "task": "consult"
-  },
+  "current": null,
   "day": "2026-11-13",
   "next": null
 }
