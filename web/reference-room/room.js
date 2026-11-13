@@ -118,9 +118,10 @@ function ensureCabinets(count){
  while(extraCabinets.length+1<count){
   const index=extraCabinets.length+1,group=new THREE.Group();
   group.name=`Identical bookcase ${index+1}`;group.position.x=index*CABINET_PITCH;
-  // Measured walnut frame and mouldings, shared original geometry/materials;
-  // do not clone the reference's decorative or invented books.
+  // Repeat the measured frame and the non-interactive lower-shelf decoration.
   for(let i=66;i<=169;i++)group.add(byPath([i]).clone(true));
+  for(let i=172;i<=176;i++)group.add(byPath([i]).clone(true));
+  for(let i=177;i<=200;i++)group.add(byPath([i]).clone(true));
   scene.add(group);extraCabinets.push(group);
  }
  state.cabinetCount=count;updateCabinetNavigation();
@@ -266,7 +267,7 @@ async function start(){
    });return book;
   };
   books=baseline.items.map((model,index)=>makeBook(model,index,byPath(model.path),byPath(model.data.hinge.path),byPath(model.still.path),catalog[index]||null));
-  for(let index=BOOKS_PER_CABINET;index<catalog.length;index++){
+  for(let index=BOOKS_PER_CABINET;index<state.cabinetCount*BOOKS_PER_CABINET;index++){
    const model=baseline.items[index%BOOKS_PER_CABINET],root=byPath(model.path).clone(true);
    root.position.x+=Math.floor(index/BOOKS_PER_CABINET)*CABINET_PITCH;scene.add(root);
    books.push(makeBook(model,index,root,root.children[1],root.children[6],catalog[index]));
