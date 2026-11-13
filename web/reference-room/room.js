@@ -2,6 +2,7 @@
  * intentionally empty. No source executable bundles, demos, tracking or fonts. */
 import * as THREE from '../vendor/three.module.js';
 import { readerEditorial } from '../reader-editorial.js';
+import { installCollection } from './collection.js';
 const $=id=>document.getElementById(id),clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const smooth=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2,segment=(t,a,b)=>smooth(clamp((t-a)/(b-a)));
 const stories=[{id:'owner-20261110-jaye-doxt',title:'جای دوخت'},{id:'0005',title:'کوچه‌ی بازگشت'},{id:'0003',title:'نامی که از پل برگشت'}];
@@ -36,13 +37,22 @@ let pointer={x:0,y:0},viewPointer={x:0,y:0},rows=[],targets=[],savedContact=null
 const yRotation=a=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a),frontRotation=yRotation(-Math.PI/2);
 function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
 function coverTitle(model,title){
- const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=1024;
  const ctx=canvas.getContext('2d');ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
- let size=100;while(size>42){ctx.font=`600 ${size}px Tahoma,Arial,sans-serif`;if(ctx.measureText(title).width<860)break;size-=4;}
- ctx.fillStyle='#44301f';ctx.fillText(title,512,246,880);
- ctx.strokeStyle='#795b3a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(350,335);ctx.lineTo(674,335);ctx.stroke();
+ let size=100,lines=[];
+ for(;size>=44;size-=4){
+  ctx.font=`600 ${size}px Tahoma,Arial,sans-serif`;lines=[];let line='';
+  for(const word of title.split(/\s+/)){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>760){lines.push(line);line=word;}else line=next;}
+  if(line)lines.push(line);if(lines.length<=3&&lines.every(text=>ctx.measureText(text).width<=760))break;
+ }
+ ctx.strokeStyle='rgba(121,91,58,.65)';ctx.lineWidth=2;ctx.strokeRect(64,72,896,880);ctx.strokeRect(80,88,864,848);
+ ctx.fillStyle='#795b3a';ctx.font='26px Tahoma,Arial,sans-serif';ctx.fillText('کتابخانهٔ هادس',512,190);
+ ctx.font=`600 ${Math.max(44,size)}px Tahoma,Arial,sans-serif`;ctx.fillStyle='#44301f';
+ lines.forEach((line,i)=>ctx.fillText(line,512,480+(i-(lines.length-1)/2)*Math.max(60,size*1.5),800));
+ ctx.strokeStyle='#795b3a';ctx.beginPath();ctx.moveTo(390,760);ctx.lineTo(634,760);ctx.stroke();
+ ctx.fillStyle='#795b3a';ctx.font='34px Georgia,serif';ctx.fillText('✦',512,825);
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
- const label=new THREE.Mesh(new THREE.PlaneGeometry(model.data.page.w*.82,model.data.h*.38),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+ const label=new THREE.Mesh(new THREE.PlaneGeometry(model.data.page.w*.82,model.data.h*.78),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
  label.name='cover-title';label.rotation.y=Math.PI/2;label.position.set(.011,model.data.h*.57,-model.data.coverDepth/2);label.renderOrder=3;return label;
 }
 function printSpineTitle(book,title,index){
@@ -86,7 +96,7 @@ function mode(value){
  const about=$('about-panel');about.inert=value!=='about';about.setAttribute('aria-hidden',String(value!=='about'));
  const contact=$('contact-panel');contact.inert=value!=='contact';contact.setAttribute('aria-hidden',String(value!=='contact'));
  for(const b of document.querySelectorAll('.views button'))b.setAttribute('aria-pressed',String(b.dataset.view===(state.listed?'list':'shelf')));
- $('hint').classList.toggle('on',value==='spread');$('hint').textContent=value==='spread'?(matchMedia('(hover:none)').matches?'Tap the page to open it · tap outside to put it back':'Click the page to open it · Esc puts it back'):'';
+ $('hint').classList.toggle('on',value==='spread');$('hint').textContent=value==='spread'?(matchMedia('(hover:none)').matches?'برای دیدن صفحه لمس کن · برای بستن، بیرون کتاب بزن':'برای دیدن صفحه کلیک کن · کلید گریز کتاب را می‌بندد'):'';
  $('page').setAttribute('aria-hidden',String(value!=='inside'));$('label').classList.remove('on');
 }
 async function readAsset(){
@@ -246,6 +256,7 @@ async function start(){
   for(const o of scene.children)if(o.isMesh&&o.position.y>4.5&&o.position.y<5.1&&o.position.x>4){nodes.set('wall-title',o);break;}
   const blankPaper=new THREE.MeshBasicMaterial({color:0xf1ede3,toneMapped:false,side:THREE.DoubleSide});
   const catalog=await roomCatalog();
+  installCollection(catalog);
   // Always keep the identical right-hand cabinet ready. For future authorized
   // publications, fill the existing 11 positions first; only then clone books
   // into the next case and append another ready empty case at capacity.
@@ -304,7 +315,7 @@ function installInput(){
  $('room').addEventListener('pointerup',e=>{if(!down)return;const d=down;down=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>8)return;if(state.mode==='spread'){hit(e.clientX,e.clientY)===state.selected?enter():close();return;}if(['about','contact'].includes(state.mode)){backToRoom();return;}if(state.busy)return;const i=hit(e.clientX,e.clientY);if(i>=0){open(i);return;}const cord=ray.intersectObjects(scene.children,true).find(v=>v.object.parent===byPath([201]));if(cord)toggleLamp();});
  $('room').addEventListener('pointercancel',()=>{down=null;});$('room').addEventListener('pointerleave',()=>{if(!down){pointer={x:0,y:0};point(-1);requestRender();}});
  addEventListener('wheel',e=>{clearTimeout(autoApproach);if(state.listed&&!state.busy){state.scroll=clamp(state.scroll+e.deltaY+e.deltaX,0,state.maxScroll);requestRender();}else if(Math.abs(e.deltaY)>4)zoom(e.deltaY<0?1:0);},{passive:true});
- addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();return;}if(!['shelf','list'].includes(state.mode)||e.altKey||e.ctrlKey||e.metaKey)return;const current=books.findIndex(b=>b.button===document.activeElement);if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?10:clamp((current<0?0:current)+(e.key==='ArrowRight'?1:-1),0,10);books.forEach(b=>b.button.tabIndex=b.index===next?0:-1);books[next].button.focus({preventScroll:true});}});
+ addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();return;}if(!['shelf','list'].includes(state.mode)||e.altKey||e.ctrlKey||e.metaKey)return;const current=books.findIndex(b=>b.button===document.activeElement);if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?books.length-1:clamp((current<0?0:current)+(e.key==='ArrowRight'?1:-1),0,books.length-1);books.forEach(b=>b.button.tabIndex=b.index===next?0:-1);books[next].button.focus({preventScroll:true});}});
  addEventListener('resize',resize);addEventListener('popstate',()=>{if(!location.hash)close(false);});media.addEventListener?.('change',e=>{if(e.matches&&tween){tween.duration=0;requestRender(true);}});document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestRender();});
 }
 start();
