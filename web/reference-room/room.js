@@ -45,13 +45,17 @@ function coverTitle(model,title){
  const label=new THREE.Mesh(new THREE.PlaneGeometry(model.data.page.w*.82,model.data.h*.38),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
  label.name='cover-title';label.rotation.y=Math.PI/2;label.position.set(.011,model.data.h*.57,-model.data.coverDepth/2);label.renderOrder=3;return label;
 }
-function printSpineTitle(book,title){
+function printSpineTitle(book,title,index){
  const foil=book.root.children[4],original=foil?.material?.map,image=original?.image;
  if(!foil?.isMesh||!image?.width||!image?.height)return false;
  const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
  const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
- // Replace only the central English inscription in the original curved spine
- // foil; keep its numbered medallion, fine rules, material and grain.
+ // Replace the printed number while keeping the original foil, rules and grain.
+ ctx.clearRect(canvas.width*.31,canvas.height*.137,canvas.width*.38,canvas.height*.043);
+ ctx.save();ctx.direction='ltr';ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font=`600 ${Math.round(canvas.width*.28)}px Tahoma,Arial,sans-serif`;
+ ctx.fillStyle='#8a6038';ctx.fillText(new Intl.NumberFormat('fa-IR',{minimumIntegerDigits:2,useGrouping:false}).format(index+1),canvas.width*.5,canvas.height*.158,canvas.width*.36);ctx.restore();
+ // Replace the central inscription on the original curved spine foil.
  ctx.clearRect(canvas.width*.17,canvas.height*.265,canvas.width*.66,canvas.height*.575);
  ctx.save();ctx.translate(canvas.width*.5,canvas.height*.565);ctx.rotate(Math.PI/2);
  ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -251,10 +255,10 @@ async function start(){
    for(const mesh of [hinge.children[6],hinge.children[7]])if(mesh?.isObject3D)mesh.visible=false;
    for(const old of hinge.children.filter(child=>child.name==='cover-title'))hinge.remove(old);
    hinge.add(coverTitle(model,title));
-   printSpineTitle({root},title);
+   printSpineTitle({root},title,index);
    root.traverse(o=>{original.set(o,{...pose(o),visible:o.visible});if(o.isMesh){o.userData.notebook=index;o.receiveShadow=false;targets.push(o);}});
    const button=document.createElement('button');button.type='button';
-   button.setAttribute('aria-label',story?.title||`به‌زودی، دفتر ${index+1}`);
+   button.setAttribute('aria-label',story?.title||`به‌زودی، دفتر ${new Intl.NumberFormat('fa-IR').format(index+1)}`);
    button.textContent=story?.title||COMING_SOON;button.tabIndex=story&&index===0?0:-1;
    button.disabled=!story;$('covers').append(button);
    const p=model.data.page, thickness=Math.max(.035,model.data.t*.42);
