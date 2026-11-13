@@ -597,39 +597,30 @@
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
       "start": "2026-11-13T22:16:01",
-      "status": "planned",
+      "status": "done",
       "task": "notebook"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T23:36:01",
+      "end": "2026-11-13T22:57:18",
       "id": "202611132346",
       "label": "مشاورهٔ تحریریه",
       "next_retry_at": null,
-      "start": "2026-11-13T22:56:01",
+      "start": "2026-11-13T22:17:18",
       "status": "planned",
       "task": "consult"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-13T22:56:01",
-    "id": "202611132306",
-    "label": "دفترچه‌ی ایده‌ها",
-    "next_retry_at": null,
-    "start": "2026-11-13T22:16:01",
-    "status": "planned",
-    "task": "notebook"
-  },
-  "day": "2026-11-13",
-  "next": {
-    "attempts": null,
-    "end": "2026-11-13T23:36:01",
+    "end": "2026-11-13T22:57:18",
     "id": "202611132346",
     "label": "مشاورهٔ تحریریه",
     "next_retry_at": null,
-    "start": "2026-11-13T22:56:01",
+    "start": "2026-11-13T22:17:18",
     "status": "planned",
     "task": "consult"
-  }
+  },
+  "day": "2026-11-13",
+  "next": null
 }
