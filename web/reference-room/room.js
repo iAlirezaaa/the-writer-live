@@ -127,7 +127,7 @@ function ensureCabinets(count){
   // Repeat the measured frame and the non-interactive lower-shelf decoration.
   for(let i=66;i<=169;i++)group.add(byPath([i]).clone(true));
   for(let i=170;i<=176;i++)group.add(byPath([i]).clone(true));
-  for(let i=177;i<=200;i++)group.add(byPath([i]).clone(true));
+  for(let i=197;i<=200;i++)group.add(byPath([i]).clone(true));
   scene.add(group);extraCabinets.push(group);
  }
  state.cabinetCount=count;updateCabinetNavigation();
@@ -171,12 +171,12 @@ async function loadBookPreview(book){
 }
 function showBookLabel(book){
  const label=$('label'),title=document.createElement('strong'),preview=document.createElement('small');title.textContent=book.name;
- const lead=document.createElement('b');lead.textContent=(book.preview?.label||'دربارهٔ داستان')+' · ';
- preview.append(lead,document.createTextNode(book.preview?.text||'در حال آماده‌کردن معرفی…'));label.replaceChildren(title,preview);label.classList.add('on');
+ const lead=document.createElement('b');lead.textContent=(book.storyId?(book.preview?.label||'دربارهٔ داستان'):'دفتر خالی')+' · ';
+ preview.append(lead,document.createTextNode(book.storyId?(book.preview?.text||'در حال آماده‌کردن معرفی…'):'این دفتر هنوز متنی برای خواندن ندارد. می‌توانی آن را باز کنی.'));label.replaceChildren(title,preview);label.classList.add('on');
 }
 function point(index){
  if(state.busy||!['shelf','list'].includes(state.mode)||index===state.hover)return;state.hover=index;$('room').classList.toggle('over',index>=0);
- if(index>=0&&books[index].name!==COMING_SOON){const book=books[index];showBookLabel(book);loadBookPreview(book);}else $('label').classList.remove('on');requestRender(true);
+ if(index>=0){const book=books[index];showBookLabel(book);loadBookPreview(book);}else $('label').classList.remove('on');requestRender(true);
 }
 function hit(x,y){mouse.set(x/innerWidth*2-1,1-y/innerHeight*2);ray.setFromCamera(mouse,camera);const found=ray.intersectObjects(targets,false)[0];return found?.object.userData.notebook??-1;}
 function openPose(book){
@@ -191,9 +191,7 @@ function dimRoom(amount){for(const l of scene.userData.lights)l.intensity=l.user
 function open(index,push=true){
  if(!state.ready||state.busy||index<0||index>=books.length||!['shelf','list'].includes(state.mode))return;
  const book=books[index];
- // Empty future slots are scenery, not a second empty reading experience.
- // Only a real manuscript can leave the cabinet for the reader route.
- if(!book.storyId)return;
+ // Unwritten notebooks can be handled and opened; only manuscripts navigate to the reader.
  state.selected=index;book.returnPose=pose(book.root);state.hover=-1;mode('opening');
  const start=pose(book.root),pulled={p:start.p.clone().add(new THREE.Vector3(0,.12,1.2)),q:start.q.clone(),s:start.s.clone()},end=openPose(book);
  if(push)history.pushState({notebook:index},'',`#${book.slug}`);
@@ -250,8 +248,8 @@ async function start(){
   // publications, fill the existing 11 positions first; only then clone books
   // into the next case and append another ready empty case at capacity.
   ensureCabinets(Math.floor(catalog.length/BOOKS_PER_CABINET)+1);
-  const makeBook=(model,index,root,hinge,still,story)=>{
-   const original=new Map(),title=story?.title||COMING_SOON;
+  const makeBook=(model,index,root,hinge,still,story,displayTitle)=>{
+   const original=new Map(),title=story?.title||displayTitle||COMING_SOON;
    // Only the separate front-cover decals are hidden. root.children[4] is the
    // actual original spine foil: its Persian inscription follows the old UV.
    for(const mesh of [hinge.children[6],hinge.children[7]])if(mesh?.isObject3D)mesh.visible=false;
@@ -260,9 +258,9 @@ async function start(){
    printSpineTitle({root},title,index);
    root.traverse(o=>{original.set(o,{...pose(o),visible:o.visible});if(o.isMesh){o.userData.notebook=index;o.receiveShadow=false;targets.push(o);}});
    const button=document.createElement('button');button.type='button';
-   button.setAttribute('aria-label',story?.title||`به‌زودی، دفتر ${new Intl.NumberFormat('fa-IR').format(index+1)}`);
-   button.textContent=story?.title||COMING_SOON;button.tabIndex=story&&index===0?0:-1;
-   button.disabled=!story;$('covers').append(button);
+   button.setAttribute('aria-label',story?.title||`باز کردن ${title}`);
+   button.textContent=title;button.tabIndex=index===0?0:-1;
+   $('covers').append(button);
    const p=model.data.page, thickness=Math.max(.035,model.data.t*.42);
    const pageBlock=new THREE.Mesh(new THREE.BoxGeometry(thickness,p.h,p.w),new THREE.MeshStandardMaterial({color:0xd2c3a9,roughness:1}));
    pageBlock.position.set(p.x-thickness/2,model.data.h/2,p.zc);pageBlock.visible=false;root.add(pageBlock);
@@ -277,6 +275,17 @@ async function start(){
    const model=baseline.items[index%BOOKS_PER_CABINET],root=byPath(model.path).clone(true);
    root.position.x+=Math.floor(index/BOOKS_PER_CABINET)*CABINET_PITCH;scene.add(root);
    books.push(makeBook(model,index,root,root.children[1],root.children[6],catalog[index]));
+  }
+  // The lower row was static scenery. Replace each spine with a real hinged
+  // notebook, retaining its measured position and leaving unwritten pages blank.
+  const upperCount=state.cabinetCount*BOOKS_PER_CABINET;
+  for(let cabinet=0;cabinet<state.cabinetCount;cabinet++)for(let slot=0;slot<20;slot++){
+   const decoration=byPath([177+slot]);if(cabinet===0)decoration.visible=false;
+   const model=baseline.items[slot%BOOKS_PER_CABINET],root=byPath(model.path).clone(true);
+   root.position.set(decoration.position.x+cabinet*CABINET_PITCH,.12,decoration.position.z);
+   root.quaternion.copy(decoration.quaternion);root.scale.set(.78,.72,.82);scene.add(root);
+   const index=upperCount+cabinet*20+slot,title=`دفتر ${new Intl.NumberFormat('fa-IR').format(index+1)}`;
+   books.push(makeBook(model,index,root,root.children[1],root.children[6],null,title));
   }
   state.ready=true;resize();clockTime();renderer.render(scene,camera);$('load-progress').style.transform='scaleX(1)';document.body.classList.remove('loading');installInput();
   $('world-link').href=new URL('../../',import.meta.url).href;updateCabinetNavigation();
