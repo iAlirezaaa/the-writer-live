@@ -547,48 +547,48 @@
       "label": "کتابخانه",
       "next_retry_at": null,
       "start": "2026-11-13T18:36:42",
-      "status": "planned",
+      "status": "done",
       "task": "library"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T19:56:42",
+      "end": "2026-11-13T19:18:23",
       "id": "202611132247",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T19:16:42",
+      "start": "2026-11-13T18:38:23",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T20:36:42",
+      "end": "2026-11-13T19:58:23",
       "id": "202611132327",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T19:56:42",
+      "start": "2026-11-13T19:18:23",
       "status": "planned",
       "task": "rest"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-13T19:16:42",
-    "id": "202611132207",
-    "label": "کتابخانه",
+    "end": "2026-11-13T19:18:23",
+    "id": "202611132247",
+    "label": "استراحت",
     "next_retry_at": null,
-    "start": "2026-11-13T18:36:42",
+    "start": "2026-11-13T18:38:23",
     "status": "planned",
-    "task": "library"
+    "task": "rest"
   },
   "day": "2026-11-13",
   "next": {
     "attempts": null,
-    "end": "2026-11-13T19:56:42",
-    "id": "202611132247",
+    "end": "2026-11-13T19:58:23",
+    "id": "202611132327",
     "label": "استراحت",
     "next_retry_at": null,
-    "start": "2026-11-13T19:16:42",
+    "start": "2026-11-13T19:18:23",
     "status": "planned",
     "task": "rest"
   }
