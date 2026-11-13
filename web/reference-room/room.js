@@ -1,6 +1,7 @@
 /* Independent controller for the measured reference room. Notebook contents are
  * intentionally empty. No source executable bundles, demos, tracking or fonts. */
 import * as THREE from '../vendor/three.module.js';
+import { readerEditorial } from '../reader-editorial.js';
 const $=id=>document.getElementById(id),clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const smooth=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2,segment=(t,a,b)=>smooth(clamp((t-a)/(b-a)));
 const stories=[{id:'owner-20261110-jaye-doxt',title:'جای دوخت'},{id:'0005',title:'کوچه‌ی بازگشت'},{id:'0003',title:'نامی که از پل برگشت'}];
@@ -148,10 +149,26 @@ function tick(now){
  const light=byPath([223]);if(light?.isPointLight){light.intensity=state.listed||state.selected>=0?26:0;light.position.copy(forward(2,1.7,2));}
  renderer.render(scene,camera);layoutButtons();if(state.hover>=0&&!state.busy&&['shelf','list'].includes(state.mode))placeLabel(books[state.hover]);if(tween||pending)requestRender(pending);
 }
-function placeLabel(book){const r=book.bounds;if(!r)return;$('label').style.left=clamp(r.max.x+18,20,Math.max(20,innerWidth-290))+'px';$('label').style.top=clamp(r.min.y+12,70,Math.max(70,innerHeight-180))+'px';}
+function placeLabel(book){const r=book.bounds;if(!r)return;const label=$('label'),width=label.offsetWidth||240,height=label.offsetHeight||70,anchor=(r.min.x+r.max.x)/2,left=clamp(anchor-width/2,12,Math.max(12,innerWidth-width-12));label.style.left=left+'px';label.style.top=Math.max(12,r.min.y-height-12)+'px';label.style.setProperty('--anchor-x',clamp(anchor-left,12,width-12)+'px');}
+async function loadBookPreview(book){
+ if(!book.storyId||book.previewLoaded)return;book.previewLoaded=true;
+ try{
+  const path=publicRoom()?`../../snapshot/stories/${encodeURIComponent(book.storyId)}.json`:`../../api/stories/${encodeURIComponent(book.storyId)}`;
+  const response=await fetch(new URL(path,import.meta.url));if(!response.ok)throw new Error('unavailable');
+  const story=await response.json(),editorial=readerEditorial(story);
+  const excerpt=String(story.body||'').replace(/^# [^\n]*\n+/, '').trim().replace(/\s+/g,' ');
+  book.preview=editorial?.summary?{label:'دربارهٔ داستان',text:editorial.summary}:{label:'آغاز داستان',text:excerpt?excerpt.slice(0,165)+(excerpt.length>165?'…':''):'معرفی این کتاب هنوز آماده نیست.'};
+ }catch{book.preview={label:'دربارهٔ داستان',text:'معرفی این کتاب در دسترس نیست.'};}
+ if(state.hover===book.index){showBookLabel(book);placeLabel(book);}
+}
+function showBookLabel(book){
+ const label=$('label'),title=document.createElement('strong'),preview=document.createElement('small');title.textContent=book.name;
+ const lead=document.createElement('b');lead.textContent=(book.preview?.label||'دربارهٔ داستان')+' · ';
+ preview.append(lead,document.createTextNode(book.preview?.text||'در حال آماده‌کردن معرفی…'));label.replaceChildren(title,preview);label.classList.add('on');
+}
 function point(index){
  if(state.busy||!['shelf','list'].includes(state.mode)||index===state.hover)return;state.hover=index;$('room').classList.toggle('over',index>=0);
- if(index>=0&&books[index].name!==COMING_SOON){const book=books[index];$('label').replaceChildren(Object.assign(document.createElement('strong'),{textContent:book.name}));$('label').classList.add('on');}else $('label').classList.remove('on');requestRender(true);
+ if(index>=0&&books[index].name!==COMING_SOON){const book=books[index];showBookLabel(book);loadBookPreview(book);}else $('label').classList.remove('on');requestRender(true);
 }
 function hit(x,y){mouse.set(x/innerWidth*2-1,1-y/innerHeight*2);ray.setFromCamera(mouse,camera);const found=ray.intersectObjects(targets,false)[0];return found?.object.userData.notebook??-1;}
 function openPose(book){

@@ -14,6 +14,12 @@ body.loading .cabinet-nav,body[data-mode=inside] .cabinet-nav,body[data-mode=spr
 @media(max-width:760px){.menu{gap:11px}.menu a{font-size:11px}.cabinet-nav{right:14px;top:56px;gap:7px}.cabinet-nav button{width:30px;height:30px}}
 @media(max-width:385px){.menu{left:14px;gap:8px}.menu a{font-size:10px}}
 
+/* Keep the preview anchored to the selected book rather than its neighbour. */
+.book-label{width:min(270px,calc(100vw - 24px));max-width:none;direction:rtl;text-align:right;padding:12px 15px;background:rgba(36,26,19,.95);border:1px solid #dbc09b65;border-radius:4px;box-shadow:0 9px 25px #0008;font-size:15px;line-height:1.6;z-index:8;transform:translateY(5px)}
+.book-label::before{display:none}.book-label::after{content:"";position:absolute;bottom:-7px;left:calc(var(--anchor-x, 50%) - 6px);width:12px;height:12px;transform:rotate(45deg);background:#241a13;border-right:1px solid #dbc09b65;border-bottom:1px solid #dbc09b65}
+.book-label small{margin-top:5px;font-size:12px;line-height:1.8;color:#e2d2ba}.book-label small b{color:#d6b786;font-weight:600}
+@media(max-width:760px){.book-label{font-size:14px;max-width:none}.book-label small{font-size:11px}}
+
 /* An editorial paper card keeps the room visible around the story of its library. */
 .about-panel{position:fixed;inset:0;z-index:12;display:grid;place-items:center;padding:64px 24px 28px;background:rgba(12,9,7,.54);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s,visibility .45s;overflow:auto}
 body[data-mode=about] .about-panel{opacity:1;visibility:visible;pointer-events:auto}
