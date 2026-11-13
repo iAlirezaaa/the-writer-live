@@ -39,7 +39,7 @@ function fixture() {
       getAnimations(){return [];},remove(){this.isConnected=false;}
     };
   }
-  const names=["overlay","title","pageR","pageL","prev","next","settings","margin","marginBtn","selBtn","pop","voteStatus","voteUp","voteDown","closeBtn","bookEl","measure","find","bookmark"];
+  const names=["overlay","title","pageR","pageL","prev","next","settings","margin","marginBtn","selBtn","highlightBtn","pop","voteStatus","voteUp","voteDown","closeBtn","bookEl","measure","find","bookmark"];
   const ui=Object.fromEntries(names.map(name=>[name,node()]));
   ui.overlay.hidden=true;ui.pop.hidden=true;ui.margin.hidden=true;
   const background=node(),opener=node();document.body=node();document.body.children=[background,ui.overlay];document.activeElement=opener;
@@ -52,6 +52,7 @@ function fixture() {
     sessionStorage:{getItem:()=>null},isGitHubPages:()=>true,
     getJSON(url){if(url.endsWith("/comments"))return Promise.resolve([]);const id=decodeURIComponent(url.split("/").pop());return requests.get(id)?.promise||Promise.resolve(story(id));},
     loadPublicStoryNotes:()=>Promise.resolve([]),pageAnchor:anchors.pageAnchor,locatePageByAnchor:anchors.locatePageByAnchor,
+    readHighlights:()=>[],writeHighlights:(_id,values)=>values,
     angleFromPointer:curl.angleFromPointer,shouldCommit:curl.shouldCommit,
     uiFixture:ui,fetch:async()=>({ok:true,json:async()=>({})})
   };
