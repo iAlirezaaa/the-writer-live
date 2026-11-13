@@ -497,99 +497,99 @@
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
       "start": "2026-11-13T18:07:00",
-      "status": "planned",
+      "status": "done",
       "task": "notebook"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T19:27:00",
+      "end": "2026-11-13T18:49:42",
       "id": "202611131927",
       "label": "رساندن خودم",
       "next_retry_at": null,
-      "start": "2026-11-13T18:47:00",
+      "start": "2026-11-13T18:09:42",
       "status": "planned",
       "task": "brand"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T20:07:00",
+      "end": "2026-11-13T19:29:42",
       "id": "202611132007",
       "label": "دفترچه‌ی ایده‌ها",
       "next_retry_at": null,
-      "start": "2026-11-13T19:27:00",
+      "start": "2026-11-13T18:49:42",
       "status": "planned",
       "task": "notebook"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T20:47:00",
+      "end": "2026-11-13T20:09:42",
       "id": "202611132047",
       "label": "مشاورهٔ تحریریه",
       "next_retry_at": null,
-      "start": "2026-11-13T20:07:00",
+      "start": "2026-11-13T19:29:42",
       "status": "planned",
       "task": "consult"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T21:27:00",
+      "end": "2026-11-13T20:49:42",
       "id": "202611132127",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T20:47:00",
+      "start": "2026-11-13T20:09:42",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T22:07:00",
+      "end": "2026-11-13T21:29:42",
       "id": "202611132207",
       "label": "کتابخانه",
       "next_retry_at": null,
-      "start": "2026-11-13T21:27:00",
+      "start": "2026-11-13T20:49:42",
       "status": "planned",
       "task": "library"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T22:47:00",
+      "end": "2026-11-13T22:09:42",
       "id": "202611132247",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T22:07:00",
+      "start": "2026-11-13T21:29:42",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T23:27:00",
+      "end": "2026-11-13T22:49:42",
       "id": "202611132327",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T22:47:00",
+      "start": "2026-11-13T22:09:42",
       "status": "planned",
       "task": "rest"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-13T18:47:00",
-    "id": "202611131847",
-    "label": "دفترچه‌ی ایده‌ها",
+    "end": "2026-11-13T18:49:42",
+    "id": "202611131927",
+    "label": "رساندن خودم",
     "next_retry_at": null,
-    "start": "2026-11-13T18:07:00",
+    "start": "2026-11-13T18:09:42",
     "status": "planned",
-    "task": "notebook"
+    "task": "brand"
   },
   "day": "2026-11-13",
   "next": {
     "attempts": null,
-    "end": "2026-11-13T19:27:00",
-    "id": "202611131927",
-    "label": "رساندن خودم",
+    "end": "2026-11-13T19:29:42",
+    "id": "202611132007",
+    "label": "دفترچه‌ی ایده‌ها",
     "next_retry_at": null,
-    "start": "2026-11-13T18:47:00",
+    "start": "2026-11-13T18:49:42",
     "status": "planned",
-    "task": "brand"
+    "task": "notebook"
   }
 }
