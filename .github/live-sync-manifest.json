@@ -6,7 +6,7 @@
     "config.json",
     "personal memory and internal records"
   ],
-  "generated_utc": "2026-11-13T08:50:48+00:00",
+  "generated_utc": "2026-11-13T08:59:16+00:00",
   "partial_sync": {
     "baseline_private_source_commit": "538c0bba51c09311c3322fc2a91efd8a52b301d7",
     "note": "Tested local pull recovery: private full server now routes /read to canonical WebGL room and auto-downloads checked public scene; safe preview tools hydrate asset and serve canonical room locally. Public Pages frontend/stories/city remain unchanged.",
@@ -18,7 +18,7 @@
       ".github/workflows/reader-reference-room.yml"
     ]
   },
-  "private_source_commit": "967d0ffb23fbf8d8250a12c6ca07b65732eae9ec",
+  "private_source_commit": "a616553336cf75c49229494b712d399bcb4a8575",
   "private_source_repository": "iAlirezaaa/the-writer",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",
@@ -32,7 +32,7 @@
     "web/library-aisle.js": "9355828d471ef3e22c5bed32c7c7485a071308ffc62a44537394c8b33a03f46b"
   },
   "reader_assets": {
-    "web/book.js": "38810d5ba70aae082382f8db5ea4babf663211d3a16d7d7d408b3990c6bd6d78",
+    "web/book.js": "4bbdcd0cafa188513d815f9b9c4c612f1fa8e0c4790d531b278d1d31b1e9e9da",
     "web/library-stage.js": "48ac013ace47ef9959718570b8f16fa4a589e38d3356036891e16c341cbbf0c8",
     "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
     "web/read.html": "cbf44a19ff5e627ae02ead57dc4bf43340d217f1ef97c0dc28e16149edb69925",

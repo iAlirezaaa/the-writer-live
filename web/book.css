@@ -86,6 +86,7 @@ body.book-open { overflow: hidden; }
 .leaf-face.back { transform: rotateY(180deg); }
 .page-content.blank { background: none; }
 mark.note-mark { background: rgba(224, 168, 79, 0.35); color: inherit; border-bottom: 1.5px solid #b7791f; cursor: pointer; padding: 0 1px; }
+mark.reader-highlight { background: rgba(244, 216, 80, .55); color: inherit; cursor: pointer; }
 .page ::selection { background: rgba(77, 127, 128, 0.35); }
 .book-footer { width: min(1080px, calc(100vw - 32px)); display: grid; grid-template-columns: minmax(120px,1fr) auto auto; align-items: center; gap: 14px; padding: var(--s2) 0 var(--s4); font-family: "Vazirmatn", Tahoma, sans-serif; font-size: .85rem; color: #a39b8d; }
 .book-progress { width: 100%; accent-color: #d5a45c; direction: rtl; cursor: pointer; }

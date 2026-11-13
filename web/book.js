@@ -22,6 +22,7 @@ import { readerEditorial } from "./reader-editorial.js";
 import { openPublicFeedback, openPublicVote, loadPublicStoryNotes } from "./feedback.js?v=reader-feedback-3";
 import { applyCoverVisual, createCoverArt } from "./book-cover.js?v=reader-20261109-v7";
 import { pageAnchor, locatePageByAnchor } from "./reader-position.js";
+import { readHighlights, writeHighlights } from "./reader-highlights.js";
 import { createLeaf, angleFromPointer, shouldCommit } from "./page-curl.js?v=library-20261111-v1";
 let ui = null;          // the overlay, built once
 let book = null;        // { story, comments, pages, index, turning }
@@ -165,6 +166,7 @@ function build() {
   footer.append(progress, counter, jump, bookmark, syncStatus);
   const margin = el("aside", "book-margin"); margin.hidden = true;
   const selBtn = el("button", "sel-note", "نظر روی این بخش"); selBtn.hidden = true;
+  const highlightBtn = el("button", "sel-note sel-highlight", "هایلایت"); highlightBtn.hidden = true;
   const pop = el("form", "note-pop"); pop.hidden = true;
   const popQuote = el("blockquote", "note-quote");
   const popName = el("input"); popName.placeholder = "نام (اختیاری)"; popName.maxLength = 40;
@@ -181,13 +183,13 @@ function build() {
   pop.append(popQuote, popName, popCategory, popRating, popText, popRow);
   // a hidden page used to measure how much text fits
   const measure = el("div", "page page-measure");
-  overlay.append(bar, shelf, footer, margin, selBtn, pop, measure);
+  overlay.append(bar, shelf, footer, margin, selBtn, highlightBtn, pop, measure);
   document.body.appendChild(overlay);
 
   ui = { overlay, title, bookEl, pageR, pageL, prev, next, counter, progress, bookmark,
     jump, syncStatus, syncBtn, settings, fontSelect, leadingSelect, marginsSelect, alignSelect, modeSelect,
     find, margin, marginBtn, voteUp, voteDown, voteStatus, closeBtn, themeSelect, focusBtn,
-    selBtn, pop, popQuote, popName, popCategory, popRating, popText, popStatus, popCancel, measure,
+    selBtn, highlightBtn, pop, popQuote, popName, popCategory, popRating, popText, popStatus, popCancel, measure,
     ribbon, segments, turnSelect, speedSelect, soundSelect, fontRange, lampRange };
 
   themeSelect.addEventListener("change",()=>setReaderOption("theme",themeSelect.value));
@@ -257,6 +259,15 @@ function build() {
   bookEl.addEventListener("touchend", () => setTimeout(onSelect, 50));
   selBtn.addEventListener("mousedown", (e) => e.preventDefault());
   selBtn.addEventListener("click", openNoteForm);
+  highlightBtn.addEventListener("mousedown", e => e.preventDefault());
+  highlightBtn.addEventListener("click", () => {
+    if (!book || !pendingQuote) return;
+    try { book.highlights = writeHighlights(book.story.id, [...book.highlights, pendingQuote]); }
+    catch { ui.syncStatus.textContent = "ذخیرهٔ هایلایت در این مرورگر ممکن نشد"; return; }
+    ui.selBtn.hidden = ui.highlightBtn.hidden = true;
+    window.getSelection()?.removeAllRanges();
+    repaginate();
+  });
   popCancel.addEventListener("click", () => { pop.hidden = true; });
   pop.addEventListener("submit", sendNote);
   let t = null;
@@ -339,7 +350,7 @@ function hideReaderOverlay() {
   ui.overlay.classList.remove("book-entering", "book-leaving", "chrome-idle");
   ui.overlay.style.background = "";
   ui.overlay.removeAttribute("aria-busy");
-  ui.settings.open = false; ui.selBtn.hidden = true; ui.pop.hidden = true;
+  ui.settings.open = false; ui.selBtn.hidden = ui.highlightBtn.hidden = true; ui.pop.hidden = true;
   setReaderModal(false);
   closing = false;
   window.dispatchEvent(new Event("writer:reading-closed"));
@@ -615,7 +626,7 @@ export async function openBook(storyId,{staged=false}={}) {
   ui.pageR.replaceChildren();ui.pageL.replaceChildren();
   ui.prev.disabled=true;ui.next.disabled=true;
   ui.settings.open=false;ui.margin.hidden=true;ui.marginBtn.setAttribute("aria-pressed","false");
-  ui.selBtn.hidden=true;ui.pop.hidden=true;
+  ui.selBtn.hidden=ui.highlightBtn.hidden=true;ui.pop.hidden=true;
   if(!staged)ui.overlay.classList.remove("book-entering");
   let story,notes,publicNotes;
   try{
@@ -643,7 +654,7 @@ export async function openBook(storyId,{staged=false}={}) {
   const saved=hasNewerServer?{...prefs,...stored,...remoteState}:{...prefs,...stored};
   const resumeProgress=Math.max(0,Math.min(1,Number(saved.progress)||0));
   book={
-    story,comments:[...(Array.isArray(notes)?notes:[]),...publicNotes],pages:[],index:0,turning:null,
+    story,comments:[...(Array.isArray(notes)?notes:[]),...publicNotes],highlights:readHighlights(storyId),pages:[],index:0,turning:null,
     repaginateLater:false,bookmark:saved.bookmark??null,bookmarkAnchor:saved.bookmarkAnchor??null,progress:0,
     ...READER_DEFAULTS,...saved,syncConnected:connected
   };
@@ -752,7 +763,7 @@ async function close() {
   endTurn();grab=null;cancelPaper();
   flushServerReading();
   ui.settings.open=false;
-  ui.selBtn.hidden = true; ui.pop.hidden = true;
+  ui.selBtn.hidden = ui.highlightBtn.hidden = true; ui.pop.hidden = true;
   const hideReader=()=>{
     if(request!==readerRequest)return;
     hideReaderOverlay();
@@ -796,9 +807,10 @@ function marked(text, quotes) {
     }
     if (!best) { frag.appendChild(document.createTextNode(rest)); break; }
     if (best.i > 0) frag.appendChild(document.createTextNode(rest.slice(0, best.i)));
-    const m = el("mark", "note-mark", best.q.quote);
+    const m = el("mark", best.q.highlight ? "reader-highlight" : "note-mark", best.q.quote);
     m.title = `${best.q.name}: ${best.q.text}`;
     m.dataset.cid = best.q.id;
+    if (best.q.highlight) m.dataset.quote = best.q.quote;
     frag.appendChild(m);
     rest = rest.slice(best.i + best.q.quote.length);
   }
@@ -807,6 +819,13 @@ function marked(text, quotes) {
 
 // Marks get their click handlers after mounting: cloneNode() drops listeners.
 function bindMarks(root) {
+  root.querySelectorAll("mark.reader-highlight").forEach(m => {
+    m.title = "برای حذف هایلایت کلیک کنید";
+    m.addEventListener("click", () => {
+      try { book.highlights = writeHighlights(book.story.id, book.highlights.filter(q => q !== m.dataset.quote)); repaginate(); }
+      catch { ui.syncStatus.textContent = "حذف هایلایت ممکن نشد"; }
+    });
+  });
   root.querySelectorAll("mark.note-mark").forEach((m) => {
     m.addEventListener("click", () => { ui.margin.hidden = false; focusNote(m.dataset.cid); });
   });
@@ -854,7 +873,7 @@ function editorialPage() {
 // The binary search measures plain text, so the highlight pass runs once per accepted chunk.
 function paginate(blocks, kind) {
   const pages = [];
-  const quotes = book.comments.filter((c) => c.quote);
+  const quotes = [...book.comments.filter((c) => c.quote), ...book.highlights.map(quote => ({quote, highlight:true}))];
   const m = ui.measure;
   let content = el("div", `page-content ${kind}`);
   let firstPara = null;
@@ -1029,7 +1048,7 @@ function pageSheet(page, folio, side) {
 /* Lays a sheet over the book and shows what lies under it. Geometry: see page-curl.js. */
 function startTurn(target) {
   const per = spread(), pages = book.pages, from = book.index, forward = target > from;
-  ui.selBtn.hidden = true; ui.pop.hidden = true;
+  ui.selBtn.hidden = ui.highlightBtn.hidden = true; ui.pop.hidden = true;
   const host = ui.bookEl.getBoundingClientRect();
   const lying = (per === 2 ? ui.pageL : ui.pageR).getBoundingClientRect();
   let front, back;
@@ -1105,7 +1124,7 @@ function goTo(target) {
   const per=spread();
   target=Math.max(0,Math.min(Math.floor((Number(target)||0)/per)*per,Math.max(0,book.pages.length-per)));
   if(target===book.index)return;
-  ui.selBtn.hidden = true; ui.pop.hidden = true;
+  ui.selBtn.hidden = ui.highlightBtn.hidden = true; ui.pop.hidden = true;
   if (book.turnStyle === "none" || reducedMotion()) { book.index = target; show(); return; }
   if (book.turnStyle === "slide") {
     const forward = target > book.index;
@@ -1355,12 +1374,15 @@ let pendingQuote = "";
 function onSelect() {
   const sel = window.getSelection();
   const text = sel ? normalize(sel.toString()) : "";
-  if (!sel || sel.rangeCount === 0 || text.length < 3 || !ui.bookEl.contains(sel.anchorNode)) { ui.selBtn.hidden = true; return false; }
+  if (!sel || sel.rangeCount === 0 || text.length < 3 || !ui.bookEl.contains(sel.anchorNode)) { ui.selBtn.hidden = ui.highlightBtn.hidden = true; return false; }
   pendingQuote = text.slice(0, 300);
   const rect = sel.getRangeAt(0).getBoundingClientRect();
   ui.selBtn.hidden = false;
+  ui.highlightBtn.hidden = false;
   ui.selBtn.style.top = `${Math.max(8, rect.top - 44)}px`;
   ui.selBtn.style.left = `${Math.min(window.innerWidth - 170, Math.max(8, rect.left + rect.width / 2 - 80))}px`;
+  ui.highlightBtn.style.top = ui.selBtn.style.top;
+  ui.highlightBtn.style.left = `${Math.max(8, parseFloat(ui.selBtn.style.left) - 90)}px`;
   return true;
 }
 function edgeTurn(e) {
@@ -1375,6 +1397,7 @@ function edgeTurn(e) {
 function openNoteForm(quote) {
   const q = typeof quote === "string" ? quote : pendingQuote;
   ui.selBtn.hidden = true;
+  ui.highlightBtn.hidden = true;
   ui.pop.hidden = false;
   ui.popQuote.textContent = q ? `«${q}»` : "نظر کلی درباره‌ی این داستان";
   ui.pop.dataset.quote = q || "";
