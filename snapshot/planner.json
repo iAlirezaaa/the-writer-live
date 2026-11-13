@@ -377,39 +377,30 @@
       "label": "رساندن خودم",
       "next_retry_at": null,
       "start": "2026-11-13T12:59:15",
-      "status": "planned",
+      "status": "done",
       "task": "brand"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T14:19:15",
+      "end": "2026-11-13T14:00:27",
       "id": "202611132344",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T13:39:15",
+      "start": "2026-11-13T13:20:27",
       "status": "planned",
       "task": "rest"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-13T13:39:15",
-    "id": "202611132304",
-    "label": "رساندن خودم",
-    "next_retry_at": null,
-    "start": "2026-11-13T12:59:15",
-    "status": "planned",
-    "task": "brand"
-  },
-  "day": "2026-11-13",
-  "next": {
-    "attempts": null,
-    "end": "2026-11-13T14:19:15",
+    "end": "2026-11-13T14:00:27",
     "id": "202611132344",
     "label": "استراحت",
     "next_retry_at": null,
-    "start": "2026-11-13T13:39:15",
+    "start": "2026-11-13T13:20:27",
     "status": "planned",
     "task": "rest"
-  }
+  },
+  "day": "2026-11-13",
+  "next": null
 }

@@ -6,7 +6,7 @@
     "config.json",
     "personal memory and internal records"
   ],
-  "generated_utc": "2026-11-13T09:45:48+00:00",
+  "generated_utc": "2026-11-13T09:50:48+00:00",
   "partial_sync": {
     "baseline_private_source_commit": "538c0bba51c09311c3322fc2a91efd8a52b301d7",
     "note": "Tested local pull recovery: private full server now routes /read to canonical WebGL room and auto-downloads checked public scene; safe preview tools hydrate asset and serve canonical room locally. Public Pages frontend/stories/city remain unchanged.",
@@ -18,7 +18,7 @@
       ".github/workflows/reader-reference-room.yml"
     ]
   },
-  "private_source_commit": "2d716b3034c24f6cc286c8f6a048141ab2a37984",
+  "private_source_commit": "3cab8127797c38768f17a08127670efb0a0a3a35",
   "private_source_repository": "iAlirezaaa/the-writer",
   "public_export_scope": [
     "web/ public frontend modules and permitted map/survey data",

@@ -37,6 +37,13 @@ export async function getJSON(path, options={}) {
   } catch(error) {
     const pathname=new URL(path,location.href).pathname;
     if(pathname.endsWith("/comments"))return [];
+    // An owner-authorized public manuscript can be read from its published
+    // snapshot while an older local server is still finishing a writing job.
+    const owner=pathname.match(/^\/api\/stories\/(owner-[a-zA-Z0-9_-]+)$/);
+    if(owner&&!isGitHubPages()){
+      const response=await fetch(`https://ialirezaaa.github.io/the-writer-live/snapshot/stories/${encodeURIComponent(owner[1])}.json`,{cache:"no-store"});
+      if(response.ok)return response.json();
+    }
     const fallback=snapshotPath(pathname);
     if(!fallback)throw error;
     const response=await fetch(fallback,{cache:"no-store"});
