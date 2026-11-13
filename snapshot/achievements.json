@@ -3,42 +3,52 @@
     {
       "done": false,
       "label": "امتیاز هشتاد",
-      "progress": 0.9275
+      "progress": 0.9788
     },
     {
       "done": false,
       "label": "امتیاز هشتاد‌وپنج",
-      "progress": 0.8729
+      "progress": 0.9212
     },
     {
       "done": false,
       "label": "امتیاز نود",
-      "progress": 0.8244
+      "progress": 0.87
     },
     {
       "done": false,
       "label": "ویژگی پررنگ",
-      "progress": 0.6875
-    },
-    {
-      "done": false,
-      "label": "ویژگیِ تمام‌قد",
-      "progress": 0.55
+      "progress": 0.6925
     },
     {
       "done": false,
       "label": "پنج داستان پذیرفته‌شده",
-      "progress": 0.4
+      "progress": 0.6
+    },
+    {
+      "done": false,
+      "label": "ویژگیِ تمام‌قد",
+      "progress": 0.554
+    },
+    {
+      "done": false,
+      "label": "نوولت",
+      "progress": 0.5
+    },
+    {
+      "done": false,
+      "label": "رمان‌واره",
+      "progress": 0.3333
     },
     {
       "done": false,
       "label": "ده هزار کلمه",
-      "progress": 0.2602
+      "progress": 0.2644
     },
     {
       "done": false,
       "label": "پانزده داستان",
-      "progress": 0.1333
+      "progress": 0.2
     },
     {
       "done": false,
@@ -49,21 +59,11 @@
       "done": false,
       "label": "ده خواننده",
       "progress": 0.1
-    },
-    {
-      "done": false,
-      "label": "چهل داستان",
-      "progress": 0.05
-    },
-    {
-      "done": false,
-      "label": "صد کامنت خوانده",
-      "progress": 0.04
     }
   ],
   "stats": {
-    "done": 7,
-    "pct": 16,
+    "done": 9,
+    "pct": 21,
     "total": 43
   }
 }
