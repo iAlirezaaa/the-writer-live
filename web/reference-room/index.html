@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="en" translate="no">
+<html lang="fa" dir="rtl" translate="no">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d0b0a">
-<title>Interaction Library — empty notebooks</title>
-<meta name="description" content="A room of empty notebooks, prepared for the next chapter of Hades's library.">
+<title>کتابخانهٔ هادس</title>
+<meta name="description" content="کتابخانهٔ سه‌بعدی هادس و راه ورود به صفحهٔ خوانش هر اثر.">
 <link rel="stylesheet" href="./room.css?v=reference-20261112-v1">
 </head>
 <body class="loading" data-mode="shelf">
-<canvas id="room" aria-label="A room with a two-tier wooden bookcase under a lamp, eleven notebooks and decorative books."></canvas>
+<canvas id="room" aria-label="کتابخانهٔ سه‌بعدی هادس با قفسه‌های چوبی و کتاب‌ها."></canvas>
 <div class="vignette" aria-hidden="true"></div>
-<nav class="menu" aria-label="Room"><button data-view="about">About</button><button data-view="contact">Contact</button><a id="world-link" href="../" lang="fa" dir="rtl">بازگشت به جهان نویسنده</a></nav>
+<nav class="menu" aria-label="کتابخانه"><button data-view="about">دربارهٔ کتابخانه</button><button data-view="contact">تماس</button><a id="world-link" href="../" lang="fa" dir="rtl">بازگشت به جهان نویسنده</a></nav>
 <nav class="views" aria-label="Library view">
 <button data-view="shelf" aria-label="The shelf" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h4v14H4zM10 3h4v17h-4zM16 8h4v12h-4z"/></svg></button>
 <button data-view="list" aria-label="A list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v3H4zM4 10h16v3H4zM4 16h16v3H4z"/></svg></button>
 </nav>
 <nav class="cabinet-nav" aria-label="کتابخانه‌های کنار هم" dir="rtl"><button id="cabinet-prev" type="button" aria-label="قفسه قبلی" disabled>←</button><span id="cabinet-status" aria-live="polite">۱ / ۲</span><button id="cabinet-next" type="button" aria-label="قفسه بعدی">→</button></nav>
-<a class="mark" href="#" aria-label="Interaction Library: back to the shelf"><strong>Interaction</strong><span>Library</span></a>
+<a class="mark" href="#" aria-label="کتابخانهٔ هادس: بازگشت به قفسه"><strong>کتابخانهٔ</strong><span>هادس</span></a>
 <div id="covers" class="catalog" role="list" aria-label="کتاب‌ها و دفترهای به‌زودی"></div>
 <div id="label" class="book-label" aria-hidden="true"></div>
 <p id="hint" class="step-hint"></p>
@@ -25,5 +25,5 @@
 <div id="failure" class="error" hidden><p>The room could not be loaded.</p><button onclick="location.reload()">Try again</button></div>
 <div class="fallback-list" id="fallback"></div>
 <noscript><p style="position:fixed;top:35%;left:20%;right:20%;text-align:center">This three-dimensional library needs JavaScript. The existing stories have not been changed.</p></noscript>
-<script type="module" src="./room.js?v=reference-20261112-v1"></script>
+<script type="module" src="./room.js?v=reference-20261113-reading-v2"></script>
 </body></html>

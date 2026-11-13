@@ -5,18 +5,25 @@ const $=id=>document.getElementById(id),clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a
 const smooth=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2,segment=(t,a,b)=>smooth(clamp((t-a)/(b-a)));
 const stories=[{id:'owner-20261110-jaye-doxt',title:'جای دوخت'},{id:'0005',title:'کوچه‌ی بازگشت'},{id:'0003',title:'نامی که از پل برگشت'}];
 const CABINET_PITCH=7.35,BOOKS_PER_CABINET=11,COMING_SOON='به‌زودی';
-async function publishedCatalog(){
+const publicRoom=()=>location.hostname.endsWith('github.io');
+async function roomCatalog(){
  const result=[...stories],known=new Set(stories.map(s=>s.id));
  try{
-  const response=await fetch(new URL('../../snapshot/stories.json',import.meta.url));
+  // Pages may only show the already-authorized snapshot.  The private server
+  // owns its complete catalogue, so the physical library there reflects the
+  // writer's real books instead of filling active places with dead notebooks.
+  const source=publicRoom()?'../../snapshot/stories.json':'../../api/stories';
+  const response=await fetch(new URL(source,import.meta.url));
   if(!response.ok)return result;
   const catalog=await response.json();if(!Array.isArray(catalog))return result;
   for(const item of catalog){
    const id=String(item?.id||''),title=String(item?.title||'').trim();
-   if(!id||!title||known.has(id)||!['accepted','owner_shared'].includes(item.status))continue;
+   const published=['accepted','owner_shared'].includes(item.status);
+   const readable=Boolean(item?.file)&&!['draft','writing','pending'].includes(String(item.status||''));
+   if(!id||!title||known.has(id)||(publicRoom()?!published:!readable))continue;
    known.add(id);result.push({id,title});
   }
- }catch{/* The built-in three authorized public stories remain available offline. */}
+ }catch{/* The three authorized books remain available offline. */}
  return result;
 }
 const titles=stories.map(story=>story?.title||'');
@@ -147,7 +154,11 @@ function openFinal(book){const p=openPose(book);book.root.position.copy(p.p);boo
 function dimRoom(amount){for(const l of scene.userData.lights)l.intensity=l.userData.power*(1-amount)*(l.userData.lamp?state.lamp:1);}
 function open(index,push=true){
  if(!state.ready||state.busy||index<0||index>=books.length||!['shelf','list'].includes(state.mode))return;
- const book=books[index];state.selected=index;book.returnPose=pose(book.root);state.hover=-1;mode('opening');
+ const book=books[index];
+ // Empty future slots are scenery, not a second empty reading experience.
+ // Only a real manuscript can leave the cabinet for the reader route.
+ if(!book.storyId)return;
+ state.selected=index;book.returnPose=pose(book.root);state.hover=-1;mode('opening');
  const start=pose(book.root),pulled={p:start.p.clone().add(new THREE.Vector3(0,.12,1.2)),q:start.q.clone(),s:start.s.clone()},end=openPose(book);
  if(push)history.pushState({notebook:index},'',`#${book.slug}`);
  animate(1600,t=>{if(t<.3)put(book.root,start,pulled,segment(t,0,.3));else put(book.root,pulled,end,segment(t,.3,1));book.hinge.rotation.y=Math.PI*segment(t,.3,1);if(t>.35)for(const o of book.prints)o.visible=false;book.paper.visible=true;book.inside.visible=true;dimRoom(segment(t,.2,1)*.48);},()=>{openFinal(book);mode('spread');if(navigateStory(book))return;$('close').focus({preventScroll:true});requestRender(true);});
@@ -198,7 +209,7 @@ async function start(){
   for(const n of baseline.nodes){const o=byPath(n.path);if(o?.isLight&&o.target&&n.target){o.target.position.fromArray(n.target);if(!o.target.parent)scene.add(o.target);}}
   for(const o of scene.children)if(o.isMesh&&o.position.y>4.5&&o.position.y<5.1&&o.position.x>4){nodes.set('wall-title',o);break;}
   const blankPaper=new THREE.MeshBasicMaterial({color:0xf1ede3,toneMapped:false,side:THREE.DoubleSide});
-  const catalog=await publishedCatalog();
+  const catalog=await roomCatalog();
   // Always keep the identical right-hand cabinet ready. For future authorized
   // publications, fill the existing 11 positions first; only then clone books
   // into the next case and append another ready empty case at capacity.
@@ -212,7 +223,8 @@ async function start(){
    root.traverse(o=>{original.set(o,{...pose(o),visible:o.visible});if(o.isMesh){o.userData.notebook=index;o.receiveShadow=false;targets.push(o);}});
    const button=document.createElement('button');button.type='button';
    button.setAttribute('aria-label',story?.title||`به‌زودی، دفتر ${index+1}`);
-   button.textContent=story?.title||COMING_SOON;button.tabIndex=index===0?0:-1;$('covers').append(button);
+   button.textContent=story?.title||COMING_SOON;button.tabIndex=story&&index===0?0:-1;
+   button.disabled=!story;$('covers').append(button);
    const book={index,model,name:title,title:'',slug:model.name.toLowerCase()+(index>=11?'-'+index:''),storyId:story?.id||null,root,hinge,still,original,home:pose(root),pull:0,button,prints:hinge.children.slice(2),paper:root.children[7],inside:hinge.children[1]};
    still.visible=false;book.paper.material=blankPaper;book.inside.material=blankPaper;
    button.addEventListener('click',()=>open(index));button.addEventListener('focus',()=>{

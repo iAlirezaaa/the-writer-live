@@ -6,9 +6,9 @@
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "d4b8d07989637d0d45a8365fa89622c4ecd6c455",
+    "web/reference-room/index.html": "e11805ff3b8e245508f09744276ec18ad4d5c628",
     "web/reference-room/room.css": "66a63f5b3c2ccb51129f9136766116b1f5350021",
-    "web/reference-room/room.js": "79d66f98a454d164bcb8713452a5fa67650815cd"
+    "web/reference-room/room.js": "634b5ee576a168c7e6e8793632ca7bc327501175"
   },
   "asset_sha256": "48790d1db5856013d6f79ebab66417d927f6077829bd5eae0113134e0c1d8633",
   "asset_bytes": 2073167,
