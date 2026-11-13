@@ -1,13 +1,4 @@
 {
-  "schema": 1,
-  "generated_utc": "2026-11-12T16:20:00Z",
-  "private_source_repository": "iAlirezaaa/the-writer",
-  "private_source_commit": "63e7d760ae6f7f175c6e823405b42c05b8c6f7a4",
-  "public_export_scope": [
-    "web/ public frontend modules and permitted map/survey data",
-    "index.html and read/index.html rewritten for GitHub Pages project paths",
-    "public frontend regression tests and deploy workflow"
-  ],
   "excluded": [
     "writer/",
     "data/",
@@ -15,46 +6,53 @@
     "config.json",
     "personal memory and internal records"
   ],
-  "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
-  "script_version": 2,
-  "reader_assets": {
-    "web/book.js": "38810d5ba70aae082382f8db5ea4babf663211d3a16d7d7d408b3990c6bd6d78",
-    "web/read.js": "409dd2b48385b6ab4b4a3765397995364ed757db255c112f49ab003a4ab34d43",
-    "web/library-stage.js": "48ac013ace47ef9959718570b8f16fa4a589e38d3356036891e16c341cbbf0c8",
-    "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
-    "web/reader-room.css": "8f76999f32c0f356e43938bf4f80b1ccce8c51ced2673ba59f31b6c9919ddefd",
-    "web/read.html": "ca47d1576681b5b93360af2c45e401eb4a1743230c440c1a74de3e9ff564a235",
-    "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
-    "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943"
-  },
-  "reader_entrypoint": "read/index.html",
+  "generated_utc": "2026-11-13T07:21:50+00:00",
   "partial_sync": {
     "baseline_private_source_commit": "538c0bba51c09311c3322fc2a91efd8a52b301d7",
+    "note": "Tested local pull recovery: private full server now routes /read to canonical WebGL room and auto-downloads checked public scene; safe preview tools hydrate asset and serve canonical room locally. Public Pages frontend/stories/city remain unchanged.",
     "paths": [
       "tools/materialize_reference_room.py",
       "tools/stage_reference_room.py",
       "tools/serve_reference_room.py",
       "tests/test_reference_room_pull.py",
       ".github/workflows/reader-reference-room.yml"
-    ],
-    "note": "Tested local pull recovery: private full server now routes /read to canonical WebGL room and auto-downloads checked public scene; safe preview tools hydrate asset and serve canonical room locally. Public Pages frontend/stories/city remain unchanged."
+    ]
   },
-  "reader_preview_assets": {
-    "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
-    "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943",
-    "web/reader-editorial.js": "792cbca6c3a3bafdaf6f84387879e734139a09454dc0a19f8e724fc683fcb309"
-  },
+  "private_source_commit": "6c0bc9d335fc2ef9b20fa4e1e7e6c2cb21523de4",
+  "private_source_repository": "iAlirezaaa/the-writer",
+  "public_export_scope": [
+    "web/ public frontend modules and permitted map/survey data",
+    "index.html and read/index.html rewritten for GitHub Pages project paths",
+    "public frontend regression tests and deploy workflow"
+  ],
+  "public_story_policy": "Retain already authorized existing public snapshot; do not publish private internal stories",
   "reader_aisle_assets": {
-    "web/library-aisle.js": "9355828d471ef3e22c5bed32c7c7485a071308ffc62a44537394c8b33a03f46b",
+    "web/interaction-library/index.html": "2dd04820435fc3f9206d903c1aa25f9f3ffd3355eb98fc379c719179cb3e6842",
     "web/library-aisle.css": "ec24cdb591afe71c8fcef35e0640798287aaea23446f57a8ae9e1af669e62a76",
-    "web/interaction-library/index.html": "2dd04820435fc3f9206d903c1aa25f9f3ffd3355eb98fc379c719179cb3e6842"
+    "web/library-aisle.js": "9355828d471ef3e22c5bed32c7c7485a071308ffc62a44537394c8b33a03f46b"
   },
-  "reader_motion_assets": {
-    "web/page-curl.js": "373f522b361c9c30cbaf6b391c7b8e5af4bf4248ce25002d05cc43a399b4eef5"
+  "reader_assets": {
+    "web/book.js": "38810d5ba70aae082382f8db5ea4babf663211d3a16d7d7d408b3990c6bd6d78",
+    "web/library-stage.js": "48ac013ace47ef9959718570b8f16fa4a589e38d3356036891e16c341cbbf0c8",
+    "web/library.css": "d140346f43a297e9794e1fbdb558458012563387f634e0513a07e144771627cb",
+    "web/read.html": "ca47d1576681b5b93360af2c45e401eb4a1743230c440c1a74de3e9ff564a235",
+    "web/read.js": "409dd2b48385b6ab4b4a3765397995364ed757db255c112f49ab003a4ab34d43",
+    "web/reader-room.css": "8f76999f32c0f356e43938bf4f80b1ccce8c51ced2673ba59f31b6c9919ddefd"
   },
   "reader_atmosphere_assets": {
     "web/book-cover.js": "8afd933f929e31da1bde51863df2dcce0f710bd2f9baa7f75691ff90092261ef",
     "web/library-atmosphere.css": "b7426f52808f4986b341602ae8f1be24ebb08cb8c1bdb1ca2bd8a23d0da5eb06",
     "web/library-atmosphere.js": "7191dcd006dd13a5c296f139c0c8f7887def44e440c1a4aeee928427efbbeb5d"
-  }
+  },
+  "reader_entrypoint": "read/index.html",
+  "reader_motion_assets": {
+    "web/page-curl.js": "373f522b361c9c30cbaf6b391c7b8e5af4bf4248ce25002d05cc43a399b4eef5"
+  },
+  "reader_preview_assets": {
+    "web/library-preview.css": "b73d980306a6ec5463889d62dc810430e416dd21e78dca6aba576fe286ae1943",
+    "web/library-preview.js": "266878d6b8330643c7fd470b5e67b0855946ec67bc6d7706b4e8d647dda091a8",
+    "web/reader-editorial.js": "792cbca6c3a3bafdaf6f84387879e734139a09454dc0a19f8e724fc683fcb309"
+  },
+  "schema": 1,
+  "script_version": 2
 }

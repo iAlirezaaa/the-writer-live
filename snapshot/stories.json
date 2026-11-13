@@ -1,20 +1,20 @@
 [
   {
-    "id": "owner-20261110-jaye-doxt",
-    "title": "جای دوخت",
-    "status": "owner_shared",
-    "stage": "داستان کوتاه",
-    "words": 1209,
-    "score": null,
-    "threshold": null,
     "created": "2026-11-10",
+    "id": "owner-20261110-jaye-doxt",
+    "publication_basis": "explicit_owner_request",
     "review_status": "awaiting_independent_critic",
-    "publication_basis": "explicit_owner_request"
+    "score": null,
+    "stage": "داستان کوتاه",
+    "status": "owner_shared",
+    "threshold": null,
+    "title": "جای دوخت",
+    "words": 1209
   },
   {
     "created": "2026-11-07T08:36:52",
     "id": "0005",
-    "score": 74,
+    "score": 74.0,
     "stage": "داستان کوتاه",
     "status": "accepted",
     "threshold": 70,
