@@ -6,6 +6,7 @@
 .menu a:hover{color:#f1ece2}
 .menu a::after{position:absolute;content:"";height:1px;bottom:1px;left:0;right:0;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .2s}
 .menu a:hover::after{transform:scaleX(1)}
+body[data-mode=about] .views,body[data-mode=contact] .views{opacity:0;pointer-events:none;visibility:hidden}
 .cabinet-nav{position:fixed;right:23px;top:64px;z-index:7;display:flex;align-items:center;gap:11px;color:#f1ece2b3;font-size:12px;text-shadow:0 1px 10px #000c}
 .cabinet-nav button{height:32px;width:32px;border:1px solid #f1ece248;border-radius:50%;display:grid;place-items:center;font-size:17px;transition:color .25s,border-color .25s,background .25s}
 .cabinet-nav button:hover:not(:disabled){border-color:#f1ece2;color:#fff;background:#ffffff18}
