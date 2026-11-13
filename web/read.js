@@ -380,6 +380,10 @@ window.addEventListener("hashchange",route);
 window.addEventListener("writer:reading-error",showReaderError);
 window.addEventListener("writer:reading-closed",()=>{
   journey?.abort();journey=null;opening=false;
+  if(new URLSearchParams(location.search).get("from")==="room"){
+    location.replace(new URL("../read/",import.meta.url).href);
+    return;
+  }
   history.replaceState(null,"",location.pathname+location.search);
   const key=openSource?.closest?.(".shelf-book")?.dataset.key;
   renderShelf();

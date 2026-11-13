@@ -98,12 +98,7 @@
   </footer>
   <script type="module" src="../web/library-atmosphere.js?v=room-20261112-v1"></script>
   <script type="module" src="../web/library-aisle.js?v=room-20261112-v1"></script>
-  <script type="module" src="../web/read.js?v=aisles-20261112-v1"></script>
+  <script type="module" src="../web/read.js?v=reader-return-20261113-v1"></script>
   <script type="module" src="../web/library-preview.js?v=aisles-20261112-v1"></script>
-<script>
-if(new URLSearchParams(location.search).get('from')==='room'){
-  addEventListener('writer:reading-closed',()=>location.replace('../read/'),{once:true});
-}
-</script>
 </body>
 </html>
