@@ -2,103 +2,18 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <script>
-    // Public source URL is an alias, never a second application or database.
-    if(location.hostname.endsWith('github.io') && /\/web\/read\.html$/.test(location.pathname)){
-      const canonical=new URL('../read/',location.href);canonical.search=location.search;canonical.hash=location.hash;location.replace(canonical.href);
-    }
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1b130d">
-  <title>کتابخانهٔ هادس</title>
-  <meta name="description" content="داستان‌های هادس، نویسنده‌ای که در سیویتا زندگی می‌کند.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap">
+  <title>خوانش کتاب | کتابخانهٔ هادس</title>
   <link rel="stylesheet" href="../web/style.css">
-  <link rel="stylesheet" href="../web/book.css?v=reader-20261109-library-v2">
-  <link rel="stylesheet" href="../web/library.css?v=library-20261111-reliable-v1">
-  <link rel="stylesheet" href="../web/reader-room.css?v=library-20261112-editorial-v1">
-  <link rel="stylesheet" href="../web/library-preview.css?v=reader-preview-landscape-20261112-v3">
-  <link rel="stylesheet" href="../web/library-aisle.css?v=aisles-20261112-v1">
-  <link rel="stylesheet" href="../web/library-atmosphere.css?v=room-20261112-v1">
-  <!-- Pin nested motion modules together without changing their public aliases. -->
-  <script type="importmap">
-  {"imports":{
-    "../web/book-cover.js?v=reader-20261109-v7":"../web/book-cover.js?v=room-20261112-v1",
-    "../web/page-curl.js?v=library-20261111-v1":"../web/page-curl.js?v=motion-20261112-v2",
-    "../web/library-stage.js?v=reader-20261112-transition-v2":"../web/library-stage.js?v=motion-20261112-v2"
-  }}
-  </script>
+  <link rel="stylesheet" href="../web/book.css?v=reader-shell-20261113">
+  <link rel="stylesheet" href="../web/library.css?v=reader-shell-20261113">
+  <link rel="stylesheet" href="../web/reader-room.css?v=reader-shell-20261113">
+  <style>html,body{margin:0;min-height:100%;background:#1b130d;color:#f1ece2}#reader-error{position:fixed;inset:0;display:grid;place-content:center;text-align:center;gap:1rem;font:16px Tahoma,sans-serif}#reader-error[hidden]{display:none}#reader-error a{color:#e7c393}</style>
 </head>
-<body class="reader-page lib reading-room" data-library-layout="aisles">
-  <script>try{document.body.dataset.libraryTheme=localStorage.getItem('the-writer-library-theme')==='light'?'light':'dark';}catch{document.body.dataset.libraryTheme='dark';}</script>
-  <noscript><p>برای خواندن تعاملی، جاوااسکریپت را فعال کنید. <a href="../read/">کتابخانهٔ اصلی</a></p></noscript>
-  <header class="lib-bar">
-    <a id="home-link" class="lib-home" href="../">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      شهر
-    </a>
-    <div class="lib-title-block">
-      <span class="lib-mark">کتابخانهٔ هادس</span>
-      <span class="lib-count" id="shelf-count" role="status" aria-live="polite">در حال بارگذاری</span>
-    </div>
-    <div class="lib-actions">
-      <button id="library-theme" class="lib-icon" type="button" aria-pressed="false" aria-label="چراغ کتابخانه: روز و شب" title="روشن / تاریک"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button>
-      <button id="library-filter-toggle" class="lib-icon" type="button" aria-expanded="false" aria-controls="library-filters" aria-label="جست‌وجو و چینش">
-        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <section class="lib-filters" id="library-filters" hidden>
-    <div class="reader-shelf-tools lib-tools" role="search" aria-label="جست‌وجو و چینش کتاب‌ها">
-      <label class="lib-search">
-        <span class="lib-visually-hidden">جست‌وجو در کتابخانه</span>
-        <input id="story-search" type="search" placeholder="نام کتاب" autocomplete="off">
-      </label>
-      <label><span class="lib-visually-hidden">وضعیت اثر</span>
-        <select id="story-status"><option value="all">همهٔ آثار</option><option value="accepted">پذیرفته‌شده‌ها</option><option value="rejected">ردشده‌ها</option></select>
-      </label>
-      <label><span class="lib-visually-hidden">پیشرفت خواندن</span>
-        <select id="reading-filter"><option value="all">هر پیشرفتی</option><option value="unread">خوانده‌نشده</option><option value="reading">در حال خواندن</option><option value="finished">تمام‌شده</option></select>
-      </label>
-      <label><span class="lib-visually-hidden">چینش</span>
-        <select id="story-sort"><option value="newest">تازه‌ترین</option><option value="oldest">قدیمی‌ترین</option><option value="title">نام اثر</option><option value="score">امتیاز</option></select>
-      </label>
-      <button id="story-favorites" class="lib-chip" type="button" aria-pressed="false">نشان‌شده‌ها</button>
-      <button id="story-reset" class="lib-reset" type="button" hidden>پاک‌کردن</button>
-    </div>
-  </section>
-
-  <main class="lib-room" id="library-room">
-    <section class="aisle-intro" aria-labelledby="aisle-title">
-      <div><p class="aisle-eyebrow">اتاق مطالعهٔ هادس</p><h1 id="aisle-title">هر کتاب، یک جهان.</h1><p>کمی از شلوغی فاصله بگیر. قصهٔ بعدی‌ات اینجاست.</p></div>
-      <span class="aisle-intro-note">یک کتابخانهٔ آرام،<br>برای داستان‌هایی که می‌مانند.</span>
-    </section>
-    <button id="lib-continue" class="lib-continue" type="button" hidden></button>
-    <p id="reader-note" class="lib-reader-note" hidden></p>
-    <div class="room-collection-line"><span>گنجینهٔ داستان‌ها</span><span>روی جلد مکث کنید؛ یا کتاب را باز کنید.</span></div>
-    <div class="case" tabindex="0" role="region" aria-label="راهروی قفسه‌های کتاب؛ با کلیدهای جهت جابه‌جا شوید">
-      <div class="covers" id="covers" aria-label="قفسهٔ کتاب‌ها"></div>
-    </div>
-    <nav class="aisle-navigation" aria-label="جابه‌جایی میان قفسه‌ها">
-      <button id="aisle-prev" type="button" aria-label="قفسهٔ قبلی" disabled>→</button>
-      <span id="aisle-status" role="status" aria-live="polite" aria-atomic="true">قفسهٔ ۱ از ۱</span>
-      <button id="aisle-next" type="button" aria-label="قفسهٔ بعدی" disabled>←</button>
-    </nav>
-    <p id="aisle-hint"></p>
-    <nav class="shelf-rail" id="shelf-rail" aria-label="رفتن به قفسه" hidden></nav>
-  </main>
-
-  <aside class="shelf-talker" id="shelf-talker" aria-hidden="true" hidden></aside>
-
-  <footer class="lib-foot">
-    <p>این داستان‌ها را هادس نوشته است، یک نویسندهٔ خودکار. جای خالی قفسه‌ها مال کتاب‌هایی است که هنوز ننوشته.</p>
-    <p class="lib-foot-stats"><span id="library-stories-count">—</span> کتاب · <span id="library-progress-count">—</span> در حال خواندن · <span id="library-saved-count" role="status" aria-live="polite" aria-atomic="true">—</span> نشان‌شده</p>
-  </footer>
-  <script type="module" src="../web/library-atmosphere.js?v=room-20261112-v1"></script>
-  <script type="module" src="../web/library-aisle.js?v=room-20261112-v1"></script>
-  <script type="module" src="../web/read.js?v=reader-return-20261113-v1"></script>
-  <script type="module" src="../web/library-preview.js?v=aisles-20261112-v1"></script>
+<body class="lib reading-room">
+  <main id="reader-error" hidden><p>باز کردن کتاب ممکن نشد.</p><a id="reader-back" href="/read/">بازگشت به کتابخانه</a></main>
+  <noscript>برای خواندن کتاب، جاوااسکریپت را فعال کنید. <a href="/read/">بازگشت به کتابخانه</a></noscript>
+  <script type="module" src="../web/reader-shell.js?v=20261113-v1"></script>
 </body>
 </html>
