@@ -2,13 +2,13 @@
   "schema": 1,
   "mode": "reference-empty",
   "reference": "https://library.jjangik.kr/",
-  "private_source_commit": "1931ea3d4c03640cbeecdfccc93c025f68ea6f85",
+  "private_source_commit": "8fe7a972170c740a2c3ab7180fcca565854a6774",
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "963a414e9dd467cd370e948cb10027c77a3c3625",
+    "web/reference-room/index.html": "b85b62d01e338ec75c6a530c2fe1e01ce8409406",
     "web/reference-room/room.css": "a0dc572827f801edc2376db5899450b77b446f06",
-    "web/reference-room/room.js": "db6b9c94d0a90b377fcb4b867be51c576fb649d6"
+    "web/reference-room/room.js": "0bfcd26823ff9e40e206f1fe017dc4778ec57c16"
   },
   "asset_sha256": "48790d1db5856013d6f79ebab66417d927f6077829bd5eae0113134e0c1d8633",
   "asset_bytes": 2073167,

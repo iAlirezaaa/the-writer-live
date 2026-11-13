@@ -49,16 +49,18 @@ function printSpineTitle(book,title,index){
  const foil=book.root.children[4],original=foil?.material?.map,image=original?.image;
  if(!foil?.isMesh||!image?.width||!image?.height)return false;
  const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
- const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
- // Replace the printed number while keeping the original foil, rules and grain.
- ctx.clearRect(canvas.width*.2,canvas.height*.125,canvas.width*.6,canvas.height*.07);
- ctx.save();ctx.strokeStyle='#8a6038';ctx.lineWidth=Math.max(2,canvas.width*.012);
+ const ctx=canvas.getContext('2d');
+ // The source foil already contains Latin digits and English lettering. Start
+ // with a clean transparent foil instead of revealing those pixels underneath.
+ ctx.save();ctx.strokeStyle='rgba(138,96,56,.6)';ctx.lineWidth=Math.max(2,canvas.width*.009);
+ for(const x of [.17,.83]){ctx.beginPath();ctx.moveTo(canvas.width*x,0);ctx.lineTo(canvas.width*x,canvas.height);ctx.stroke();}
  for(const y of [.128,.19]){ctx.beginPath();ctx.moveTo(canvas.width*.34,canvas.height*y);ctx.lineTo(canvas.width*.66,canvas.height*y);ctx.stroke();}ctx.restore();
  ctx.save();ctx.direction='ltr';ctx.textAlign='center';ctx.textBaseline='middle';
  ctx.font=`600 ${Math.round(canvas.width*.28)}px Tahoma,Arial,sans-serif`;
- ctx.fillStyle='#8a6038';ctx.fillText(new Intl.NumberFormat('fa-IR',{minimumIntegerDigits:2,useGrouping:false}).format(index+1),canvas.width*.5,canvas.height*.158,canvas.width*.36);ctx.restore();
- // Replace the central inscription on the original curved spine foil.
- ctx.clearRect(canvas.width*.17,canvas.height*.265,canvas.width*.66,canvas.height*.575);
+ ctx.shadowColor='rgba(255,207,105,.65)';ctx.shadowBlur=canvas.width*.035;
+ ctx.fillStyle='#8a6038';const number=String(index+1).padStart(2,'0').replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+ ctx.fillText(number,canvas.width*.5,canvas.height*.158,canvas.width*.36);ctx.restore();
+ // Add the Persian inscription on the clean curved-spine foil.
  ctx.save();ctx.translate(canvas.width*.5,canvas.height*.565);ctx.rotate(Math.PI/2);
  ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
  let size=Math.min(130,canvas.width*.59);
