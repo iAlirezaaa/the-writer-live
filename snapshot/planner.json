@@ -467,69 +467,69 @@
       "label": "استراحت",
       "next_retry_at": null,
       "start": "2026-11-13T16:27:22",
-      "status": "planned",
+      "status": "done",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T17:47:22",
+      "end": "2026-11-13T17:08:22",
       "id": "202611132138",
       "label": "رساندن خودم",
       "next_retry_at": null,
-      "start": "2026-11-13T17:07:22",
+      "start": "2026-11-13T16:28:22",
       "status": "planned",
       "task": "brand"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T18:27:22",
+      "end": "2026-11-13T17:48:22",
       "id": "202611132218",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T17:47:22",
+      "start": "2026-11-13T17:08:22",
       "status": "planned",
       "task": "rest"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T19:07:22",
+      "end": "2026-11-13T18:28:22",
       "id": "202611132258",
       "label": "تحقیق",
       "next_retry_at": null,
-      "start": "2026-11-13T18:27:22",
+      "start": "2026-11-13T17:48:22",
       "status": "planned",
       "task": "research"
     },
     {
       "attempts": null,
-      "end": "2026-11-13T19:47:22",
+      "end": "2026-11-13T19:08:22",
       "id": "202611132338",
       "label": "استراحت",
       "next_retry_at": null,
-      "start": "2026-11-13T19:07:22",
+      "start": "2026-11-13T18:28:22",
       "status": "planned",
       "task": "rest"
     }
   ],
   "current": {
     "attempts": null,
-    "end": "2026-11-13T17:07:22",
-    "id": "202611132058",
-    "label": "استراحت",
+    "end": "2026-11-13T17:08:22",
+    "id": "202611132138",
+    "label": "رساندن خودم",
     "next_retry_at": null,
-    "start": "2026-11-13T16:27:22",
+    "start": "2026-11-13T16:28:22",
     "status": "planned",
-    "task": "rest"
+    "task": "brand"
   },
   "day": "2026-11-13",
   "next": {
     "attempts": null,
-    "end": "2026-11-13T17:47:22",
-    "id": "202611132138",
-    "label": "رساندن خودم",
+    "end": "2026-11-13T17:48:22",
+    "id": "202611132218",
+    "label": "استراحت",
     "next_retry_at": null,
-    "start": "2026-11-13T17:07:22",
+    "start": "2026-11-13T17:08:22",
     "status": "planned",
-    "task": "brand"
+    "task": "rest"
   }
 }
