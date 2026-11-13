@@ -2,14 +2,17 @@
   "schema": 1,
   "mode": "reference-empty",
   "reference": "https://library.jjangik.kr/",
-  "private_source_commit": "bd69d9424c15b8120ac43c4105b7ffc6e9887c65",
+  "private_source_commit": "221b2ede9bcfa2f78aa7ef05b118dc5188b7b55e",
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "a301ce659a869a5853ab5b31e241be3478ee1612",
-    "web/reference-room/room.css": "c99635c8cc29ed292ff889dd4640684336bc3327",
-    "web/reference-room/room.js": "e30b6d7a2414128bbc888f343942e989bb1e020c",
-    "web/reference-room/collection.js": "6d75087d63ff77d81db47095400d6c9aa9a749f8"
+    "web/reference-room/index.html": "a8d2365134d1d49dcffb111134e51ccc88594082",
+    "web/reference-room/room.css": "632d4c797f38d9515963bda495aa2484eb96e333",
+    "web/reference-room/room.js": "c245ee5a6881883e618b7cf755504cbfbc15c2aa",
+    "web/reference-room/collection.js": "90c194908f45efff7a4f2f3b09eb2ad6e37b1571",
+    "web/reference-room/window-view.js": "33ca7bfd33fb2f7ee4771983e2714410c4773db9",
+    "web/reference-room/fonts/Vazirmatn.woff2": "a501289a85595158570b0c2badcb4608b042e748",
+    "web/reference-room/fonts/OFL.txt": "be66b3824e9772e75141e631695c5256f105fb57"
   },
   "asset_sha256": "48790d1db5856013d6f79ebab66417d927f6077829bd5eae0113134e0c1d8633",
   "asset_bytes": 2073167,

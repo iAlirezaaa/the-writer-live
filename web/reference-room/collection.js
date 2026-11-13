@@ -7,8 +7,7 @@ export function installCollection(catalog){
   const path=location.hostname.endsWith('github.io')?`../../snapshot/stories/${encodeURIComponent(book.id)}.json`:`../../api/stories/${encodeURIComponent(book.id)}`;
   const response=await fetch(new URL(path,import.meta.url));if(!response.ok)throw new Error('preview unavailable');
   const story=await response.json(),editorial=readerEditorial(story);
-  const excerpt=String(story.body||'').replace(/^# [^\n]*\n+/, '').trim().replace(/\s+/g,' ');
-  const result=editorial?.summary?['دربارهٔ داستان',editorial.summary]:['آغاز داستان',excerpt?excerpt.slice(0,300)+(excerpt.length>300?'…':''):'معرفی این اثر هنوز آماده نیست.'];
+  const result=['خلاصهٔ کتاب',editorial?.summary||'خلاصهٔ این کتاب هنوز آماده نشده است.'];
   previews.set(book.id,result);return result;
  }
  const key='the-writer-saved-books';let saved=new Set();
@@ -22,6 +21,8 @@ export function installCollection(catalog){
  const list=document.createElement('div');list.className='collection-grid';
  const count=document.createElement('p');count.className='collection-note';count.setAttribute('role','status');
  dialog.addEventListener('keydown',event=>event.stopPropagation());
+ close.type='button';close.setAttribute('aria-label','بستن فهرست کتاب‌ها');
+ dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const box=dialog.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)dialog.close();});
  dialog.addEventListener('close',()=>trigger.focus());
  const normalize=text=>text.normalize('NFKC').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\u200c\u064b-\u065f]/g,'').trim();
  function render(focusId){
@@ -37,12 +38,27 @@ export function installCollection(catalog){
    const details=document.createElement('details'),summary=document.createElement('summary'),description=document.createElement('p');summary.textContent='نگاهی به کتاب';description.className='collection-excerpt';details.append(summary,description);
    let loading=false,loaded=false;
    details.addEventListener('toggle',async()=>{if(!details.open||loading||loaded)return;loading=true;description.textContent='در حال دریافت معرفی…';description.setAttribute('aria-busy','true');try{const [label,text]=await preview(book);summary.textContent=label;description.textContent=text;loaded=true;}catch{description.textContent='معرفی دریافت نشد. برای تلاش دوباره این بخش را ببند و باز کن.';}finally{loading=false;description.removeAttribute('aria-busy');}});
-   card.append(title,details,read,save);list.append(card);
+   const share=document.createElement('button');share.textContent='اشتراک‌گذاری';share.setAttribute('aria-label',`اشتراک‌گذاری ${book.title}`);
+   share.addEventListener('click',async()=>{
+    const url=read.href;
+    try{
+     if(navigator.share){await navigator.share({title:book.title,url});note.textContent='پنجرهٔ اشتراک‌گذاری بسته شد.';}
+     else{await navigator.clipboard.writeText(url);note.textContent='پیوند مستقیم کتاب کپی شد.';}
+    }catch(error){
+     if(error?.name==='AbortError')return;
+     note.replaceChildren(document.createTextNode('کپی خودکار ممکن نشد. پیوند کتاب: '));const link=document.createElement('a');link.href=url;link.textContent=url;link.dir='ltr';note.append(link);
+    }
+   });
+   card.append(title,details,read,save,share);list.append(card);
    if(focusId===book.id)save.focus();
   }
   if(!matches.length){const empty=document.createElement('p');empty.textContent=onlySaved?'هنوز کتابی با این مشخصات ذخیره نکرده‌ای.':'کتابی با این نام پیدا نشد.';list.append(empty);}
   if(focusId&&!matches.some(book=>book.id===focusId))filter.focus();
  }
  input.addEventListener('input',()=>render());filter.addEventListener('click',()=>{onlySaved=!onlySaved;filter.setAttribute('aria-pressed',String(onlySaved));render();});
+ window.addEventListener('storage',event=>{
+  if(event.key!==key&&event.key!==null)return;
+  try{const value=JSON.parse(event.newValue||'[]');saved=new Set(Array.isArray(value)?value.filter(id=>typeof id==='string'):[]);if(dialog.open)render();}catch{}
+ });
  dialog.append(header,input,filter,note,count,list);document.body.append(trigger,dialog);trigger.addEventListener('click',()=>{render();dialog.showModal();input.focus();});
 }
