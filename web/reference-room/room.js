@@ -51,7 +51,9 @@ function printSpineTitle(book,title,index){
  const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
  const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
  // Replace the printed number while keeping the original foil, rules and grain.
- ctx.clearRect(canvas.width*.31,canvas.height*.137,canvas.width*.38,canvas.height*.043);
+ ctx.clearRect(canvas.width*.2,canvas.height*.125,canvas.width*.6,canvas.height*.07);
+ ctx.save();ctx.strokeStyle='#8a6038';ctx.lineWidth=Math.max(2,canvas.width*.012);
+ for(const y of [.128,.19]){ctx.beginPath();ctx.moveTo(canvas.width*.34,canvas.height*y);ctx.lineTo(canvas.width*.66,canvas.height*y);ctx.stroke();}ctx.restore();
  ctx.save();ctx.direction='ltr';ctx.textAlign='center';ctx.textBaseline='middle';
  ctx.font=`600 ${Math.round(canvas.width*.28)}px Tahoma,Arial,sans-serif`;
  ctx.fillStyle='#8a6038';ctx.fillText(new Intl.NumberFormat('fa-IR',{minimumIntegerDigits:2,useGrouping:false}).format(index+1),canvas.width*.5,canvas.height*.158,canvas.width*.36);ctx.restore();
@@ -124,7 +126,7 @@ function ensureCabinets(count){
   group.name=`Identical bookcase ${index+1}`;group.position.x=index*CABINET_PITCH;
   // Repeat the measured frame and the non-interactive lower-shelf decoration.
   for(let i=66;i<=169;i++)group.add(byPath([i]).clone(true));
-  for(let i=172;i<=176;i++)group.add(byPath([i]).clone(true));
+  for(let i=170;i<=176;i++)group.add(byPath([i]).clone(true));
   for(let i=177;i<=200;i++)group.add(byPath([i]).clone(true));
   scene.add(group);extraCabinets.push(group);
  }
