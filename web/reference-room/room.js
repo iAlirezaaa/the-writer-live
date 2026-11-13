@@ -34,6 +34,16 @@ const nodes=new Map(),pathNodes=new Map(),ray=new THREE.Raycaster(),mouse=new TH
 let pointer={x:0,y:0},viewPointer={x:0,y:0},rows=[],targets=[],savedContact=null,autoApproach=0;
 const yRotation=a=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a),frontRotation=yRotation(-Math.PI/2);
 function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
+function coverTitle(model,title){
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
+ const ctx=canvas.getContext('2d');ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+ let size=100;while(size>42){ctx.font=`600 ${size}px Tahoma,Arial,sans-serif`;if(ctx.measureText(title).width<860)break;size-=4;}
+ ctx.fillStyle='#44301f';ctx.fillText(title,512,246,880);
+ ctx.strokeStyle='#795b3a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(350,335);ctx.lineTo(674,335);ctx.stroke();
+ const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+ const label=new THREE.Mesh(new THREE.PlaneGeometry(model.data.page.w*.82,model.data.h*.38),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+ label.name='cover-title';label.rotation.y=Math.PI/2;label.position.set(.011,model.data.h*.57,-model.data.coverDepth/2);label.renderOrder=3;return label;
+}
 function printSpineTitle(book,title){
  const foil=book.root.children[4],original=foil?.material?.map,image=original?.image;
  if(!foil?.isMesh||!image?.width||!image?.height)return false;
@@ -220,6 +230,8 @@ async function start(){
    // Only the separate front-cover decals are hidden. root.children[4] is the
    // actual original spine foil: its Persian inscription follows the old UV.
    for(const mesh of [hinge.children[6],hinge.children[7]])if(mesh?.isObject3D)mesh.visible=false;
+   for(const old of hinge.children.filter(child=>child.name==='cover-title'))hinge.remove(old);
+   hinge.add(coverTitle(model,title));
    printSpineTitle({root},title);
    root.traverse(o=>{original.set(o,{...pose(o),visible:o.visible});if(o.isMesh){o.userData.notebook=index;o.receiveShadow=false;targets.push(o);}});
    const button=document.createElement('button');button.type='button';
