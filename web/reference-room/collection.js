@@ -1,7 +1,7 @@
 // Reader-owned collection; saved IDs never change the author's catalogue.
 import { readerEditorial } from '../reader-editorial.js';
 export function installCollection(catalog){
- const previews=new Map();
+ const previews=new Map(),expanded=new Set();
  async function preview(book){
   if(previews.has(book.id))return previews.get(book.id);
   const path=location.hostname.endsWith('github.io')?`../../snapshot/stories/${encodeURIComponent(book.id)}.json`:`../../api/stories/${encodeURIComponent(book.id)}`;
@@ -42,7 +42,7 @@ export function installCollection(catalog){
    save.addEventListener('click',()=>{const next=new Set(saved);next.has(book.id)?next.delete(book.id):next.add(book.id);try{localStorage.setItem(key,JSON.stringify([...next]));saved=next;note.textContent=saved.has(book.id)?'کتاب در این مرورگر ذخیره شد.':'کتاب از ذخیره‌ها حذف شد.';render(book.id);}catch{note.textContent='مرورگر اجازهٔ ذخیره‌کردن نداد. تنظیمات ذخیره‌سازی را بررسی کن.';}});
    const details=document.createElement('details'),summary=document.createElement('summary'),description=document.createElement('p');summary.textContent='نگاهی به کتاب';description.className='collection-excerpt';details.append(summary,description);
    let loading=false,loaded=false;
-   details.addEventListener('toggle',async()=>{if(!details.open||loading||loaded)return;loading=true;description.textContent='در حال دریافت معرفی…';description.setAttribute('aria-busy','true');try{const [label,text]=await preview(book);summary.textContent=label;description.textContent=text;loaded=true;}catch{description.textContent='معرفی دریافت نشد. برای تلاش دوباره این بخش را ببند و باز کن.';}finally{loading=false;description.removeAttribute('aria-busy');}});
+   details.addEventListener('toggle',async()=>{if(!details.isConnected)return;if(details.open)expanded.add(book.id);else expanded.delete(book.id);if(!details.open||loading||loaded)return;loading=true;description.textContent='در حال دریافت معرفی…';description.setAttribute('aria-busy','true');try{const [label,text]=await preview(book);summary.textContent=label;description.textContent=text;loaded=true;}catch{description.textContent='معرفی دریافت نشد. برای تلاش دوباره این بخش را ببند و باز کن.';}finally{loading=false;description.removeAttribute('aria-busy');}});
    const share=document.createElement('button');share.textContent='اشتراک‌گذاری';share.setAttribute('aria-label',`اشتراک‌گذاری ${book.title}`);
    share.addEventListener('click',async()=>{
     const url=read.href;
@@ -55,6 +55,7 @@ export function installCollection(catalog){
     }
    });
    card.prepend(cover);card.append(details,read,save,share);list.append(card);
+   if(expanded.has(book.id))details.open=true;
    if(focusId===book.id)save.focus();
   }
   if(!matches.length){const empty=document.createElement('p');empty.textContent=onlySaved?'هنوز کتابی با این مشخصات ذخیره نکرده‌ای.':'کتابی با این نام پیدا نشد.';list.append(empty);}

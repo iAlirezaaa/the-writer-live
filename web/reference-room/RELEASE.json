@@ -2,14 +2,14 @@
   "schema": 1,
   "mode": "reference-empty",
   "reference": "https://library.jjangik.kr/",
-  "private_source_commit": "61014b9e13cac9021b8c67c287e63f2f111b4309",
+  "private_source_commit": "4f7353527d474b150b0fdeffefed0efe76b2f7cf",
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "453c76e03cef9b069d3175875f3a72a1f176851c",
+    "web/reference-room/index.html": "7726b12498e7368725dd736cc3d90f6b3fbdbfd2",
     "web/reference-room/room.css": "fa6c30c8f45071a47009c8e76c78e1d6c5d5bd36",
     "web/reference-room/room.js": "d12589ff188468c24ce2a1841212d690dd0a438e",
-    "web/reference-room/collection.js": "cd5a2836b7e589780f7df38ddd234d0e383029f1",
+    "web/reference-room/collection.js": "e8eac34b0807868ef7a469cb2ca7084c2b00098c",
     "web/reference-room/window-view.js": "33ca7bfd33fb2f7ee4771983e2714410c4773db9",
     "web/reference-room/fonts/Vazirmatn.woff2": "a501289a85595158570b0c2badcb4608b042e748",
     "web/reference-room/fonts/OFL.txt": "be66b3824e9772e75141e631695c5256f105fb57",
@@ -36,6 +36,6 @@
     "minimum": 2,
     "direction": "right",
     "future_publication_source": "snapshot/stories.json",
-    "placeholder": "ÃƒÆ’Ã‹Å“Ãƒâ€šÃ‚Â¨ÃƒÆ’Ã¢â€žÂ¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¡ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬â„¢ÃƒÆ’Ã‹Å“Ãƒâ€šÃ‚Â²ÃƒÆ’Ã¢â€žÂ¢Ãƒâ€¹Ã¢â‚¬Â ÃƒÆ’Ã‹Å“Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬ÂºÃƒâ€¦Ã¢â‚¬â„¢"
+    "placeholder": "ÃƒÆ’Ã†â€™Ãƒâ€¹Ã…â€œÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¨ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€¹Ã…â€œÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â²ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Â¹ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã†â€™Ãƒâ€¹Ã…â€œÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂºÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢"
   }
 }
