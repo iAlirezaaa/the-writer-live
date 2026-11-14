@@ -31,6 +31,11 @@ export function installCollection(catalog){
   for(const book of matches){
    const card=document.createElement('article'),title=document.createElement('h3'),read=document.createElement('a'),save=document.createElement('button');
    title.textContent=book.title;read.textContent='خواندن کتاب';read.href=new URL(`../../reader/?from=room#${encodeURIComponent(book.id)}`,import.meta.url).href;
+   const cover=document.createElement('div');cover.className='collection-cover';
+   const colors=['#bca276','#aaa99b','#b47e63','#b4aa8e','#8c9b8b'];cover.style.setProperty('--cover-color',colors[catalog.indexOf(book)%colors.length]);
+   const imprint=document.createElement('span');imprint.className='collection-imprint';imprint.textContent='کتابخانهٔ هادس';cover.append(imprint,title);
+   if(['0003','0005','0016','owner-20261110-jaye-doxt'].includes(book.id)){const art=document.createElement('img');art.src=new URL(`../reader-illustrations/${book.id}.svg`,import.meta.url).href;art.alt='';art.loading='lazy';art.addEventListener('error',()=>art.remove(),{once:true});cover.append(art);}
+   const ornament=document.createElement('span');ornament.className='collection-ornament';ornament.textContent='✦';ornament.setAttribute('aria-hidden','true');cover.append(ornament);
    let progress=0;try{const state=JSON.parse(localStorage.getItem(`the-writer-reading:${book.id}`)||'null');progress=Math.max(0,Math.min(1,Number(state?.progress)||0));}catch{}
    if(progress>0){read.textContent=progress>=1?'دوباره بخوان':'ادامهٔ خواندن';const status=document.createElement('p');status.className='collection-note';status.textContent=`${new Intl.NumberFormat('fa-IR',{style:'percent',maximumFractionDigits:0}).format(progress)} خوانده‌شده`;card.append(status);}
    save.textContent=saved.has(book.id)?'حذف از ذخیره‌ها':'ذخیره برای بعد';save.setAttribute('aria-pressed',String(saved.has(book.id)));save.setAttribute('aria-label',`${save.textContent}: ${book.title}`);
@@ -49,7 +54,7 @@ export function installCollection(catalog){
      note.replaceChildren(document.createTextNode('کپی خودکار ممکن نشد. پیوند کتاب: '));const link=document.createElement('a');link.href=url;link.textContent=url;link.dir='ltr';note.append(link);
     }
    });
-   card.append(title,details,read,save,share);list.append(card);
+   card.prepend(cover);card.append(details,read,save,share);list.append(card);
    if(focusId===book.id)save.focus();
   }
   if(!matches.length){const empty=document.createElement('p');empty.textContent=onlySaved?'هنوز کتابی با این مشخصات ذخیره نکرده‌ای.':'کتابی با این نام پیدا نشد.';list.append(empty);}

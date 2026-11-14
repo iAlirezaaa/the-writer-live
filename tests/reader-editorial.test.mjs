@@ -6,7 +6,8 @@ import {fileURLToPath} from "node:url";
 import {readerEditorial} from "../web/reader-editorial.js";
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const cases=[{"id":"0003","title":"نامی که از پل برگشت","status":"accepted","fragments":["سه دایره‌ی مسی کوچک","کابل پاره شد."]},{"id":"0005","title":"کوچه‌ی بازگشت","status":"accepted","fragments":["اگر نامی برگشت، سنگی روشن می‌شود","کوچه‌ی بازگشت."]},{"id":"owner-20261110-jaye-doxt","title":"جای دوخت","status":"owner_shared","fragments":["درزِ زیرِ بغلِ کت باز شد","تکهٔ خاکستری"]}];
-test("three already-published works have story-grounded original introductions",()=>{
+cases.push({id:'0016',title:'ثبتِ نام',status:'accepted',fragments:['کابلِ پاک‌کنندهٔ حافظه را برید','نوشت، دیوار خالی ماند']});
+test("published works have story-grounded original introductions",()=>{
   for(const sample of cases){
     const body="# "+sample.title+"\n\n"+sample.fragments.join("\n\n");
     const source={id:sample.id,title:sample.title,status:sample.status,body};

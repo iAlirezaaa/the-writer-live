@@ -37,10 +37,17 @@ const nodes=new Map(),pathNodes=new Map(),ray=new THREE.Raycaster(),mouse=new TH
 let pointer={x:0,y:0},viewPointer={x:0,y:0},rows=[],targets=[],savedContact=null,autoApproach=0;
 const yRotation=a=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a),frontRotation=yRotation(-Math.PI/2);
 function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
-function coverTitle(model,title){
+const coverArtwork=new Map();
+async function loadCoverArtwork(catalog){
+ await Promise.all(catalog.filter(book=>['0003','0005','0016','owner-20261110-jaye-doxt'].includes(book.id)).map(async book=>{
+  try{const art=new Image();art.src=new URL(`../reader-illustrations/${book.id}.svg`,import.meta.url).href;await art.decode();coverArtwork.set(book.id,art);}catch{}
+ }));
+}
+function coverTitle(model,title,story){
+ const art=coverArtwork.get(story?.id);
  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=1024;
  const ctx=canvas.getContext('2d');ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
- let size=100,lines=[];
+ let size=art?80:100,lines=[];
  for(;size>=44;size-=4){
   ctx.font=`600 ${size}px Vazirmatn,Tahoma,Arial,sans-serif`;lines=[];let line='';
   for(const word of title.split(/\s+/)){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>760){lines.push(line);line=word;}else line=next;}
@@ -49,9 +56,10 @@ function coverTitle(model,title){
  ctx.strokeStyle='rgba(121,91,58,.65)';ctx.lineWidth=2;ctx.strokeRect(64,72,896,880);ctx.strokeRect(80,88,864,848);
  ctx.fillStyle='#795b3a';ctx.font='26px Vazirmatn,Tahoma,Arial,sans-serif';ctx.fillText('کتابخانهٔ هادس',512,190);
  ctx.font=`600 ${Math.max(44,size)}px Vazirmatn,Tahoma,Arial,sans-serif`;ctx.fillStyle='#44301f';
- lines.forEach((line,i)=>ctx.fillText(line,512,480+(i-(lines.length-1)/2)*Math.max(60,size*1.5),800));
- ctx.strokeStyle='#795b3a';ctx.beginPath();ctx.moveTo(390,760);ctx.lineTo(634,760);ctx.stroke();
- ctx.fillStyle='#795b3a';ctx.font='34px Georgia,serif';ctx.fillText('✦',512,825);
+ lines.forEach((line,i)=>ctx.fillText(line,512,(art?350:480)+(i-(lines.length-1)/2)*Math.max(60,size*1.5),800));
+ if(art){ctx.save();ctx.beginPath();ctx.rect(170,530,684,330);ctx.clip();ctx.drawImage(art,170,495,684,399);ctx.restore();ctx.strokeStyle='#795b3a';ctx.strokeRect(164,524,696,342);}
+ if(!art){ctx.strokeStyle='#795b3a';ctx.beginPath();ctx.moveTo(390,760);ctx.lineTo(634,760);ctx.stroke();}
+ if(!art){ctx.fillStyle='#795b3a';ctx.font='34px Georgia,serif';ctx.fillText('✦',512,825);}
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
  const label=new THREE.Mesh(new THREE.PlaneGeometry(model.data.page.w*.82,model.data.h*.78),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
  label.name='cover-title';label.rotation.y=Math.PI/2;label.position.set(.011,model.data.h*.57,-model.data.coverDepth/2);label.renderOrder=3;return label;
@@ -81,11 +89,11 @@ function printSpineTitle(book,title,index){
   gilding.material=gilding.material.clone();gilding.material.alphaMap=alpha;gilding.material.needsUpdate=true;
  }
  // Add the Persian inscription on the clean curved-spine foil.
- ctx.save();ctx.translate(canvas.width*.5,canvas.height*.565);ctx.rotate(Math.PI/2);
+ ctx.save();ctx.translate(canvas.width*.5,canvas.height*.49);ctx.rotate(Math.PI/2);
  ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
- let size=Math.min(130,canvas.width*.59);
- while(size>48){ctx.font=`600 ${size}px Vazirmatn,Tahoma,Arial,sans-serif`;if(ctx.measureText(title).width<canvas.height*.46)break;size-=3;}
- ctx.fillStyle='rgba(42,35,27,.97)';ctx.fillText(title,0,0);ctx.restore();
+ let size=Math.min(92,canvas.width*.42);
+ while(size>36){ctx.font=`500 ${size}px Vazirmatn,Tahoma,Arial,sans-serif`;if(ctx.measureText(title).width<canvas.height*.39)break;size-=2;}
+ ctx.fillStyle='rgba(42,35,27,.92)';ctx.fillText(title,0,0,canvas.height*.39);ctx.restore();
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=original.colorSpace;
  texture.flipY=original.flipY;texture.anisotropy=original.anisotropy;
  texture.wrapS=original.wrapS;texture.wrapT=original.wrapT;
@@ -161,6 +169,15 @@ function updateCabinetNavigation(){
  prev.disabled=state.cabinet<=0;next.disabled=state.cabinet>=state.cabinetCount-1;
  const nf=new Intl.NumberFormat('fa-IR');
  status.textContent=`${nf.format(state.cabinet+1)} / ${nf.format(state.cabinetCount)}`;
+}
+function stepShelf(direction){
+ if(!state.ready||state.busy||state.mode!=='shelf'||state.listed)return;
+ const lower=(state.shelfOffset||0)<-1;
+ if(state.near>.5&&((direction>0&&!lower)||(direction<0&&lower))){
+  const start=state.shelfOffset||0,end=direction>0?-2.35:0;
+  state.hover=-1;$('label').classList.remove('on');
+  animate(600,t=>{state.shelfOffset=THREE.MathUtils.lerp(start,end,smooth(t));setCamera();},()=>requestRender(true));
+ }else goCabinet(state.cabinet+direction,state.near>.5?(direction>0?0:-2.35):0);
 }
 function goCabinet(index,shelfOffset=state.shelfOffset||0){
  if(!state.ready||state.busy||state.listed||state.mode!=='shelf')return;
@@ -268,6 +285,7 @@ async function start(){
   const blankPaper=new THREE.MeshBasicMaterial({color:0xf1ede3,toneMapped:false,side:THREE.DoubleSide});
   await document.fonts.load('600 32px Vazirmatn');
   const catalog=await roomCatalog();
+  await loadCoverArtwork(catalog);
   installWindowView(byPath([3]),()=>requestRender());
   installCollection(catalog);
   // Always keep the identical right-hand cabinet ready. For future authorized
@@ -280,7 +298,7 @@ async function start(){
    // actual original spine foil: its Persian inscription follows the old UV.
    for(const mesh of [hinge.children[6],hinge.children[7]])if(mesh?.isObject3D)mesh.visible=false;
    for(const old of hinge.children.filter(child=>child.name==='cover-title'))hinge.remove(old);
-   hinge.add(coverTitle(model,title));
+   hinge.add(coverTitle(model,title,story));
    printSpineTitle({root},title,index);
    root.traverse(o=>{original.set(o,{...pose(o),visible:o.visible});if(o.isMesh){o.userData.notebook=index;o.receiveShadow=false;targets.push(o);}});
    const button=document.createElement('button');button.type='button';
@@ -333,7 +351,7 @@ function installInput(){
  document.querySelector('.mark').addEventListener('click',e=>{e.preventDefault();if(state.selected>=0)close();else if(['about','contact'].includes(state.mode))backToRoom();else{setList(false);zoom(0);}});
  let down=null;$('room').addEventListener('pointerdown',e=>{clearTimeout(autoApproach);down={x:e.clientX,y:e.clientY,scroll:state.scroll};$('room').setPointerCapture(e.pointerId);});
  $('room').addEventListener('pointermove',e=>{if(down&&state.listed&&!state.busy){state.scroll=clamp(down.scroll+down.x-e.clientX,0,state.maxScroll);point(-1);requestRender();return;}if(e.pointerType!=='touch'&&['shelf','list'].includes(state.mode)&&!state.busy){pointer={x:(e.clientX/innerWidth-.5)*2,y:(e.clientY/innerHeight-.5)*2};point(hit(e.clientX,e.clientY));requestRender();}});
- $('room').addEventListener('pointerup',e=>{if(!down)return;const d=down;down=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>8)return;if(state.mode==='spread'){hit(e.clientX,e.clientY)===state.selected?enter():close();return;}if(['about','contact'].includes(state.mode)){backToRoom();return;}if(state.busy)return;const i=hit(e.clientX,e.clientY);if(i>=0){open(i);return;}const cord=ray.intersectObjects(scene.children,true).find(v=>v.object.parent===byPath([201]));if(cord)toggleLamp();});
+ $('room').addEventListener('pointerup',e=>{if(!down)return;const d=down;down=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>8){const dx=e.clientX-d.x,dy=e.clientY-d.y;if(e.pointerType==='touch'&&Math.abs(dy)>50&&Math.abs(dy)>Math.abs(dx)*1.25)stepShelf(dy<0?1:-1);return;}if(state.mode==='spread'){hit(e.clientX,e.clientY)===state.selected?enter():close();return;}if(['about','contact'].includes(state.mode)){backToRoom();return;}if(state.busy)return;const i=hit(e.clientX,e.clientY);if(i>=0){open(i);return;}const cord=ray.intersectObjects(scene.children,true).find(v=>v.object.parent===byPath([201]));if(cord)toggleLamp();});
  $('room').addEventListener('pointercancel',()=>{down=null;});$('room').addEventListener('pointerleave',()=>{if(!down){pointer={x:0,y:0};point(-1);requestRender();}});
  let wheelDistance=0,lastWheel=0,lastCabinetWheel=0;
  addEventListener('wheel',e=>{
@@ -345,11 +363,7 @@ function installInput(){
   if(state.busy||now-lastCabinetWheel<950){wheelDistance=0;return;}
   if(Math.sign(wheelDistance)!==Math.sign(delta))wheelDistance=0;wheelDistance+=delta;
   if(Math.abs(wheelDistance)>=75){
-   const direction=Math.sign(wheelDistance),lower=(state.shelfOffset||0)<-1;
-   if(state.near>.5&&((direction>0&&!lower)||(direction<0&&lower))){
-    const start=state.shelfOffset||0,end=direction>0?-2.35:0;
-    animate(600,t=>{state.shelfOffset=THREE.MathUtils.lerp(start,end,smooth(t));setCamera();},()=>requestRender(true));
-   }else goCabinet(state.cabinet+direction,state.near>.5?(direction>0?0:-2.35):0);
+   stepShelf(Math.sign(wheelDistance));
    wheelDistance=0;lastCabinetWheel=now;
   }
  },{passive:true});

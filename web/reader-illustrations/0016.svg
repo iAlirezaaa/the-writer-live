@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="280" viewBox="0 0 480 280" role="img" aria-label="دروازه و جای خالی نام">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#253c42"/><stop offset="1" stop-color="#506661"/></linearGradient><linearGradient id="gate"><stop stop-color="#c4a06c"/><stop offset="1" stop-color="#7f674c"/></linearGradient></defs>
+<path fill="url(#sky)" d="M0 0h480v280H0z"/><path fill="#1b2e33" d="M0 230l480-30v80H0z"/>
+<path d="M115 233V83Q115 38 173 38h134q58 0 58 45v150" fill="none" stroke="url(#gate)" stroke-width="12"/>
+<path d="M139 231V91q0-29 34-29h134q34 0 34 29v140" fill="none" stroke="#9ba590" stroke-width="2"/>
+<path fill="#13272c" d="M158 90h164v143H158z"/><path fill="#d5bb85" d="M182 111h116v32H182z"/>
+<path d="M205 127h70" stroke="#6b5940" stroke-width="3"/><path d="M182 165h116v32H182z" fill="none" stroke="#a19170" stroke-width="2"/>
+<path d="M45 254q95-38 170-8m20 0q95-20 200-4" fill="none" stroke="#c6a46c" stroke-width="2"/><circle cx="229" cy="246" r="3" fill="#f2d7a0"/>
+</svg>
