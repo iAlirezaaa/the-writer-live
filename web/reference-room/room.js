@@ -44,12 +44,13 @@ function restoreRoomPosition(){
   state.cabinet=clamp(Math.floor(saved.cabinet),0,state.cabinetCount-1);
   state.cabinetX=state.cabinet*CABINET_PITCH;
   state.shelfOffset=clamp(saved.shelfOffset,-2.35,0);state.near=clamp(saved.near);
+  state.listed=saved.listed===1?1:0;state.scroll=Number.isFinite(saved.scroll)?Math.max(0,saved.scroll):0;
   return true;
  }catch{return false;}
 }
 window.addEventListener('pagehide',()=>{
  if(!state.ready)return;
- try{sessionStorage.setItem(roomPositionKey,JSON.stringify({cabinet:state.cabinet,shelfOffset:state.shelfOffset||0,near:state.near}));}catch{/* Storage may be disabled. */}
+ try{sessionStorage.setItem(roomPositionKey,JSON.stringify({cabinet:state.cabinet,shelfOffset:state.shelfOffset||0,near:state.near,listed:state.listed,scroll:state.scroll}));}catch{/* Storage may be disabled. */}
 });
 function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
 const coverArtwork=new Map();
@@ -393,7 +394,7 @@ async function start(){
    books.push(makeBook(model,index,root,root.children[1],root.children[6],null,title));
   }
   const restoredPosition=restoreRoomPosition();
-  state.ready=true;resize();clockTime();renderer.render(scene,camera);$('load-progress').style.transform='scaleX(1)';document.body.classList.remove('loading');installInput();
+  state.ready=true;mode(state.listed?'list':'shelf');resize();if(state.listed)dimRoom(.92);clockTime();renderer.render(scene,camera);$('load-progress').style.transform='scaleX(1)';document.body.classList.remove('loading');installInput();
   $('world-link').href=new URL('../../',import.meta.url).href;updateCabinetNavigation();
   window.referenceRoom={state,scene,camera,renderer,books,stories,catalog,open,close,setList,show,enter,zoom,goCabinet,toggleLamp,render:()=>requestRender(true),setTestView(value){clearTimeout(autoApproach);tween=null;state.busy=false;state.near=value;pointer={x:0,y:0};viewPointer={x:0,y:0};setCamera();requestRender(true);},ready:true};
   const named=location.hash.slice(1).toLowerCase(),index=books.findIndex(b=>b.slug===named);if(index>=0)open(index,false);else if(!restoredPosition&&!reduce())autoApproach=setTimeout(()=>zoom(1),2600);setInterval(clockTime,60000);
