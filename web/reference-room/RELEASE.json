@@ -2,13 +2,13 @@
   "schema": 1,
   "mode": "reference-empty",
   "reference": "https://library.jjangik.kr/",
-  "private_source_commit": "67447404651d80848d6c812c2fa4f36a1466ddcc",
+  "private_source_commit": "ccb7e07adbc8b37d31ab575e73120963086c8169",
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "5f751f5e986ef2bdc0bb18f63470a7cb90c6f370",
-    "web/reference-room/room.css": "f95e1331429a50194771861e66bc5982c1e28be7",
-    "web/reference-room/room.js": "35b13e646d143190bdc2f738c61850514d15a89f",
+    "web/reference-room/index.html": "c667e5ffd43be44832e2b18946ba1896b6f0f1ce",
+    "web/reference-room/room.css": "fa6c30c8f45071a47009c8e76c78e1d6c5d5bd36",
+    "web/reference-room/room.js": "322b528ec3234e540493ac8388df4564c00dbd0a",
     "web/reference-room/collection.js": "cd5a2836b7e589780f7df38ddd234d0e383029f1",
     "web/reference-room/window-view.js": "33ca7bfd33fb2f7ee4771983e2714410c4773db9",
     "web/reference-room/fonts/Vazirmatn.woff2": "a501289a85595158570b0c2badcb4608b042e748",
@@ -36,6 +36,6 @@
     "minimum": 2,
     "direction": "right",
     "future_publication_source": "snapshot/stories.json",
-    "placeholder": "Ø¨Ù‡â€ŒØ²ÙˆØ¯ÛŒ"
+    "placeholder": "Ã˜Â¨Ã™â€¡Ã¢â‚¬Å’Ã˜Â²Ã™Ë†Ã˜Â¯Ã›Å’"
   }
 }
