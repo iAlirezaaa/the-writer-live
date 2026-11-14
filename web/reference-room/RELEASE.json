@@ -2,13 +2,13 @@
   "schema": 1,
   "mode": "reference-empty",
   "reference": "https://library.jjangik.kr/",
-  "private_source_commit": "4b25b8e2a3902b18c6af06ed1b17b42c7eee613f",
+  "private_source_commit": "67447404651d80848d6c812c2fa4f36a1466ddcc",
   "source_entrypoint": "web/reference-room/index.html",
   "published_entrypoint": "read/index.html",
   "files_git_blob_sha1": {
-    "web/reference-room/index.html": "33528e207825aee86239d20b64e44afb38a1db51",
+    "web/reference-room/index.html": "5f751f5e986ef2bdc0bb18f63470a7cb90c6f370",
     "web/reference-room/room.css": "f95e1331429a50194771861e66bc5982c1e28be7",
-    "web/reference-room/room.js": "57e835294552f84cb9f96ffaf57a2ab567397b3f",
+    "web/reference-room/room.js": "35b13e646d143190bdc2f738c61850514d15a89f",
     "web/reference-room/collection.js": "cd5a2836b7e589780f7df38ddd234d0e383029f1",
     "web/reference-room/window-view.js": "33ca7bfd33fb2f7ee4771983e2714410c4773db9",
     "web/reference-room/fonts/Vazirmatn.woff2": "a501289a85595158570b0c2badcb4608b042e748",
@@ -36,6 +36,6 @@
     "minimum": 2,
     "direction": "right",
     "future_publication_source": "snapshot/stories.json",
-    "placeholder": "به‌زودی"
+    "placeholder": "Ø¨Ù‡â€ŒØ²ÙˆØ¯ÛŒ"
   }
 }

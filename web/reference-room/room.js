@@ -36,8 +36,49 @@ let data,scene,camera,renderer,books=[],baseline,frame=0,tween=null;
 const nodes=new Map(),pathNodes=new Map(),ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),temp=new THREE.Vector3(),extraCabinets=[];
 let pointer={x:0,y:0},viewPointer={x:0,y:0},rows=[],targets=[],savedContact=null,autoApproach=0;
 const yRotation=a=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),a),frontRotation=yRotation(-Math.PI/2);
+const roomPositionKey='the-writer-room-position';
+function restoreRoomPosition(){
+ try{
+  const saved=JSON.parse(sessionStorage.getItem(roomPositionKey)||'null');
+  if(!saved||![saved.cabinet,saved.shelfOffset,saved.near].every(Number.isFinite))return false;
+  state.cabinet=clamp(Math.floor(saved.cabinet),0,state.cabinetCount-1);
+  state.cabinetX=state.cabinet*CABINET_PITCH;
+  state.shelfOffset=clamp(saved.shelfOffset,-2.35,0);state.near=clamp(saved.near);
+  return true;
+ }catch{return false;}
+}
+window.addEventListener('pagehide',()=>{
+ if(!state.ready)return;
+ try{sessionStorage.setItem(roomPositionKey,JSON.stringify({cabinet:state.cabinet,shelfOffset:state.shelfOffset||0,near:state.near}));}catch{/* Storage may be disabled. */}
+});
 function storyHref(book){return new URL(`../../reader/?from=room#${encodeURIComponent(book.storyId)}`,import.meta.url).href;}
 const coverArtwork=new Map();
+function localizeDecorativeSpines(){
+ const poster=byPath([176,6]);
+ if(poster?.material?.map){
+  const canvas=document.createElement('canvas');canvas.width=600;canvas.height=800;const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#eadac0';ctx.fillRect(0,0,600,800);ctx.strokeStyle='#b89b73';ctx.lineWidth=2;ctx.strokeRect(36,36,528,728);
+  ctx.save();ctx.beginPath();ctx.moveTo(135,550);ctx.lineTo(135,315);ctx.bezierCurveTo(135,95,465,95,465,315);ctx.lineTo(465,550);ctx.closePath();ctx.clip();
+  const sky=ctx.createLinearGradient(0,180,0,550);sky.addColorStop(0,'#253e64');sky.addColorStop(1,'#a6abb4');ctx.fillStyle=sky;ctx.fillRect(100,100,400,500);
+  ctx.fillStyle='#f3d58c';ctx.beginPath();ctx.arc(375,280,32,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#5d7482';ctx.beginPath();ctx.moveTo(100,500);ctx.lineTo(250,385);ctx.lineTo(410,510);ctx.lineTo(500,430);ctx.lineTo(500,600);ctx.lineTo(100,600);ctx.fill();
+  ctx.fillStyle='#354d60';ctx.beginPath();ctx.moveTo(100,555);ctx.lineTo(300,465);ctx.lineTo(500,560);ctx.lineTo(500,600);ctx.lineTo(100,600);ctx.fill();ctx.restore();
+  ctx.direction='rtl';ctx.textAlign='center';ctx.fillStyle='#604b38';ctx.font='500 40px Vazirmatn,Tahoma,sans-serif';ctx.fillText('کنار پنجره',300,650);ctx.font='24px Vazirmatn,Tahoma,sans-serif';ctx.fillText('جایی برای مکث و خواندن',300,704);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=poster.material.map.flipY;
+  poster.material=poster.material.clone();poster.material.map=texture;poster.material.needsUpdate=true;
+ }
+ const labels=['یادداشت‌ها','داستان','هنر روایت','واژه‌ها','خیال','روشنایی'];
+ const paths=[170,171,172,173,174,222];
+ labels.forEach((title,index)=>{
+  const spine=byPath([paths[index]])?.children[2];if(!spine?.material?.map)return;
+  const old=spine.material.map,canvas=document.createElement('canvas');canvas.width=256;canvas.height=1024;
+  const ctx=canvas.getContext('2d');ctx.fillStyle=['#302a21','#343028','#49372b','#382d27','#422f29','#39313c'][index];ctx.fillRect(0,0,256,1024);
+  ctx.strokeStyle='#9f7b4666';ctx.lineWidth=3;for(const y of [80,98,926,944]){ctx.beginPath();ctx.moveTo(25,y);ctx.lineTo(231,y);ctx.stroke();}
+  ctx.translate(128,512);ctx.rotate(Math.PI/2);ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='500 65px Vazirmatn,Tahoma,sans-serif';ctx.fillStyle='#b49a72';ctx.fillText(title,0,0,690);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=old.flipY;texture.anisotropy=old.anisotropy;
+  spine.material=spine.material.clone();spine.material.map=texture;spine.material.needsUpdate=true;
+ });
+}
 async function loadCoverArtwork(catalog){
  await Promise.all(catalog.filter(book=>['0003','0005','0016','owner-20261110-jaye-doxt'].includes(book.id)).map(async book=>{
   try{const art=new Image();art.src=new URL(`../reader-illustrations/${book.id}.svg`,import.meta.url).href;await art.decode();coverArtwork.set(book.id,art);}catch{}
@@ -159,6 +200,7 @@ function ensureCabinets(count){
   for(let i=66;i<=169;i++)group.add(byPath([i]).clone(true));
   for(let i=170;i<=176;i++)group.add(byPath([i]).clone(true));
   for(let i=197;i<=200;i++)group.add(byPath([i]).clone(true));
+  group.add(byPath([222]).clone(true));
   scene.add(group);extraCabinets.push(group);
  }
  state.cabinetCount=count;updateCabinetNavigation();
@@ -284,6 +326,7 @@ async function start(){
   for(const o of scene.children)if(o.isMesh&&o.position.y>4.5&&o.position.y<5.1&&o.position.x>4){nodes.set('wall-title',o);break;}
   const blankPaper=new THREE.MeshBasicMaterial({color:0xf1ede3,toneMapped:false,side:THREE.DoubleSide});
   await document.fonts.load('600 32px Vazirmatn');
+  localizeDecorativeSpines();
   const catalog=await roomCatalog();
   await loadCoverArtwork(catalog);
   installWindowView(byPath([3]),()=>requestRender());
@@ -339,10 +382,11 @@ async function start(){
    const index=upperCount+cabinet*20+slot,title=`دفتر ${new Intl.NumberFormat('fa-IR').format(index+1)}`;
    books.push(makeBook(model,index,root,root.children[1],root.children[6],null,title));
   }
+  const restoredPosition=restoreRoomPosition();
   state.ready=true;resize();clockTime();renderer.render(scene,camera);$('load-progress').style.transform='scaleX(1)';document.body.classList.remove('loading');installInput();
   $('world-link').href=new URL('../../',import.meta.url).href;updateCabinetNavigation();
   window.referenceRoom={state,scene,camera,renderer,books,stories,catalog,open,close,setList,show,enter,zoom,goCabinet,toggleLamp,render:()=>requestRender(true),setTestView(value){clearTimeout(autoApproach);tween=null;state.busy=false;state.near=value;pointer={x:0,y:0};viewPointer={x:0,y:0};setCamera();requestRender(true);},ready:true};
-  const named=location.hash.slice(1).toLowerCase(),index=books.findIndex(b=>b.slug===named);if(index>=0)open(index,false);else if(!reduce())autoApproach=setTimeout(()=>zoom(1),2600);setInterval(clockTime,60000);
+  const named=location.hash.slice(1).toLowerCase(),index=books.findIndex(b=>b.slug===named);if(index>=0)open(index,false);else if(!restoredPosition&&!reduce())autoApproach=setTimeout(()=>zoom(1),2600);setInterval(clockTime,60000);
  }catch(error){console.error(error);document.body.classList.remove('loading');$('failure').hidden=false;document.body.dataset.error=error.message;}
 }
 function installInput(){
