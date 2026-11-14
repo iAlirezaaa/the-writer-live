@@ -327,7 +327,14 @@ async function start(){
   scene.traverse(o=>{nodes.set(o.uuid,o);if(o.isLight){o.userData.power=o.intensity;o.userData.lamp=o.type==='SpotLight'||(o.type==='PointLight'&&o.parent.type!=='Scene');scene.userData.lights.push(o);}if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])if(m.map)m.map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());});
   for(const n of baseline.nodes){const o=byPath(n.path);if(o?.isLight&&o.target&&n.target){o.target.position.fromArray(n.target);if(!o.target.parent)scene.add(o.target);}}
   for(const o of scene.children)if(o.isMesh&&o.position.y>4.5&&o.position.y<5.1&&o.position.x>4){nodes.set('wall-title',o);break;}
-  const blankPaper=new THREE.MeshBasicMaterial({color:0xf1ede3,toneMapped:false,side:THREE.DoubleSide});
+  // Shading is baked into the paper, so the fold stays legible at every light level.
+  const leafCanvas=document.createElement('canvas');leafCanvas.width=512;leafCanvas.height=768;
+  const leafContext=leafCanvas.getContext('2d'),fold=leafContext.createLinearGradient(0,0,512,0);
+  for(const [at,color] of [[0,'#b6a78d'],[.025,'#d7cbb5'],[.09,'#ede5d5'],[.28,'#fbf5e9'],[.7,'#f7f0e2'],[.96,'#e8ddc9'],[1,'#cbbc9f']])fold.addColorStop(at,color);
+  leafContext.fillStyle=fold;leafContext.fillRect(0,0,512,768);
+  leafContext.strokeStyle='#fff9ee88';leafContext.lineWidth=2;leafContext.strokeRect(3,3,506,762);
+  const leafTexture=new THREE.CanvasTexture(leafCanvas);leafTexture.colorSpace=THREE.SRGBColorSpace;
+  const blankPaper=new THREE.MeshBasicMaterial({map:leafTexture,toneMapped:false,side:THREE.DoubleSide});
   await document.fonts.load('600 32px Vazirmatn');
   localizeDecorativeSpines();
   const catalog=await roomCatalog();
