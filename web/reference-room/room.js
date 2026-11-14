@@ -185,7 +185,13 @@ function resize(){
  if(!renderer)return;renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
  if(state.mode==='about')aboutPose();else if(state.mode==='contact')contactPose();else setCamera();updateWallTitle();
  if(state.listed&&!['spread','inside','opening','closing'].includes(state.mode))listLayout(true);
- if(['spread','opening'].includes(state.mode)&&state.selected>=0){tween=null;state.busy=false;openFinal(books[state.selected]);mode('spread');}requestRender(true);
+ if(state.mode==='opening'&&state.selected>=0){
+  // Complete the original action, including reader navigation or entering a leaf.
+  // Merely switching to spread here stranded real books on blank pages.
+  const finish=tween?.finish;tween=null;state.busy=false;
+  if(finish)finish();else{openFinal(books[state.selected]);mode('spread');}
+ }else if(state.mode==='spread'&&state.selected>=0)openFinal(books[state.selected]);
+ requestRender(true);
 }
 function layoutButtons(){
  if(!camera||!state.ready||!['shelf','list'].includes(state.mode))return;const box=new THREE.Box3();
@@ -284,9 +290,10 @@ function open(index,push=true){
 }
 function restoreBook(book){for(const[o,p]of book.original){o.position.copy(p.p);o.quaternion.copy(p.q);o.scale.copy(p.s);o.visible=p.visible;}book.pageBlock.visible=false;book.still.visible=false;book.pull=0;}
 function close(clearHash=true){
- if(!state.ready)return;if(clearHash&&location.hash)history.replaceState(null,'',location.pathname+location.search);
+ if(!state.ready||state.mode==='closing')return;if(clearHash&&location.hash)history.replaceState(null,'',location.pathname+location.search);
  if(['about','contact'].includes(state.mode))return backToRoom();if(state.selected<0)return;const book=books[state.selected];
- if(state.mode==='inside'){$('page').setAttribute('aria-hidden','true');openFinal(book);}
+ if(state.mode==='inside')openFinal(book);
+ $('page').setAttribute('aria-hidden','true');$('page').style.opacity='';$('page').style.visibility='';
  const start=pose(book.root),end=state.listed?(book.returnPose||book.home):book.home,hinge=book.hinge.rotation.y;state.hover=-1;mode('closing');
  animate(1050,t=>{put(book.root,start,end,segment(t,.28,1));book.hinge.rotation.y=hinge*(1-segment(t,0,.4));if(t>.4){book.pageBlock.visible=false;for(const o of book.prints)o.visible=book.original.get(o)?.visible??true;}dimRoom((1-t)*.48);},()=>{restoreBook(book);state.selected=-1;mode(state.listed?'list':'shelf');book.button.focus({preventScroll:true});requestRender(true);});
 }
